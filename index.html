@@ -2849,9 +2849,9 @@ function setupToolbar() {
   });
   $('ps-back-edit').addEventListener('click', () => closePrintStudio());
 
-  // Light dismiss — click on workspace closes print studio
+  // Light dismiss — click on workspace closes print studio (and any print preview)
   workspaceEl.addEventListener('click', (e) => {
-    if (STATE.printStudioOpen && !STATE.printPreview) {
+    if (STATE.printStudioOpen) {
       closePrintStudio();
     }
   });
