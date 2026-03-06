@@ -709,9 +709,9 @@ html, body {
 
 .print-roller {
   position: absolute;
-  height: 18px;
+  width: 18px;
   border-radius: 9px;
-  background: linear-gradient(180deg,
+  background: linear-gradient(90deg,
     rgba(80,70,55,0.7) 0%,
     rgba(140,125,100,0.5) 20%,
     rgba(220,210,190,0.6) 45%,
@@ -721,8 +721,8 @@ html, body {
     rgba(80,70,55,0.7) 100%
   );
   box-shadow:
-    0 2px 8px rgba(0,0,0,0.25),
-    inset 0 1px 0 rgba(255,255,255,0.3);
+    2px 0 8px rgba(0,0,0,0.25),
+    inset 1px 0 0 rgba(255,255,255,0.3);
   pointer-events: none;
   opacity: 0;
 }
@@ -730,8 +730,8 @@ html, body {
 /* Pressure shadow that follows the roller */
 .print-roller-shadow {
   position: absolute;
-  height: 6px;
-  background: linear-gradient(180deg, rgba(0,0,0,0.08) 0%, transparent 100%);
+  width: 6px;
+  background: linear-gradient(90deg, rgba(0,0,0,0.08) 0%, transparent 100%);
   pointer-events: none;
   opacity: 0;
 }
@@ -2365,16 +2365,16 @@ async function pullPrint() {
     ? `Rolling ${impressions} impressions...`
     : 'Rolling the impression...';
 
-  // Position roller
-  const rollerH = 18;
+  // Position roller (vertical bar, moves left-to-right)
+  const rollerW = 18;
   roller.style.left = L + 'px';
-  roller.style.top = (T + H / 2 - rollerH / 2) + 'px';
-  roller.style.width = W + 'px';
-  roller.style.height = rollerH + 'px';
+  roller.style.top = T + 'px';
+  roller.style.width = rollerW + 'px';
+  roller.style.height = H + 'px';
 
-  rollerShadow.style.left = L + 'px';
-  rollerShadow.style.width = W + 'px';
-  rollerShadow.style.height = '6px';
+  rollerShadow.style.top = T + 'px';
+  rollerShadow.style.width = '6px';
+  rollerShadow.style.height = H + 'px';
 
   // Start rendering in parallel with roller animation
   const printPromise = PrintEngine.print(
@@ -2386,21 +2386,21 @@ async function pullPrint() {
   );
 
   for (let pass = 0; pass < impressions; pass++) {
-    // Each pass goes left-to-right with slight vertical variation
-    const yOffset = (pass - (impressions - 1) / 2) * 6; // spread passes vertically
+    // Each pass goes left-to-right with slight horizontal variation
     const duration = 700 + pass * 60; // slightly slower each pass
     roller.style.opacity = '1';
     rollerShadow.style.opacity = '1';
 
     await animate(duration, (e) => {
       // Roller moves from left edge to right edge
-      const rollerX = L + e * W;
-      const rollerY = T + H / 2 - rollerH / 2 + yOffset + Math.sin(e * Math.PI * 3) * 2;
-      roller.style.transform = `translateX(${(e - 0.5) * W}px)`;
-      roller.style.top = rollerY + 'px';
+      const rx = L + e * (W - rollerW);
+      const wobble = Math.sin(e * Math.PI * 3) * 2; // subtle vertical wobble
+      roller.style.left = rx + 'px';
+      roller.style.top = (T + wobble) + 'px';
 
-      // Pressure shadow follows just behind roller
-      rollerShadow.style.top = (rollerY + rollerH + 1) + 'px';
+      // Pressure shadow follows just to the right of roller
+      rollerShadow.style.left = (rx + rollerW + 1) + 'px';
+      rollerShadow.style.top = (T + wobble) + 'px';
       rollerShadow.style.opacity = String(0.6 + Math.sin(e * Math.PI) * 0.4);
     }, t => t); // linear easing for steady roll
 
