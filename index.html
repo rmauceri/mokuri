@@ -693,18 +693,63 @@ html, body {
 .print-paper-sheet {
   position: absolute;
   border-radius: 2px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-  transform: translateX(110%);
-  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
 }
-.print-paper-sheet.placed { transform: translateX(0); }
 
-.print-baren-sweep {
+/* Subtle paper fiber texture on the animation sheet */
+.print-paper-sheet::after {
+  content: '';
   position: absolute;
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,255,255,0.25) 0%, transparent 70%);
+  inset: 0;
+  background:
+    repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(180,165,135,0.04) 3px, rgba(180,165,135,0.04) 4px),
+    repeating-linear-gradient(90deg, transparent, transparent 8px, rgba(180,165,135,0.02) 8px, rgba(180,165,135,0.02) 9px);
+  pointer-events: none;
+}
+
+.print-roller {
+  position: absolute;
+  height: 18px;
+  border-radius: 9px;
+  background: linear-gradient(180deg,
+    rgba(80,70,55,0.7) 0%,
+    rgba(140,125,100,0.5) 20%,
+    rgba(220,210,190,0.6) 45%,
+    rgba(255,250,240,0.7) 50%,
+    rgba(220,210,190,0.6) 55%,
+    rgba(140,125,100,0.5) 80%,
+    rgba(80,70,55,0.7) 100%
+  );
+  box-shadow:
+    0 2px 8px rgba(0,0,0,0.25),
+    inset 0 1px 0 rgba(255,255,255,0.3);
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* Pressure shadow that follows the roller */
+.print-roller-shadow {
+  position: absolute;
+  height: 6px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.08) 0%, transparent 100%);
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* Shadow cast by lifted paper during peel */
+.print-peel-shadow {
+  position: absolute;
+  width: 30px;
+  background: linear-gradient(90deg, rgba(0,0,0,0.15) 0%, transparent 100%);
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* Highlight on the curling paper edge */
+.print-peel-highlight {
+  position: absolute;
+  width: 8px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.35) 0%, transparent 100%);
   pointer-events: none;
   opacity: 0;
 }
@@ -827,7 +872,10 @@ html, body {
       <div class="print-anim-layer" id="print-anim-layer" style="display:none;">
         <div class="print-ink-wash" id="print-ink-wash"></div>
         <div class="print-paper-sheet" id="print-paper-sheet"></div>
-        <div class="print-baren-sweep" id="print-baren-sweep"></div>
+        <div class="print-roller" id="print-roller"></div>
+        <div class="print-roller-shadow" id="print-roller-shadow"></div>
+        <div class="print-peel-shadow" id="print-peel-shadow"></div>
+        <div class="print-peel-highlight" id="print-peel-highlight"></div>
       </div>
       <div class="print-mirror-label" id="print-mirror-label">↔ mirrored from block</div>
     </div>
@@ -2224,7 +2272,21 @@ function positionPrintCanvas() {
 // Utility: wait ms
 function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-// Multi-phase print animation
+// Animate a value over duration using rAF. fn(eased_t, raw_t) called each frame.
+function animate(duration, fn, easeFn) {
+  easeFn = easeFn || (t => t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2)/2); // ease-in-out
+  return new Promise(resolve => {
+    const start = performance.now();
+    function frame(now) {
+      const raw = Math.min(1, (now - start) / duration);
+      fn(easeFn(raw), raw);
+      if (raw < 1) requestAnimationFrame(frame); else resolve();
+    }
+    requestAnimationFrame(frame);
+  });
+}
+
+// 3-step print animation
 async function pullPrint() {
   if (!STATE.elements.length) {
     $('status-hint').textContent = 'Add some elements first!';
@@ -2237,76 +2299,126 @@ async function pullPrint() {
   // Hide any existing print
   const c = $('inline-print-canvas');
   c.style.display = 'none';
+  c.style.clipPath = '';
   $('print-mirror-label').classList.remove('visible');
+  workspaceEl.classList.remove('print-preview-active');
 
-  // Get paper position for animation
+  // Measure paper position in workspace
   const paperRect = paperEl.getBoundingClientRect();
   const wsRect = workspaceEl.getBoundingClientRect();
-  const animLeft = paperRect.left - wsRect.left;
-  const animTop = paperRect.top - wsRect.top;
-  const animW = paperRect.width;
-  const animH = paperRect.height;
+  const L = paperRect.left - wsRect.left;
+  const T = paperRect.top - wsRect.top;
+  const W = paperRect.width;
+  const H = paperRect.height;
   const paperBase = PAPER_TYPES[STATE.paperType].base;
 
+  // Get all animation elements
   const animLayer = $('print-anim-layer');
   const inkWash = $('print-ink-wash');
-  const paperSheet = $('print-paper-sheet');
-  const barenSweep = $('print-baren-sweep');
+  const sheet = $('print-paper-sheet');
+  const roller = $('print-roller');
+  const rollerShadow = $('print-roller-shadow');
+  const peelShadow = $('print-peel-shadow');
+  const peelHighlight = $('print-peel-highlight');
 
-  // Reset animation state
+  // Full reset
   animLayer.style.display = 'block';
   inkWash.classList.remove('visible');
-  paperSheet.classList.remove('placed');
-  paperSheet.style.transform = '';
-  paperSheet.style.opacity = '';
-  paperSheet.style.transition = '';
-  barenSweep.style.opacity = '0';
+  [sheet, roller, rollerShadow, peelShadow, peelHighlight].forEach(el => {
+    el.style.cssText = el.className.includes('print-paper-sheet')
+      ? '' : 'opacity:0';
+  });
+  sheet.style.left = L + 'px';
+  sheet.style.top = T + 'px';
+  sheet.style.width = W + 'px';
+  sheet.style.height = H + 'px';
+  sheet.style.background = paperBase;
+  sheet.style.opacity = '0';
 
-  // Position paper sheet over paper area (will slide in from right)
-  paperSheet.style.left = animLeft + 'px';
-  paperSheet.style.top = animTop + 'px';
-  paperSheet.style.width = animW + 'px';
-  paperSheet.style.height = animH + 'px';
-  paperSheet.style.background = paperBase;
-
-  // Phase 1: Ink wash
-  $('status-hint').textContent = 'Inking the blocks...';
+  // ── Step 1: Lay the paper down ─────────────────────────────
+  $('status-hint').textContent = 'Laying paper on the inked blocks...';
   inkWash.classList.add('visible');
-  await wait(400);
+  await wait(300);
 
-  // Phase 2: Place paper (slides in from the right)
-  $('status-hint').textContent = 'Placing paper on blocks...';
-  paperSheet.classList.add('placed');
-  await wait(600);
+  // Paper descends from above with perspective tilt, shadow settles
+  await animate(900, (e) => {
+    const lift = (1 - e) * 40;      // starts 40px above, settles to 0
+    const tilt = (1 - e) * 15;      // starts rotateX(15deg), settles to 0
+    const shadowBlur = 20 - e * 14; // shadow tightens: 20px → 6px
+    const shadowY = 8 - e * 5;      // shadow offset: 8px → 3px
+    const shadowAlpha = 0.15 + e * 0.1; // shadow darkens slightly as contact
+    sheet.style.transform = `translateY(${-lift}px) perspective(600px) rotateX(${tilt}deg)`;
+    sheet.style.transformOrigin = 'center bottom';
+    sheet.style.boxShadow = `0 ${shadowY}px ${shadowBlur}px rgba(0,0,0,${shadowAlpha.toFixed(2)})`;
+    sheet.style.opacity = String(Math.min(1, e * 1.5)); // fade in quickly
+  });
 
-  // Phase 3: Baren pressure sweep (left to right across paper)
-  $('status-hint').textContent = 'Pressing with baren...';
-  const sweepSize = 100;
-  barenSweep.style.width = sweepSize + 'px';
-  barenSweep.style.height = sweepSize + 'px';
-  barenSweep.style.opacity = '1';
+  // Ensure fully settled
+  sheet.style.transform = 'none';
+  sheet.style.boxShadow = '0 3px 6px rgba(0,0,0,0.25)';
+  sheet.style.opacity = '1';
+  await wait(200);
 
-  const steps = 20;
-  for (let i = 0; i <= steps; i++) {
-    const t = i / steps;
-    const sx = animLeft + t * animW - sweepSize / 2;
-    const sy = animTop + animH * 0.3 + Math.sin(t * Math.PI * 2) * animH * 0.2 - sweepSize / 2;
-    barenSweep.style.left = sx + 'px';
-    barenSweep.style.top = sy + 'px';
-    await wait(40);
+  // ── Step 2: Roller impressions ─────────────────────────────
+  const impressions = STATE.impressions;
+  $('status-hint').textContent = impressions > 1
+    ? `Rolling ${impressions} impressions...`
+    : 'Rolling the impression...';
+
+  // Position roller
+  const rollerH = 18;
+  roller.style.left = L + 'px';
+  roller.style.top = (T + H / 2 - rollerH / 2) + 'px';
+  roller.style.width = W + 'px';
+  roller.style.height = rollerH + 'px';
+
+  rollerShadow.style.left = L + 'px';
+  rollerShadow.style.width = W + 'px';
+  rollerShadow.style.height = '6px';
+
+  // Start rendering in parallel with roller animation
+  const printPromise = PrintEngine.print(
+    STATE.elements, STATE.paletteId, STATE.paperW, STATE.paperH, {
+      paperType: PAPER_TYPES[STATE.paperType],
+      inkLoad: INK_LOADS[STATE.inkLoad],
+      impressions: STATE.impressions,
+    }
+  );
+
+  for (let pass = 0; pass < impressions; pass++) {
+    // Each pass goes left-to-right with slight vertical variation
+    const yOffset = (pass - (impressions - 1) / 2) * 6; // spread passes vertically
+    const duration = 700 + pass * 60; // slightly slower each pass
+    roller.style.opacity = '1';
+    rollerShadow.style.opacity = '1';
+
+    await animate(duration, (e) => {
+      // Roller moves from left edge to right edge
+      const rollerX = L + e * W;
+      const rollerY = T + H / 2 - rollerH / 2 + yOffset + Math.sin(e * Math.PI * 3) * 2;
+      roller.style.transform = `translateX(${(e - 0.5) * W}px)`;
+      roller.style.top = rollerY + 'px';
+
+      // Pressure shadow follows just behind roller
+      rollerShadow.style.top = (rollerY + rollerH + 1) + 'px';
+      rollerShadow.style.opacity = String(0.6 + Math.sin(e * Math.PI) * 0.4);
+    }, t => t); // linear easing for steady roll
+
+    // Brief pause between passes
+    if (pass < impressions - 1) {
+      roller.style.opacity = '0.3';
+      await wait(200);
+    }
   }
-  barenSweep.style.opacity = '0';
 
-  // Render the print
-  $('status-hint').textContent = 'Pulling the print...';
-  const opts = {
-    paperType: PAPER_TYPES[STATE.paperType],
-    inkLoad: INK_LOADS[STATE.inkLoad],
-    impressions: STATE.impressions,
-  };
-  const canvas = await PrintEngine.print(STATE.elements, STATE.paletteId, STATE.paperW, STATE.paperH, opts);
+  roller.style.opacity = '0';
+  rollerShadow.style.opacity = '0';
+  await wait(200);
 
-  // Draw mirrored result to the inline canvas
+  // Wait for print render to complete
+  const canvas = await printPromise;
+
+  // Draw mirrored result to inline canvas
   c.width = canvas.width;
   c.height = canvas.height;
   const ctx = c.getContext('2d');
@@ -2317,62 +2429,68 @@ async function pullPrint() {
   ctx.restore();
   c._printCanvas = canvas;
   c._printMirrored = true;
-
   positionPrintCanvas();
 
-  // Phase 4: Horizontal unfurl — paper peels from right to left,
-  // revealing the print underneath from right to left
+  // ── Step 3: Peel the print ─────────────────────────────────
+  $('status-hint').textContent = 'Pulling the print...';
+
+  // Show print canvas underneath, fully clipped (hidden)
   workspaceEl.classList.add('print-preview-active');
   c.style.display = 'block';
-  c.style.clipPath = 'inset(0 0 0 100%)';  // fully hidden from left
+  c.style.clipPath = 'inset(0 100% 0 0)';
   STATE.printPreview = true;
 
-  // Remove the placed transition so we can drive manually
-  paperSheet.style.transition = 'none';
+  // Position peel effects
+  peelShadow.style.top = T + 'px';
+  peelShadow.style.height = H + 'px';
+  peelHighlight.style.top = T + 'px';
+  peelHighlight.style.height = H + 'px';
 
-  const unfurlDuration = 1200;  // ms
-  const startTime = performance.now();
+  await animate(1400, (e) => {
+    // Paper peels from right edge toward left
+    // Hinge on left edge — right side lifts
+    const peelPct = e * 100;
+    const remainPct = 100 - peelPct;
 
-  await new Promise(resolve => {
-    function frame(now) {
-      const elapsed = now - startTime;
-      const t = Math.min(1, elapsed / unfurlDuration);
-      // Ease-out curve
-      const e = 1 - Math.pow(1 - t, 3);
+    // Paper: clip away from right, rotateY increases as it lifts
+    const maxAngle = 65;
+    // Angle ramps up then holds
+    const angleT = Math.min(1, e * 1.8);
+    const angle = angleT * maxAngle;
+    sheet.style.transformOrigin = 'left center';
+    sheet.style.transform = `perspective(800px) rotateY(-${angle}deg)`;
+    sheet.style.clipPath = `inset(0 0 0 0)`;  // full paper visible (it rotates away)
 
-      // Paper sheet: clip from right edge, shrinking toward left
-      // Also add a subtle rotateY as it peels
-      const peelPct = e * 100;
-      paperSheet.style.clipPath = `inset(0 0 0 ${peelPct}%)`;
-      paperSheet.style.transformOrigin = `${100 - peelPct}% center`;
-      paperSheet.style.transform = `perspective(600px) rotateY(${e * 12}deg)`;
-      paperSheet.style.opacity = String(1 - e * 0.5);
+    // Fade paper as it lifts past 45°
+    sheet.style.opacity = String(Math.max(0, 1 - Math.max(0, (e - 0.5) * 2)));
 
-      // Print canvas: reveal from right to left
-      const revealPct = 100 - peelPct;
-      c.style.clipPath = `inset(0 0 0 ${revealPct}%)`;
+    // Print canvas: reveal from right to left
+    c.style.clipPath = `inset(0 ${remainPct}% 0 0)`;
 
-      if (t < 1) {
-        requestAnimationFrame(frame);
-      } else {
-        resolve();
-      }
-    }
-    requestAnimationFrame(frame);
-  });
+    // Peel shadow: positioned at the reveal edge, moves right to left
+    const edgeX = L + W * (1 - e);
+    peelShadow.style.left = (edgeX - 25) + 'px';
+    peelShadow.style.width = '30px';
+    peelShadow.style.opacity = String(Math.sin(e * Math.PI) * 0.8);
 
-  // Phase 5: Settle — remove clip, clean up
+    // Highlight on the paper's curling edge
+    peelHighlight.style.left = (edgeX - 4) + 'px';
+    peelHighlight.style.width = '8px';
+    peelHighlight.style.opacity = String(Math.sin(e * Math.PI) * 0.6);
+  }, t => t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2)/2); // ease-in-out
+
+  // ── Settle ─────────────────────────────────────────────────
   c.style.clipPath = '';
+  peelShadow.style.opacity = '0';
+  peelHighlight.style.opacity = '0';
   inkWash.classList.remove('visible');
-  await wait(300);
+  await wait(250);
 
-  // Clean up animation layers
+  // Clean up
   animLayer.style.display = 'none';
-  paperSheet.style.transform = '';
-  paperSheet.style.opacity = '';
-  paperSheet.style.clipPath = '';
-  paperSheet.style.transition = '';
-  paperSheet.classList.remove('placed');
+  sheet.style.cssText = '';
+  roller.style.cssText = 'opacity:0';
+  rollerShadow.style.cssText = 'opacity:0';
 
   // Show mirror label
   $('print-mirror-label').classList.add('visible');
