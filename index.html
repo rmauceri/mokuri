@@ -141,6 +141,19 @@ html, body {
 .file-menu-item:hover { background: rgba(255,255,255,0.08); }
 .file-menu-item small { opacity: 0.5; margin-left: 4px; }
 
+.atmo-chip {
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.atmo-chip:hover { border-color: var(--accent); color: var(--text); }
+.atmo-chip.active { border-color: var(--accent); background: var(--accent); color: #fff; }
+
 .print-btn {
   display: flex;
   align-items: center;
@@ -809,6 +822,31 @@ html, body {
     <button class="tool-btn" id="btn-view-ink" title="Ink preview mode (I)">🎨</button>
     <div class="toolbar-separator"></div>
 
+    <!-- Atmosphere menu -->
+    <div style="position:relative;display:inline-block;">
+      <button class="tool-btn" id="btn-atmo" title="Atmosphere (sky, ground, mist)">🌄</button>
+      <div id="atmo-menu" style="display:none;position:absolute;left:0;top:100%;background:var(--panel-bg);border:1px solid var(--border);border-radius:8px;padding:12px;min-width:220px;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;font-weight:600;">Atmosphere</div>
+        <div style="margin-bottom:8px;">
+          <label style="font-size:10px;color:var(--text-dim);display:block;margin-bottom:3px;">Sky</label>
+          <div id="atmo-sky-row" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
+        </div>
+        <div style="margin-bottom:8px;">
+          <label style="font-size:10px;color:var(--text-dim);display:block;margin-bottom:3px;">Ground</label>
+          <div id="atmo-ground-row" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
+        </div>
+        <div style="margin-bottom:8px;">
+          <label style="font-size:10px;color:var(--text-dim);display:block;margin-bottom:3px;">Horizon <span id="atmo-horizon-val" style="color:var(--text);">62%</span></label>
+          <input type="range" id="atmo-horizon" min="20" max="85" value="62" style="width:100%;accent-color:var(--accent);">
+        </div>
+        <div>
+          <label style="font-size:10px;color:var(--text-dim);display:block;margin-bottom:3px;">Mist bands</label>
+          <div id="atmo-mist-row" style="display:flex;gap:4px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="toolbar-separator"></div>
+
     <button class="tool-btn" id="btn-zoom-in" title="Zoom In">+</button>
     <button class="tool-btn" id="btn-zoom-out" title="Zoom Out">−</button>
     <button class="tool-btn" id="btn-zoom-fit" title="Fit to View">⊡</button>
@@ -847,6 +885,10 @@ html, body {
       <div class="washi-bg"></div>
       <svg class="workspace-svg" id="workspace-svg" xmlns="http://www.w3.org/2000/svg">
         <defs>
+          <!-- Paper clip path for atmosphere -->
+          <clipPath id="paper-clip">
+            <use href="#paper"/>
+          </clipPath>
           <!-- Paper texture filter -->
           <filter id="paper-texture" x="0" y="0" width="100%" height="100%">
             <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="4" seed="2" result="noise"/>
@@ -859,6 +901,9 @@ html, body {
 
         <!-- Paper (the printable area) -->
         <rect id="paper" class="paper-rect" fill="#f5f0e6" rx="2" ry="2"/>
+
+        <!-- Atmosphere layer (sky, ground, mist — behind elements) -->
+        <g id="atmo-layer" clip-path="url(#paper-clip)"></g>
 
         <!-- Composition layer (elements go here) -->
         <g id="comp-layer"></g>
@@ -982,6 +1027,12 @@ const STATE = {
   inkLoad: 'standard',  // 'light' | 'standard' | 'heavy'
   impressions: 1,       // 1-3
 
+  // Atmosphere
+  sky: 'none',          // 'none' | 'dawn' | 'day' | 'dusk' | 'night' | 'overcast'
+  ground: 'none',       // 'none' | 'earth' | 'grass' | 'snow' | 'sand' | 'water'
+  horizon: 0.62,        // 0-1, fraction from top (0.62 = 62% down)
+  mist: 0,              // 0-3 mist bands
+
   // Undo
   undoStack: [],
   redoStack: [],
@@ -1039,6 +1090,76 @@ const INK_LOADS = {
   light:    { name: '淡 Light',    opacityMul: 0.7, edgeMul: 0.5, turbScale: 3.0, misreg: 4 },
   standard: { name: '中 Standard', opacityMul: 1.0, edgeMul: 1.0, turbScale: 3.5, misreg: 3 },
   heavy:    { name: '濃 Heavy',    opacityMul: 1.08, edgeMul: 1.5, turbScale: 4.5, misreg: 2 },
+};
+
+// ============================================================
+//  ATMOSPHERE — Sky & Ground types for scene backgrounds
+// ============================================================
+const SKY_TYPES = {
+  none:     { name: 'None', stops: null },
+  dawn:     { name: '暁 Dawn',     stops: [
+    { offset: 0, color: '#2a3a5c', opacity: 0.85 },
+    { offset: 0.35, color: '#6a5a7a', opacity: 0.7 },
+    { offset: 0.6, color: '#c47a50', opacity: 0.6 },
+    { offset: 0.8, color: '#e8b870', opacity: 0.5 },
+    { offset: 1, color: '#f0d8a8', opacity: 0.3 },
+  ]},
+  day:      { name: '昼 Day',      stops: [
+    { offset: 0, color: '#4a7aaa', opacity: 0.6 },
+    { offset: 0.4, color: '#7aa8cc', opacity: 0.45 },
+    { offset: 0.7, color: '#b8d0e0', opacity: 0.3 },
+    { offset: 1, color: '#e8e4d8', opacity: 0.15 },
+  ]},
+  dusk:     { name: '夕 Dusk',     stops: [
+    { offset: 0, color: '#1a2a4c', opacity: 0.9 },
+    { offset: 0.25, color: '#3a3a6a', opacity: 0.75 },
+    { offset: 0.5, color: '#8a4a5a', opacity: 0.65 },
+    { offset: 0.7, color: '#c46a3a', opacity: 0.55 },
+    { offset: 0.85, color: '#d4943a', opacity: 0.45 },
+    { offset: 1, color: '#e0c070', opacity: 0.3 },
+  ]},
+  night:    { name: '夜 Night',    stops: [
+    { offset: 0, color: '#0a0a1a', opacity: 0.92 },
+    { offset: 0.3, color: '#1a1a3a', opacity: 0.85 },
+    { offset: 0.6, color: '#2a2a4a', opacity: 0.75 },
+    { offset: 1, color: '#3a3a5a', opacity: 0.6 },
+  ]},
+  overcast: { name: '曇 Overcast', stops: [
+    { offset: 0, color: '#6a6a6a', opacity: 0.4 },
+    { offset: 0.4, color: '#8a8a82', opacity: 0.3 },
+    { offset: 0.7, color: '#a0a098', opacity: 0.22 },
+    { offset: 1, color: '#b8b4a8', opacity: 0.15 },
+  ]},
+};
+
+const GROUND_TYPES = {
+  none:  { name: 'None', stops: null },
+  earth: { name: '土 Earth', stops: [
+    { offset: 0, color: '#6a5a40', opacity: 0.5 },
+    { offset: 0.4, color: '#7a6a4a', opacity: 0.45 },
+    { offset: 1, color: '#8a7a58', opacity: 0.35 },
+  ]},
+  grass: { name: '草 Grass', stops: [
+    { offset: 0, color: '#3a5a30', opacity: 0.5 },
+    { offset: 0.3, color: '#4a6a3a', opacity: 0.42 },
+    { offset: 1, color: '#5a7a48', opacity: 0.3 },
+  ]},
+  snow:  { name: '雪 Snow', stops: [
+    { offset: 0, color: '#c8d0e0', opacity: 0.35 },
+    { offset: 0.3, color: '#d8dce8', opacity: 0.25 },
+    { offset: 1, color: '#e8e8f0', opacity: 0.15 },
+  ]},
+  sand:  { name: '砂 Sand', stops: [
+    { offset: 0, color: '#c4a868', opacity: 0.4 },
+    { offset: 0.4, color: '#d0b878', opacity: 0.35 },
+    { offset: 1, color: '#d8c890', opacity: 0.25 },
+  ]},
+  water: { name: '水 Water', stops: [
+    { offset: 0, color: '#2a5a7a', opacity: 0.55 },
+    { offset: 0.3, color: '#3a6a8a', opacity: 0.45 },
+    { offset: 0.7, color: '#4a7a98', opacity: 0.35 },
+    { offset: 1, color: '#5a8aa4', opacity: 0.25 },
+  ]},
 };
 
 // Carve tool definitions — profile layers define cross-section from edge to center
@@ -1188,6 +1309,109 @@ function layoutPaper() {
   paperEl.setAttribute('y', 0);
   paperEl.setAttribute('width', STATE.paperW);
   paperEl.setAttribute('height', STATE.paperH);
+}
+
+// ============================================================
+//  ATMOSPHERE RENDERING — sky, ground, mist in workspace
+// ============================================================
+function renderAtmosphere() {
+  const layer = $('atmo-layer');
+  layer.innerHTML = '';
+  const W = STATE.paperW;
+  const H = STATE.paperH;
+  const horizonY = H * STATE.horizon;
+
+  const skyType = SKY_TYPES[STATE.sky];
+  const groundType = GROUND_TYPES[STATE.ground];
+
+  // Generate unique gradient IDs
+  let defsSvg = '';
+  let bodySvg = '';
+
+  // Sky gradient — fills from top to horizon
+  if (skyType && skyType.stops) {
+    const gid = 'atmo-sky-grad';
+    defsSvg += `<linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">`;
+    skyType.stops.forEach(s => {
+      defsSvg += `<stop offset="${s.offset}" stop-color="${s.color}" stop-opacity="${s.opacity}"/>`;
+    });
+    defsSvg += `</linearGradient>`;
+    // Organic bottom edge — a gentle undulating path instead of hard line
+    const segments = 12;
+    let skyPath = `M0,0 L${W},0 L${W},${horizonY}`;
+    for (let i = segments; i >= 0; i--) {
+      const x = (i / segments) * W;
+      const wobble = Math.sin(i * 1.3 + 2.7) * H * 0.015 + Math.sin(i * 2.9) * H * 0.008;
+      skyPath += ` L${x.toFixed(1)},${(horizonY + wobble).toFixed(1)}`;
+    }
+    skyPath += ' Z';
+    bodySvg += `<path d="${skyPath}" fill="url(#${gid})"/>`;
+  }
+
+  // Ground gradient — fills from horizon to bottom
+  if (groundType && groundType.stops) {
+    const gid = 'atmo-ground-grad';
+    defsSvg += `<linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">`;
+    groundType.stops.forEach(s => {
+      defsSvg += `<stop offset="${s.offset}" stop-color="${s.color}" stop-opacity="${s.opacity}"/>`;
+    });
+    defsSvg += `</linearGradient>`;
+    // Organic top edge
+    const segments = 12;
+    let groundPath = `M0,${H} L${W},${H} L${W},${horizonY}`;
+    for (let i = segments; i >= 0; i--) {
+      const x = (i / segments) * W;
+      const wobble = Math.sin(i * 1.3 + 2.7) * H * 0.015 + Math.sin(i * 2.9) * H * 0.008;
+      groundPath += ` L${x.toFixed(1)},${(horizonY + wobble).toFixed(1)}`;
+    }
+    groundPath += ' Z';
+    bodySvg += `<path d="${groundPath}" fill="url(#${gid})"/>`;
+
+    // Water ripple lines
+    if (STATE.ground === 'water') {
+      for (let i = 0; i < 6; i++) {
+        const ry = horizonY + (H - horizonY) * (0.1 + i * 0.15) + Math.sin(i * 2.3) * 4;
+        const len = W * (0.3 + Math.random() * 0.5);
+        const sx = Math.random() * (W - len);
+        bodySvg += `<line x1="${sx.toFixed(0)}" y1="${ry.toFixed(1)}" x2="${(sx + len).toFixed(0)}" y2="${(ry + Math.sin(i) * 2).toFixed(1)}" stroke="${groundType.stops[0].color}" stroke-opacity="0.2" stroke-width="0.8"/>`;
+      }
+    }
+  }
+
+  // Mist bands — semi-transparent horizontal clouds
+  if (STATE.mist > 0) {
+    for (let i = 0; i < STATE.mist; i++) {
+      const bandY = H * (0.25 + i * 0.2 + Math.sin(i * 3.7) * 0.05);
+      const bandH = H * (0.06 + Math.sin(i * 2.1) * 0.02);
+      const mgid = `atmo-mist-${i}`;
+      // Horizontal gradient: transparent → paper color → transparent
+      defsSvg += `<linearGradient id="${mgid}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="${PAPER_TYPES[STATE.paperType].base}" stop-opacity="0"/>
+        <stop offset="0.3" stop-color="${PAPER_TYPES[STATE.paperType].base}" stop-opacity="0.6"/>
+        <stop offset="0.5" stop-color="${PAPER_TYPES[STATE.paperType].base}" stop-opacity="0.75"/>
+        <stop offset="0.7" stop-color="${PAPER_TYPES[STATE.paperType].base}" stop-opacity="0.6"/>
+        <stop offset="1" stop-color="${PAPER_TYPES[STATE.paperType].base}" stop-opacity="0"/>
+      </linearGradient>`;
+      // Organic mist shape
+      const segs = 10;
+      let mistPath = `M0,${bandY}`;
+      for (let s = 0; s <= segs; s++) {
+        const x = (s / segs) * W;
+        const dy = Math.sin(s * 1.7 + i * 2.3) * bandH * 0.3;
+        mistPath += ` L${x.toFixed(1)},${(bandY + dy).toFixed(1)}`;
+      }
+      for (let s = segs; s >= 0; s--) {
+        const x = (s / segs) * W;
+        const dy = Math.sin(s * 1.4 + i * 1.8) * bandH * 0.25;
+        mistPath += ` L${x.toFixed(1)},${(bandY + bandH + dy).toFixed(1)}`;
+      }
+      mistPath += ' Z';
+      bodySvg += `<path d="${mistPath}" fill="url(#${mgid})"/>`;
+    }
+  }
+
+  if (!defsSvg && !bodySvg) return;
+  layer.innerHTML = `<defs>${defsSvg}</defs>${bodySvg}`;
 }
 
 function zoomBy(delta, cx, cy) {
@@ -1382,6 +1606,7 @@ function renderElementSvg(el, layerIndex) {
 }
 
 function rerenderAll() {
+  renderAtmosphere();
   // Clear and re-render all elements
   while (compLayer.firstChild) compLayer.removeChild(compLayer.firstChild);
   STATE.elements.forEach((el, i) => {
@@ -1619,6 +1844,10 @@ function getCompositionData() {
     paperType: STATE.paperType,
     inkLoad: STATE.inkLoad,
     impressions: STATE.impressions,
+    sky: STATE.sky,
+    ground: STATE.ground,
+    horizon: STATE.horizon,
+    mist: STATE.mist,
     savedAt: Date.now(),
   };
 }
@@ -1632,6 +1861,10 @@ function applyCompositionData(data) {
   STATE.paperType = data.paperType || 'kozo';
   STATE.inkLoad = data.inkLoad || 'standard';
   STATE.impressions = data.impressions || 1;
+  STATE.sky = data.sky || 'none';
+  STATE.ground = data.ground || 'none';
+  STATE.horizon = data.horizon ?? 0.62;
+  STATE.mist = data.mist || 0;
   // Update workspace paper color for paper type
   const pt = PAPER_TYPES[STATE.paperType];
   if (pt) paperEl.setAttribute('fill', pt.base);
@@ -1700,6 +1933,10 @@ function newComposition() {
   STATE.elements = [];
   STATE.nextId = 1;
   STATE.selectedId = null;
+  STATE.sky = 'none';
+  STATE.ground = 'none';
+  STATE.horizon = 0.62;
+  STATE.mist = 0;
   STATE.undoStack = [];
   STATE.redoStack = [];
   deselectAll();
@@ -2381,6 +2618,13 @@ async function pullPrint() {
       paperType: PAPER_TYPES[STATE.paperType],
       inkLoad: INK_LOADS[STATE.inkLoad],
       impressions: STATE.impressions,
+      atmosphere: {
+        sky: SKY_TYPES[STATE.sky]?.stops ? SKY_TYPES[STATE.sky] : null,
+        ground: GROUND_TYPES[STATE.ground]?.stops ? GROUND_TYPES[STATE.ground] : null,
+        horizon: STATE.horizon,
+        mist: STATE.mist,
+        paperBase: PAPER_TYPES[STATE.paperType].base,
+      },
     }
   );
 
@@ -2856,15 +3100,89 @@ function setupToolbar() {
     }
   });
 
+  // Atmosphere menu
+  const atmoMenu = $('atmo-menu');
+  $('btn-atmo').addEventListener('click', (e) => {
+    e.stopPropagation();
+    fileMenu.style.display = 'none';
+    const visible = atmoMenu.style.display !== 'none';
+    atmoMenu.style.display = visible ? 'none' : 'block';
+    if (!visible) buildAtmoMenuUI();
+  });
+  atmoMenu.addEventListener('click', (e) => e.stopPropagation());
+
+  function buildAtmoMenuUI() {
+    // Sky chips
+    const skyRow = $('atmo-sky-row');
+    skyRow.innerHTML = '';
+    Object.entries(SKY_TYPES).forEach(([id, s]) => {
+      const chip = document.createElement('button');
+      chip.className = 'atmo-chip' + (STATE.sky === id ? ' active' : '');
+      chip.textContent = s.name;
+      chip.addEventListener('click', () => {
+        STATE.sky = id;
+        buildAtmoMenuUI();
+        rerenderAll();
+        autoSave();
+      });
+      skyRow.appendChild(chip);
+    });
+
+    // Ground chips
+    const groundRow = $('atmo-ground-row');
+    groundRow.innerHTML = '';
+    Object.entries(GROUND_TYPES).forEach(([id, g]) => {
+      const chip = document.createElement('button');
+      chip.className = 'atmo-chip' + (STATE.ground === id ? ' active' : '');
+      chip.textContent = g.name;
+      chip.addEventListener('click', () => {
+        STATE.ground = id;
+        buildAtmoMenuUI();
+        rerenderAll();
+        autoSave();
+      });
+      groundRow.appendChild(chip);
+    });
+
+    // Horizon slider
+    const slider = $('atmo-horizon');
+    slider.value = Math.round(STATE.horizon * 100);
+    $('atmo-horizon-val').textContent = Math.round(STATE.horizon * 100) + '%';
+
+    // Mist chips
+    const mistRow = $('atmo-mist-row');
+    mistRow.innerHTML = '';
+    for (let i = 0; i <= 3; i++) {
+      const chip = document.createElement('button');
+      chip.className = 'atmo-chip' + (STATE.mist === i ? ' active' : '');
+      chip.textContent = i === 0 ? 'None' : String(i);
+      chip.addEventListener('click', () => {
+        STATE.mist = i;
+        buildAtmoMenuUI();
+        rerenderAll();
+        autoSave();
+      });
+      mistRow.appendChild(chip);
+    }
+  }
+
+  $('atmo-horizon').addEventListener('input', (e) => {
+    STATE.horizon = parseInt(e.target.value) / 100;
+    $('atmo-horizon-val').textContent = e.target.value + '%';
+    renderAtmosphere();
+  });
+  $('atmo-horizon').addEventListener('change', () => autoSave());
+
   // File menu
   const fileMenu = $('file-menu');
   $('btn-file').addEventListener('click', (e) => {
     e.stopPropagation();
+    atmoMenu.style.display = 'none';
     const visible = fileMenu.style.display !== 'none';
     fileMenu.style.display = visible ? 'none' : 'block';
     if (!visible) updateSlotLabels();
   });
-  document.addEventListener('click', () => { fileMenu.style.display = 'none'; });
+  document.addEventListener('click', () => { fileMenu.style.display = 'none'; atmoMenu.style.display = 'none'; });
   fileMenu.addEventListener('click', (e) => e.stopPropagation());
 
   $('fm-new').addEventListener('click', () => { newComposition(); fileMenu.style.display = 'none'; });

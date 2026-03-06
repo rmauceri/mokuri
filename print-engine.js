@@ -86,9 +86,10 @@ const PrintEngine = (() => {
   //  RENDER COLORED SVG — organic edges, ink pooling, misregistration
   // ============================================================
 
-  function renderColoredSvg(elements, palette, paperW, paperH, scale, inkLoad, impOffset) {
+  function renderColoredSvg(elements, palette, paperW, paperH, scale, inkLoad, impOffset, atmosphere) {
     inkLoad = inkLoad || { opacityMul: 1.0, edgeMul: 1.0, turbScale: 3.5, misreg: 3 };
     impOffset = impOffset || { x: 0, y: 0 };
+    atmosphere = atmosphere || {};
     const w = paperW * scale;
     const h = paperH * scale;
     const seed = Math.floor(Math.random() * 10000);
@@ -110,6 +111,84 @@ const PrintEngine = (() => {
     let svgContent = '';
     let bokashiDefs = '';
     let bokashiCount = 0;
+
+    // Atmosphere layer (sky, ground, mist) — rendered first, behind elements
+    if (atmosphere.sky || atmosphere.ground || atmosphere.mist) {
+      const horizonY = paperH * (atmosphere.horizon || 0.62);
+      let atmoDefs = '';
+      let atmoBody = '';
+
+      // Sky
+      if (atmosphere.sky && atmosphere.sky.stops) {
+        const gid = 'pe-sky';
+        atmoDefs += `<linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">`;
+        atmosphere.sky.stops.forEach(s => {
+          atmoDefs += `<stop offset="${s.offset}" stop-color="${s.color}" stop-opacity="${s.opacity}"/>`;
+        });
+        atmoDefs += `</linearGradient>`;
+        const segs = 12;
+        let skyPath = `M0,0 L${paperW},0 L${paperW},${horizonY}`;
+        for (let i = segs; i >= 0; i--) {
+          const x = (i / segs) * paperW;
+          const wb = Math.sin(i * 1.3 + 2.7) * paperH * 0.015 + Math.sin(i * 2.9) * paperH * 0.008;
+          skyPath += ` L${x.toFixed(1)},${(horizonY + wb).toFixed(1)}`;
+        }
+        skyPath += ' Z';
+        atmoBody += `<path d="${skyPath}" fill="url(#${gid})"/>`;
+      }
+
+      // Ground
+      if (atmosphere.ground && atmosphere.ground.stops) {
+        const gid = 'pe-ground';
+        atmoDefs += `<linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">`;
+        atmosphere.ground.stops.forEach(s => {
+          atmoDefs += `<stop offset="${s.offset}" stop-color="${s.color}" stop-opacity="${s.opacity}"/>`;
+        });
+        atmoDefs += `</linearGradient>`;
+        const segs = 12;
+        let gPath = `M0,${paperH} L${paperW},${paperH} L${paperW},${horizonY}`;
+        for (let i = segs; i >= 0; i--) {
+          const x = (i / segs) * paperW;
+          const wb = Math.sin(i * 1.3 + 2.7) * paperH * 0.015 + Math.sin(i * 2.9) * paperH * 0.008;
+          gPath += ` L${x.toFixed(1)},${(horizonY + wb).toFixed(1)}`;
+        }
+        gPath += ' Z';
+        atmoBody += `<path d="${gPath}" fill="url(#${gid})"/>`;
+      }
+
+      // Mist bands
+      if (atmosphere.mist > 0 && atmosphere.paperBase) {
+        for (let i = 0; i < atmosphere.mist; i++) {
+          const bandY = paperH * (0.25 + i * 0.2 + Math.sin(i * 3.7) * 0.05);
+          const bandH = paperH * (0.06 + Math.sin(i * 2.1) * 0.02);
+          const mid = `pe-mist-${i}`;
+          atmoDefs += `<linearGradient id="${mid}" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="${atmosphere.paperBase}" stop-opacity="0"/>
+            <stop offset="0.3" stop-color="${atmosphere.paperBase}" stop-opacity="0.6"/>
+            <stop offset="0.5" stop-color="${atmosphere.paperBase}" stop-opacity="0.75"/>
+            <stop offset="0.7" stop-color="${atmosphere.paperBase}" stop-opacity="0.6"/>
+            <stop offset="1" stop-color="${atmosphere.paperBase}" stop-opacity="0"/>
+          </linearGradient>`;
+          const sg = 10;
+          let mPath = `M0,${bandY}`;
+          for (let s = 0; s <= sg; s++) {
+            const x = (s / sg) * paperW;
+            const dy = Math.sin(s * 1.7 + i * 2.3) * bandH * 0.3;
+            mPath += ` L${x.toFixed(1)},${(bandY + dy).toFixed(1)}`;
+          }
+          for (let s = sg; s >= 0; s--) {
+            const x = (s / sg) * paperW;
+            const dy = Math.sin(s * 1.4 + i * 1.8) * bandH * 0.25;
+            mPath += ` L${x.toFixed(1)},${(bandY + bandH + dy).toFixed(1)}`;
+          }
+          mPath += ' Z';
+          atmoBody += `<path d="${mPath}" fill="url(#${mid})"/>`;
+        }
+      }
+
+      if (atmoDefs) bokashiDefs += atmoDefs;
+      if (atmoBody) svgContent += `<g filter="url(#wobble)">${atmoBody}</g>`;
+    }
 
     elements.forEach(el => {
       const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
@@ -294,6 +373,7 @@ const PrintEngine = (() => {
     const paperType = opts.paperType || PAPER_TYPES.kozo;
     const inkLoad = opts.inkLoad || INK_LOADS.standard;
     const impressions = opts.impressions || 1;
+    const atmosphere = opts.atmosphere || {};
     const palette = PALETTES[paletteId];
     const scale = 2;
     const w = Math.round(paperW * scale);
@@ -315,7 +395,7 @@ const PrintEngine = (() => {
       };
       const impOpacity = impressions === 1 ? 1.0 : (imp === 0 ? 0.85 : 0.5);
 
-      const svgStr = renderColoredSvg(elements, palette, paperW, paperH, scale, inkLoad, impOffset);
+      const svgStr = renderColoredSvg(elements, palette, paperW, paperH, scale, inkLoad, impOffset, atmosphere);
       const blob = new Blob([svgStr], { type: 'image/svg+xml' });
       const url = URL.createObjectURL(blob);
 
