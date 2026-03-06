@@ -694,10 +694,10 @@ html, body {
   position: absolute;
   border-radius: 2px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-  transform: translateY(-110%);
+  transform: translateX(110%);
   transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.print-paper-sheet.placed { transform: translateY(0); }
+.print-paper-sheet.placed { transform: translateX(0); }
 
 .print-baren-sweep {
   position: absolute;
@@ -709,20 +709,6 @@ html, body {
   opacity: 0;
 }
 
-.print-peel-container {
-  position: absolute;
-  transform-origin: center bottom;
-  perspective: 800px;
-}
-.print-peel-container.peeling {
-  animation: print-peel-up 1.0s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-@keyframes print-peel-up {
-  0% { transform: rotateX(0deg); }
-  40% { transform: rotateX(-50deg) translateY(-15px); }
-  70% { transform: rotateX(-35deg) translateY(-8px); }
-  100% { transform: rotateX(0deg) translateY(0); }
-}
 
 .print-mirror-label {
   position: absolute;
@@ -2271,9 +2257,12 @@ async function pullPrint() {
   animLayer.style.display = 'block';
   inkWash.classList.remove('visible');
   paperSheet.classList.remove('placed');
+  paperSheet.style.transform = '';
+  paperSheet.style.opacity = '';
+  paperSheet.style.transition = '';
   barenSweep.style.opacity = '0';
 
-  // Position paper sheet over paper area
+  // Position paper sheet over paper area (will slide in from right)
   paperSheet.style.left = animLeft + 'px';
   paperSheet.style.top = animTop + 'px';
   paperSheet.style.width = animW + 'px';
@@ -2285,19 +2274,18 @@ async function pullPrint() {
   inkWash.classList.add('visible');
   await wait(400);
 
-  // Phase 2: Place paper
+  // Phase 2: Place paper (slides in from the right)
   $('status-hint').textContent = 'Placing paper on blocks...';
   paperSheet.classList.add('placed');
   await wait(600);
 
-  // Phase 3: Baren pressure sweep
+  // Phase 3: Baren pressure sweep (left to right across paper)
   $('status-hint').textContent = 'Pressing with baren...';
   const sweepSize = 100;
   barenSweep.style.width = sweepSize + 'px';
   barenSweep.style.height = sweepSize + 'px';
   barenSweep.style.opacity = '1';
 
-  // Sweep across the paper
   const steps = 20;
   for (let i = 0; i <= steps; i++) {
     const t = i / steps;
@@ -2309,7 +2297,7 @@ async function pullPrint() {
   }
   barenSweep.style.opacity = '0';
 
-  // Start rendering print while animation plays
+  // Render the print
   $('status-hint').textContent = 'Pulling the print...';
   const opts = {
     paperType: PAPER_TYPES[STATE.paperType],
@@ -2332,26 +2320,57 @@ async function pullPrint() {
 
   positionPrintCanvas();
 
-  // Phase 4: Peel — lift paper sheet to reveal print
-  paperSheet.style.transformOrigin = 'center bottom';
-  paperSheet.style.transition = 'transform 1.0s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s ease 0.4s';
-  paperSheet.style.transform = 'perspective(800px) rotateX(-60deg) translateY(-30px)';
-  paperSheet.style.opacity = '0.3';
-
-  // Show print canvas underneath
-  c.style.display = 'block';
+  // Phase 4: Horizontal unfurl — paper peels from right to left,
+  // revealing the print underneath from right to left
   workspaceEl.classList.add('print-preview-active');
+  c.style.display = 'block';
+  c.style.clipPath = 'inset(0 0 0 100%)';  // fully hidden from left
   STATE.printPreview = true;
-  await wait(500);
 
-  // Phase 5: Settle
+  // Remove the placed transition so we can drive manually
+  paperSheet.style.transition = 'none';
+
+  const unfurlDuration = 1200;  // ms
+  const startTime = performance.now();
+
+  await new Promise(resolve => {
+    function frame(now) {
+      const elapsed = now - startTime;
+      const t = Math.min(1, elapsed / unfurlDuration);
+      // Ease-out curve
+      const e = 1 - Math.pow(1 - t, 3);
+
+      // Paper sheet: clip from right edge, shrinking toward left
+      // Also add a subtle rotateY as it peels
+      const peelPct = e * 100;
+      paperSheet.style.clipPath = `inset(0 0 0 ${peelPct}%)`;
+      paperSheet.style.transformOrigin = `${100 - peelPct}% center`;
+      paperSheet.style.transform = `perspective(600px) rotateY(${e * 12}deg)`;
+      paperSheet.style.opacity = String(1 - e * 0.5);
+
+      // Print canvas: reveal from right to left
+      const revealPct = 100 - peelPct;
+      c.style.clipPath = `inset(0 0 0 ${revealPct}%)`;
+
+      if (t < 1) {
+        requestAnimationFrame(frame);
+      } else {
+        resolve();
+      }
+    }
+    requestAnimationFrame(frame);
+  });
+
+  // Phase 5: Settle — remove clip, clean up
+  c.style.clipPath = '';
   inkWash.classList.remove('visible');
-  await wait(600);
+  await wait(300);
 
   // Clean up animation layers
   animLayer.style.display = 'none';
   paperSheet.style.transform = '';
   paperSheet.style.opacity = '';
+  paperSheet.style.clipPath = '';
   paperSheet.style.transition = '';
   paperSheet.classList.remove('placed');
 
@@ -2712,6 +2731,13 @@ function setupToolbar() {
     }
   });
   $('ps-back-edit').addEventListener('click', () => closePrintStudio());
+
+  // Light dismiss — click on workspace closes print studio
+  workspaceEl.addEventListener('click', (e) => {
+    if (STATE.printStudioOpen && !STATE.printPreview) {
+      closePrintStudio();
+    }
+  });
 
   // File menu
   const fileMenu = $('file-menu');
