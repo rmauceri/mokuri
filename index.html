@@ -709,8 +709,8 @@ html, body {
 
 .print-roller {
   position: absolute;
-  width: 18px;
-  border-radius: 9px;
+  width: 28px;
+  border-radius: 14px;
   background: linear-gradient(90deg,
     rgba(80,70,55,0.7) 0%,
     rgba(140,125,100,0.5) 20%,
@@ -730,7 +730,7 @@ html, body {
 /* Pressure shadow that follows the roller */
 .print-roller-shadow {
   position: absolute;
-  width: 6px;
+  width: 8px;
   background: linear-gradient(90deg, rgba(0,0,0,0.08) 0%, transparent 100%);
   pointer-events: none;
   opacity: 0;
@@ -2340,17 +2340,16 @@ async function pullPrint() {
   inkWash.classList.add('visible');
   await wait(300);
 
-  // Paper descends from above with perspective tilt, shadow settles
-  await animate(900, (e) => {
-    const lift = (1 - e) * 40;      // starts 40px above, settles to 0
-    const tilt = (1 - e) * 15;      // starts rotateX(15deg), settles to 0
-    const shadowBlur = 20 - e * 14; // shadow tightens: 20px → 6px
-    const shadowY = 8 - e * 5;      // shadow offset: 8px → 3px
-    const shadowAlpha = 0.15 + e * 0.1; // shadow darkens slightly as contact
-    sheet.style.transform = `translateY(${-lift}px) perspective(600px) rotateX(${tilt}deg)`;
-    sheet.style.transformOrigin = 'center bottom';
+  // Paper lays down from top edge — hinges at top, front edge swings down
+  await animate(1000, (e) => {
+    const tilt = (1 - e) * 45;      // starts rotateX(-45deg) flipped up, settles to 0
+    const shadowBlur = 24 - e * 18; // shadow tightens: 24px → 6px
+    const shadowY = 12 - e * 9;     // shadow offset: 12px → 3px
+    const shadowAlpha = 0.1 + e * 0.15; // shadow darkens as paper contacts
+    sheet.style.transform = `perspective(800px) rotateX(${-tilt}deg)`;
+    sheet.style.transformOrigin = 'center top';
     sheet.style.boxShadow = `0 ${shadowY}px ${shadowBlur}px rgba(0,0,0,${shadowAlpha.toFixed(2)})`;
-    sheet.style.opacity = String(Math.min(1, e * 1.5)); // fade in quickly
+    sheet.style.opacity = String(Math.min(1, e * 1.8)); // fade in quickly
   });
 
   // Ensure fully settled
@@ -2366,14 +2365,14 @@ async function pullPrint() {
     : 'Rolling the impression...';
 
   // Position roller (vertical bar, moves left-to-right)
-  const rollerW = 18;
+  const rollerW = 28;
   roller.style.left = L + 'px';
   roller.style.top = T + 'px';
   roller.style.width = rollerW + 'px';
   roller.style.height = H + 'px';
 
   rollerShadow.style.top = T + 'px';
-  rollerShadow.style.width = '6px';
+  rollerShadow.style.width = '8px';
   rollerShadow.style.height = H + 'px';
 
   // Start rendering in parallel with roller animation
@@ -2387,7 +2386,7 @@ async function pullPrint() {
 
   for (let pass = 0; pass < impressions; pass++) {
     // Each pass goes left-to-right with slight horizontal variation
-    const duration = 700 + pass * 60; // slightly slower each pass
+    const duration = 1000 + pass * 80; // steady, slightly slower each pass
     roller.style.opacity = '1';
     rollerShadow.style.opacity = '1';
 
