@@ -1,0 +1,2149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#d4c5a9">
+<title>Mokuri — Woodblock Print Studio</title>
+<style>
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #e8dcc8;
+  --bg-warm: #d4c5a9;
+  --panel-bg: #f5efe4;
+  --panel-border: #c4b99a;
+  --text: #3a3028;
+  --text-muted: #7a7060;
+  --accent: #8b6b4a;
+  --accent-hover: #6b4f34;
+  --selection: rgba(139, 107, 74, 0.2);
+  --toolbar-h: 48px;
+  --panel-w: 220px;
+  --radius: 6px;
+  --shadow: 0 1px 4px rgba(0,0,0,0.12);
+}
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+/* ============================================================
+   WASHI PAPER TEXTURE (CSS-only)
+   ============================================================ */
+.washi-bg {
+  position: absolute; inset: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.015) 2px,
+      rgba(0,0,0,0.015) 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 3px,
+      rgba(0,0,0,0.01) 3px,
+      rgba(0,0,0,0.01) 5px
+    ),
+    radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.3) 0%, transparent 60%),
+    radial-gradient(ellipse at 70% 80%, rgba(180,160,130,0.15) 0%, transparent 50%),
+    linear-gradient(180deg, #ece4d4 0%, #e0d5c0 50%, #d8ccb5 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.app {
+  display: flex;
+  flex-direction: column;
+  width: 100%; height: 100%;
+}
+
+/* --- Toolbar --- */
+.toolbar {
+  height: var(--toolbar-h);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+  background: var(--panel-bg);
+  border-bottom: 1px solid var(--panel-border);
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.toolbar-title {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--accent);
+  margin-right: 8px;
+}
+
+.toolbar-title span {
+  font-weight: 300;
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-left: 6px;
+}
+
+.toolbar-separator {
+  width: 1px;
+  height: 24px;
+  background: var(--panel-border);
+  margin: 0 4px;
+}
+
+.tool-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px; height: 36px;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 18px;
+  transition: background 0.15s, border-color 0.15s;
+}
+.tool-btn:hover { background: var(--selection); border-color: var(--panel-border); }
+.tool-btn.active { background: var(--selection); border-color: var(--accent); }
+.tool-btn:disabled { opacity: 0.35; cursor: default; }
+.tool-btn.active-mode { background: rgba(255,255,255,0.15); box-shadow: inset 0 0 0 1.5px var(--accent); }
+.workspace.carve-mode { cursor: crosshair; }
+.workspace.erase-mode { cursor: pointer; }
+
+.toolbar-spacer { flex: 1; }
+
+.file-menu-item {
+  padding: 6px 14px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+}
+.file-menu-item:hover { background: rgba(255,255,255,0.08); }
+.file-menu-item small { opacity: 0.5; margin-left: 4px; }
+
+.print-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  letter-spacing: 0.3px;
+}
+.print-btn:hover { background: var(--accent-hover); }
+
+/* --- Main area --- */
+.main {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+/* --- Element picker panel --- */
+.panel {
+  width: var(--panel-w);
+  background: var(--panel-bg);
+  border-right: 1px solid var(--panel-border);
+  display: flex;
+  flex-direction: column;
+  z-index: 5;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.panel-header {
+  padding: 10px 12px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.panel-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px;
+}
+
+.element-category {
+  margin-bottom: 12px;
+}
+
+.category-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  padding: 0 4px 4px;
+}
+
+.element-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.element-thumb {
+  aspect-ratio: 4/3;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  overflow: hidden;
+  position: relative;
+}
+.element-thumb:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow);
+}
+.element-thumb svg {
+  width: 80%;
+  height: 80%;
+}
+.element-thumb-label {
+  position: absolute;
+  bottom: 2px;
+  left: 0; right: 0;
+  text-align: center;
+  font-size: 9px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+/* --- Palette bar (bottom of panel) --- */
+.palette-bar {
+  border-top: 1px solid var(--panel-border);
+  padding: 8px;
+}
+
+.palette-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.palette-selector {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.palette-chip {
+  flex: 1;
+  height: 24px;
+  border-radius: 3px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  display: flex;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+.palette-chip.active { border-color: var(--accent); }
+.palette-chip:hover { border-color: var(--text-muted); }
+.palette-chip-color {
+  flex: 1;
+  min-width: 0;
+}
+
+.palette-colors {
+  display: flex;
+  gap: 4px;
+}
+
+.palette-swatch {
+  width: 28px; height: 28px;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.1s;
+}
+.palette-swatch:hover { transform: scale(1.1); }
+.palette-swatch.active { border-color: var(--text); }
+
+.zone-selector { min-height: 0; }
+.zone-selector:empty { display: none; }
+
+.carve-level-row {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+.carve-pip {
+  flex: 1;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  border: 1px solid var(--panel-border);
+  background: var(--bg);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.carve-pip:hover { border-color: var(--accent); }
+.carve-pip.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* --- Workspace --- */
+.workspace {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  cursor: crosshair;
+}
+
+.workspace-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Paper rectangle inside SVG */
+.paper-rect {
+  filter: url(#paper-texture);
+}
+
+/* Selection handles */
+.selection-box {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 3;
+  pointer-events: none;
+}
+
+.handle {
+  fill: #fff;
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  cursor: pointer;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+}
+
+.handle-rotate {
+  fill: var(--accent);
+  cursor: grab;
+}
+
+/* Ghost element (dragging from picker) */
+.ghost-element {
+  position: fixed;
+  pointer-events: none;
+  opacity: 0.6;
+  z-index: 100;
+}
+
+/* ============================================================
+   PRINT PREVIEW OVERLAY
+   ============================================================ */
+.print-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 25, 18, 0.85);
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
+}
+.print-overlay.visible { display: flex; }
+
+.print-canvas {
+  max-width: 90vw;
+  max-height: 80vh;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  border-radius: 2px;
+}
+
+.print-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.print-action-btn {
+  padding: 8px 20px;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: var(--radius);
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.print-action-btn:hover { background: rgba(255,255,255,0.2); }
+
+/* ============================================================
+   STATUS BAR
+   ============================================================ */
+.status-bar {
+  height: 24px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--panel-bg);
+  border-top: 1px solid var(--panel-border);
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.status-bar span { margin-right: 16px; }
+
+/* Ink mode indicator */
+.btn-ink-active {
+  background: var(--accent) !important;
+  color: #fff !important;
+}
+
+/* Zone editor in palette bar */
+.zone-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.1s;
+}
+.zone-row:hover { background: rgba(255,255,255,0.05); }
+.zone-row.active-zone { background: rgba(245,196,70,0.15); }
+.zone-swatch {
+  width: 22px; height: 22px;
+  border-radius: 3px;
+  border: 2px solid rgba(255,255,255,0.15);
+  flex-shrink: 0;
+}
+.zone-row.active-zone .zone-swatch { border-color: var(--accent); }
+.zone-name {
+  font-size: 11px;
+  color: var(--text);
+  flex: 1;
+  text-transform: capitalize;
+}
+.zone-picker {
+  display: flex;
+  gap: 3px;
+  padding: 4px 0 4px 28px;
+}
+.zone-pick-swatch {
+  width: 20px; height: 20px;
+  border-radius: 3px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.1s, border-color 0.1s;
+}
+.zone-pick-swatch:hover { transform: scale(1.15); }
+.zone-pick-swatch.active { border-color: var(--accent); }
+.zone-reset-btn {
+  font-size: 10px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px 6px;
+  border: 1px solid var(--panel-border);
+  border-radius: 3px;
+  margin-top: 4px;
+  display: inline-block;
+}
+.zone-reset-btn:hover { color: var(--text); border-color: var(--text-muted); }
+
+/* Inline print preview */
+.workspace.print-preview-active .workspace-svg { opacity: 0; pointer-events: none; }
+.workspace.print-preview-active .washi-bg { opacity: 0.3; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="toolbar-title">墨栗 Mokuri <span>Woodblock Studio</span></div>
+    <div class="toolbar-separator"></div>
+
+    <button class="tool-btn" id="btn-undo" title="Undo" disabled>↩</button>
+    <button class="tool-btn" id="btn-redo" title="Redo" disabled>↪</button>
+    <div class="toolbar-separator"></div>
+
+    <button class="tool-btn" id="btn-layer-up" title="Bring Forward" disabled>▲</button>
+    <button class="tool-btn" id="btn-layer-down" title="Send Back" disabled>▼</button>
+    <button class="tool-btn" id="btn-delete" title="Delete" disabled>✕</button>
+    <div class="toolbar-separator"></div>
+
+    <button class="tool-btn" id="btn-carve" title="Carve (reveal detail)" disabled>🪵</button>
+    <div class="toolbar-separator"></div>
+
+    <!-- Mode toggle -->
+    <button class="tool-btn active-mode" id="btn-mode-select" title="Select mode (V)">👆</button>
+    <button class="tool-btn" id="btn-mode-carve" title="Carve mode (V)">🔪</button>
+    <button class="tool-btn" id="btn-mode-erase" title="Erase carve strokes (E)">🧹</button>
+    <div class="toolbar-separator"></div>
+
+    <!-- Carve tool selector (visible in carve mode) -->
+    <span id="carve-width-group" style="display:none;align-items:center;gap:2px;">
+      <button class="tool-btn carve-w" data-tool="fine" title="Fine marking knife">╱</button>
+      <button class="tool-btn carve-w active-mode" data-tool="vgouge" title="V Gouge — graduated V-cut">∨</button>
+      <button class="tool-btn carve-w" data-tool="ugouge" title="U Gouge — rounded scoop">∪</button>
+    </span>
+    <div class="toolbar-separator"></div>
+
+    <!-- View mode toggle -->
+    <button class="tool-btn" id="btn-view-ink" title="Ink preview mode (I)">🎨</button>
+    <div class="toolbar-separator"></div>
+
+    <button class="tool-btn" id="btn-zoom-in" title="Zoom In">+</button>
+    <button class="tool-btn" id="btn-zoom-out" title="Zoom Out">−</button>
+    <button class="tool-btn" id="btn-zoom-fit" title="Fit to View">⊡</button>
+
+    <div class="toolbar-spacer"></div>
+    <!-- Save/Load menu -->
+    <div style="position:relative;display:inline-block;">
+      <button class="tool-btn" id="btn-file" title="File menu">📁</button>
+      <div id="file-menu" style="display:none;position:absolute;right:0;top:100%;background:var(--panel-bg);border:1px solid var(--border);border-radius:6px;padding:6px 0;min-width:160px;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+        <div class="file-menu-item" id="fm-new">📄 New Composition</div>
+        <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
+        <div class="file-menu-item" id="fm-save-1">💾 Save Slot 1</div>
+        <div class="file-menu-item" id="fm-save-2">💾 Save Slot 2</div>
+        <div class="file-menu-item" id="fm-save-3">💾 Save Slot 3</div>
+        <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
+        <div class="file-menu-item" id="fm-load-1">📂 Load Slot 1 <small></small></div>
+        <div class="file-menu-item" id="fm-load-2">📂 Load Slot 2 <small></small></div>
+        <div class="file-menu-item" id="fm-load-3">📂 Load Slot 3 <small></small></div>
+      </div>
+    </div>
+    <button class="print-btn" id="btn-print">🖨 Print</button>
+    <!-- Print preview controls (visible during inline preview) -->
+    <span id="print-preview-controls" style="display:none;align-items:center;gap:4px;">
+      <button class="tool-btn" id="btn-print-back" title="Back to Edit (Esc)">← Edit</button>
+      <button class="tool-btn" id="btn-print-save" title="Save PNG">💾 PNG</button>
+    </span>
+  </div>
+
+  <!-- Main area -->
+  <div class="main">
+    <!-- Element picker panel -->
+    <div class="panel" id="panel">
+      <div class="panel-header">Elements</div>
+      <div class="panel-scroll" id="element-list"></div>
+      <div class="palette-bar" id="palette-bar"></div>
+    </div>
+
+    <!-- Workspace -->
+    <div class="workspace" id="workspace">
+      <div class="washi-bg"></div>
+      <svg class="workspace-svg" id="workspace-svg" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <!-- Paper texture filter -->
+          <filter id="paper-texture" x="0" y="0" width="100%" height="100%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="4" seed="2" result="noise"/>
+            <feDiffuseLighting in="noise" lighting-color="#f5f0e6" surfaceScale="1.5" result="lit">
+              <feDistantLight azimuth="225" elevation="55"/>
+            </feDiffuseLighting>
+            <feComposite in="lit" in2="SourceGraphic" operator="multiply"/>
+          </filter>
+        </defs>
+
+        <!-- Paper (the printable area) -->
+        <rect id="paper" class="paper-rect" fill="#f5f0e6" rx="2" ry="2"/>
+
+        <!-- Composition layer (elements go here) -->
+        <g id="comp-layer"></g>
+
+        <!-- Selection overlay -->
+        <g id="selection-layer"></g>
+      </svg>
+      <!-- Inline print preview canvas (positioned over paper) -->
+      <canvas id="inline-print-canvas" style="display:none;position:absolute;pointer-events:none;"></canvas>
+    </div>
+  </div>
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <span id="status-elements">0 elements</span>
+    <span id="status-zoom">100%</span>
+    <span id="status-hint">Place elements · Select + 🪵 or C to carve · Print when ready</span>
+  </div>
+</div>
+
+<!-- Print preview overlay -->
+<div class="print-overlay" id="print-overlay">
+  <canvas class="print-canvas" id="print-canvas"></canvas>
+  <div class="print-actions">
+    <button class="print-action-btn" id="btn-export-png">💾 Save PNG</button>
+    <button class="print-action-btn" id="btn-print-close">✕ Close</button>
+  </div>
+</div>
+
+<script src="elements.js"></script>
+<script src="extended-elements.js"></script>
+<script src="fauna-elements.js"></script>
+<script src="print-engine.js"></script>
+<script>
+// Merge extended and fauna elements into main array
+if (typeof MOKURI_CORE_ELEMENTS !== 'undefined') {
+  MOKURI_ELEMENTS.push(...MOKURI_CORE_ELEMENTS);
+}
+if (typeof MOKURI_FAUNA_ELEMENTS !== 'undefined') {
+  MOKURI_ELEMENTS.push(...MOKURI_FAUNA_ELEMENTS);
+}
+
+// ============================================================
+//  APP STATE
+// ============================================================
+const STATE = {
+  // Composition
+  elements: [],       // placed elements: { id, defId, x, y, scaleX, scaleY, rotation, carveLevel, colorOverrides, carveStrokes }
+  nextId: 1,
+  selectedId: null,
+  activeZone: null,
+
+  // Viewport
+  viewBox: { x: 0, y: 0, w: 800, h: 600 },
+  paperW: 600,
+  paperH: 420,
+  zoom: 1,
+
+  // Palette
+  paletteId: 'edo',
+
+  // Interaction
+  dragging: null,     // { elementId, startX, startY, origX, origY } or { type:'pan', ... }
+  isPanning: false,
+
+  // Carve tool
+  mode: 'select',     // 'select' | 'carve' | 'erase'
+  carveTool: 'vgouge', // active tool id
+  carving: null,       // active carve stroke: { elementId, points: [{x,y},...] }
+
+  // View mode
+  viewMode: 'carve',   // 'carve' | 'ink'
+  printPreview: false,  // true when showing inline print preview
+
+  // Undo
+  undoStack: [],
+  redoStack: [],
+};
+
+// ============================================================
+//  PALETTES (used at print time only)
+// ============================================================
+const PALETTES = {
+  sumi:    { name: 'Sumi 墨',    colors: ['#1a1a1a', '#3d3d3d', '#6b6b6b', '#9e9e9e', '#c8c8c8'] },
+  edo:     { name: 'Edo',         colors: ['#1a3a5c', '#c23b22', '#c49a2a', '#5c7a4a', '#2a2a2a'] },
+  hokusai: { name: 'Hokusai',     colors: ['#1b3a6b', '#4a90c4', '#f5f0e1', '#8b4513', '#3a3a3a'] },
+  sakura:  { name: 'Sakura 桜',   colors: ['#c47a90', '#8fb573', '#f5f0e1', '#7a5c47', '#d4a0a0'] },
+  aki:     { name: 'Aki 秋',      colors: ['#b33a2a', '#d4a030', '#c46a20', '#3a5c3a', '#5c3a2a'] },
+};
+
+// Monochrome wood tones for the carving workspace
+const WOOD_TONES = ['#5c4a3a', '#6b5a48', '#7a6955', '#8a7963', '#6f5c4b'];
+const PAPER_COLOR = '#f5f0e6';
+const CARVED_STROKE = '#3a3028'; // dark line for carved outlines
+
+// Carve tool definitions — profile layers define cross-section from edge to center
+const CARVE_TOOLS = {
+  fine: {
+    name: 'Fine', icon: '╱', width: 2,
+    profile: [{ w: 1.0, opacity: 1.0 }],
+  },
+  vgouge: {
+    name: 'V Gouge', icon: '∨', width: 4,
+    profile: [
+      { w: 1.3, opacity: 0.15 },
+      { w: 0.65, opacity: 0.55 },
+      { w: 0.2, opacity: 1.0 },
+    ],
+  },
+  ugouge: {
+    name: 'U Gouge', icon: '∪', width: 8,
+    profile: [
+      { w: 1.15, opacity: 0.08 },
+      { w: 0.85, opacity: 0.22 },
+      { w: 0.55, opacity: 0.48 },
+      { w: 0.3, opacity: 0.78 },
+      { w: 0.1, opacity: 0.95 },
+    ],
+  },
+};
+
+// Stroke path helpers
+function pointsToD(pts) {
+  let d = `M${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+  for (let i = 1; i < pts.length; i++) d += ` L${pts[i].x.toFixed(1)} ${pts[i].y.toFixed(1)}`;
+  return d;
+}
+
+function segmentStroke(pts, segLen) {
+  if (pts.length < 4) return [pts];
+  const segs = [];
+  for (let i = 0; i < pts.length - 1; ) {
+    const end = Math.min(i + segLen, pts.length);
+    segs.push(pts.slice(i, end));
+    i = end - 1; // 1-point overlap for continuity
+  }
+  return segs;
+}
+
+// Generate rendering instructions for a carve stroke — returns [{d, w, a, c}]
+function carveStrokeRenderData(stroke, paperColor, grooveColor) {
+  const tool = CARVE_TOOLS[stroke.tool || 'fine'];
+  const baseW = stroke.width || tool.width;
+  const pts = stroke.points;
+  if (pts.length < 2) return [];
+
+  const data = [];
+  const seed = pts[0].x * 13.7 + pts[0].y * 7.3 + pts.length * 3.1;
+
+  // Chisel entry/exit taper — width ramps from ~20% at tip to 100% at body
+  const taperLen = Math.min(3, Math.max(1, Math.floor(pts.length * 0.25)));
+  function taperAt(i) {
+    if (i < taperLen) return 0.2 + 0.8 * (i / taperLen);
+    if (i > pts.length - 1 - taperLen) return 0.2 + 0.8 * ((pts.length - 1 - i) / taperLen);
+    return 1;
+  }
+
+  // Build segment list: entry (point-pairs, tapered), body (chunks), exit (point-pairs, tapered)
+  const segs = [];
+  const bodyStart = Math.min(taperLen, pts.length - 1);
+  const bodyEnd = Math.max(pts.length - 1 - taperLen, bodyStart);
+
+  // Entry taper: individual point-pairs with increasing width
+  for (let i = 0; i < bodyStart; i++) {
+    segs.push({ d: pointsToD(pts.slice(i, i + 2)), taper: (taperAt(i) + taperAt(i + 1)) / 2 });
+  }
+
+  // Body: chunked segments with organic variation
+  if (bodyStart < bodyEnd) {
+    segmentStroke(pts.slice(bodyStart, bodyEnd + 1), 5).forEach(seg => {
+      segs.push({ d: pointsToD(seg), taper: 1.0 });
+    });
+  }
+
+  // Exit taper: individual point-pairs with decreasing width
+  for (let i = Math.max(bodyEnd, 1); i < pts.length - 1; i++) {
+    segs.push({ d: pointsToD(pts.slice(i, i + 2)), taper: (taperAt(i) + taperAt(i + 1)) / 2 });
+  }
+
+  // Groove shadow (full stroke, butt cap so shadow doesn't balloon past taper)
+  const fullD = pointsToD(pts);
+  if (tool.profile.length > 1) {
+    data.push({ d: fullD, w: baseW * tool.profile[0].w + 1, a: 0.25, c: grooveColor });
+  } else {
+    data.push({ d: fullD, w: baseW + 1, a: 0.4, c: grooveColor });
+  }
+
+  // Profile layers × segments with taper + grain noise
+  tool.profile.forEach((layer, li) => {
+    segs.forEach((seg, si) => {
+      const depthNoise = Math.sin(seed + li * 5.3 + si * 8.7) * 0.18 * seg.taper;
+      const widthNoise = Math.cos(seed + li * 3.1 + si * 11.3) * 0.12;
+      data.push({
+        d: seg.d,
+        w: Math.max(0.3, baseW * layer.w * seg.taper * (1 + widthNoise)),
+        a: Math.max(0, Math.min(1, layer.opacity * seg.taper + depthNoise)),
+        c: paperColor,
+      });
+    });
+  });
+  return data;
+}
+
+// ============================================================
+//  DOM REFS
+// ============================================================
+const $ = id => document.getElementById(id);
+const svgEl = $('workspace-svg');
+const compLayer = $('comp-layer');
+const selectionLayer = $('selection-layer');
+const paperEl = $('paper');
+const workspaceEl = $('workspace');
+
+// ============================================================
+//  VIEWPORT / PAPER
+// ============================================================
+function updateViewBox() {
+  const vb = STATE.viewBox;
+  svgEl.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
+  $('status-zoom').textContent = `${Math.round(STATE.zoom * 100)}%`;
+  // Keep inline print canvas aligned if visible
+  if (STATE.printPreview) requestAnimationFrame(positionPrintCanvas);
+}
+
+function fitPaperToView() {
+  const rect = workspaceEl.getBoundingClientRect();
+  const pad = 60;
+  const scaleX = (rect.width - pad * 2) / STATE.paperW;
+  const scaleY = (rect.height - pad * 2) / STATE.paperH;
+  STATE.zoom = Math.min(scaleX, scaleY, 2);
+  STATE.viewBox.w = rect.width / STATE.zoom;
+  STATE.viewBox.h = rect.height / STATE.zoom;
+  STATE.viewBox.x = -(STATE.viewBox.w - STATE.paperW) / 2;
+  STATE.viewBox.y = -(STATE.viewBox.h - STATE.paperH) / 2;
+  updateViewBox();
+}
+
+function layoutPaper() {
+  paperEl.setAttribute('x', 0);
+  paperEl.setAttribute('y', 0);
+  paperEl.setAttribute('width', STATE.paperW);
+  paperEl.setAttribute('height', STATE.paperH);
+}
+
+function zoomBy(delta, cx, cy) {
+  const oldZoom = STATE.zoom;
+  STATE.zoom = Math.max(0.2, Math.min(5, STATE.zoom * (1 + delta)));
+  const ratio = oldZoom / STATE.zoom;
+  const rect = workspaceEl.getBoundingClientRect();
+  // Zoom toward cursor position
+  const svgX = STATE.viewBox.x + (cx / rect.width) * STATE.viewBox.w;
+  const svgY = STATE.viewBox.y + (cy / rect.height) * STATE.viewBox.h;
+  STATE.viewBox.w *= ratio;
+  STATE.viewBox.h *= ratio;
+  STATE.viewBox.x = svgX - (cx / rect.width) * STATE.viewBox.w;
+  STATE.viewBox.y = svgY - (cy / rect.height) * STATE.viewBox.h;
+  updateViewBox();
+}
+
+// ============================================================
+//  SVG COORDINATE HELPERS
+// ============================================================
+function clientToSvg(clientX, clientY) {
+  const rect = workspaceEl.getBoundingClientRect();
+  return {
+    x: STATE.viewBox.x + ((clientX - rect.left) / rect.width) * STATE.viewBox.w,
+    y: STATE.viewBox.y + ((clientY - rect.top) / rect.height) * STATE.viewBox.h,
+  };
+}
+
+// Convert SVG workspace coords to element-local coords
+function svgToElementLocal(svgX, svgY, el) {
+  const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+  if (!def) return { x: 0, y: 0 };
+  const vb = def.viewBox.split(' ').map(Number);
+  const offX = -vb[2] / 2;
+  const offY = -vb[3] / 2;
+
+  // Inverse of: translate(el.x, el.y) rotate(el.rotation) scale(el.scaleX, el.scaleY) translate(offX, offY)
+  // Step 1: undo outer translate
+  let x = svgX - el.x;
+  let y = svgY - el.y;
+  // Step 2: undo rotation
+  const rad = -el.rotation * Math.PI / 180;
+  const rx = x * Math.cos(rad) - y * Math.sin(rad);
+  const ry = x * Math.sin(rad) + y * Math.cos(rad);
+  // Step 3: undo scale
+  x = rx / el.scaleX;
+  y = ry / el.scaleY;
+  // Step 4: undo inner translate
+  x -= offX;
+  y -= offY;
+  return { x, y };
+}
+
+// ============================================================
+//  ELEMENT RENDERING — Carve (wood) or Ink (color) mode
+// ============================================================
+function renderElementSvg(el, layerIndex) {
+  const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+  if (!def) return null;
+  const carve = def.carveLevels[Math.min(el.carveLevel, def.carveLevels.length - 1)];
+  const isBlock = el.carveLevel === 0;
+  const inkMode = STATE.viewMode === 'ink';
+  const palette = inkMode ? PALETTES[STATE.paletteId] : null;
+
+  // In ink mode, resolve zone colors; in carve mode, use wood tones
+  const woodTone = WOOD_TONES[layerIndex % WOOD_TONES.length];
+  const zoneColor = (zoneId) => {
+    if (!inkMode) return woodTone;
+    if (el.colorOverrides && el.colorOverrides[zoneId]) return el.colorOverrides[zoneId];
+    const z = def.colorZones.find(c => c.id === zoneId);
+    return z ? palette.colors[z.defaultPaletteSlot % palette.colors.length] : palette.colors[0];
+  };
+
+  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  g.setAttribute('data-id', el.id);
+  g.setAttribute('transform', `translate(${el.x}, ${el.y}) rotate(${el.rotation}) scale(${el.scaleX}, ${el.scaleY})`);
+  g.style.cursor = 'move';
+
+  // Parse viewBox for centering
+  const vb = def.viewBox.split(' ').map(Number);
+  const offsetX = -vb[2] / 2;
+  const offsetY = -vb[3] / 2;
+
+  const inner = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  inner.setAttribute('transform', `translate(${offsetX}, ${offsetY})`);
+
+  if (isBlock) {
+    // Uncarved block — fills use zone color (ink mode) or wood tone (carve mode)
+    carve.paths.forEach(p => {
+      if (p.type !== 'fill') return;
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', p.d);
+      path.setAttribute('fill', zoneColor(p.zone));
+      path.setAttribute('stroke', 'none');
+      inner.appendChild(path);
+    });
+  } else {
+    // Base silhouette from block level
+    const blockPaths = def.carveLevels[0].paths;
+    blockPaths.forEach(p => {
+      if (p.type !== 'fill') return;
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', p.d);
+      path.setAttribute('fill', zoneColor(p.zone));
+      path.setAttribute('stroke', 'none');
+      inner.appendChild(path);
+    });
+
+    // Carved detail overlays
+    carve.paths.forEach(p => {
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', p.d);
+
+      if (p.type === 'fill') {
+        if (inkMode) {
+          path.setAttribute('fill', zoneColor(p.zone));
+          path.setAttribute('stroke', 'none');
+        } else {
+          path.setAttribute('fill', PAPER_COLOR);
+          path.setAttribute('stroke', CARVED_STROKE);
+          path.setAttribute('stroke-width', 0.8);
+          path.setAttribute('stroke-linejoin', 'round');
+        }
+      } else if (p.type === 'stroke') {
+        path.setAttribute('fill', 'none');
+        if (inkMode) {
+          const col = zoneColor(p.zone);
+          path.setAttribute('stroke', col);
+          path.setAttribute('stroke-opacity', '0.7');
+        } else {
+          path.setAttribute('stroke', CARVED_STROKE);
+        }
+        path.setAttribute('stroke-width', p.strokeWidth || 1.5);
+        path.setAttribute('stroke-linecap', 'round');
+        path.setAttribute('stroke-linejoin', 'round');
+      }
+      inner.appendChild(path);
+    });
+  }
+
+  // Render custom carve strokes via shared helper
+  if (el.carveStrokes && el.carveStrokes.length) {
+    el.carveStrokes.forEach(stroke => {
+      carveStrokeRenderData(stroke, PAPER_COLOR, CARVED_STROKE).forEach(item => {
+        const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        p.setAttribute('d', item.d);
+        p.setAttribute('fill', 'none');
+        p.setAttribute('stroke', item.c);
+        p.setAttribute('stroke-width', item.w);
+        p.setAttribute('stroke-linecap', 'round');
+        p.setAttribute('stroke-linejoin', 'round');
+        p.setAttribute('stroke-opacity', item.a);
+        inner.appendChild(p);
+      });
+    });
+  }
+
+  g.appendChild(inner);
+  return g;
+}
+
+function rerenderAll() {
+  // Clear and re-render all elements
+  while (compLayer.firstChild) compLayer.removeChild(compLayer.firstChild);
+  STATE.elements.forEach((el, i) => {
+    const g = renderElementSvg(el, i);
+    if (g) compLayer.appendChild(g);
+  });
+  updateSelection();
+  updateStatus();
+}
+
+// ============================================================
+//  SELECTION
+// ============================================================
+function selectElement(id) {
+  STATE.selectedId = id;
+  // Set active zone to the first zone of the selected element
+  const el = STATE.elements.find(e => e.id === id);
+  if (el) {
+    const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+    STATE.activeZone = def && def.colorZones.length ? def.colorZones[0].id : null;
+  }
+  updateSelection();
+  updateToolbarState();
+  buildPaletteUI();
+}
+
+function deselectAll() {
+  STATE.selectedId = null;
+  STATE.activeZone = null;
+  updateSelection();
+  updateToolbarState();
+  buildPaletteUI();
+}
+
+function updateSelection() {
+  while (selectionLayer.firstChild) selectionLayer.removeChild(selectionLayer.firstChild);
+  if (!STATE.selectedId) return;
+
+  const el = STATE.elements.find(e => e.id === STATE.selectedId);
+  if (!el) return;
+
+  const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+  if (!def) return;
+
+  const vb = def.viewBox.split(' ').map(Number);
+  const hw = (vb[2] / 2) * Math.abs(el.scaleX);
+  const hh = (vb[3] / 2) * Math.abs(el.scaleY);
+  const pad = 6;
+
+  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  g.setAttribute('transform', `translate(${el.x}, ${el.y}) rotate(${el.rotation})`);
+
+  const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  rect.setAttribute('x', -hw - pad);
+  rect.setAttribute('y', -hh - pad);
+  rect.setAttribute('width', hw * 2 + pad * 2);
+  rect.setAttribute('height', hh * 2 + pad * 2);
+  rect.classList.add('selection-box');
+  g.appendChild(rect);
+
+  // Corner handles
+  const handleSize = 7;
+  const corners = [
+    { cx: -hw - pad, cy: -hh - pad, cursor: 'nw-resize' },
+    { cx: hw + pad, cy: -hh - pad, cursor: 'ne-resize' },
+    { cx: hw + pad, cy: hh + pad, cursor: 'se-resize' },
+    { cx: -hw - pad, cy: hh + pad, cursor: 'sw-resize' },
+  ];
+  corners.forEach(c => {
+    const h = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    h.setAttribute('x', c.cx - handleSize / 2);
+    h.setAttribute('y', c.cy - handleSize / 2);
+    h.setAttribute('width', handleSize);
+    h.setAttribute('height', handleSize);
+    h.setAttribute('rx', 2);
+    h.classList.add('handle');
+    h.style.cursor = c.cursor;
+    h.setAttribute('data-handle', c.cursor);
+    g.appendChild(h);
+  });
+
+  // Rotation handle
+  const rotLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  rotLine.setAttribute('x1', 0); rotLine.setAttribute('y1', -hh - pad);
+  rotLine.setAttribute('x2', 0); rotLine.setAttribute('y2', -hh - pad - 20);
+  rotLine.setAttribute('stroke', '#8b6b4a');
+  rotLine.setAttribute('stroke-width', 1.5);
+  g.appendChild(rotLine);
+
+  const rotHandle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  rotHandle.setAttribute('cx', 0);
+  rotHandle.setAttribute('cy', -hh - pad - 20);
+  rotHandle.setAttribute('r', 5);
+  rotHandle.classList.add('handle', 'handle-rotate');
+  rotHandle.setAttribute('data-handle', 'rotate');
+  g.appendChild(rotHandle);
+
+  selectionLayer.appendChild(g);
+
+  // Zone highlight in ink mode — add dashed outline on active zone paths
+  if (STATE.viewMode === 'ink' && STATE.activeZone) {
+    const carve = def.carveLevels[Math.min(el.carveLevel, def.carveLevels.length - 1)];
+    const allPaths = [...def.carveLevels[0].paths, ...carve.paths];
+    const zonePaths = allPaths.filter(p => p.zone === STATE.activeZone && p.type === 'fill');
+    if (zonePaths.length) {
+      const offsetX = -vb[2] / 2;
+      const offsetY = -vb[3] / 2;
+      const zg = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      zg.setAttribute('transform', `translate(${el.x}, ${el.y}) rotate(${el.rotation}) scale(${el.scaleX}, ${el.scaleY})`);
+      const zi = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      zi.setAttribute('transform', `translate(${offsetX}, ${offsetY})`);
+      zonePaths.forEach(p => {
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', p.d);
+        path.setAttribute('fill', 'none');
+        path.setAttribute('stroke', '#f5c446');
+        path.setAttribute('stroke-width', 2.5);
+        path.setAttribute('stroke-dasharray', '4 3');
+        path.setAttribute('stroke-opacity', '0.8');
+        path.setAttribute('stroke-linejoin', 'round');
+        zi.appendChild(path);
+      });
+      zg.appendChild(zi);
+      selectionLayer.appendChild(zg);
+    }
+  }
+}
+
+// ============================================================
+//  ADD / REMOVE ELEMENTS
+// ============================================================
+function addElement(defId, x, y) {
+  const def = MOKURI_ELEMENTS.find(d => d.id === defId);
+  if (!def) return;
+
+  const el = {
+    id: STATE.nextId++,
+    defId,
+    x: x !== undefined ? x : STATE.paperW / 2,
+    y: y !== undefined ? y : STATE.paperH / 2,
+    scaleX: 1,
+    scaleY: 1,
+    rotation: 0,
+    carveLevel: 0,
+    colorOverrides: {},
+  };
+
+  pushUndo();
+  STATE.elements.push(el);
+  rerenderAll();
+  selectElement(el.id);
+  return el;
+}
+
+function deleteSelected() {
+  if (!STATE.selectedId) return;
+  pushUndo();
+  STATE.elements = STATE.elements.filter(e => e.id !== STATE.selectedId);
+  deselectAll();
+  rerenderAll();
+}
+
+function carveSelected() {
+  if (!STATE.selectedId) return;
+  const el = STATE.elements.find(e => e.id === STATE.selectedId);
+  if (!el) return;
+  const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+  if (!def || def.carveLevels.length <= 1) return;
+  pushUndo();
+  el.carveLevel = (el.carveLevel + 1) % def.carveLevels.length;
+  rerenderAll();
+  selectElement(el.id);
+}
+
+// ============================================================
+//  LAYER ORDERING
+// ============================================================
+function moveLayer(dir) {
+  if (!STATE.selectedId) return;
+  const idx = STATE.elements.findIndex(e => e.id === STATE.selectedId);
+  if (idx < 0) return;
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= STATE.elements.length) return;
+  pushUndo();
+  const tmp = STATE.elements[idx];
+  STATE.elements[idx] = STATE.elements[newIdx];
+  STATE.elements[newIdx] = tmp;
+  rerenderAll();
+}
+
+// ============================================================
+//  UNDO / REDO
+// ============================================================
+function pushUndo() {
+  STATE.undoStack.push(JSON.parse(JSON.stringify(STATE.elements)));
+  STATE.redoStack = [];
+  if (STATE.undoStack.length > 50) STATE.undoStack.shift();
+  updateToolbarState();
+  autoSave();
+}
+
+function undo() {
+  if (!STATE.undoStack.length) return;
+  STATE.redoStack.push(JSON.parse(JSON.stringify(STATE.elements)));
+  STATE.elements = STATE.undoStack.pop();
+  deselectAll();
+  rerenderAll();
+  updateToolbarState();
+  autoSave();
+}
+
+function redo() {
+  if (!STATE.redoStack.length) return;
+  STATE.undoStack.push(JSON.parse(JSON.stringify(STATE.elements)));
+  STATE.elements = STATE.redoStack.pop();
+  deselectAll();
+  rerenderAll();
+  updateToolbarState();
+  autoSave();
+}
+
+// ============================================================
+//  SAVE / LOAD (LocalStorage)
+// ============================================================
+const STORAGE_KEY = 'mokuri-autosave';
+const SLOTS_KEY = 'mokuri-slots';
+
+function getCompositionData() {
+  return {
+    elements: STATE.elements,
+    nextId: STATE.nextId,
+    paletteId: STATE.paletteId,
+    paperW: STATE.paperW,
+    paperH: STATE.paperH,
+    savedAt: Date.now(),
+  };
+}
+
+function applyCompositionData(data) {
+  STATE.elements = data.elements || [];
+  STATE.nextId = data.nextId || (STATE.elements.length ? Math.max(...STATE.elements.map(e => e.id)) + 1 : 1);
+  STATE.paletteId = data.paletteId || 'edo';
+  STATE.undoStack = [];
+  STATE.redoStack = [];
+  deselectAll();
+  rerenderAll();
+  buildPaletteUI();
+  updateToolbarState();
+  updateStatus();
+}
+
+function autoSave() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(getCompositionData()));
+  } catch (e) { /* quota exceeded — silent */ }
+}
+
+function autoLoad() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      if (data.elements && data.elements.length) {
+        applyCompositionData(data);
+        return true;
+      }
+    }
+  } catch (e) { /* corrupt — ignore */ }
+  return false;
+}
+
+function saveToSlot(slotIdx) {
+  const slots = JSON.parse(localStorage.getItem(SLOTS_KEY) || '[]');
+  const data = getCompositionData();
+  data.slotName = `Slot ${slotIdx + 1}`;
+  slots[slotIdx] = data;
+  localStorage.setItem(SLOTS_KEY, JSON.stringify(slots));
+  $('status-hint').textContent = `Saved to slot ${slotIdx + 1}`;
+}
+
+function loadFromSlot(slotIdx) {
+  const slots = JSON.parse(localStorage.getItem(SLOTS_KEY) || '[]');
+  if (!slots[slotIdx]) {
+    $('status-hint').textContent = `Slot ${slotIdx + 1} is empty`;
+    return;
+  }
+  applyCompositionData(slots[slotIdx]);
+  $('status-hint').textContent = `Loaded from slot ${slotIdx + 1}`;
+}
+
+function getSlotInfo() {
+  const slots = JSON.parse(localStorage.getItem(SLOTS_KEY) || '[]');
+  return [0, 1, 2].map(i => {
+    if (!slots[i]) return null;
+    return {
+      elementCount: (slots[i].elements || []).length,
+      savedAt: slots[i].savedAt,
+    };
+  });
+}
+
+function newComposition() {
+  STATE.elements = [];
+  STATE.nextId = 1;
+  STATE.selectedId = null;
+  STATE.undoStack = [];
+  STATE.redoStack = [];
+  deselectAll();
+  rerenderAll();
+  buildPaletteUI();
+  updateToolbarState();
+  updateStatus();
+  autoSave();
+  $('status-hint').textContent = 'New composition';
+}
+
+// ============================================================
+//  TOOLBAR STATE
+// ============================================================
+function updateToolbarState() {
+  $('btn-undo').disabled = !STATE.undoStack.length;
+  $('btn-redo').disabled = !STATE.redoStack.length;
+  const hasSel = !!STATE.selectedId;
+  $('btn-delete').disabled = !hasSel;
+  $('btn-layer-up').disabled = !hasSel;
+  $('btn-layer-down').disabled = !hasSel;
+  // Carve button: enabled when selected element has multiple carve levels
+  let canCarve = false;
+  if (hasSel) {
+    const el = STATE.elements.find(e => e.id === STATE.selectedId);
+    if (el) {
+      const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+      if (def && def.carveLevels.length > 1) canCarve = true;
+    }
+  }
+  $('btn-carve').disabled = !canCarve;
+  // Show carve level in button title
+  if (canCarve) {
+    const el = STATE.elements.find(e => e.id === STATE.selectedId);
+    const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+    const lvl = def.carveLevels[el.carveLevel];
+    $('btn-carve').title = `Carve: ${lvl.name} (${el.carveLevel + 1}/${def.carveLevels.length})`;
+  }
+}
+
+function updateStatus() {
+  $('status-elements').textContent = `${STATE.elements.length} element${STATE.elements.length !== 1 ? 's' : ''}`;
+}
+
+// ============================================================
+//  ELEMENT PICKER
+// ============================================================
+function buildElementPicker() {
+  const list = $('element-list');
+  list.innerHTML = '';
+
+  // Group by category
+  const cats = {};
+  MOKURI_ELEMENTS.forEach(def => {
+    if (!cats[def.category]) cats[def.category] = [];
+    cats[def.category].push(def);
+  });
+
+  Object.entries(cats).forEach(([cat, defs]) => {
+    const section = document.createElement('div');
+    section.className = 'element-category';
+
+    const label = document.createElement('div');
+    label.className = 'category-label';
+    label.textContent = cat;
+    section.appendChild(label);
+
+    const grid = document.createElement('div');
+    grid.className = 'element-grid';
+
+    defs.forEach(def => {
+      const thumb = document.createElement('div');
+      thumb.className = 'element-thumb';
+      thumb.title = def.name;
+
+      // Render thumbnail SVG — show fully carved preview in monochrome
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('viewBox', def.viewBox);
+      const thumbWood = WOOD_TONES[0];
+      // Base silhouette
+      def.carveLevels[0].paths.forEach(p => {
+        if (p.type !== 'fill') return;
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', p.d);
+        path.setAttribute('fill', thumbWood);
+        path.setAttribute('stroke', 'none');
+        svg.appendChild(path);
+      });
+      // Carved detail from highest level
+      const detailCarve = def.carveLevels[def.carveLevels.length - 1];
+      detailCarve.paths.forEach(p => {
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', p.d);
+        if (p.type === 'fill') {
+          path.setAttribute('fill', PAPER_COLOR);
+          path.setAttribute('stroke', CARVED_STROKE);
+          path.setAttribute('stroke-width', 0.8);
+        } else {
+          path.setAttribute('fill', 'none');
+          path.setAttribute('stroke', CARVED_STROKE);
+          path.setAttribute('stroke-width', p.strokeWidth || 1.5);
+        }
+        svg.appendChild(path);
+      });
+      thumb.appendChild(svg);
+
+      const lbl = document.createElement('div');
+      lbl.className = 'element-thumb-label';
+      lbl.textContent = def.name;
+      thumb.appendChild(lbl);
+
+      thumb.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        // Place at center of visible paper area
+        const svgPt = clientToSvg(
+          workspaceEl.getBoundingClientRect().left + workspaceEl.clientWidth / 2,
+          workspaceEl.getBoundingClientRect().top + workspaceEl.clientHeight / 2
+        );
+        // Clamp to paper bounds
+        const px = Math.max(0, Math.min(STATE.paperW, svgPt.x));
+        const py = Math.max(0, Math.min(STATE.paperH, svgPt.y));
+        addElement(def.id, px, py);
+      });
+
+      grid.appendChild(thumb);
+    });
+
+    section.appendChild(grid);
+    list.appendChild(section);
+  });
+}
+
+// ============================================================
+//  PANEL BOTTOM — Carve Info + Palette + Zone Editor
+// ============================================================
+function buildPaletteUI() {
+  const bar = $('palette-bar');
+  bar.innerHTML = '';
+  const palette = PALETTES[STATE.paletteId];
+
+  // Carve info for selected element
+  if (STATE.selectedId) {
+    const el = STATE.elements.find(e => e.id === STATE.selectedId);
+    if (el) {
+      const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+      if (def) {
+        const carve = def.carveLevels[el.carveLevel];
+        const infoLabel = document.createElement('div');
+        infoLabel.className = 'palette-label';
+        infoLabel.textContent = 'Carve Level';
+        bar.appendChild(infoLabel);
+
+        const carveRow = document.createElement('div');
+        carveRow.className = 'carve-level-row';
+        def.carveLevels.forEach((lvl, i) => {
+          const pip = document.createElement('div');
+          pip.className = 'carve-pip' + (i <= el.carveLevel ? ' active' : '');
+          pip.title = lvl.name;
+          pip.textContent = lvl.name.charAt(0).toUpperCase();
+          pip.addEventListener('click', () => {
+            if (el.carveLevel !== i) {
+              pushUndo();
+              el.carveLevel = i;
+              rerenderAll();
+              selectElement(el.id);
+            }
+          });
+          carveRow.appendChild(pip);
+        });
+        bar.appendChild(carveRow);
+
+        // Zone color editor (visible in ink mode)
+        if (STATE.viewMode === 'ink' && def.colorZones.length) {
+          const zoneLabel = document.createElement('div');
+          zoneLabel.className = 'palette-label';
+          zoneLabel.style.marginTop = '8px';
+          zoneLabel.textContent = 'Color Zones';
+          bar.appendChild(zoneLabel);
+
+          def.colorZones.forEach(z => {
+            const currentColor = (el.colorOverrides && el.colorOverrides[z.id])
+              || palette.colors[z.defaultPaletteSlot % palette.colors.length];
+            const isActive = STATE.activeZone === z.id;
+
+            const row = document.createElement('div');
+            row.className = 'zone-row' + (isActive ? ' active-zone' : '');
+
+            const swatch = document.createElement('div');
+            swatch.className = 'zone-swatch';
+            swatch.style.background = currentColor;
+
+            const name = document.createElement('span');
+            name.className = 'zone-name';
+            name.textContent = z.id;
+
+            row.appendChild(swatch);
+            row.appendChild(name);
+            row.addEventListener('click', () => {
+              STATE.activeZone = z.id;
+              buildPaletteUI();
+              rerenderAll();
+            });
+            bar.appendChild(row);
+
+            // Show palette picker if this zone is active
+            if (isActive) {
+              const picker = document.createElement('div');
+              picker.className = 'zone-picker';
+              palette.colors.forEach((col, ci) => {
+                const ps = document.createElement('div');
+                ps.className = 'zone-pick-swatch' + (currentColor === col ? ' active' : '');
+                ps.style.background = col;
+                ps.title = `Palette slot ${ci + 1}`;
+                ps.addEventListener('click', (e) => {
+                  e.stopPropagation();
+                  pushUndo();
+                  if (!el.colorOverrides) el.colorOverrides = {};
+                  // If picking the default slot, remove the override
+                  if (ci === z.defaultPaletteSlot % palette.colors.length) {
+                    delete el.colorOverrides[z.id];
+                  } else {
+                    el.colorOverrides[z.id] = col;
+                  }
+                  rerenderAll();
+                  buildPaletteUI();
+                  autoSave();
+                });
+                picker.appendChild(ps);
+              });
+              bar.appendChild(picker);
+            }
+          });
+
+          // Reset overrides button
+          if (el.colorOverrides && Object.keys(el.colorOverrides).length > 0) {
+            const resetBtn = document.createElement('div');
+            resetBtn.className = 'zone-reset-btn';
+            resetBtn.textContent = '↩ Reset to defaults';
+            resetBtn.addEventListener('click', () => {
+              pushUndo();
+              el.colorOverrides = {};
+              rerenderAll();
+              buildPaletteUI();
+              autoSave();
+            });
+            bar.appendChild(resetBtn);
+          }
+        }
+      }
+    }
+  }
+
+  // Palette selector
+  const palLabel = document.createElement('div');
+  palLabel.className = 'palette-label';
+  palLabel.style.marginTop = '8px';
+  palLabel.textContent = STATE.viewMode === 'ink' ? 'Ink Palette' : 'Print Palette';
+  bar.appendChild(palLabel);
+
+  const selector = document.createElement('div');
+  selector.className = 'palette-selector';
+  Object.entries(PALETTES).forEach(([id, pal]) => {
+    const chip = document.createElement('div');
+    chip.className = 'palette-chip' + (id === STATE.paletteId ? ' active' : '');
+    chip.title = pal.name;
+    pal.colors.forEach(c => {
+      const seg = document.createElement('div');
+      seg.className = 'palette-chip-color';
+      seg.style.background = c;
+      chip.appendChild(seg);
+    });
+    chip.addEventListener('click', () => {
+      STATE.paletteId = id;
+      if (STATE.viewMode === 'ink') rerenderAll();
+      buildPaletteUI();
+    });
+    selector.appendChild(chip);
+  });
+  bar.appendChild(selector);
+}
+
+// ============================================================
+//  CARVE STROKE HELPERS
+// ============================================================
+
+// Live preview while drawing a carve stroke
+function renderCarvePreview(el, points) {
+  clearCarvePreview();
+  if (points.length < 2) return;
+  const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+  if (!def) return;
+  const vb = def.viewBox.split(' ').map(Number);
+  const offX = -vb[2] / 2;
+  const offY = -vb[3] / 2;
+
+  const fakeStroke = { points, tool: STATE.carveTool };
+  const items = carveStrokeRenderData(fakeStroke, PAPER_COLOR, CARVED_STROKE);
+
+  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  g.id = 'carve-preview';
+  g.setAttribute('transform', `translate(${el.x}, ${el.y}) rotate(${el.rotation}) scale(${el.scaleX}, ${el.scaleY})`);
+  const inner = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  inner.setAttribute('transform', `translate(${offX}, ${offY})`);
+
+  items.forEach(item => {
+    const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    p.setAttribute('d', item.d);
+    p.setAttribute('fill', 'none');
+    p.setAttribute('stroke', item.c);
+    p.setAttribute('stroke-width', item.w);
+    p.setAttribute('stroke-linecap', 'round');
+    p.setAttribute('stroke-linejoin', 'round');
+    p.setAttribute('stroke-opacity', item.a);
+    inner.appendChild(p);
+  });
+
+  g.appendChild(inner);
+  compLayer.appendChild(g);
+}
+
+function clearCarvePreview() {
+  const prev = document.getElementById('carve-preview');
+  if (prev) prev.remove();
+}
+
+// Ramer-Douglas-Peucker simplification
+function simplifyStroke(points, tolerance) {
+  if (points.length <= 2) return points;
+  let maxDist = 0, maxIdx = 0;
+  const first = points[0], last = points[points.length - 1];
+  for (let i = 1; i < points.length - 1; i++) {
+    const d = pointToLineDist(points[i], first, last);
+    if (d > maxDist) { maxDist = d; maxIdx = i; }
+  }
+  if (maxDist > tolerance) {
+    const left = simplifyStroke(points.slice(0, maxIdx + 1), tolerance);
+    const right = simplifyStroke(points.slice(maxIdx), tolerance);
+    return left.slice(0, -1).concat(right);
+  }
+  return [first, last];
+}
+
+function pointToLineDist(p, a, b) {
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq === 0) return Math.hypot(p.x - a.x, p.y - a.y);
+  const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / lenSq));
+  return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
+}
+
+// Set mode and update UI
+function setMode(mode) {
+  STATE.mode = mode;
+  ['select', 'carve', 'erase'].forEach(m => {
+    const btn = $(`btn-mode-${m}`);
+    if (btn) btn.classList.toggle('active-mode', m === mode);
+  });
+  workspaceEl.classList.toggle('carve-mode', mode === 'carve');
+  workspaceEl.classList.toggle('erase-mode', mode === 'erase');
+  const wg = $('carve-width-group');
+  if (wg) wg.style.display = (mode === 'carve') ? 'flex' : 'none';
+  const hint = STATE.viewMode === 'ink'
+    ? 'Ink preview — click element zones to change colors · I to return to carve view'
+    : mode === 'carve' ? 'Draw on elements to carve · Alt+click to pan'
+    : mode === 'erase' ? 'Click near a carve stroke to remove it'
+    : 'Place elements · Select + 🪵 or C to carve · Print when ready';
+  $('status-hint').textContent = hint;
+}
+
+// Toggle between carve and ink view modes
+function setViewMode(mode) {
+  STATE.viewMode = mode;
+  const inkBtn = $('btn-view-ink');
+  if (inkBtn) inkBtn.classList.toggle('btn-ink-active', mode === 'ink');
+  rerenderAll();
+  // Refresh status hint
+  setMode(STATE.mode);
+  buildPaletteUI();
+}
+
+// ============================================================
+//  INLINE PRINT PREVIEW
+// ============================================================
+function positionPrintCanvas() {
+  // Position the inline print canvas over the paper rect
+  const paperRect = paperEl.getBoundingClientRect();
+  const wsRect = workspaceEl.getBoundingClientRect();
+  const c = $('inline-print-canvas');
+  c.style.left = (paperRect.left - wsRect.left) + 'px';
+  c.style.top = (paperRect.top - wsRect.top) + 'px';
+  c.style.width = paperRect.width + 'px';
+  c.style.height = paperRect.height + 'px';
+}
+
+async function enterPrintPreview() {
+  if (!STATE.elements.length) {
+    $('status-hint').textContent = 'Add some elements first!';
+    return;
+  }
+  $('status-hint').textContent = 'Printing...';
+  $('btn-print').disabled = true;
+  try {
+    const canvas = await PrintEngine.print(STATE.elements, STATE.paletteId, STATE.paperW, STATE.paperH);
+    const c = $('inline-print-canvas');
+    c.width = canvas.width;
+    c.height = canvas.height;
+    c.getContext('2d').drawImage(canvas, 0, 0);
+    c._printCanvas = canvas;
+
+    positionPrintCanvas();
+    c.style.display = 'block';
+    workspaceEl.classList.add('print-preview-active');
+    STATE.printPreview = true;
+
+    // Show preview controls, hide main print button
+    $('print-preview-controls').style.display = 'flex';
+    $('btn-print').style.display = 'none';
+    $('status-hint').textContent = 'Print preview — Esc to edit · 💾 to save PNG';
+  } catch (e) {
+    $('status-hint').textContent = 'Print failed: ' + e.message;
+    console.error(e);
+  }
+  $('btn-print').disabled = false;
+}
+
+function exitPrintPreview() {
+  const c = $('inline-print-canvas');
+  c.style.display = 'none';
+  workspaceEl.classList.remove('print-preview-active');
+  STATE.printPreview = false;
+  $('print-preview-controls').style.display = 'none';
+  $('btn-print').style.display = '';
+  setMode(STATE.mode);
+}
+
+function togglePrintPreview() {
+  if (STATE.printPreview) exitPrintPreview();
+  else enterPrintPreview();
+}
+
+// ============================================================
+//  POINTER INTERACTION
+// ============================================================
+function setupInteraction() {
+  const ws = workspaceEl;
+
+  ws.addEventListener('pointerdown', (e) => {
+    if (e.button === 1 || (e.button === 0 && e.altKey)) {
+      // Middle click or alt+click: pan (always available)
+      STATE.dragging = { type: 'pan', startX: e.clientX, startY: e.clientY, origVBx: STATE.viewBox.x, origVBy: STATE.viewBox.y };
+      ws.setPointerCapture(e.pointerId);
+      ws.style.cursor = 'grabbing';
+      return;
+    }
+
+    if (e.button !== 0) return;
+
+    // ---- CARVE MODE ----
+    if (STATE.mode === 'carve') {
+      const gEl = e.target.closest('g[data-id]');
+      if (!gEl) return;
+      const id = parseInt(gEl.getAttribute('data-id'));
+      const el = STATE.elements.find(el => el.id === id);
+      if (!el) return;
+      pushUndo();
+      const svgPt = clientToSvg(e.clientX, e.clientY);
+      const localPt = svgToElementLocal(svgPt.x, svgPt.y, el);
+      if (!el.carveStrokes) el.carveStrokes = [];
+      STATE.carving = { elementId: id, points: [localPt] };
+      ws.setPointerCapture(e.pointerId);
+      return;
+    }
+
+    // ---- ERASE MODE ----
+    if (STATE.mode === 'erase') {
+      const gEl = e.target.closest('g[data-id]');
+      if (!gEl) return;
+      const id = parseInt(gEl.getAttribute('data-id'));
+      const el = STATE.elements.find(el => el.id === id);
+      if (!el || !el.carveStrokes || !el.carveStrokes.length) return;
+      // Remove last carve stroke from this element
+      pushUndo();
+      const svgPt = clientToSvg(e.clientX, e.clientY);
+      const localPt = svgToElementLocal(svgPt.x, svgPt.y, el);
+      // Find nearest stroke to click point
+      let bestIdx = el.carveStrokes.length - 1;
+      let bestDist = Infinity;
+      el.carveStrokes.forEach((stroke, si) => {
+        stroke.points.forEach(p => {
+          const dist = Math.hypot(p.x - localPt.x, p.y - localPt.y);
+          if (dist < bestDist) { bestDist = dist; bestIdx = si; }
+        });
+      });
+      el.carveStrokes.splice(bestIdx, 1);
+      rerenderAll();
+      return;
+    }
+
+    // ---- SELECT MODE (existing behavior) ----
+    const pt = clientToSvg(e.clientX, e.clientY);
+
+    // Check if clicking a handle
+    const handleEl = e.target.closest('[data-handle]');
+    if (handleEl && STATE.selectedId) {
+      const handleType = handleEl.getAttribute('data-handle');
+      const el = STATE.elements.find(el => el.id === STATE.selectedId);
+      if (el) {
+        if (handleType === 'rotate') {
+          STATE.dragging = {
+            type: 'rotate', elementId: el.id,
+            centerX: el.x, centerY: el.y,
+            startAngle: Math.atan2(pt.y - el.y, pt.x - el.x) * 180 / Math.PI,
+            origRotation: el.rotation,
+          };
+        } else {
+          // Resize
+          pushUndo();
+          STATE.dragging = {
+            type: 'resize', elementId: el.id, handle: handleType,
+            startX: pt.x, startY: pt.y,
+            origScaleX: el.scaleX, origScaleY: el.scaleY,
+            origX: el.x, origY: el.y,
+          };
+        }
+        ws.setPointerCapture(e.pointerId);
+        return;
+      }
+    }
+
+    // Check if clicking an element
+    const gEl = e.target.closest('g[data-id]');
+    if (gEl) {
+      const id = parseInt(gEl.getAttribute('data-id'));
+      const el = STATE.elements.find(el => el.id === id);
+      if (el) {
+        selectElement(id);
+        pushUndo();
+        STATE.dragging = {
+          type: 'move', elementId: id,
+          startX: pt.x, startY: pt.y,
+          origX: el.x, origY: el.y,
+        };
+        ws.setPointerCapture(e.pointerId);
+        return;
+      }
+    }
+
+    // Clicked empty space — deselect
+    deselectAll();
+
+    // Start pan
+    STATE.dragging = { type: 'pan', startX: e.clientX, startY: e.clientY, origVBx: STATE.viewBox.x, origVBy: STATE.viewBox.y };
+    ws.setPointerCapture(e.pointerId);
+    ws.style.cursor = 'grabbing';
+  });
+
+  ws.addEventListener('pointermove', (e) => {
+    // Carve stroke in progress
+    if (STATE.carving) {
+      const el = STATE.elements.find(el => el.id === STATE.carving.elementId);
+      if (!el) return;
+      const svgPt = clientToSvg(e.clientX, e.clientY);
+      const localPt = svgToElementLocal(svgPt.x, svgPt.y, el);
+      STATE.carving.points.push(localPt);
+      // Live preview: update the stroke on the element temporarily
+      renderCarvePreview(el, STATE.carving.points);
+      return;
+    }
+
+    if (!STATE.dragging) return;
+    const d = STATE.dragging;
+
+    if (d.type === 'pan') {
+      const rect = ws.getBoundingClientRect();
+      const dx = (e.clientX - d.startX) / rect.width * STATE.viewBox.w;
+      const dy = (e.clientY - d.startY) / rect.height * STATE.viewBox.h;
+      STATE.viewBox.x = d.origVBx - dx;
+      STATE.viewBox.y = d.origVBy - dy;
+      updateViewBox();
+      return;
+    }
+
+    const pt = clientToSvg(e.clientX, e.clientY);
+
+    if (d.type === 'move') {
+      const el = STATE.elements.find(el => el.id === d.elementId);
+      if (el) {
+        el.x = d.origX + (pt.x - d.startX);
+        el.y = d.origY + (pt.y - d.startY);
+        rerenderAll();
+      }
+      return;
+    }
+
+    if (d.type === 'rotate') {
+      const el = STATE.elements.find(el => el.id === d.elementId);
+      if (el) {
+        const angle = Math.atan2(pt.y - d.centerY, pt.x - d.centerX) * 180 / Math.PI;
+        el.rotation = d.origRotation + (angle - d.startAngle);
+        rerenderAll();
+      }
+      return;
+    }
+
+    if (d.type === 'resize') {
+      const el = STATE.elements.find(el => el.id === d.elementId);
+      if (el) {
+        const def = MOKURI_ELEMENTS.find(de => de.id === el.defId);
+        const vb = def.viewBox.split(' ').map(Number);
+        const dx = pt.x - d.startX;
+        const dy = pt.y - d.startY;
+        // Sign flip based on which corner: dragging outward should always grow
+        const sx = d.handle.includes('w') ? -1 : 1;
+        const sy = d.handle.includes('n') ? -1 : 1;
+        const diag = (dx * sx + dy * sy) / 2;
+        const scaleFactor = 1 + diag / ((vb[2] + vb[3]) / 2);
+        el.scaleX = d.origScaleX * Math.max(0.1, scaleFactor);
+        el.scaleY = d.origScaleY * Math.max(0.1, scaleFactor);
+        rerenderAll();
+      }
+      return;
+    }
+  });
+
+  ws.addEventListener('pointerup', () => {
+    // Finalize carve stroke
+    if (STATE.carving) {
+      const el = STATE.elements.find(e => e.id === STATE.carving.elementId);
+      if (el && STATE.carving.points.length >= 2) {
+        // Simplify the stroke (reduce point count for storage)
+        const simplified = simplifyStroke(STATE.carving.points, 1.5);
+        if (!el.carveStrokes) el.carveStrokes = [];
+        el.carveStrokes.push({ points: simplified, tool: STATE.carveTool });
+        rerenderAll();
+        autoSave();
+      } else if (el) {
+        // Too short — remove the undo entry
+        STATE.undoStack.pop();
+      }
+      clearCarvePreview();
+      STATE.carving = null;
+      return;
+    }
+
+    if (STATE.dragging && STATE.dragging.type === 'move') {
+      // Check if actually moved — if not, remove undo entry
+      const el = STATE.elements.find(e => e.id === STATE.dragging.elementId);
+      if (el && el.x === STATE.dragging.origX && el.y === STATE.dragging.origY) {
+        STATE.undoStack.pop(); // No change, remove undo snapshot
+      }
+    }
+    STATE.dragging = null;
+    ws.style.cursor = 'crosshair';
+  });
+
+  // Zoom with wheel
+  ws.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const rect = ws.getBoundingClientRect();
+    const cx = e.clientX - rect.left;
+    const cy = e.clientY - rect.top;
+    zoomBy(e.deltaY > 0 ? -0.1 : 0.1, cx, cy);
+  }, { passive: false });
+
+  // Double-click to cycle carve level
+  ws.addEventListener('dblclick', (e) => {
+    const gEl = e.target.closest('g[data-id]');
+    if (!gEl) return;
+    const id = parseInt(gEl.getAttribute('data-id'));
+    const el = STATE.elements.find(el => el.id === id);
+    if (!el) return;
+    const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+    if (!def) return;
+    pushUndo();
+    el.carveLevel = (el.carveLevel + 1) % def.carveLevels.length;
+    rerenderAll();
+    selectElement(id);
+  });
+}
+
+// ============================================================
+//  KEYBOARD SHORTCUTS
+// ============================================================
+function setupKeyboard() {
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Delete' || e.key === 'Backspace') { deleteSelected(); e.preventDefault(); }
+    if (e.key === 'c' && !e.ctrlKey && !e.metaKey) { carveSelected(); e.preventDefault(); }
+    if (e.key === 'z' && (e.ctrlKey || e.metaKey) && !e.shiftKey) { undo(); e.preventDefault(); }
+    if ((e.key === 'y' && (e.ctrlKey || e.metaKey)) || (e.key === 'z' && (e.ctrlKey || e.metaKey) && e.shiftKey)) { redo(); e.preventDefault(); }
+    if (e.key === ']') { moveLayer(1); e.preventDefault(); }
+    if (e.key === '[') { moveLayer(-1); e.preventDefault(); }
+    if (e.key === '=' || e.key === '+') { zoomBy(0.15, workspaceEl.clientWidth / 2, workspaceEl.clientHeight / 2); e.preventDefault(); }
+    if (e.key === '-') { zoomBy(-0.15, workspaceEl.clientWidth / 2, workspaceEl.clientHeight / 2); e.preventDefault(); }
+    if (e.key === '0') { fitPaperToView(); e.preventDefault(); }
+
+    // Mode shortcuts
+    if (e.key === 'v' && !e.ctrlKey && !e.metaKey) { setMode(STATE.mode === 'select' ? 'carve' : 'select'); e.preventDefault(); }
+    if (e.key === 'e' && !e.ctrlKey && !e.metaKey) { setMode(STATE.mode === 'erase' ? 'select' : 'erase'); e.preventDefault(); }
+    if (e.key === 'i' && !e.ctrlKey && !e.metaKey) { setViewMode(STATE.viewMode === 'ink' ? 'carve' : 'ink'); e.preventDefault(); }
+    if (e.key === 'p' && !e.ctrlKey && !e.metaKey) { togglePrintPreview(); e.preventDefault(); }
+    if (e.key === 'Escape') {
+      if (STATE.printPreview) { exitPrintPreview(); }
+      else { setMode('select'); if (STATE.viewMode === 'ink') setViewMode('carve'); }
+      e.preventDefault();
+    }
+
+    // Tool shortcuts in carve mode
+    if (STATE.mode === 'carve') {
+      if (e.key === '1') { STATE.carveTool = 'fine'; updateToolButtons(); }
+      if (e.key === '2') { STATE.carveTool = 'vgouge'; updateToolButtons(); }
+      if (e.key === '3') { STATE.carveTool = 'ugouge'; updateToolButtons(); }
+    }
+
+    // Arrow nudge
+    if (STATE.mode === 'select' && STATE.selectedId && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+      const el = STATE.elements.find(el => el.id === STATE.selectedId);
+      if (el) {
+        const step = e.shiftKey ? 10 : 2;
+        pushUndo();
+        if (e.key === 'ArrowUp') el.y -= step;
+        if (e.key === 'ArrowDown') el.y += step;
+        if (e.key === 'ArrowLeft') el.x -= step;
+        if (e.key === 'ArrowRight') el.x += step;
+        rerenderAll();
+      }
+      e.preventDefault();
+    }
+  });
+}
+
+function updateToolButtons() {
+  document.querySelectorAll('.carve-w').forEach(b => {
+    b.classList.toggle('active-mode', b.dataset.tool === STATE.carveTool);
+  });
+}
+
+// ============================================================
+//  TOOLBAR BUTTONS
+// ============================================================
+function setupToolbar() {
+  $('btn-undo').addEventListener('click', undo);
+  $('btn-redo').addEventListener('click', redo);
+  $('btn-delete').addEventListener('click', deleteSelected);
+  $('btn-carve').addEventListener('click', carveSelected);
+  $('btn-layer-up').addEventListener('click', () => moveLayer(1));
+  $('btn-layer-down').addEventListener('click', () => moveLayer(-1));
+  $('btn-zoom-in').addEventListener('click', () => zoomBy(0.2, workspaceEl.clientWidth / 2, workspaceEl.clientHeight / 2));
+  $('btn-zoom-out').addEventListener('click', () => zoomBy(-0.2, workspaceEl.clientWidth / 2, workspaceEl.clientHeight / 2));
+  $('btn-zoom-fit').addEventListener('click', fitPaperToView);
+
+  // Mode toggles
+  $('btn-mode-select').addEventListener('click', () => setMode('select'));
+  $('btn-mode-carve').addEventListener('click', () => setMode('carve'));
+  $('btn-mode-erase').addEventListener('click', () => setMode('erase'));
+
+  // View mode toggle
+  $('btn-view-ink').addEventListener('click', () => setViewMode(STATE.viewMode === 'ink' ? 'carve' : 'ink'));
+
+  // Carve tool buttons
+  document.querySelectorAll('.carve-w').forEach(btn => {
+    btn.addEventListener('click', () => {
+      STATE.carveTool = btn.dataset.tool;
+      document.querySelectorAll('.carve-w').forEach(b => b.classList.remove('active-mode'));
+      btn.classList.add('active-mode');
+    });
+  });
+
+  // Print — now renders inline in workspace
+  $('btn-print').addEventListener('click', () => togglePrintPreview());
+  $('btn-print-back').addEventListener('click', () => exitPrintPreview());
+  $('btn-print-save').addEventListener('click', () => {
+    const c = $('inline-print-canvas');
+    if (c._printCanvas) PrintEngine.exportPng(c._printCanvas, 'mokuri-print.png');
+  });
+
+  // Legacy modal (keep wired but hidden — may remove later)
+  $('btn-export-png').addEventListener('click', () => {
+    const previewCanvas = $('print-canvas');
+    if (previewCanvas._printCanvas) {
+      PrintEngine.exportPng(previewCanvas._printCanvas, 'mokuri-print.png');
+    }
+  });
+  $('btn-print-close').addEventListener('click', () => {
+    $('print-overlay').classList.remove('visible');
+  });
+
+  // File menu
+  const fileMenu = $('file-menu');
+  $('btn-file').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const visible = fileMenu.style.display !== 'none';
+    fileMenu.style.display = visible ? 'none' : 'block';
+    if (!visible) updateSlotLabels();
+  });
+  document.addEventListener('click', () => { fileMenu.style.display = 'none'; });
+  fileMenu.addEventListener('click', (e) => e.stopPropagation());
+
+  $('fm-new').addEventListener('click', () => { newComposition(); fileMenu.style.display = 'none'; });
+  $('fm-save-1').addEventListener('click', () => { saveToSlot(0); fileMenu.style.display = 'none'; });
+  $('fm-save-2').addEventListener('click', () => { saveToSlot(1); fileMenu.style.display = 'none'; });
+  $('fm-save-3').addEventListener('click', () => { saveToSlot(2); fileMenu.style.display = 'none'; });
+  $('fm-load-1').addEventListener('click', () => { loadFromSlot(0); fileMenu.style.display = 'none'; });
+  $('fm-load-2').addEventListener('click', () => { loadFromSlot(1); fileMenu.style.display = 'none'; });
+  $('fm-load-3').addEventListener('click', () => { loadFromSlot(2); fileMenu.style.display = 'none'; });
+}
+
+function updateSlotLabels() {
+  const info = getSlotInfo();
+  for (let i = 0; i < 3; i++) {
+    const small = $(`fm-load-${i + 1}`).querySelector('small');
+    if (info[i]) {
+      small.textContent = `(${info[i].elementCount} el)`;
+    } else {
+      small.textContent = '(empty)';
+    }
+  }
+}
+
+// ============================================================
+//  RESIZE HANDLER
+// ============================================================
+function onResize() {
+  fitPaperToView();
+}
+
+// ============================================================
+//  INIT
+// ============================================================
+function init() {
+  layoutPaper();
+  fitPaperToView();
+  buildPaletteUI();
+  buildElementPicker();
+  setupInteraction();
+  setupKeyboard();
+  setupToolbar();
+  updateToolbarState();
+  updateStatus();
+  window.addEventListener('resize', onResize);
+  // Restore previous session
+  if (autoLoad()) {
+    $('status-hint').textContent = 'Session restored';
+  }
+}
+
+init();
+</script>
+</body>
+</html>
