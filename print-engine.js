@@ -30,6 +30,34 @@ const PrintEngine = (() => {
   }
 
   // ============================================================
+  //  PROCEDURAL VARIATION — seeded RNG + path perturbation
+  // ============================================================
+
+  // Simple seeded PRNG (mulberry32)
+  function seededRng(seed) {
+    let s = seed | 0;
+    return function() {
+      s = (s + 0x6D2B79F5) | 0;
+      let t = Math.imul(s ^ (s >>> 15), 1 | s);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // Perturb numeric coordinates in an SVG path `d` string
+  // amount: max pixel offset per coordinate (e.g., 1.5)
+  // rng: seeded random function returning 0-1
+  function perturbPath(d, amount, rng) {
+    if (!amount || amount < 0.1) return d;
+    // Match numbers (including negatives and decimals) that are coordinates
+    return d.replace(/(-?\d+\.?\d*)/g, (match) => {
+      const val = parseFloat(match);
+      const offset = (rng() - 0.5) * 2 * amount;
+      return (val + offset).toFixed(1);
+    });
+  }
+
+  // ============================================================
   //  PAPER TEXTURE — Canvas base layer (washi fiber structure)
   // ============================================================
 
@@ -199,6 +227,11 @@ const PrintEngine = (() => {
       const offX = -vb[2] / 2;
       const offY = -vb[3] / 2;
 
+      // Procedural variation — seeded per element instance
+      const rng = seededRng(el.variationSeed || el.id * 31);
+      const perturbAmt = isBlock ? 0.6 : (el.carveLevel === 1 ? 0.9 : 1.3);
+      const perturb = (d) => perturbPath(d, perturbAmt, rng);
+
       // Per-element spatial misregistration + impression offset
       const misX = (Math.random() - 0.5) * inkLoad.misreg + impOffset.x;
       const misY = (Math.random() - 0.5) * inkLoad.misreg + impOffset.y;
@@ -235,8 +268,9 @@ const PrintEngine = (() => {
           if (p.type !== 'fill') return;
           const col = zoneColor(p.zone);
           const fill = zoneFillAttr(p.zone);
-          svgContent += `<path d="${p.d}" fill="none" stroke="${darken(col, 0.35)}" stroke-width="${edgeWeight}" stroke-linejoin="round" stroke-opacity="${edgeOpacity.toFixed(2)}"/>`;
-          svgContent += `<path d="${p.d}" fill="${fill}" fill-opacity="${inkOpacity.toFixed(2)}" stroke="none"/>`;
+          const pd = perturb(p.d);
+          svgContent += `<path d="${pd}" fill="none" stroke="${darken(col, 0.35)}" stroke-width="${edgeWeight}" stroke-linejoin="round" stroke-opacity="${edgeOpacity.toFixed(2)}"/>`;
+          svgContent += `<path d="${pd}" fill="${fill}" fill-opacity="${inkOpacity.toFixed(2)}" stroke="none"/>`;
         });
       };
 
@@ -246,11 +280,12 @@ const PrintEngine = (() => {
         renderFills(def.carveLevels[0].paths);
         carve.paths.forEach(p => {
           const col = zoneColor(p.zone);
+          const pd = perturb(p.d);
           if (p.type === 'fill') {
             const fill = zoneFillAttr(p.zone);
-            svgContent += `<path d="${p.d}" fill="${fill}" fill-opacity="${inkOpacity.toFixed(2)}" stroke="${darken(col, 0.3)}" stroke-width="0.8" stroke-opacity="${(0.4 * inkLoad.edgeMul).toFixed(2)}" stroke-linejoin="round"/>`;
+            svgContent += `<path d="${pd}" fill="${fill}" fill-opacity="${inkOpacity.toFixed(2)}" stroke="${darken(col, 0.3)}" stroke-width="0.8" stroke-opacity="${(0.4 * inkLoad.edgeMul).toFixed(2)}" stroke-linejoin="round"/>`;
           } else if (p.type === 'stroke') {
-            svgContent += `<path d="${p.d}" fill="none" stroke="${darken(col, 0.45)}" stroke-width="${p.strokeWidth || 1.5}" stroke-opacity="0.85" stroke-linecap="round" stroke-linejoin="round"/>`;
+            svgContent += `<path d="${pd}" fill="none" stroke="${darken(col, 0.45)}" stroke-width="${p.strokeWidth || 1.5}" stroke-opacity="0.85" stroke-linecap="round" stroke-linejoin="round"/>`;
           }
         });
       }
