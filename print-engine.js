@@ -399,6 +399,57 @@ const PrintEngine = (() => {
     ctx.putImageData(d, 0, 0);
   }
 
+  // Ink absorption variation — uneven density within inked areas
+  // Creates lighter patches where paper absorbed more ink (drier spots)
+  function applyInkAbsorption(ctx, w, h, paperBase) {
+    paperBase = paperBase || PAPER_BASE;
+    const d = ctx.getImageData(0, 0, w, h);
+    const px = d.data;
+
+    // Generate absorption map: random patches of lighter ink
+    const patchCount = Math.floor(w * h / 8000);
+    const patches = [];
+    for (let i = 0; i < patchCount; i++) {
+      patches.push({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        r: 15 + Math.random() * 40,
+        strength: 0.03 + Math.random() * 0.06,
+      });
+    }
+
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = (y * w + x) * 4;
+        // Skip paper pixels
+        if (Math.abs(px[i] - paperBase.r) < 18 &&
+            Math.abs(px[i + 1] - paperBase.g) < 18 &&
+            Math.abs(px[i + 2] - paperBase.b) < 18) continue;
+
+        // Sum influence of nearby patches
+        let lighten = 0;
+        for (const p of patches) {
+          const dx = x - p.x;
+          const dy = y - p.y;
+          const dist2 = dx * dx + dy * dy;
+          if (dist2 < p.r * p.r) {
+            const t = 1 - Math.sqrt(dist2) / p.r;
+            lighten += t * t * p.strength;
+          }
+        }
+
+        if (lighten > 0) {
+          // Lighten toward paper base (simulates ink thinning)
+          const blend = Math.min(lighten, 0.15);
+          px[i]     = Math.round(px[i] + (paperBase.r - px[i]) * blend);
+          px[i + 1] = Math.round(px[i + 1] + (paperBase.g - px[i + 1]) * blend);
+          px[i + 2] = Math.round(px[i + 2] + (paperBase.b - px[i + 2]) * blend);
+        }
+      }
+    }
+    ctx.putImageData(d, 0, 0);
+  }
+
   // ============================================================
   //  MAIN PRINT PIPELINE
   // ============================================================
@@ -453,6 +504,7 @@ const PrintEngine = (() => {
     // Step 3 — Post-processing (intensity scaled by paper type)
     const paperBase = paperBaseFromType(paperType);
     applyColorMuting(ctx, w, h);
+    applyInkAbsorption(ctx, w, h, paperBase);
     applyBarenPressure(ctx, w, h, paperType.barenIntensity, paperBase);
     applyWoodGrain(ctx, w, h);
     applyFineNoise(ctx, w, h, paperType.noiseAmt);
