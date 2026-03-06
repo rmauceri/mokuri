@@ -10,10 +10,11 @@ Open `index.html` directly in a browser, or serve the directory (e.g. via GitHub
 
 ```
 mokuri/
-  index.html              — App shell, CSS, HTML, all UI + interaction JS (~2000 lines)
+  index.html              — App shell, CSS, HTML, all UI + interaction JS (~3200 lines)
   elements.js             — Core element library (8 elements: landscape, flora, fauna, objects)
   extended-elements.js    — Extended elements (9: flora, patterns, objects)
   fauna-elements.js       — Fauna elements (8: koi, dragonfly, turtle, crane, rabbit, frog, butterfly, sparrow)
+  scene-elements.js       — Scene elements (11: landscape, atmospheric, flora — bamboo, rocks, temple, village, bridge, rain, snow, clouds, maple, iris)
   print-engine.js         — Canvas-based print renderer (paper texture, ink effects, post-processing)
   concept.md              — Full vision document — READ THIS for design intent
   plan.md                 — Original implementation plan (6 phases)
@@ -45,13 +46,25 @@ printPreview     — boolean, inline print canvas visible
 ### Print Engine (`print-engine.js`)
 Multi-stage Canvas pipeline:
 1. Paper texture (washi fibers, tonal warmth patches — varies by paper type)
-2. SVG render with feTurbulence (wobbly edges), edge darkening (ink pooling), per-element misregistration, bokashi gradients
-3. Multi-impression rendering (1–3 passes with tiny offsets)
-4. Multiply composite (ink absorbs into paper)
-5. Post-processing: color muting, baren pressure (intensity from paper type), wood grain, fine noise (amount from paper type)
+2. SVG render with feTurbulence (wobbly edges), edge darkening (ink pooling), per-element misregistration, bokashi gradients, atmosphere layer (sky/ground/mist)
+3. Procedural variation: seeded path perturbation per element instance (mulberry32 PRNG, amount scales with carve level)
+4. Multi-impression rendering (1–3 passes with tiny offsets)
+5. Multiply composite (ink absorbs into paper)
+6. Post-processing: color muting → ink absorption variation → baren pressure → wood grain → fine noise
 
-`print(elements, paletteId, paperW, paperH, opts)` — opts: `{ paperType, inkLoad, impressions }`
+`print(elements, paletteId, paperW, paperH, opts)` — opts: `{ paperType, inkLoad, impressions, atmosphere }`
+atmosphere: `{ sky, ground, horizon, mist, paperBase }` — sky/ground are type objects with gradient stops.
 Uses `carveStrokeRenderData()` from index.html (global function) for graduated carve stroke rendering.
+
+### Atmosphere System
+Background layer rendered behind all elements in both workspace and print:
+- **Sky types**: none, dawn, day, dusk, night, overcast — vertical gradient fills with organic wobble horizon edge
+- **Ground types**: none, earth, grass, snow, sand, water — gradient from horizon to bottom with organic top edge
+- **Horizon**: configurable position (0.2–0.85 from top)
+- **Mist bands**: 0–3 semi-transparent paper-colored horizontal bands for depth layering
+- Config objects: `SKY_TYPES`, `GROUND_TYPES` in index.html
+- STATE fields: `sky`, `ground`, `horizon`, `mist` — persisted in save/load
+- UI: 🌄 toolbar button opens atmosphere dropdown with chip selectors + horizon slider
 
 ## Element Data Model
 

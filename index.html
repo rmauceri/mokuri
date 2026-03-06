@@ -866,6 +866,14 @@ html, body {
         <div class="file-menu-item" id="fm-load-1">📂 Load Slot 1 <small></small></div>
         <div class="file-menu-item" id="fm-load-2">📂 Load Slot 2 <small></small></div>
         <div class="file-menu-item" id="fm-load-3">📂 Load Slot 3 <small></small></div>
+        <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
+        <div style="font-size:10px;color:var(--text-dim);padding:2px 12px;">Scene Presets</div>
+        <div class="file-menu-item" id="fm-preset-mountain">🏔️ Mountain Dawn</div>
+        <div class="file-menu-item" id="fm-preset-garden">🌸 Garden Pond</div>
+        <div class="file-menu-item" id="fm-preset-ocean">🌊 Ocean Night</div>
+        <div class="file-menu-item" id="fm-preset-snow">❄️ Snow Village</div>
+        <div class="file-menu-item" id="fm-preset-bamboo">🎋 Bamboo Forest</div>
+        <div class="file-menu-item" id="fm-preset-autumn">🍁 Autumn Valley</div>
       </div>
     </div>
     <button class="print-btn" id="btn-print">🖨 Print</button>
@@ -1164,6 +1172,103 @@ const GROUND_TYPES = {
     { offset: 0.7, color: '#4a7a98', opacity: 0.35 },
     { offset: 1, color: '#5a8aa4', opacity: 0.25 },
   ]},
+};
+
+// Scene presets — curated starting compositions
+const SCENE_PRESETS = {
+  mountain: {
+    name: 'Mountain Dawn',
+    palette: 'hokusai',
+    paperType: 'kozo',
+    sky: 'dawn', ground: 'earth', horizon: 0.55, mist: 1,
+    elements(W, H) {
+      return [
+        { id: 1, defId: 'mountain-distant', x: W * 0.5, y: H * 0.38, scaleX: 1.8, scaleY: 1.6, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 41827 },
+        { id: 2, defId: 'mountain-near', x: W * 0.28, y: H * 0.48, scaleX: 1.3, scaleY: 1.2, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 73019 },
+        { id: 3, defId: 'cloud-bank', x: W * 0.65, y: H * 0.2, scaleX: 1.4, scaleY: 0.9, rotation: 0, carveLevel: 0, colorOverrides: {}, variationSeed: 55213 },
+        { id: 4, defId: 'pine-tree', x: W * 0.15, y: H * 0.65, scaleX: 1.1, scaleY: 1.1, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 29483 },
+        { id: 5, defId: 'pine-tree', x: W * 0.88, y: H * 0.7, scaleX: 0.8, scaleY: 0.8, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 61054 },
+        { id: 6, defId: 'crane-flying', x: W * 0.72, y: H * 0.15, scaleX: 0.6, scaleY: 0.6, rotation: -8, carveLevel: 1, colorOverrides: {}, variationSeed: 84321 },
+      ];
+    },
+  },
+  garden: {
+    name: 'Garden Pond',
+    palette: 'sakura',
+    paperType: 'hosho',
+    sky: 'day', ground: 'water', horizon: 0.6, mist: 0,
+    elements(W, H) {
+      return [
+        { id: 1, defId: 'cherry-branch', x: W * 0.25, y: H * 0.18, scaleX: 1.4, scaleY: 1.3, rotation: 12, carveLevel: 2, colorOverrides: {}, variationSeed: 17382 },
+        { id: 2, defId: 'koi', x: W * 0.55, y: H * 0.78, scaleX: 1.0, scaleY: 1.0, rotation: -15, carveLevel: 2, colorOverrides: {}, variationSeed: 42918 },
+        { id: 3, defId: 'koi', x: W * 0.38, y: H * 0.85, scaleX: 0.75, scaleY: 0.75, rotation: 25, carveLevel: 1, colorOverrides: {}, variationSeed: 93017 },
+        { id: 4, defId: 'rock-formation', x: W * 0.82, y: H * 0.72, scaleX: 0.9, scaleY: 0.9, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 58234 },
+        { id: 5, defId: 'iris-cluster', x: W * 0.12, y: H * 0.75, scaleX: 1.0, scaleY: 1.0, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 70561 },
+        { id: 6, defId: 'dragonfly', x: W * 0.65, y: H * 0.35, scaleX: 0.7, scaleY: 0.7, rotation: -20, carveLevel: 1, colorOverrides: {}, variationSeed: 36729 },
+      ];
+    },
+  },
+  ocean: {
+    name: 'Ocean Night',
+    palette: 'yoru',
+    paperType: 'kozo',
+    sky: 'night', ground: 'water', horizon: 0.42, mist: 0,
+    elements(W, H) {
+      return [
+        { id: 1, defId: 'great-wave', x: W * 0.5, y: H * 0.6, scaleX: 1.6, scaleY: 1.4, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 28374 },
+        { id: 2, defId: 'gentle-waves', x: W * 0.35, y: H * 0.82, scaleX: 1.3, scaleY: 1.0, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 61938 },
+        { id: 3, defId: 'full-moon', x: W * 0.75, y: H * 0.18, scaleX: 1.2, scaleY: 1.2, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 45102 },
+        { id: 4, defId: 'cloud-wisp', x: W * 0.6, y: H * 0.25, scaleX: 1.1, scaleY: 0.8, rotation: 0, carveLevel: 0, colorOverrides: {}, variationSeed: 83291 },
+        { id: 5, defId: 'cloud-wisp', x: W * 0.4, y: H * 0.12, scaleX: 0.8, scaleY: 0.6, rotation: 10, carveLevel: 0, colorOverrides: {}, variationSeed: 12847 },
+      ];
+    },
+  },
+  snow: {
+    name: 'Snow Village',
+    palette: 'sumi',
+    paperType: 'torinoko',
+    sky: 'overcast', ground: 'snow', horizon: 0.48, mist: 2,
+    elements(W, H) {
+      return [
+        { id: 1, defId: 'distant-village', x: W * 0.5, y: H * 0.46, scaleX: 1.3, scaleY: 1.2, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 39284 },
+        { id: 2, defId: 'temple-roof', x: W * 0.3, y: H * 0.55, scaleX: 1.1, scaleY: 1.1, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 67451 },
+        { id: 3, defId: 'pine-tree', x: W * 0.78, y: H * 0.6, scaleX: 1.0, scaleY: 1.0, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 51823 },
+        { id: 4, defId: 'stone-path', x: W * 0.45, y: H * 0.82, scaleX: 1.2, scaleY: 1.0, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 24619 },
+        { id: 5, defId: 'snow-fall', x: W * 0.5, y: H * 0.35, scaleX: 1.5, scaleY: 1.5, rotation: 0, carveLevel: 0, colorOverrides: {}, variationSeed: 78043 },
+      ];
+    },
+  },
+  bamboo: {
+    name: 'Bamboo Forest',
+    palette: 'edo',
+    paperType: 'kozo',
+    sky: 'day', ground: 'grass', horizon: 0.78, mist: 1,
+    elements(W, H) {
+      return [
+        { id: 1, defId: 'bamboo-grove', x: W * 0.25, y: H * 0.45, scaleX: 1.4, scaleY: 1.5, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 43821 },
+        { id: 2, defId: 'bamboo-grove', x: W * 0.72, y: H * 0.42, scaleX: 1.1, scaleY: 1.3, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 91574 },
+        { id: 3, defId: 'rock-formation', x: W * 0.5, y: H * 0.82, scaleX: 0.9, scaleY: 0.8, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 35729 },
+        { id: 4, defId: 'sparrow', x: W * 0.58, y: H * 0.2, scaleX: 0.6, scaleY: 0.6, rotation: 10, carveLevel: 1, colorOverrides: {}, variationSeed: 62041 },
+        { id: 5, defId: 'sparrow', x: W * 0.42, y: H * 0.25, scaleX: 0.5, scaleY: 0.5, rotation: -15, carveLevel: 1, colorOverrides: {}, variationSeed: 18397 },
+      ];
+    },
+  },
+  autumn: {
+    name: 'Autumn Valley',
+    palette: 'aki',
+    paperType: 'kozo',
+    sky: 'dusk', ground: 'earth', horizon: 0.52, mist: 1,
+    elements(W, H) {
+      return [
+        { id: 1, defId: 'maple-branch', x: W * 0.22, y: H * 0.15, scaleX: 1.5, scaleY: 1.4, rotation: 15, carveLevel: 2, colorOverrides: {}, variationSeed: 57213 },
+        { id: 2, defId: 'mountain-distant', x: W * 0.55, y: H * 0.35, scaleX: 1.5, scaleY: 1.3, rotation: 0, carveLevel: 0, colorOverrides: {}, variationSeed: 82946 },
+        { id: 3, defId: 'wooden-bridge', x: W * 0.45, y: H * 0.68, scaleX: 1.1, scaleY: 1.0, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 40138 },
+        { id: 4, defId: 'rock-formation', x: W * 0.78, y: H * 0.75, scaleX: 0.8, scaleY: 0.7, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 69584 },
+        { id: 5, defId: 'cloud-wisp', x: W * 0.7, y: H * 0.12, scaleX: 1.0, scaleY: 0.7, rotation: 0, carveLevel: 0, colorOverrides: {}, variationSeed: 23751 },
+        { id: 6, defId: 'butterfly', x: W * 0.6, y: H * 0.45, scaleX: 0.5, scaleY: 0.5, rotation: -10, carveLevel: 1, colorOverrides: {}, variationSeed: 95312 },
+      ];
+    },
+  },
 };
 
 // Carve tool definitions — profile layers define cross-section from edge to center
@@ -1951,6 +2056,30 @@ function newComposition() {
   updateStatus();
   autoSave();
   $('status-hint').textContent = 'New composition';
+}
+
+function loadScenePreset(presetId) {
+  const preset = SCENE_PRESETS[presetId];
+  if (!preset) return;
+  const W = STATE.paperW;
+  const H = STATE.paperH;
+  const data = {
+    elements: preset.elements(W, H),
+    nextId: 100,
+    paletteId: preset.palette,
+    paperW: W,
+    paperH: H,
+    paperType: preset.paperType || 'kozo',
+    inkLoad: 'standard',
+    impressions: 1,
+    sky: preset.sky,
+    ground: preset.ground,
+    horizon: preset.horizon,
+    mist: preset.mist || 0,
+  };
+  applyCompositionData(data);
+  autoSave();
+  $('status-hint').textContent = `Loaded preset: ${preset.name}`;
 }
 
 // ============================================================
@@ -3198,6 +3327,14 @@ function setupToolbar() {
   $('fm-load-1').addEventListener('click', () => { loadFromSlot(0); fileMenu.style.display = 'none'; });
   $('fm-load-2').addEventListener('click', () => { loadFromSlot(1); fileMenu.style.display = 'none'; });
   $('fm-load-3').addEventListener('click', () => { loadFromSlot(2); fileMenu.style.display = 'none'; });
+
+  // Scene presets
+  $('fm-preset-mountain').addEventListener('click', () => { loadScenePreset('mountain'); fileMenu.style.display = 'none'; });
+  $('fm-preset-garden').addEventListener('click', () => { loadScenePreset('garden'); fileMenu.style.display = 'none'; });
+  $('fm-preset-ocean').addEventListener('click', () => { loadScenePreset('ocean'); fileMenu.style.display = 'none'; });
+  $('fm-preset-snow').addEventListener('click', () => { loadScenePreset('snow'); fileMenu.style.display = 'none'; });
+  $('fm-preset-bamboo').addEventListener('click', () => { loadScenePreset('bamboo'); fileMenu.style.display = 'none'; });
+  $('fm-preset-autumn').addEventListener('click', () => { loadScenePreset('autumn'); fileMenu.style.display = 'none'; });
 
   // Paper selector modal
   $('paper-modal-cancel').addEventListener('click', () => $('paper-modal').classList.remove('visible'));
