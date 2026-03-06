@@ -5,7 +5,13 @@
 
 const PrintEngine = (() => {
 
+  // Default paper base (Kozo); overridden per-print by paperType.base
   const PAPER_BASE = { r: 245, g: 240, b: 230 };
+  function paperBaseFromType(paperType) {
+    if (!paperType || !paperType.base) return PAPER_BASE;
+    const c = parseColor(paperType.base);
+    return c;
+  }
 
   // ============================================================
   //  COLOR UTILITIES
@@ -212,22 +218,24 @@ const PrintEngine = (() => {
   }
 
   // Baren pressure — broad light/dark bands across inked areas
-  function applyBarenPressure(ctx, w, h) {
+  function applyBarenPressure(ctx, w, h, intensity, paperBase) {
+    intensity = intensity || 1.0;
+    paperBase = paperBase || PAPER_BASE;
     const d = ctx.getImageData(0, 0, w, h);
     const px = d.data;
     const waves = [
       { fx: 0.0012 + Math.random() * 0.002, fy: 0.0008 + Math.random() * 0.001,
-        ph: Math.random() * Math.PI * 2, amp: 16 },
+        ph: Math.random() * Math.PI * 2, amp: 16 * intensity },
       { fx: 0.003 + Math.random() * 0.002, fy: 0.002 + Math.random() * 0.002,
-        ph: Math.random() * Math.PI * 2, amp: 10 },
+        ph: Math.random() * Math.PI * 2, amp: 10 * intensity },
     ];
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
         const i = (y * w + x) * 4;
         // Skip paper-colored pixels
-        if (Math.abs(px[i] - PAPER_BASE.r) < 18 &&
-            Math.abs(px[i + 1] - PAPER_BASE.g) < 18 &&
-            Math.abs(px[i + 2] - PAPER_BASE.b) < 18) continue;
+        if (Math.abs(px[i] - paperBase.r) < 18 &&
+            Math.abs(px[i + 1] - paperBase.g) < 18 &&
+            Math.abs(px[i + 2] - paperBase.b) < 18) continue;
         let v = 0;
         for (const f of waves) {
           v += Math.sin(x * f.fx + f.ph) * Math.cos(y * f.fy + f.ph * 0.7) * f.amp;
@@ -264,11 +272,12 @@ const PrintEngine = (() => {
   }
 
   // Fine fiber noise — subtle natural variation
-  function applyFineNoise(ctx, w, h) {
+  function applyFineNoise(ctx, w, h, noiseAmt) {
+    noiseAmt = noiseAmt || 7;
     const d = ctx.getImageData(0, 0, w, h);
     const px = d.data;
     for (let i = 0; i < px.length; i += 4) {
-      const n = (Math.random() - 0.5) * 7;
+      const n = (Math.random() - 0.5) * noiseAmt;
       px[i]     = Math.min(255, Math.max(0, px[i] + n + 0.5));
       px[i + 1] = Math.min(255, Math.max(0, px[i + 1] + n));
       px[i + 2] = Math.min(255, Math.max(0, px[i + 2] + n - 0.5));
@@ -327,8 +336,9 @@ const PrintEngine = (() => {
     }
 
     // Step 3 — Post-processing (intensity scaled by paper type)
+    const paperBase = paperBaseFromType(paperType);
     applyColorMuting(ctx, w, h);
-    applyBarenPressure(ctx, w, h, paperType.barenIntensity);
+    applyBarenPressure(ctx, w, h, paperType.barenIntensity, paperBase);
     applyWoodGrain(ctx, w, h);
     applyFineNoise(ctx, w, h, paperType.noiseAmt);
 

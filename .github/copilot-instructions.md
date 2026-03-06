@@ -44,11 +44,13 @@ printPreview     — boolean, inline print canvas visible
 
 ### Print Engine (`print-engine.js`)
 Multi-stage Canvas pipeline:
-1. Paper texture (washi fibers, tonal warmth patches)
-2. SVG render with feTurbulence (wobbly edges), edge darkening (ink pooling), per-element misregistration
-3. Multiply composite (ink absorbs into paper)
-4. Post-processing: color muting, baren pressure, wood grain, fine noise
+1. Paper texture (washi fibers, tonal warmth patches — varies by paper type)
+2. SVG render with feTurbulence (wobbly edges), edge darkening (ink pooling), per-element misregistration, bokashi gradients
+3. Multi-impression rendering (1–3 passes with tiny offsets)
+4. Multiply composite (ink absorbs into paper)
+5. Post-processing: color muting, baren pressure (intensity from paper type), wood grain, fine noise (amount from paper type)
 
+`print(elements, paletteId, paperW, paperH, opts)` — opts: `{ paperType, inkLoad, impressions }`
 Uses `carveStrokeRenderData()` from index.html (global function) for graduated carve stroke rendering.
 
 ## Element Data Model
@@ -98,6 +100,33 @@ Strokes are stored in element-local coordinates (`el.carveStrokes[]`) and move/s
 - Per-element zone overrides via `el.colorOverrides[zoneId]`
 - Zone editor visible in Ink mode when element is selected
 - Palette switching in ink mode re-renders all elements immediately
+
+## Studio Materials
+
+Creative depth settings that affect the final print output — zero new screens or tool modes.
+
+### Paper Types (`PAPER_TYPES` in index.html)
+Three papers with distinct textures and ink behavior:
+- **Hosho** (奉書) — smooth, bright white, clean. Colors pop. Minimal fiber.
+- **Kozo** (楮) — warm, fibrous, organic. The default workhorse.
+- **Torinoko** (鳥の子) — warm cream, elegant. Ink sits on surface more.
+
+Each defines: `base` (bg color), `fiberDensity`, `fiberOpacity`, `warmPatches`, `inkOpacity`, `barenIntensity`, `noiseAmt`.
+Selected via chips in the paper selector modal. Persisted in save data.
+
+### Ink Load (`INK_LOADS` in index.html)
+Three levels controlling ink opacity, edge weight, turbulence, and misregistration:
+- **Light** (淡) — ethereal, washed out
+- **Standard** (中) — default behavior
+- **Heavy** (濃) — deep saturated, bold
+
+Three-button toggle in print preview toolbar. Change and re-print instantly.
+
+### Bokashi (per-zone gradient)
+Per-zone gradient fade — darker at one side, fading to paper at the other. Direction widget (↑↓←→) in the zone editor (ink mode). Stored in `el.zoneBokashi[zoneId]` as `'up'|'down'|'left'|'right'`. Renders as SVG `<linearGradient>` in both workspace and print engine.
+
+### Impression Count
+1–3 presses of the same block. Multiple impressions build richer color with slight edge doubling from natural misalignment. Toggle in print preview toolbar.
 
 ## Save/Load
 
