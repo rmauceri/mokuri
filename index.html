@@ -979,6 +979,7 @@ html, body {
 <script src="elements.js"></script>
 <script src="extended-elements.js"></script>
 <script src="fauna-elements.js"></script>
+<script src="scene-elements.js"></script>
 <script src="print-engine.js"></script>
 <script>
 // Merge extended and fauna elements into main array
@@ -987,6 +988,9 @@ if (typeof MOKURI_CORE_ELEMENTS !== 'undefined') {
 }
 if (typeof MOKURI_FAUNA_ELEMENTS !== 'undefined') {
   MOKURI_ELEMENTS.push(...MOKURI_FAUNA_ELEMENTS);
+}
+if (typeof MOKURI_SCENE_ELEMENTS !== 'undefined') {
+  MOKURI_ELEMENTS.push(...MOKURI_SCENE_ELEMENTS);
 }
 
 // ============================================================
