@@ -378,46 +378,6 @@ html, body {
 }
 
 /* ============================================================
-   PRINT PREVIEW OVERLAY
-   ============================================================ */
-.print-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(30, 25, 18, 0.85);
-  z-index: 100;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  gap: 16px;
-}
-.print-overlay.visible { display: flex; }
-
-.print-canvas {
-  max-width: 90vw;
-  max-height: 80vh;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
-  border-radius: 2px;
-}
-
-.print-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.print-action-btn {
-  padding: 8px 20px;
-  border: 1px solid rgba(255,255,255,0.3);
-  border-radius: var(--radius);
-  background: rgba(255,255,255,0.1);
-  color: #fff;
-  font-size: 13px;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.print-action-btn:hover { background: rgba(255,255,255,0.2); }
-
-/* ============================================================
    STATUS BAR
    ============================================================ */
 .status-bar {
@@ -496,39 +456,6 @@ html, body {
 .workspace.print-preview-active .workspace-svg { opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
 .workspace.print-preview-active .washi-bg { opacity: 0.3; transition: opacity 0.4s ease; }
 
-/* Print reveal animation — paper peels up to show print beneath */
-@keyframes paper-peel {
-  0% {
-    transform: perspective(800px) rotateX(0deg);
-    opacity: 1;
-    filter: brightness(1);
-  }
-  30% {
-    transform: perspective(800px) rotateX(-25deg) translateY(-8px);
-    opacity: 0.95;
-    filter: brightness(1.05);
-  }
-  60% {
-    transform: perspective(800px) rotateX(-45deg) translateY(-20px);
-    opacity: 0.7;
-    filter: brightness(1.1);
-  }
-  100% {
-    transform: perspective(800px) rotateX(0deg) translateY(0);
-    opacity: 1;
-    filter: brightness(1);
-  }
-}
-@keyframes print-settle {
-  0% { box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
-  100% { box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
-}
-#inline-print-canvas.print-revealing {
-  animation: paper-peel 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards,
-             print-settle 0.6s 1.0s ease-out forwards;
-  transform-origin: center bottom;
-}
-
 /* Paper selector modal */
 .paper-modal {
   position: fixed;
@@ -605,21 +532,64 @@ html, body {
 }
 .paper-modal-btn:hover { border-color: var(--accent); color: var(--text); }
 
-/* Paper type selector in modal */
-.paper-modal-subtitle {
-  font-size: 12px;
+
+/* ============================================================
+   PRINT STUDIO PANEL (right flyout)
+   ============================================================ */
+.print-studio {
+  width: 0;
+  background: var(--panel-bg);
+  border-left: 1px solid var(--panel-border);
+  display: flex;
+  flex-direction: column;
+  z-index: 5;
+  flex-shrink: 0;
+  overflow: hidden;
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.print-studio.open { width: 260px; }
+
+.print-studio-inner {
+  width: 260px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.25s ease 0.1s;
+}
+.print-studio.open .print-studio-inner { opacity: 1; }
+
+.ps-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ps-title {
+  font-size: 14px;
   font-weight: 600;
   color: var(--text);
-  margin-bottom: 8px;
-}
-.paper-type-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-.paper-type-card {
   flex: 1;
-  padding: 10px;
+}
+
+.ps-section-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 6px;
+}
+
+/* Paper type cards */
+.ps-paper-row {
+  display: flex;
+  gap: 6px;
+}
+.ps-paper-card {
+  flex: 1;
+  padding: 8px 4px;
   border: 2px solid var(--panel-border);
   border-radius: var(--radius);
   cursor: pointer;
@@ -627,27 +597,147 @@ html, body {
   background: var(--bg);
   text-align: center;
 }
-.paper-type-card:hover { border-color: var(--accent); }
-.paper-type-card.active { border-color: var(--accent); background: var(--selection); }
-.paper-type-swatch {
+.ps-paper-card:hover { border-color: var(--accent); }
+.ps-paper-card.active { border-color: var(--accent); background: var(--selection); }
+.ps-paper-swatch {
   width: 100%;
-  height: 24px;
+  height: 20px;
   border-radius: 3px;
   border: 1px solid var(--panel-border);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
-.paper-type-name { font-size: 11px; font-weight: 600; color: var(--text); }
-.paper-type-desc { font-size: 9px; color: var(--text-muted); }
+.ps-paper-name { font-size: 10px; font-weight: 600; color: var(--text); }
+.ps-paper-desc { font-size: 8px; color: var(--text-muted); }
 
-/* Studio material controls in print toolbar */
-.studio-label {
+/* Toggle button rows (ink, impressions) */
+.ps-toggle-row {
+  display: flex;
+  gap: 4px;
+}
+.ps-toggle-btn {
+  flex: 1;
+  padding: 8px 4px;
+  border: 2px solid var(--panel-border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.ps-toggle-btn:hover { border-color: var(--accent); }
+.ps-toggle-btn.active { border-color: var(--accent); background: var(--accent); color: #fff; }
+
+/* Actions */
+.ps-actions {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ps-pull-btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  letter-spacing: 0.3px;
+}
+.ps-pull-btn:hover { background: var(--accent-hover); }
+.ps-pull-btn:disabled { opacity: 0.5; cursor: default; }
+.ps-save-btn {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.ps-save-btn:hover { border-color: var(--accent); }
+.ps-back-link {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.15s;
+}
+.ps-back-link:hover { color: var(--text); }
+
+/* Print animation layers */
+.print-anim-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 15;
+}
+.print-ink-wash {
+  position: absolute;
+  inset: 0;
+  background: rgba(60, 45, 25, 0.35);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.print-ink-wash.visible { opacity: 1; }
+
+.print-paper-sheet {
+  position: absolute;
+  border-radius: 2px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  transform: translateY(-110%);
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.print-paper-sheet.placed { transform: translateY(0); }
+
+.print-baren-sweep {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.25) 0%, transparent 70%);
+  pointer-events: none;
+  opacity: 0;
+}
+
+.print-peel-container {
+  position: absolute;
+  transform-origin: center bottom;
+  perspective: 800px;
+}
+.print-peel-container.peeling {
+  animation: print-peel-up 1.0s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+@keyframes print-peel-up {
+  0% { transform: rotateX(0deg); }
+  40% { transform: rotateX(-50deg) translateY(-15px); }
+  70% { transform: rotateX(-35deg) translateY(-8px); }
+  100% { transform: rotateX(0deg) translateY(0); }
+}
+
+.print-mirror-label {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
   font-size: 10px;
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  background: rgba(245, 239, 228, 0.85);
+  padding: 2px 8px;
+  border-radius: 3px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
-.studio-btn { font-size: 13px !important; width: 32px !important; }
-.studio-btn.active-studio { background: var(--accent) !important; color: #fff !important; }
+.print-mirror-label.visible { opacity: 1; }
 </style>
 </head>
 <body>
@@ -710,23 +800,6 @@ html, body {
       </div>
     </div>
     <button class="print-btn" id="btn-print">🖨 Print</button>
-    <!-- Print preview controls (visible during inline preview) -->
-    <span id="print-preview-controls" style="display:none;align-items:center;gap:4px;">
-      <button class="tool-btn" id="btn-print-back" title="Back to Edit (Esc)">← Edit</button>
-      <div class="toolbar-separator"></div>
-      <span class="studio-label">Ink</span>
-      <button class="tool-btn studio-btn" data-ink="light" title="Light ink 淡">淡</button>
-      <button class="tool-btn studio-btn" data-ink="standard" title="Standard ink 中">中</button>
-      <button class="tool-btn studio-btn" data-ink="heavy" title="Heavy ink 濃">濃</button>
-      <div class="toolbar-separator"></div>
-      <span class="studio-label">Press</span>
-      <button class="tool-btn studio-btn" data-impr="1" title="Single impression">1×</button>
-      <button class="tool-btn studio-btn" data-impr="2" title="Double impression">2×</button>
-      <button class="tool-btn studio-btn" data-impr="3" title="Triple impression">3×</button>
-      <div class="toolbar-separator"></div>
-      <button class="tool-btn" id="btn-reprint" title="Re-print with current settings">🖨 Re-print</button>
-      <button class="tool-btn" id="btn-print-save" title="Save PNG">💾 PNG</button>
-    </span>
   </div>
 
   <!-- Main area -->
@@ -764,6 +837,43 @@ html, body {
       </svg>
       <!-- Inline print preview canvas (positioned over paper) -->
       <canvas id="inline-print-canvas" style="display:none;position:absolute;pointer-events:none;"></canvas>
+      <!-- Print animation layers -->
+      <div class="print-anim-layer" id="print-anim-layer" style="display:none;">
+        <div class="print-ink-wash" id="print-ink-wash"></div>
+        <div class="print-paper-sheet" id="print-paper-sheet"></div>
+        <div class="print-baren-sweep" id="print-baren-sweep"></div>
+      </div>
+      <div class="print-mirror-label" id="print-mirror-label">↔ mirrored from block</div>
+    </div>
+
+    <!-- Print studio panel (right flyout) -->
+    <div class="print-studio" id="print-studio">
+      <div class="print-studio-inner">
+        <div class="ps-header">
+          <div class="ps-title">🖨 Print Studio</div>
+        </div>
+
+        <div>
+          <div class="ps-section-label">Paper</div>
+          <div class="ps-paper-row" id="ps-paper-row"></div>
+        </div>
+
+        <div>
+          <div class="ps-section-label">Ink Load</div>
+          <div class="ps-toggle-row" id="ps-ink-row"></div>
+        </div>
+
+        <div>
+          <div class="ps-section-label">Impressions</div>
+          <div class="ps-toggle-row" id="ps-impr-row"></div>
+        </div>
+
+        <div class="ps-actions">
+          <button class="ps-pull-btn" id="ps-pull-print">Pull Print</button>
+          <button class="ps-save-btn" id="ps-save-png">💾 Save PNG</button>
+          <div class="ps-back-link" id="ps-back-edit">← Back to Edit · Esc</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -775,23 +885,12 @@ html, body {
   </div>
 </div>
 
-<!-- Print preview overlay -->
-<div class="print-overlay" id="print-overlay">
-  <canvas class="print-canvas" id="print-canvas"></canvas>
-  <div class="print-actions">
-    <button class="print-action-btn" id="btn-export-png">💾 Save PNG</button>
-    <button class="print-action-btn" id="btn-print-close">✕ Close</button>
-  </div>
-</div>
-
-<!-- Paper selector modal -->
+<!-- Paper selector modal (size only — paper type is in Print Studio) -->
 <div class="paper-modal" id="paper-modal">
   <div class="paper-modal-content">
-    <div class="paper-modal-title">Choose Your Paper</div>
-    <div class="paper-modal-hint">Select a paper size and type</div>
+    <div class="paper-modal-title">Paper Size</div>
+    <div class="paper-modal-hint">Choose a paper size for your composition</div>
     <div class="paper-presets" id="paper-presets"></div>
-    <div class="paper-modal-subtitle">Paper Type</div>
-    <div class="paper-type-row" id="paper-type-row"></div>
     <div class="paper-modal-actions">
       <button class="paper-modal-btn" id="paper-modal-cancel">Cancel</button>
     </div>
@@ -842,6 +941,7 @@ const STATE = {
   // View mode
   viewMode: 'carve',   // 'carve' | 'ink'
   printPreview: false,  // true when showing inline print preview
+  printStudioOpen: false, // true when print studio panel is open
 
   // Studio materials
   paperType: 'kozo',    // 'hosho' | 'kozo' | 'torinoko'
@@ -1615,34 +1715,6 @@ function openPaperSelector() {
     grid.appendChild(card);
   });
 
-  // Paper type selector
-  const typeRow = $('paper-type-row');
-  typeRow.innerHTML = '';
-  Object.entries(PAPER_TYPES).forEach(([id, pt]) => {
-    const card = document.createElement('div');
-    card.className = 'paper-type-card' + (STATE.paperType === id ? ' active' : '');
-    const swatch = document.createElement('div');
-    swatch.className = 'paper-type-swatch';
-    swatch.style.background = pt.base;
-    const name = document.createElement('div');
-    name.className = 'paper-type-name';
-    name.textContent = pt.name;
-    const desc = document.createElement('div');
-    desc.className = 'paper-type-desc';
-    desc.textContent = pt.desc;
-    card.appendChild(swatch);
-    card.appendChild(name);
-    card.appendChild(desc);
-    card.addEventListener('click', () => {
-      STATE.paperType = id;
-      // Update workspace paper color
-      paperEl.setAttribute('fill', pt.base);
-      autoSave();
-      openPaperSelector(); // refresh to show active state
-    });
-    typeRow.appendChild(card);
-  });
-
   modal.classList.add('visible');
 }
 
@@ -2067,10 +2139,93 @@ function setViewMode(mode) {
 }
 
 // ============================================================
-//  INLINE PRINT PREVIEW
+//  PRINT STUDIO (flyout panel + animation + mirror)
 // ============================================================
+
+function openPrintStudio() {
+  if (STATE.printStudioOpen) return;
+  STATE.printStudioOpen = true;
+
+  // Switch to ink view for print context
+  if (STATE.viewMode !== 'ink') setViewMode('ink');
+
+  // Build panel UI
+  buildPrintStudioUI();
+
+  // Open panel
+  $('print-studio').classList.add('open');
+  $('btn-print').style.display = 'none';
+  $('status-hint').textContent = 'Print Studio — choose settings and Pull Print';
+}
+
+function closePrintStudio() {
+  if (!STATE.printStudioOpen) return;
+
+  // If print is showing, hide it
+  const c = $('inline-print-canvas');
+  c.style.display = 'none';
+  workspaceEl.classList.remove('print-preview-active');
+  $('print-mirror-label').classList.remove('visible');
+  STATE.printPreview = false;
+
+  // Close panel
+  $('print-studio').classList.remove('open');
+  STATE.printStudioOpen = false;
+  $('btn-print').style.display = '';
+  setMode(STATE.mode);
+}
+
+function buildPrintStudioUI() {
+  // Paper type cards
+  const paperRow = $('ps-paper-row');
+  paperRow.innerHTML = '';
+  Object.entries(PAPER_TYPES).forEach(([id, pt]) => {
+    const card = document.createElement('div');
+    card.className = 'ps-paper-card' + (STATE.paperType === id ? ' active' : '');
+    card.innerHTML = `<div class="ps-paper-swatch" style="background:${pt.base}"></div>
+      <div class="ps-paper-name">${pt.name}</div>
+      <div class="ps-paper-desc">${pt.desc}</div>`;
+    card.addEventListener('click', () => {
+      STATE.paperType = id;
+      paperEl.setAttribute('fill', pt.base);
+      autoSave();
+      buildPrintStudioUI();
+    });
+    paperRow.appendChild(card);
+  });
+
+  // Ink load toggles
+  const inkRow = $('ps-ink-row');
+  inkRow.innerHTML = '';
+  Object.entries(INK_LOADS).forEach(([id, il]) => {
+    const btn = document.createElement('button');
+    btn.className = 'ps-toggle-btn' + (STATE.inkLoad === id ? ' active' : '');
+    btn.textContent = il.name;
+    btn.addEventListener('click', () => {
+      STATE.inkLoad = id;
+      autoSave();
+      buildPrintStudioUI();
+    });
+    inkRow.appendChild(btn);
+  });
+
+  // Impression toggles
+  const imprRow = $('ps-impr-row');
+  imprRow.innerHTML = '';
+  [1, 2, 3].forEach(n => {
+    const btn = document.createElement('button');
+    btn.className = 'ps-toggle-btn' + (STATE.impressions === n ? ' active' : '');
+    btn.textContent = n + '×';
+    btn.addEventListener('click', () => {
+      STATE.impressions = n;
+      autoSave();
+      buildPrintStudioUI();
+    });
+    imprRow.appendChild(btn);
+  });
+}
+
 function positionPrintCanvas() {
-  // Position the inline print canvas over the paper rect
   const paperRect = paperEl.getBoundingClientRect();
   const wsRect = workspaceEl.getBoundingClientRect();
   const c = $('inline-print-canvas');
@@ -2080,72 +2235,131 @@ function positionPrintCanvas() {
   c.style.height = paperRect.height + 'px';
 }
 
-async function enterPrintPreview() {
+// Utility: wait ms
+function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// Multi-phase print animation
+async function pullPrint() {
   if (!STATE.elements.length) {
     $('status-hint').textContent = 'Add some elements first!';
     return;
   }
-  $('status-hint').textContent = 'Printing...';
-  $('btn-print').disabled = true;
-  try {
-    const opts = {
-      paperType: PAPER_TYPES[STATE.paperType],
-      inkLoad: INK_LOADS[STATE.inkLoad],
-      impressions: STATE.impressions,
-    };
-    const canvas = await PrintEngine.print(STATE.elements, STATE.paletteId, STATE.paperW, STATE.paperH, opts);
-    const c = $('inline-print-canvas');
-    c.width = canvas.width;
-    c.height = canvas.height;
-    c.getContext('2d').drawImage(canvas, 0, 0);
-    c._printCanvas = canvas;
 
-    positionPrintCanvas();
-    c.style.display = 'block';
+  const pullBtn = $('ps-pull-print');
+  pullBtn.disabled = true;
 
-    // Paper peel animation
-    c.classList.remove('print-revealing');
-    void c.offsetWidth;
-    c.classList.add('print-revealing');
-
-    workspaceEl.classList.add('print-preview-active');
-    STATE.printPreview = true;
-
-    // Show preview controls, hide main print button
-    $('print-preview-controls').style.display = 'flex';
-    $('btn-print').style.display = 'none';
-    updateStudioButtons();
-    $('status-hint').textContent = 'Print preview — adjust ink/press and Re-print · Esc to edit';
-  } catch (e) {
-    $('status-hint').textContent = 'Print failed: ' + e.message;
-    console.error(e);
-  }
-  $('btn-print').disabled = false;
-}
-
-function updateStudioButtons() {
-  document.querySelectorAll('[data-ink]').forEach(b => {
-    b.classList.toggle('active-studio', b.dataset.ink === STATE.inkLoad);
-  });
-  document.querySelectorAll('[data-impr]').forEach(b => {
-    b.classList.toggle('active-studio', b.dataset.impr === String(STATE.impressions));
-  });
-}
-
-function exitPrintPreview() {
+  // Hide any existing print
   const c = $('inline-print-canvas');
-  c.classList.remove('print-revealing');
   c.style.display = 'none';
-  workspaceEl.classList.remove('print-preview-active');
-  STATE.printPreview = false;
-  $('print-preview-controls').style.display = 'none';
-  $('btn-print').style.display = '';
-  setMode(STATE.mode);
-}
+  $('print-mirror-label').classList.remove('visible');
 
-function togglePrintPreview() {
-  if (STATE.printPreview) exitPrintPreview();
-  else enterPrintPreview();
+  // Get paper position for animation
+  const paperRect = paperEl.getBoundingClientRect();
+  const wsRect = workspaceEl.getBoundingClientRect();
+  const animLeft = paperRect.left - wsRect.left;
+  const animTop = paperRect.top - wsRect.top;
+  const animW = paperRect.width;
+  const animH = paperRect.height;
+  const paperBase = PAPER_TYPES[STATE.paperType].base;
+
+  const animLayer = $('print-anim-layer');
+  const inkWash = $('print-ink-wash');
+  const paperSheet = $('print-paper-sheet');
+  const barenSweep = $('print-baren-sweep');
+
+  // Reset animation state
+  animLayer.style.display = 'block';
+  inkWash.classList.remove('visible');
+  paperSheet.classList.remove('placed');
+  barenSweep.style.opacity = '0';
+
+  // Position paper sheet over paper area
+  paperSheet.style.left = animLeft + 'px';
+  paperSheet.style.top = animTop + 'px';
+  paperSheet.style.width = animW + 'px';
+  paperSheet.style.height = animH + 'px';
+  paperSheet.style.background = paperBase;
+
+  // Phase 1: Ink wash
+  $('status-hint').textContent = 'Inking the blocks...';
+  inkWash.classList.add('visible');
+  await wait(400);
+
+  // Phase 2: Place paper
+  $('status-hint').textContent = 'Placing paper on blocks...';
+  paperSheet.classList.add('placed');
+  await wait(600);
+
+  // Phase 3: Baren pressure sweep
+  $('status-hint').textContent = 'Pressing with baren...';
+  const sweepSize = 100;
+  barenSweep.style.width = sweepSize + 'px';
+  barenSweep.style.height = sweepSize + 'px';
+  barenSweep.style.opacity = '1';
+
+  // Sweep across the paper
+  const steps = 20;
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const sx = animLeft + t * animW - sweepSize / 2;
+    const sy = animTop + animH * 0.3 + Math.sin(t * Math.PI * 2) * animH * 0.2 - sweepSize / 2;
+    barenSweep.style.left = sx + 'px';
+    barenSweep.style.top = sy + 'px';
+    await wait(40);
+  }
+  barenSweep.style.opacity = '0';
+
+  // Start rendering print while animation plays
+  $('status-hint').textContent = 'Pulling the print...';
+  const opts = {
+    paperType: PAPER_TYPES[STATE.paperType],
+    inkLoad: INK_LOADS[STATE.inkLoad],
+    impressions: STATE.impressions,
+  };
+  const canvas = await PrintEngine.print(STATE.elements, STATE.paletteId, STATE.paperW, STATE.paperH, opts);
+
+  // Draw mirrored result to the inline canvas
+  c.width = canvas.width;
+  c.height = canvas.height;
+  const ctx = c.getContext('2d');
+  ctx.save();
+  ctx.translate(canvas.width, 0);
+  ctx.scale(-1, 1);
+  ctx.drawImage(canvas, 0, 0);
+  ctx.restore();
+  c._printCanvas = canvas;
+  c._printMirrored = true;
+
+  positionPrintCanvas();
+
+  // Phase 4: Peel — lift paper sheet to reveal print
+  paperSheet.style.transformOrigin = 'center bottom';
+  paperSheet.style.transition = 'transform 1.0s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s ease 0.4s';
+  paperSheet.style.transform = 'perspective(800px) rotateX(-60deg) translateY(-30px)';
+  paperSheet.style.opacity = '0.3';
+
+  // Show print canvas underneath
+  c.style.display = 'block';
+  workspaceEl.classList.add('print-preview-active');
+  STATE.printPreview = true;
+  await wait(500);
+
+  // Phase 5: Settle
+  inkWash.classList.remove('visible');
+  await wait(600);
+
+  // Clean up animation layers
+  animLayer.style.display = 'none';
+  paperSheet.style.transform = '';
+  paperSheet.style.opacity = '';
+  paperSheet.style.transition = '';
+  paperSheet.classList.remove('placed');
+
+  // Show mirror label
+  $('print-mirror-label').classList.add('visible');
+
+  pullBtn.disabled = false;
+  $('status-hint').textContent = 'Print complete — adjust settings and re-pull, or save PNG · Esc to exit';
 }
 
 // ============================================================
@@ -2407,9 +2621,13 @@ function setupKeyboard() {
     if (e.key === 'v' && !e.ctrlKey && !e.metaKey) { setMode(STATE.mode === 'select' ? 'carve' : 'select'); e.preventDefault(); }
     if (e.key === 'e' && !e.ctrlKey && !e.metaKey) { setMode(STATE.mode === 'erase' ? 'select' : 'erase'); e.preventDefault(); }
     if (e.key === 'i' && !e.ctrlKey && !e.metaKey) { setViewMode(STATE.viewMode === 'ink' ? 'carve' : 'ink'); e.preventDefault(); }
-    if (e.key === 'p' && !e.ctrlKey && !e.metaKey) { togglePrintPreview(); e.preventDefault(); }
+    if (e.key === 'p' && !e.ctrlKey && !e.metaKey) {
+      if (STATE.printStudioOpen) closePrintStudio();
+      else openPrintStudio();
+      e.preventDefault();
+    }
     if (e.key === 'Escape') {
-      if (STATE.printPreview) { exitPrintPreview(); }
+      if (STATE.printStudioOpen) { closePrintStudio(); }
       else { setMode('select'); if (STATE.viewMode === 'ink') setViewMode('carve'); }
       e.preventDefault();
     }
@@ -2475,41 +2693,25 @@ function setupToolbar() {
     });
   });
 
-  // Print — now renders inline in workspace
-  $('btn-print').addEventListener('click', () => togglePrintPreview());
-  $('btn-print-back').addEventListener('click', () => exitPrintPreview());
-  $('btn-print-save').addEventListener('click', () => {
+  // Print Studio
+  $('btn-print').addEventListener('click', () => {
+    if (STATE.printStudioOpen) closePrintStudio();
+    else openPrintStudio();
+  });
+  $('ps-pull-print').addEventListener('click', () => pullPrint());
+  $('ps-save-png').addEventListener('click', () => {
     const c = $('inline-print-canvas');
-    if (c._printCanvas) PrintEngine.exportPng(c._printCanvas, 'mokuri-print.png');
-  });
-  $('btn-reprint').addEventListener('click', () => enterPrintPreview());
-
-  // Studio material buttons (ink load + impressions)
-  document.querySelectorAll('[data-ink]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      STATE.inkLoad = btn.dataset.ink;
-      updateStudioButtons();
-      autoSave();
-    });
-  });
-  document.querySelectorAll('[data-impr]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      STATE.impressions = parseInt(btn.dataset.impr);
-      updateStudioButtons();
-      autoSave();
-    });
-  });
-
-  // Legacy modal (keep wired but hidden — may remove later)
-  $('btn-export-png').addEventListener('click', () => {
-    const previewCanvas = $('print-canvas');
-    if (previewCanvas._printCanvas) {
-      PrintEngine.exportPng(previewCanvas._printCanvas, 'mokuri-print.png');
+    if (c._printCanvas) {
+      // Export the mirrored version (what user sees)
+      const mirrorCanvas = document.createElement('canvas');
+      mirrorCanvas.width = c.width;
+      mirrorCanvas.height = c.height;
+      const mctx = mirrorCanvas.getContext('2d');
+      mctx.drawImage(c, 0, 0);
+      PrintEngine.exportPng(mirrorCanvas, 'mokuri-print.png');
     }
   });
-  $('btn-print-close').addEventListener('click', () => {
-    $('print-overlay').classList.remove('visible');
-  });
+  $('ps-back-edit').addEventListener('click', () => closePrintStudio());
 
   // File menu
   const fileMenu = $('file-menu');
