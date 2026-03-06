@@ -93,7 +93,7 @@ Strokes are stored in element-local coordinates (`el.carveStrokes[]`) and move/s
 
 ## Color System
 
-- 5 palettes: Sumi, Edo, Hokusai, Sakura, Aki (5 colors each)
+- 7 palettes: Sumi, Edo, Hokusai, Hiroshige, Sakura, Aki, Yoru (5 colors each)
 - Global palette selection via `STATE.paletteId`
 - Per-element zone overrides via `el.colorOverrides[zoneId]`
 - Zone editor visible in Ink mode when element is selected

@@ -27,12 +27,12 @@ const PrintEngine = (() => {
   //  PAPER TEXTURE — Canvas base layer (washi fiber structure)
   // ============================================================
 
-  function drawPaperTexture(ctx, w, h) {
-    ctx.fillStyle = '#f5f0e6';
+  function drawPaperTexture(ctx, w, h, paperType) {
+    ctx.fillStyle = paperType.base;
     ctx.fillRect(0, 0, w, h);
 
-    // Prominent fiber bundles — thick, visible strands
-    const bundleCount = Math.floor(w * h / 2000);
+    // Prominent fiber bundles — density varies by paper type
+    const bundleCount = Math.floor(w * h / 2000 * paperType.fiberDensity);
     for (let i = 0; i < bundleCount; i++) {
       const x = Math.random() * w;
       const y = Math.random() * h;
@@ -41,14 +41,14 @@ const PrintEngine = (() => {
       ctx.beginPath();
       ctx.moveTo(x, y);
       ctx.lineTo(x + Math.cos(angle) * len, y + Math.sin(angle) * len);
-      const a = (0.06 + Math.random() * 0.08).toFixed(3);
+      const a = (paperType.fiberOpacity * 0.75 + Math.random() * paperType.fiberOpacity).toFixed(3);
       ctx.strokeStyle = `rgba(185,170,140,${a})`;
       ctx.lineWidth = 1.5 + Math.random() * 3;
       ctx.stroke();
     }
 
     // Fine individual fibers
-    const fineCount = Math.floor(w * h / 400);
+    const fineCount = Math.floor(w * h / 400 * paperType.fiberDensity);
     for (let i = 0; i < fineCount; i++) {
       const x = Math.random() * w;
       const y = Math.random() * h;
@@ -57,20 +57,20 @@ const PrintEngine = (() => {
       ctx.beginPath();
       ctx.moveTo(x, y);
       ctx.lineTo(x + Math.cos(angle) * len, y + Math.sin(angle) * len);
-      const a = (0.03 + Math.random() * 0.04).toFixed(3);
+      const a = (paperType.fiberOpacity * 0.4 + Math.random() * paperType.fiberOpacity * 0.5).toFixed(3);
       ctx.strokeStyle = `rgba(200,185,155,${a})`;
       ctx.lineWidth = 0.3 + Math.random() * 1;
       ctx.stroke();
     }
 
-    // Tonal warmth patches — soft color variation across the sheet
-    for (let i = 0; i < 15; i++) {
+    // Tonal warmth patches — number varies by paper type
+    for (let i = 0; i < paperType.warmPatches; i++) {
       const cx = Math.random() * w;
       const cy = Math.random() * h;
       const r = 60 + Math.random() * 180;
       const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
       grad.addColorStop(0, Math.random() > 0.5 ? 'rgba(215,200,170,0.05)' : 'rgba(235,228,215,0.04)');
-      grad.addColorStop(1, 'rgba(245,240,230,0)');
+      grad.addColorStop(1, `${paperType.base}00`);
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, w, h);
     }
@@ -80,10 +80,15 @@ const PrintEngine = (() => {
   //  RENDER COLORED SVG — organic edges, ink pooling, misregistration
   // ============================================================
 
-  function renderColoredSvg(elements, palette, paperW, paperH, scale) {
+  function renderColoredSvg(elements, palette, paperW, paperH, scale, inkLoad, impOffset) {
+    inkLoad = inkLoad || { opacityMul: 1.0, edgeMul: 1.0, turbScale: 3.5, misreg: 3 };
+    impOffset = impOffset || { x: 0, y: 0 };
     const w = paperW * scale;
     const h = paperH * scale;
     const seed = Math.floor(Math.random() * 10000);
+    const inkOpacity = Math.min(1, 0.92 * inkLoad.opacityMul);
+    const edgeWeight = 2.5 * inkLoad.edgeMul;
+    const edgeOpacity = Math.min(0.7, 0.45 * inkLoad.edgeMul);
 
     // feTurbulence makes every edge slightly wobbly/hand-carved
     const defs = `<defs>
@@ -91,12 +96,14 @@ const PrintEngine = (() => {
               color-interpolation-filters="sRGB">
         <feTurbulence type="turbulence" baseFrequency="0.04" numOctaves="3"
                       seed="${seed}" result="noise"/>
-        <feDisplacementMap in="SourceGraphic" in2="noise" scale="3.5"
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="${inkLoad.turbScale}"
                           xChannelSelector="R" yChannelSelector="G"/>
       </filter>
     </defs>`;
 
     let svgContent = '';
+    let bokashiDefs = '';
+    let bokashiCount = 0;
 
     elements.forEach(el => {
       const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
@@ -107,9 +114,9 @@ const PrintEngine = (() => {
       const offX = -vb[2] / 2;
       const offY = -vb[3] / 2;
 
-      // Per-element spatial misregistration (like separate block pressing)
-      const misX = (Math.random() - 0.5) * 3;
-      const misY = (Math.random() - 0.5) * 3;
+      // Per-element spatial misregistration + impression offset
+      const misX = (Math.random() - 0.5) * inkLoad.misreg + impOffset.x;
+      const misY = (Math.random() - 0.5) * inkLoad.misreg + impOffset.y;
 
       const xform = `translate(${el.x + misX},${el.y + misY}) rotate(${el.rotation}) scale(${el.scaleX},${el.scaleY})`;
       const inner = `translate(${offX},${offY})`;
@@ -122,43 +129,56 @@ const PrintEngine = (() => {
           || (z ? palette.colors[z.defaultPaletteSlot % palette.colors.length] : palette.colors[0]);
       };
 
+      // Bokashi fill — returns solid color or gradient URL
+      const zoneFillAttr = (zoneId) => {
+        const bokDir = el.zoneBokashi && el.zoneBokashi[zoneId];
+        if (!bokDir) return zoneColor(zoneId);
+        const gid = `bg${bokashiCount++}`;
+        const dirs = { up: [0.5,1,0.5,0], down: [0.5,0,0.5,1], left: [1,0.5,0,0.5], right: [0,0.5,1,0.5] };
+        const [x1,y1,x2,y2] = dirs[bokDir] || dirs.down;
+        const col = zoneColor(zoneId);
+        bokashiDefs += `<linearGradient id="${gid}" gradientUnits="objectBoundingBox" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}">
+          <stop offset="0%" stop-color="${col}" stop-opacity="1"/>
+          <stop offset="100%" stop-color="${col}" stop-opacity="0.08"/>
+        </linearGradient>`;
+        return `url(#${gid})`;
+      };
+
       // Render fill paths: dark edge behind (ink pooling) + semi-transparent ink
       const renderFills = (fillPaths) => {
         fillPaths.forEach(p => {
           if (p.type !== 'fill') return;
           const col = zoneColor(p.zone);
-          // Ink pooling at carved boundaries
-          svgContent += `<path d="${p.d}" fill="none" stroke="${darken(col, 0.35)}" stroke-width="2.5" stroke-linejoin="round" stroke-opacity="0.45"/>`;
-          // Main ink — slightly transparent so paper fiber shows through
-          svgContent += `<path d="${p.d}" fill="${col}" fill-opacity="0.92" stroke="none"/>`;
+          const fill = zoneFillAttr(p.zone);
+          svgContent += `<path d="${p.d}" fill="none" stroke="${darken(col, 0.35)}" stroke-width="${edgeWeight}" stroke-linejoin="round" stroke-opacity="${edgeOpacity.toFixed(2)}"/>`;
+          svgContent += `<path d="${p.d}" fill="${fill}" fill-opacity="${inkOpacity.toFixed(2)}" stroke="none"/>`;
         });
       };
 
       if (isBlock) {
         renderFills(carve.paths);
       } else {
-        // Base silhouette from block level
         renderFills(def.carveLevels[0].paths);
-        // Carved detail overlays
         carve.paths.forEach(p => {
           const col = zoneColor(p.zone);
           if (p.type === 'fill') {
-            svgContent += `<path d="${p.d}" fill="${col}" fill-opacity="0.92" stroke="${darken(col, 0.3)}" stroke-width="0.8" stroke-opacity="0.4" stroke-linejoin="round"/>`;
+            const fill = zoneFillAttr(p.zone);
+            svgContent += `<path d="${p.d}" fill="${fill}" fill-opacity="${inkOpacity.toFixed(2)}" stroke="${darken(col, 0.3)}" stroke-width="0.8" stroke-opacity="${(0.4 * inkLoad.edgeMul).toFixed(2)}" stroke-linejoin="round"/>`;
           } else if (p.type === 'stroke') {
             svgContent += `<path d="${p.d}" fill="none" stroke="${darken(col, 0.45)}" stroke-width="${p.strokeWidth || 1.5}" stroke-opacity="0.85" stroke-linecap="round" stroke-linejoin="round"/>`;
           }
         });
       }
 
-      // Custom carve strokes — graduated paper reveal via shared helper
+      // Custom carve strokes
       if (el.carveStrokes && el.carveStrokes.length) {
         el.carveStrokes.forEach(stroke => {
           if (stroke.points.length < 2) return;
           const items = (typeof carveStrokeRenderData === 'function')
             ? carveStrokeRenderData(stroke, '#f5f0e6', 'rgba(0,0,0,0)')
-            : []; // fallback if helper unavailable
+            : [];
           items.forEach(item => {
-            if (item.c === 'rgba(0,0,0,0)') return; // skip groove shadow in print
+            if (item.c === 'rgba(0,0,0,0)') return;
             svgContent += `<path d="${item.d}" fill="none" stroke="${item.c}" stroke-width="${item.w}" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="${(item.a * 0.95).toFixed(3)}"/>`;
           });
         });
@@ -167,9 +187,8 @@ const PrintEngine = (() => {
       svgContent += '</g></g>';
     });
 
-    // Transparent background — paper texture is on the canvas beneath
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${paperW} ${paperH}">
-      ${defs}
+      <defs>${defs.replace('<defs>', '').replace('</defs>', '')}${bokashiDefs}</defs>
       ${svgContent}
     </svg>`;
   }
@@ -261,7 +280,11 @@ const PrintEngine = (() => {
   //  MAIN PRINT PIPELINE
   // ============================================================
 
-  async function print(elements, paletteId, paperW, paperH) {
+  async function print(elements, paletteId, paperW, paperH, opts) {
+    opts = opts || {};
+    const paperType = opts.paperType || PAPER_TYPES.kozo;
+    const inkLoad = opts.inkLoad || INK_LOADS.standard;
+    const impressions = opts.impressions || 1;
     const palette = PALETTES[paletteId];
     const scale = 2;
     const w = Math.round(paperW * scale);
@@ -272,33 +295,42 @@ const PrintEngine = (() => {
     canvas.height = h;
     const ctx = canvas.getContext('2d');
 
-    // Step 1 — Paper texture base layer
-    drawPaperTexture(ctx, w, h);
+    // Step 1 — Paper texture base layer (varies by paper type)
+    drawPaperTexture(ctx, w, h, paperType);
 
-    // Step 2 — Render SVG (turbulence + edge darkening + misregistration)
-    const svgStr = renderColoredSvg(elements, palette, paperW, paperH, scale);
-    const blob = new Blob([svgStr], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
-
-    await new Promise((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => {
-        // Multiply blend — ink absorbs into paper, fiber texture modulates ink
-        ctx.globalCompositeOperation = 'multiply';
-        ctx.drawImage(img, 0, 0, w, h);
-        ctx.globalCompositeOperation = 'source-over';
-        URL.revokeObjectURL(url);
-        resolve();
+    // Step 2 — Render SVG with ink/impression settings
+    for (let imp = 0; imp < impressions; imp++) {
+      const impOffset = imp === 0 ? { x: 0, y: 0 } : {
+        x: (Math.random() - 0.5) * 1.2,
+        y: (Math.random() - 0.5) * 1.2,
       };
-      img.onerror = reject;
-      img.src = url;
-    });
+      const impOpacity = impressions === 1 ? 1.0 : (imp === 0 ? 0.85 : 0.5);
 
-    // Step 3 — Post-processing
+      const svgStr = renderColoredSvg(elements, palette, paperW, paperH, scale, inkLoad, impOffset);
+      const blob = new Blob([svgStr], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+
+      await new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          ctx.globalCompositeOperation = 'multiply';
+          ctx.globalAlpha = impOpacity;
+          ctx.drawImage(img, 0, 0, w, h);
+          ctx.globalAlpha = 1.0;
+          ctx.globalCompositeOperation = 'source-over';
+          URL.revokeObjectURL(url);
+          resolve();
+        };
+        img.onerror = reject;
+        img.src = url;
+      });
+    }
+
+    // Step 3 — Post-processing (intensity scaled by paper type)
     applyColorMuting(ctx, w, h);
-    applyBarenPressure(ctx, w, h);
+    applyBarenPressure(ctx, w, h, paperType.barenIntensity);
     applyWoodGrain(ctx, w, h);
-    applyFineNoise(ctx, w, h);
+    applyFineNoise(ctx, w, h, paperType.noiseAmt);
 
     return canvas;
   }

@@ -493,8 +493,161 @@ html, body {
 .zone-reset-btn:hover { color: var(--text); border-color: var(--text-muted); }
 
 /* Inline print preview */
-.workspace.print-preview-active .workspace-svg { opacity: 0; pointer-events: none; }
-.workspace.print-preview-active .washi-bg { opacity: 0.3; }
+.workspace.print-preview-active .workspace-svg { opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
+.workspace.print-preview-active .washi-bg { opacity: 0.3; transition: opacity 0.4s ease; }
+
+/* Print reveal animation — paper peels up to show print beneath */
+@keyframes paper-peel {
+  0% {
+    transform: perspective(800px) rotateX(0deg);
+    opacity: 1;
+    filter: brightness(1);
+  }
+  30% {
+    transform: perspective(800px) rotateX(-25deg) translateY(-8px);
+    opacity: 0.95;
+    filter: brightness(1.05);
+  }
+  60% {
+    transform: perspective(800px) rotateX(-45deg) translateY(-20px);
+    opacity: 0.7;
+    filter: brightness(1.1);
+  }
+  100% {
+    transform: perspective(800px) rotateX(0deg) translateY(0);
+    opacity: 1;
+    filter: brightness(1);
+  }
+}
+@keyframes print-settle {
+  0% { box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+  100% { box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+}
+#inline-print-canvas.print-revealing {
+  animation: paper-peel 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards,
+             print-settle 0.6s 1.0s ease-out forwards;
+  transform-origin: center bottom;
+}
+
+/* Paper selector modal */
+.paper-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 25, 18, 0.7);
+  z-index: 200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.paper-modal.visible { display: flex; }
+.paper-modal-content {
+  background: var(--panel-bg);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 420px;
+  width: 90vw;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+.paper-modal-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.paper-modal-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+.paper-presets {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.paper-preset {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 2px solid var(--panel-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  background: var(--bg);
+}
+.paper-preset:hover { border-color: var(--accent); background: var(--selection); }
+.paper-preset.active { border-color: var(--accent); background: var(--selection); }
+.paper-preset-icon {
+  width: 40px;
+  height: 40px;
+  background: #f5f0e6;
+  border: 1px solid var(--panel-border);
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.paper-preset-icon svg { display: block; }
+.paper-preset-info { flex: 1; min-width: 0; }
+.paper-preset-name { font-size: 12px; font-weight: 600; color: var(--text); }
+.paper-preset-size { font-size: 10px; color: var(--text-muted); }
+.paper-modal-actions { text-align: right; }
+.paper-modal-btn {
+  padding: 6px 16px;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+.paper-modal-btn:hover { border-color: var(--accent); color: var(--text); }
+
+/* Paper type selector in modal */
+.paper-modal-subtitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.paper-type-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.paper-type-card {
+  flex: 1;
+  padding: 10px;
+  border: 2px solid var(--panel-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  background: var(--bg);
+  text-align: center;
+}
+.paper-type-card:hover { border-color: var(--accent); }
+.paper-type-card.active { border-color: var(--accent); background: var(--selection); }
+.paper-type-swatch {
+  width: 100%;
+  height: 24px;
+  border-radius: 3px;
+  border: 1px solid var(--panel-border);
+  margin-bottom: 6px;
+}
+.paper-type-name { font-size: 11px; font-weight: 600; color: var(--text); }
+.paper-type-desc { font-size: 9px; color: var(--text-muted); }
+
+/* Studio material controls in print toolbar */
+.studio-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.studio-btn { font-size: 13px !important; width: 32px !important; }
+.studio-btn.active-studio { background: var(--accent) !important; color: #fff !important; }
 </style>
 </head>
 <body>
@@ -545,6 +698,7 @@ html, body {
       <button class="tool-btn" id="btn-file" title="File menu">📁</button>
       <div id="file-menu" style="display:none;position:absolute;right:0;top:100%;background:var(--panel-bg);border:1px solid var(--border);border-radius:6px;padding:6px 0;min-width:160px;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
         <div class="file-menu-item" id="fm-new">📄 New Composition</div>
+        <div class="file-menu-item" id="fm-paper">📐 Paper Size...</div>
         <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
         <div class="file-menu-item" id="fm-save-1">💾 Save Slot 1</div>
         <div class="file-menu-item" id="fm-save-2">💾 Save Slot 2</div>
@@ -559,6 +713,18 @@ html, body {
     <!-- Print preview controls (visible during inline preview) -->
     <span id="print-preview-controls" style="display:none;align-items:center;gap:4px;">
       <button class="tool-btn" id="btn-print-back" title="Back to Edit (Esc)">← Edit</button>
+      <div class="toolbar-separator"></div>
+      <span class="studio-label">Ink</span>
+      <button class="tool-btn studio-btn" data-ink="light" title="Light ink 淡">淡</button>
+      <button class="tool-btn studio-btn" data-ink="standard" title="Standard ink 中">中</button>
+      <button class="tool-btn studio-btn" data-ink="heavy" title="Heavy ink 濃">濃</button>
+      <div class="toolbar-separator"></div>
+      <span class="studio-label">Press</span>
+      <button class="tool-btn studio-btn" data-impr="1" title="Single impression">1×</button>
+      <button class="tool-btn studio-btn" data-impr="2" title="Double impression">2×</button>
+      <button class="tool-btn studio-btn" data-impr="3" title="Triple impression">3×</button>
+      <div class="toolbar-separator"></div>
+      <button class="tool-btn" id="btn-reprint" title="Re-print with current settings">🖨 Re-print</button>
       <button class="tool-btn" id="btn-print-save" title="Save PNG">💾 PNG</button>
     </span>
   </div>
@@ -618,6 +784,20 @@ html, body {
   </div>
 </div>
 
+<!-- Paper selector modal -->
+<div class="paper-modal" id="paper-modal">
+  <div class="paper-modal-content">
+    <div class="paper-modal-title">Choose Your Paper</div>
+    <div class="paper-modal-hint">Select a paper size and type</div>
+    <div class="paper-presets" id="paper-presets"></div>
+    <div class="paper-modal-subtitle">Paper Type</div>
+    <div class="paper-type-row" id="paper-type-row"></div>
+    <div class="paper-modal-actions">
+      <button class="paper-modal-btn" id="paper-modal-cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <script src="elements.js"></script>
 <script src="extended-elements.js"></script>
 <script src="fauna-elements.js"></script>
@@ -663,6 +843,11 @@ const STATE = {
   viewMode: 'carve',   // 'carve' | 'ink'
   printPreview: false,  // true when showing inline print preview
 
+  // Studio materials
+  paperType: 'kozo',    // 'hosho' | 'kozo' | 'torinoko'
+  inkLoad: 'standard',  // 'light' | 'standard' | 'heavy'
+  impressions: 1,       // 1-3
+
   // Undo
   undoStack: [],
   redoStack: [],
@@ -672,17 +857,55 @@ const STATE = {
 //  PALETTES (used at print time only)
 // ============================================================
 const PALETTES = {
-  sumi:    { name: 'Sumi 墨',    colors: ['#1a1a1a', '#3d3d3d', '#6b6b6b', '#9e9e9e', '#c8c8c8'] },
-  edo:     { name: 'Edo',         colors: ['#1a3a5c', '#c23b22', '#c49a2a', '#5c7a4a', '#2a2a2a'] },
-  hokusai: { name: 'Hokusai',     colors: ['#1b3a6b', '#4a90c4', '#f5f0e1', '#8b4513', '#3a3a3a'] },
-  sakura:  { name: 'Sakura 桜',   colors: ['#c47a90', '#8fb573', '#f5f0e1', '#7a5c47', '#d4a0a0'] },
-  aki:     { name: 'Aki 秋',      colors: ['#b33a2a', '#d4a030', '#c46a20', '#3a5c3a', '#5c3a2a'] },
+  sumi:      { name: 'Sumi 墨',      colors: ['#1a1a1a', '#3d3d3d', '#6b6b6b', '#9e9e9e', '#c8c8c8'] },
+  edo:       { name: 'Edo',           colors: ['#1a3a5c', '#c23b22', '#c49a2a', '#5c7a4a', '#2a2a2a'] },
+  hokusai:   { name: 'Hokusai',       colors: ['#1b3a6b', '#4a90c4', '#f5f0e1', '#8b4513', '#3a3a3a'] },
+  hiroshige: { name: 'Hiroshige',     colors: ['#1b4872', '#8aafc4', '#b8a89a', '#5a7a6a', '#c07a7a'] },
+  sakura:    { name: 'Sakura 桜',     colors: ['#c47a90', '#8fb573', '#f5f0e1', '#7a5c47', '#d4a0a0'] },
+  aki:       { name: 'Aki 秋',        colors: ['#b33a2a', '#d4a030', '#c46a20', '#3a5c3a', '#5c3a2a'] },
+  yoru:      { name: 'Yoru 夜',       colors: ['#1a1a3a', '#8a8aaa', '#c4b870', '#5a4a6a', '#2a2a4a'] },
 };
 
 // Monochrome wood tones for the carving workspace
 const WOOD_TONES = ['#5c4a3a', '#6b5a48', '#7a6955', '#8a7963', '#6f5c4b'];
 const PAPER_COLOR = '#f5f0e6';
 const CARVED_STROKE = '#3a3028'; // dark line for carved outlines
+
+// Paper size presets
+const PAPER_PRESETS = [
+  { name: 'Landscape',      w: 600, h: 420, icon: '▬' },
+  { name: 'Portrait',       w: 420, h: 600, icon: '▮' },
+  { name: 'Square',         w: 500, h: 500, icon: '◻' },
+  { name: 'Wide Panoramic', w: 800, h: 320, icon: '━' },
+  { name: 'Tall Scroll',    w: 320, h: 800, icon: '┃' },
+  { name: 'Postcard',       w: 400, h: 280, icon: '▭' },
+];
+
+// Paper type definitions — each affects print texture, base color, ink behavior
+const PAPER_TYPES = {
+  hosho: {
+    name: 'Hosho 奉書', desc: 'Smooth, bright, precise',
+    base: '#faf6ee', fiberDensity: 0.3, fiberOpacity: 0.04,
+    warmPatches: 6, inkOpacity: 0.93, barenIntensity: 0.7, noiseAmt: 5,
+  },
+  kozo: {
+    name: 'Kozo 楮', desc: 'Fibrous, warm, organic',
+    base: '#f5f0e6', fiberDensity: 1.0, fiberOpacity: 0.08,
+    warmPatches: 15, inkOpacity: 0.92, barenIntensity: 1.0, noiseAmt: 7,
+  },
+  torinoko: {
+    name: 'Torinoko 鳥の子', desc: 'Warm cream, elegant',
+    base: '#f0e6d0', fiberDensity: 0.2, fiberOpacity: 0.03,
+    warmPatches: 20, inkOpacity: 0.95, barenIntensity: 0.5, noiseAmt: 4,
+  },
+};
+
+// Ink load definitions — affects opacity, edge weight, turbulence
+const INK_LOADS = {
+  light:    { name: '淡 Light',    opacityMul: 0.7, edgeMul: 0.5, turbScale: 3.0, misreg: 4 },
+  standard: { name: '中 Standard', opacityMul: 1.0, edgeMul: 1.0, turbScale: 3.5, misreg: 3 },
+  heavy:    { name: '濃 Heavy',    opacityMul: 1.08, edgeMul: 1.5, turbScale: 4.5, misreg: 2 },
+};
 
 // Carve tool definitions — profile layers define cross-section from edge to center
 const CARVE_TOOLS = {
@@ -914,6 +1137,37 @@ function renderElementSvg(el, layerIndex) {
   const offsetX = -vb[2] / 2;
   const offsetY = -vb[3] / 2;
 
+  // Bokashi gradients — create defs if needed
+  const gradDefs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+  let hasGrads = false;
+  const zoneFill = (zoneId) => {
+    if (!inkMode) return zoneColor(zoneId);
+    const bokDir = el.zoneBokashi && el.zoneBokashi[zoneId];
+    if (!bokDir) return zoneColor(zoneId);
+    // Create gradient for this zone
+    const gradId = `bok-${el.id}-${zoneId}`;
+    const grad = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+    grad.setAttribute('id', gradId);
+    grad.setAttribute('gradientUnits', 'objectBoundingBox');
+    const dirs = { up: [0.5,1,0.5,0], down: [0.5,0,0.5,1], left: [1,0.5,0,0.5], right: [0,0.5,1,0.5] };
+    const [x1,y1,x2,y2] = dirs[bokDir] || dirs.down;
+    grad.setAttribute('x1', x1); grad.setAttribute('y1', y1);
+    grad.setAttribute('x2', x2); grad.setAttribute('y2', y2);
+    const s0 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+    s0.setAttribute('offset', '0%');
+    s0.setAttribute('stop-color', zoneColor(zoneId));
+    s0.setAttribute('stop-opacity', '1');
+    const s1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+    s1.setAttribute('offset', '100%');
+    s1.setAttribute('stop-color', zoneColor(zoneId));
+    s1.setAttribute('stop-opacity', '0');
+    grad.appendChild(s0);
+    grad.appendChild(s1);
+    gradDefs.appendChild(grad);
+    hasGrads = true;
+    return `url(#${gradId})`;
+  };
+
   const inner = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   inner.setAttribute('transform', `translate(${offsetX}, ${offsetY})`);
 
@@ -923,7 +1177,7 @@ function renderElementSvg(el, layerIndex) {
       if (p.type !== 'fill') return;
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       path.setAttribute('d', p.d);
-      path.setAttribute('fill', zoneColor(p.zone));
+      path.setAttribute('fill', zoneFill(p.zone));
       path.setAttribute('stroke', 'none');
       inner.appendChild(path);
     });
@@ -934,7 +1188,7 @@ function renderElementSvg(el, layerIndex) {
       if (p.type !== 'fill') return;
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       path.setAttribute('d', p.d);
-      path.setAttribute('fill', zoneColor(p.zone));
+      path.setAttribute('fill', zoneFill(p.zone));
       path.setAttribute('stroke', 'none');
       inner.appendChild(path);
     });
@@ -946,7 +1200,7 @@ function renderElementSvg(el, layerIndex) {
 
       if (p.type === 'fill') {
         if (inkMode) {
-          path.setAttribute('fill', zoneColor(p.zone));
+          path.setAttribute('fill', zoneFill(p.zone));
           path.setAttribute('stroke', 'none');
         } else {
           path.setAttribute('fill', PAPER_COLOR);
@@ -988,6 +1242,7 @@ function renderElementSvg(el, layerIndex) {
     });
   }
 
+  if (hasGrads) g.insertBefore(gradDefs, g.firstChild);
   g.appendChild(inner);
   return g;
 }
@@ -1227,6 +1482,9 @@ function getCompositionData() {
     paletteId: STATE.paletteId,
     paperW: STATE.paperW,
     paperH: STATE.paperH,
+    paperType: STATE.paperType,
+    inkLoad: STATE.inkLoad,
+    impressions: STATE.impressions,
     savedAt: Date.now(),
   };
 }
@@ -1235,8 +1493,18 @@ function applyCompositionData(data) {
   STATE.elements = data.elements || [];
   STATE.nextId = data.nextId || (STATE.elements.length ? Math.max(...STATE.elements.map(e => e.id)) + 1 : 1);
   STATE.paletteId = data.paletteId || 'edo';
+  if (data.paperW) STATE.paperW = data.paperW;
+  if (data.paperH) STATE.paperH = data.paperH;
+  STATE.paperType = data.paperType || 'kozo';
+  STATE.inkLoad = data.inkLoad || 'standard';
+  STATE.impressions = data.impressions || 1;
+  // Update workspace paper color for paper type
+  const pt = PAPER_TYPES[STATE.paperType];
+  if (pt) paperEl.setAttribute('fill', pt.base);
   STATE.undoStack = [];
   STATE.redoStack = [];
+  layoutPaper();
+  fitPaperToView();
   deselectAll();
   rerenderAll();
   buildPaletteUI();
@@ -1307,6 +1575,87 @@ function newComposition() {
   updateStatus();
   autoSave();
   $('status-hint').textContent = 'New composition';
+}
+
+// ============================================================
+//  PAPER SELECTOR
+// ============================================================
+function openPaperSelector() {
+  const modal = $('paper-modal');
+  const grid = $('paper-presets');
+  grid.innerHTML = '';
+
+  PAPER_PRESETS.forEach(preset => {
+    const card = document.createElement('div');
+    card.className = 'paper-preset' + (STATE.paperW === preset.w && STATE.paperH === preset.h ? ' active' : '');
+
+    // Mini preview showing proportions
+    const iconBox = document.createElement('div');
+    iconBox.className = 'paper-preset-icon';
+    const maxDim = 32;
+    const scale = maxDim / Math.max(preset.w, preset.h);
+    const rw = Math.round(preset.w * scale);
+    const rh = Math.round(preset.h * scale);
+    const paperBase = PAPER_TYPES[STATE.paperType].base;
+    iconBox.innerHTML = `<svg width="${rw}" height="${rh}" viewBox="0 0 ${rw} ${rh}">
+      <rect width="${rw}" height="${rh}" fill="${paperBase}" stroke="#8b6b4a" stroke-width="1" rx="1"/>
+    </svg>`;
+
+    const info = document.createElement('div');
+    info.className = 'paper-preset-info';
+    info.innerHTML = `<div class="paper-preset-name">${preset.name}</div>
+      <div class="paper-preset-size">${preset.w} × ${preset.h}</div>`;
+
+    card.appendChild(iconBox);
+    card.appendChild(info);
+    card.addEventListener('click', () => {
+      setPaperSize(preset.w, preset.h);
+      modal.classList.remove('visible');
+    });
+    grid.appendChild(card);
+  });
+
+  // Paper type selector
+  const typeRow = $('paper-type-row');
+  typeRow.innerHTML = '';
+  Object.entries(PAPER_TYPES).forEach(([id, pt]) => {
+    const card = document.createElement('div');
+    card.className = 'paper-type-card' + (STATE.paperType === id ? ' active' : '');
+    const swatch = document.createElement('div');
+    swatch.className = 'paper-type-swatch';
+    swatch.style.background = pt.base;
+    const name = document.createElement('div');
+    name.className = 'paper-type-name';
+    name.textContent = pt.name;
+    const desc = document.createElement('div');
+    desc.className = 'paper-type-desc';
+    desc.textContent = pt.desc;
+    card.appendChild(swatch);
+    card.appendChild(name);
+    card.appendChild(desc);
+    card.addEventListener('click', () => {
+      STATE.paperType = id;
+      // Update workspace paper color
+      paperEl.setAttribute('fill', pt.base);
+      autoSave();
+      openPaperSelector(); // refresh to show active state
+    });
+    typeRow.appendChild(card);
+  });
+
+  modal.classList.add('visible');
+}
+
+function setPaperSize(w, h) {
+  if (STATE.paperW === w && STATE.paperH === h) return;
+  pushUndo();
+  STATE.paperW = w;
+  STATE.paperH = h;
+  layoutPaper();
+  fitPaperToView();
+  rerenderAll();
+  autoSave();
+  $('status-hint').textContent = `Paper: ${w} × ${h}`;
 }
 
 // ============================================================
@@ -1528,6 +1877,45 @@ function buildPaletteUI() {
                 picker.appendChild(ps);
               });
               bar.appendChild(picker);
+
+              // Bokashi direction widget
+              const bokashiRow = document.createElement('div');
+              bokashiRow.className = 'zone-picker';
+              bokashiRow.style.gap = '2px';
+              const currentBokashi = (el.zoneBokashi && el.zoneBokashi[z.id]) || null;
+              const dirs = [
+                { id: null, label: '⊘', title: 'No gradient' },
+                { id: 'up', label: '↑', title: 'Fade upward' },
+                { id: 'down', label: '↓', title: 'Fade downward' },
+                { id: 'left', label: '←', title: 'Fade left' },
+                { id: 'right', label: '→', title: 'Fade right' },
+              ];
+              const bLabel = document.createElement('span');
+              bLabel.style.cssText = 'font-size:9px;color:var(--text-muted);margin-right:4px;';
+              bLabel.textContent = 'Bokashi';
+              bokashiRow.appendChild(bLabel);
+              dirs.forEach(dir => {
+                const db = document.createElement('div');
+                db.className = 'zone-pick-swatch' + (currentBokashi === dir.id ? ' active' : '');
+                db.style.cssText = 'width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:13px;background:var(--bg);';
+                db.textContent = dir.label;
+                db.title = dir.title;
+                db.addEventListener('click', (e) => {
+                  e.stopPropagation();
+                  pushUndo();
+                  if (!el.zoneBokashi) el.zoneBokashi = {};
+                  if (dir.id === null) {
+                    delete el.zoneBokashi[z.id];
+                  } else {
+                    el.zoneBokashi[z.id] = dir.id;
+                  }
+                  rerenderAll();
+                  buildPaletteUI();
+                  autoSave();
+                });
+                bokashiRow.appendChild(db);
+              });
+              bar.appendChild(bokashiRow);
             }
           });
 
@@ -1700,7 +2088,12 @@ async function enterPrintPreview() {
   $('status-hint').textContent = 'Printing...';
   $('btn-print').disabled = true;
   try {
-    const canvas = await PrintEngine.print(STATE.elements, STATE.paletteId, STATE.paperW, STATE.paperH);
+    const opts = {
+      paperType: PAPER_TYPES[STATE.paperType],
+      inkLoad: INK_LOADS[STATE.inkLoad],
+      impressions: STATE.impressions,
+    };
+    const canvas = await PrintEngine.print(STATE.elements, STATE.paletteId, STATE.paperW, STATE.paperH, opts);
     const c = $('inline-print-canvas');
     c.width = canvas.width;
     c.height = canvas.height;
@@ -1709,13 +2102,20 @@ async function enterPrintPreview() {
 
     positionPrintCanvas();
     c.style.display = 'block';
+
+    // Paper peel animation
+    c.classList.remove('print-revealing');
+    void c.offsetWidth;
+    c.classList.add('print-revealing');
+
     workspaceEl.classList.add('print-preview-active');
     STATE.printPreview = true;
 
     // Show preview controls, hide main print button
     $('print-preview-controls').style.display = 'flex';
     $('btn-print').style.display = 'none';
-    $('status-hint').textContent = 'Print preview — Esc to edit · 💾 to save PNG';
+    updateStudioButtons();
+    $('status-hint').textContent = 'Print preview — adjust ink/press and Re-print · Esc to edit';
   } catch (e) {
     $('status-hint').textContent = 'Print failed: ' + e.message;
     console.error(e);
@@ -1723,8 +2123,18 @@ async function enterPrintPreview() {
   $('btn-print').disabled = false;
 }
 
+function updateStudioButtons() {
+  document.querySelectorAll('[data-ink]').forEach(b => {
+    b.classList.toggle('active-studio', b.dataset.ink === STATE.inkLoad);
+  });
+  document.querySelectorAll('[data-impr]').forEach(b => {
+    b.classList.toggle('active-studio', b.dataset.impr === String(STATE.impressions));
+  });
+}
+
 function exitPrintPreview() {
   const c = $('inline-print-canvas');
+  c.classList.remove('print-revealing');
   c.style.display = 'none';
   workspaceEl.classList.remove('print-preview-active');
   STATE.printPreview = false;
@@ -2072,6 +2482,23 @@ function setupToolbar() {
     const c = $('inline-print-canvas');
     if (c._printCanvas) PrintEngine.exportPng(c._printCanvas, 'mokuri-print.png');
   });
+  $('btn-reprint').addEventListener('click', () => enterPrintPreview());
+
+  // Studio material buttons (ink load + impressions)
+  document.querySelectorAll('[data-ink]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      STATE.inkLoad = btn.dataset.ink;
+      updateStudioButtons();
+      autoSave();
+    });
+  });
+  document.querySelectorAll('[data-impr]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      STATE.impressions = parseInt(btn.dataset.impr);
+      updateStudioButtons();
+      autoSave();
+    });
+  });
 
   // Legacy modal (keep wired but hidden — may remove later)
   $('btn-export-png').addEventListener('click', () => {
@@ -2096,12 +2523,19 @@ function setupToolbar() {
   fileMenu.addEventListener('click', (e) => e.stopPropagation());
 
   $('fm-new').addEventListener('click', () => { newComposition(); fileMenu.style.display = 'none'; });
+  $('fm-paper').addEventListener('click', () => { openPaperSelector(); fileMenu.style.display = 'none'; });
   $('fm-save-1').addEventListener('click', () => { saveToSlot(0); fileMenu.style.display = 'none'; });
   $('fm-save-2').addEventListener('click', () => { saveToSlot(1); fileMenu.style.display = 'none'; });
   $('fm-save-3').addEventListener('click', () => { saveToSlot(2); fileMenu.style.display = 'none'; });
   $('fm-load-1').addEventListener('click', () => { loadFromSlot(0); fileMenu.style.display = 'none'; });
   $('fm-load-2').addEventListener('click', () => { loadFromSlot(1); fileMenu.style.display = 'none'; });
   $('fm-load-3').addEventListener('click', () => { loadFromSlot(2); fileMenu.style.display = 'none'; });
+
+  // Paper selector modal
+  $('paper-modal-cancel').addEventListener('click', () => $('paper-modal').classList.remove('visible'));
+  $('paper-modal').addEventListener('click', (e) => {
+    if (e.target === $('paper-modal')) $('paper-modal').classList.remove('visible');
+  });
 }
 
 function updateSlotLabels() {
