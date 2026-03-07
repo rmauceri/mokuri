@@ -252,10 +252,10 @@ const PrintEngine = (() => {
       const misX = (Math.random() - 0.5) * inkLoad.misreg * misScale + impOffset.x;
       const misY = (Math.random() - 0.5) * inkLoad.misreg * misScale + impOffset.y;
 
-      // Hanko stamps are pressed after printing, not from the block — pre-mirror
-      // so the final canvas mirror produces correct (un-mirrored) hanko
+      // Hanko stamps are pressed after printing — position mirrors with the composition
+      // (so it stays near the same elements) but content is pre-flipped so text reads correctly
       const xform = isHanko
-        ? `translate(${paperW - el.x + misX},${el.y + misY}) rotate(${-el.rotation}) scale(${-el.scaleX},${el.scaleY})`
+        ? `translate(${el.x + misX},${el.y + misY}) rotate(${-el.rotation}) scale(${-el.scaleX},${el.scaleY})`
         : `translate(${el.x + misX},${el.y + misY}) rotate(${el.rotation}) scale(${el.scaleX},${el.scaleY})`;
       const inner = `translate(${offX},${offY})`;
 
