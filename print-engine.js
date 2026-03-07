@@ -46,33 +46,44 @@ const PrintEngine = (() => {
 
   // Perturb numeric coordinates in an SVG path `d` string
   // amount: max pixel offset per coordinate (e.g., 1.5)
-  // rng: seeded random function returning 0-1
-  // Arc-aware: skips large-arc-flag and sweep-flag (must be 0 or 1)
-  function perturbPath(d, amount, rng) {
+  // seed: element-specific seed for deterministic variation
+  // Uses coordinate-value-based noise so the same coordinate always gets
+  // the same offset — keeps concentric/overlapping paths aligned
+  function perturbPath(d, amount, seed) {
     if (!amount || amount < 0.1) return d;
-    // Parse into tokens: commands + numbers
-    // Track which command we're in to know when numbers are arc flags
+    // Deterministic hash: same value + same seed + same axis = same offset
+    function noise(val, axis) {
+      let h = (Math.round(val * 100) ^ (axis * 0x55555555) ^ seed) | 0;
+      h = Math.imul(h ^ (h >>> 16), 0x9E3779B9);
+      h = Math.imul(h ^ (h >>> 13), 0x45d9f3b);
+      h = h ^ (h >>> 16);
+      return ((h & 0x7FFFFFFF) / 0x7FFFFFFF - 0.5) * 2 * amount;
+    }
     let cmd = '';
     let paramIdx = 0;
+    let isX = true; // alternates X/Y for noise axis differentiation
     return d.replace(/([A-Za-z])|(-?\d+\.?\d*)/g, (match, letter, num) => {
       if (letter) {
         cmd = letter.toUpperCase();
         paramIdx = 0;
+        isX = true;
         return match;
       }
       // For arc commands (A/a), params are: rx ry rotation flag flag x y
-      // Indices 3 and 4 (0-based) are the flags — don't perturb
       if (cmd === 'A') {
         const idx = paramIdx % 7;
         paramIdx++;
-        if (idx === 3 || idx === 4) return match; // arc flags: leave as-is
-        if (idx === 2) return match; // x-rotation: leave as-is
-      } else {
-        paramIdx++;
+        if (idx === 2 || idx === 3 || idx === 4) return match; // rotation + flags
+        // rx(0), ry(1) get their own axis; x(5), y(6) alternate
+        const axis = (idx === 0 || idx === 5) ? 0 : 1;
+        const val = parseFloat(match);
+        return (val + noise(val, axis)).toFixed(1);
       }
+      paramIdx++;
+      const axis = isX ? 0 : 1;
+      isX = !isX;
       const val = parseFloat(match);
-      const offset = (rng() - 0.5) * 2 * amount;
-      return (val + offset).toFixed(1);
+      return (val + noise(val, axis)).toFixed(1);
     });
   }
 
@@ -259,11 +270,11 @@ const PrintEngine = (() => {
       const offY = -vb[3] / 2;
 
       // Procedural variation — seeded per element instance
-      const rng = seededRng(el.variationSeed || el.id * 31);
-      // Hanko stamps: minimal variation (they're carved precisely)
+      // Uses coordinate-value-based noise so concentric paths stay aligned
       const isHanko = def.hanko;
       const perturbAmt = isHanko ? 0.15 : (isBlock ? 0.6 : (el.carveLevel === 1 ? 0.9 : 1.3));
-      const perturb = (d) => perturbPath(d, perturbAmt, rng);
+      const elemSeed = el.variationSeed || el.id * 31;
+      const perturb = (d) => perturbPath(d, perturbAmt, elemSeed);
 
       // Per-element spatial misregistration + impression offset
       // Hanko: reduced misregistration (stamped separately, more carefully)
