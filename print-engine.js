@@ -241,9 +241,9 @@ const PrintEngine = (() => {
 
       // Procedural variation — seeded per element instance
       const rng = seededRng(el.variationSeed || el.id * 31);
-      // Hanko stamps: minimal variation (they're carved precisely)
+      // Hanko stamps: no perturbation (precision-carved, and arcs break with perturbed flags)
       const isHanko = def.hanko;
-      const perturbAmt = isHanko ? 0.2 : (isBlock ? 0.6 : (el.carveLevel === 1 ? 0.9 : 1.3));
+      const perturbAmt = isHanko ? 0 : (isBlock ? 0.6 : (el.carveLevel === 1 ? 0.9 : 1.3));
       const perturb = (d) => perturbPath(d, perturbAmt, rng);
 
       // Per-element spatial misregistration + impression offset
@@ -252,7 +252,11 @@ const PrintEngine = (() => {
       const misX = (Math.random() - 0.5) * inkLoad.misreg * misScale + impOffset.x;
       const misY = (Math.random() - 0.5) * inkLoad.misreg * misScale + impOffset.y;
 
-      const xform = `translate(${el.x + misX},${el.y + misY}) rotate(${el.rotation}) scale(${el.scaleX},${el.scaleY})`;
+      // Hanko stamps are pressed after printing, not from the block — pre-mirror
+      // so the final canvas mirror produces correct (un-mirrored) hanko
+      const xform = isHanko
+        ? `translate(${paperW - el.x + misX},${el.y + misY}) rotate(${-el.rotation}) scale(${-el.scaleX},${el.scaleY})`
+        : `translate(${el.x + misX},${el.y + misY}) rotate(${el.rotation}) scale(${el.scaleX},${el.scaleY})`;
       const inner = `translate(${offX},${offY})`;
 
       svgContent += `<g transform="${xform}" filter="url(#wobble)"><g transform="${inner}">`;

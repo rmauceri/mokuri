@@ -2584,20 +2584,31 @@ function generateHankoInitials(text, shape) {
   const chars = text.split('');
   const n = chars.length;
 
-  // Layout cells for characters
+  // Usable inscribed area per shape (leaving room for the seal border)
+  const areas = {
+    circle:  { x: 14, y: 14, w: 32, h: 32 },
+    square:  { x: 10, y: 10, w: 40, h: 40 },
+    diamond: { x: 18, y: 18, w: 24, h: 24 },
+  };
+  const area = areas[shape] || areas.circle;
+  const gap = 2;
+
+  // Layout cells for characters within the inscribed area
   let cells;
   if (n === 1) {
-    cells = [{ x: 15, y: 15, w: 30, h: 30 }];
+    cells = [{ x: area.x, y: area.y, w: area.w, h: area.h }];
   } else if (n === 2) {
+    const ch = (area.h - gap) / 2;
     cells = [
-      { x: 15, y: 8, w: 30, h: 22 },
-      { x: 15, y: 32, w: 30, h: 22 },
+      { x: area.x, y: area.y, w: area.w, h: ch },
+      { x: area.x, y: area.y + ch + gap, w: area.w, h: ch },
     ];
   } else {
+    const ch = (area.h - gap * 2) / 3;
     cells = [
-      { x: 15, y: 5, w: 30, h: 16 },
-      { x: 15, y: 22, w: 30, h: 16 },
-      { x: 15, y: 39, w: 30, h: 16 },
+      { x: area.x, y: area.y, w: area.w, h: ch },
+      { x: area.x, y: area.y + ch + gap, w: area.w, h: ch },
+      { x: area.x, y: area.y + (ch + gap) * 2, w: area.w, h: ch },
     ];
   }
 
@@ -2609,15 +2620,9 @@ function generateHankoInitials(text, shape) {
     const cell = cells[ci];
     const sx = cell.w / 14;
     const sy = cell.h / 18;
+    const sw = Math.max(0.8, Math.min(2.0, cell.h / 14));
     strokes.forEach(strokeD => {
-      // Scale and translate path coordinates
-      const scaled = strokeD.replace(/(-?\d+\.?\d*)/g, (match, num, offset, full) => {
-        // Determine if X or Y coordinate based on context
-        // SVG commands: M,L,Q,C use alternating x,y pairs
-        return match; // We'll handle this differently
-      });
-      // Use transform on the group instead
-      charPaths.push({ d: strokeD, tx: cell.x, ty: cell.y, sx, sy });
+      charPaths.push({ d: strokeD, tx: cell.x, ty: cell.y, sx, sy, sw });
     });
   });
 
@@ -2634,21 +2639,9 @@ function generateHankoInitials(text, shape) {
     innerPath = 'M30 6 A24 24 0 1 1 29.99 6 Z';
   }
 
-  // Build carve level paths
-  const blockPaths = [{ d: shapePath, type: 'fill', zone: 'seal' }];
-  const shapePaths = [
-    { d: shapePath, type: 'fill', zone: 'seal' },
-    { d: innerPath, type: 'stroke', zone: 'seal', strokeWidth: 1.5 },
-  ];
-  const detailPaths = [
-    { d: shapePath, type: 'fill', zone: 'seal' },
-    { d: innerPath, type: 'stroke', zone: 'seal', strokeWidth: 1.5 },
-  ];
-
-  // Add character strokes to detail level
-  charPaths.forEach(cp => {
-    // Transform the path data by scaling coordinates
-    const transformed = cp.d.replace(/(-?\d+\.?\d*)/g, (() => {
+  // Transform character path coordinates inline
+  function transformCharPath(cp) {
+    return cp.d.replace(/(-?\d+\.?\d*)/g, (() => {
       let isX = true;
       return (match) => {
         const val = parseFloat(match);
@@ -2657,7 +2650,24 @@ function generateHankoInitials(text, shape) {
         return result;
       };
     })());
-    detailPaths.push({ d: transformed, type: 'stroke', zone: 'seal', strokeWidth: 1.5 });
+  }
+
+  // Build carve level paths — chars appear at shape AND detail levels
+  const blockPaths = [{ d: shapePath, type: 'fill', zone: 'seal' }];
+  const shapePathsArr = [
+    { d: shapePath, type: 'fill', zone: 'seal' },
+    { d: innerPath, type: 'stroke', zone: 'seal', strokeWidth: 1.5 },
+  ];
+  const detailPaths = [
+    { d: shapePath, type: 'fill', zone: 'seal' },
+    { d: innerPath, type: 'stroke', zone: 'seal', strokeWidth: 1.5 },
+  ];
+
+  charPaths.forEach(cp => {
+    const transformed = transformCharPath(cp);
+    const charPath = { d: transformed, type: 'stroke', zone: 'seal', strokeWidth: cp.sw };
+    shapePathsArr.push(charPath);
+    detailPaths.push({ ...charPath });
   });
 
   const id = 'hanko-custom-' + text.toLowerCase() + '-' + Date.now();
@@ -2672,7 +2682,7 @@ function generateHankoInitials(text, shape) {
     colorZones: [{ id: 'seal', defaultPaletteSlot: 2 }],
     carveLevels: [
       { name: 'block', paths: blockPaths },
-      { name: 'shape', paths: shapePaths },
+      { name: 'shape', paths: shapePathsArr },
       { name: 'detail', paths: detailPaths },
     ],
   };
@@ -3953,6 +3963,9 @@ function setupInteraction() {
 // ============================================================
 function setupKeyboard() {
   document.addEventListener('keydown', (e) => {
+    // Don't intercept keys when typing in inputs
+    if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) return;
+
     if (e.key === 'Delete' || e.key === 'Backspace') { deleteSelected(); e.preventDefault(); }
     if (e.key === 'c' && !e.ctrlKey && !e.metaKey) { carveSelected(); e.preventDefault(); }
     if (e.key === 'z' && (e.ctrlKey || e.metaKey) && !e.shiftKey) { undo(); e.preventDefault(); }
