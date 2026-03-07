@@ -241,12 +241,16 @@ const PrintEngine = (() => {
 
       // Procedural variation — seeded per element instance
       const rng = seededRng(el.variationSeed || el.id * 31);
-      const perturbAmt = isBlock ? 0.6 : (el.carveLevel === 1 ? 0.9 : 1.3);
+      // Hanko stamps: minimal variation (they're carved precisely)
+      const isHanko = def.hanko;
+      const perturbAmt = isHanko ? 0.2 : (isBlock ? 0.6 : (el.carveLevel === 1 ? 0.9 : 1.3));
       const perturb = (d) => perturbPath(d, perturbAmt, rng);
 
       // Per-element spatial misregistration + impression offset
-      const misX = (Math.random() - 0.5) * inkLoad.misreg + impOffset.x;
-      const misY = (Math.random() - 0.5) * inkLoad.misreg + impOffset.y;
+      // Hanko: reduced misregistration (stamped separately, more carefully)
+      const misScale = isHanko ? 0.2 : 1.0;
+      const misX = (Math.random() - 0.5) * inkLoad.misreg * misScale + impOffset.x;
+      const misY = (Math.random() - 0.5) * inkLoad.misreg * misScale + impOffset.y;
 
       const xform = `translate(${el.x + misX},${el.y + misY}) rotate(${el.rotation}) scale(${el.scaleX},${el.scaleY})`;
       const inner = `translate(${offX},${offY})`;

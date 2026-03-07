@@ -19,11 +19,19 @@ Ink absorption variation in print engine post-processing — subtle per-region o
 
 ---
 
+### Phase 6 — Carving Experience ✅
+Four features deepening the carving workflow:
+- **Carve Focus Mode**: F key or Focus button zooms smoothly into a selected element with floating toolbar. Dimmed non-focused elements. Escape exits. Smooth viewBox animation.
+- **Carve Pattern Fills**: 6 patterns (crosshatch, woodgrain, diagonal, stipple, wave) replace flat paper reveals on carved areas. Per-element `el.carvePattern`, renders in both workspace and print.
+- **Background Carving**: Paper background is now carveable. Click empty space in carve mode to carve the paper itself. Strokes render between atmosphere and elements.
+- **Hanko Stamps**: 6 pre-made seal shapes (circle, square, gourd, oval, diamond, cloud) + custom initials generator (1–3 characters → procedural brush-stroke seal). Hanko elements get reduced misregistration in print.
+
+---
+
 ## Future Work
 
 ### Element Fidelity
 - **Hand-crafted SVG replacements** — Current elements are procedural. Hand-drawn SVGs with hatching, texture lines, and form-following detail would dramatically raise visual quality. This is the single biggest remaining quality gap vs. what AI image generators produce.
-- **Pattern fills for carving** — Carved areas currently reveal flat paper. Could instead reveal cross-hatching, wood grain, or decorative patterns for richer texture.
 
 ### Composition & Creativity
 - **Composition guides** — Rule-of-thirds, golden ratio, and horizon-line overlays to help users compose intentional scenes.
