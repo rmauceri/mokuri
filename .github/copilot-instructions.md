@@ -157,6 +157,10 @@ Per-zone gradient fade — darker at one side, fading to paper at the other. Dir
 | I | Toggle carve ↔ ink view |
 | P | Toggle print preview |
 | C | Carve selected element (cycle level) |
+| H | Flip selected element horizontally |
+| F | Flip selected element vertically |
+| L | Lock / unlock selected element |
+| Ctrl+D | Duplicate selected element |
 | 1/2/3 | Select carve tool (in carve mode) |
 | Delete/Backspace | Delete selected element |
 | Ctrl+Z / Ctrl+Y | Undo / Redo |
@@ -165,6 +169,12 @@ Per-zone gradient fade — darker at one side, fading to paper at the other. Dir
 | 0 | Fit to view |
 | Arrows | Nudge selected (Shift = 10px) |
 | Escape | Exit print preview / ink mode / return to select |
+
+## Element Manipulation
+
+- **Flip Horizontal/Vertical** — negates `scaleX`/`scaleY`; carve strokes flip automatically (stored in local coords)
+- **Duplicate** — deep-clones selected element with +20px offset, fresh `id` and `variationSeed`
+- **Lock/Unlock** — `el.locked` flag prevents move, resize, rotate, carve, delete, nudge, and layer reorder; locked elements show dimmed handles and a 🔒 icon; can still be selected and duplicated
 
 ## Conventions
 

@@ -798,6 +798,10 @@ html, body {
 
     <button class="tool-btn" id="btn-layer-up" title="Bring Forward" disabled>▲</button>
     <button class="tool-btn" id="btn-layer-down" title="Send Back" disabled>▼</button>
+    <button class="tool-btn" id="btn-flip-h" title="Flip Horizontal (H)" disabled>⇔</button>
+    <button class="tool-btn" id="btn-flip-v" title="Flip Vertical (F)" disabled>⇕</button>
+    <button class="tool-btn" id="btn-duplicate" title="Duplicate (Ctrl+D)" disabled>⧉</button>
+    <button class="tool-btn" id="btn-lock" title="Lock / Unlock (L)" disabled>🔒</button>
     <button class="tool-btn" id="btn-delete" title="Delete" disabled>✕</button>
     <div class="toolbar-separator"></div>
 
@@ -1813,6 +1817,19 @@ function updateSelection() {
   rotHandle.setAttribute('data-handle', 'rotate');
   g.appendChild(rotHandle);
 
+  // Dim handles and show lock icon for locked elements
+  if (el.locked) {
+    g.setAttribute('opacity', '0.4');
+    g.style.pointerEvents = 'none';
+    const lockIcon = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    lockIcon.setAttribute('x', hw + pad + 6);
+    lockIcon.setAttribute('y', -hh - pad + 4);
+    lockIcon.setAttribute('font-size', '14');
+    lockIcon.setAttribute('fill', '#8b6b4a');
+    lockIcon.textContent = '🔒';
+    g.appendChild(lockIcon);
+  }
+
   selectionLayer.appendChild(g);
 
   // Zone highlight in ink mode — add dashed outline on active zone paths
@@ -1873,6 +1890,8 @@ function addElement(defId, x, y) {
 
 function deleteSelected() {
   if (!STATE.selectedId) return;
+  const el = STATE.elements.find(e => e.id === STATE.selectedId);
+  if (el && el.locked) return;
   pushUndo();
   STATE.elements = STATE.elements.filter(e => e.id !== STATE.selectedId);
   deselectAll();
@@ -1882,7 +1901,7 @@ function deleteSelected() {
 function carveSelected() {
   if (!STATE.selectedId) return;
   const el = STATE.elements.find(e => e.id === STATE.selectedId);
-  if (!el) return;
+  if (!el || el.locked) return;
   const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
   if (!def || def.carveLevels.length <= 1) return;
   pushUndo();
@@ -1892,11 +1911,60 @@ function carveSelected() {
 }
 
 // ============================================================
+//  FLIP, DUPLICATE, LOCK
+// ============================================================
+function flipSelectedH() {
+  if (!STATE.selectedId) return;
+  const el = STATE.elements.find(e => e.id === STATE.selectedId);
+  if (!el || el.locked) return;
+  pushUndo();
+  el.scaleX *= -1;
+  rerenderAll();
+}
+
+function flipSelectedV() {
+  if (!STATE.selectedId) return;
+  const el = STATE.elements.find(e => e.id === STATE.selectedId);
+  if (!el || el.locked) return;
+  pushUndo();
+  el.scaleY *= -1;
+  rerenderAll();
+}
+
+function duplicateSelected() {
+  if (!STATE.selectedId) return;
+  const el = STATE.elements.find(e => e.id === STATE.selectedId);
+  if (!el) return;
+  pushUndo();
+  const clone = JSON.parse(JSON.stringify(el));
+  clone.id = STATE.nextId++;
+  clone.x += 20;
+  clone.y += 20;
+  clone.variationSeed = Math.floor(Math.random() * 100000);
+  clone.locked = false;
+  STATE.elements.push(clone);
+  rerenderAll();
+  selectElement(clone.id);
+}
+
+function toggleLockSelected() {
+  if (!STATE.selectedId) return;
+  const el = STATE.elements.find(e => e.id === STATE.selectedId);
+  if (!el) return;
+  pushUndo();
+  el.locked = !el.locked;
+  rerenderAll();
+  updateToolbarState();
+}
+
+// ============================================================
 //  LAYER ORDERING
 // ============================================================
 function moveLayer(dir) {
   if (!STATE.selectedId) return;
-  const idx = STATE.elements.findIndex(e => e.id === STATE.selectedId);
+  const el = STATE.elements.find(e => e.id === STATE.selectedId);
+  if (!el || el.locked) return;
+  const idx = STATE.elements.indexOf(el);
   if (idx < 0) return;
   const newIdx = idx + dir;
   if (newIdx < 0 || newIdx >= STATE.elements.length) return;
@@ -2142,25 +2210,32 @@ function updateToolbarState() {
   $('btn-undo').disabled = !STATE.undoStack.length;
   $('btn-redo').disabled = !STATE.redoStack.length;
   const hasSel = !!STATE.selectedId;
-  $('btn-delete').disabled = !hasSel;
-  $('btn-layer-up').disabled = !hasSel;
-  $('btn-layer-down').disabled = !hasSel;
-  // Carve button: enabled when selected element has multiple carve levels
-  let canCarve = false;
+  const selEl = hasSel ? STATE.elements.find(e => e.id === STATE.selectedId) : null;
+  const isLocked = selEl && selEl.locked;
+  $('btn-delete').disabled = !hasSel || isLocked;
+  $('btn-layer-up').disabled = !hasSel || isLocked;
+  $('btn-layer-down').disabled = !hasSel || isLocked;
+  $('btn-flip-h').disabled = !hasSel || isLocked;
+  $('btn-flip-v').disabled = !hasSel || isLocked;
+  $('btn-duplicate').disabled = !hasSel;
+  $('btn-lock').disabled = !hasSel;
+  // Lock button shows current state
   if (hasSel) {
-    const el = STATE.elements.find(e => e.id === STATE.selectedId);
-    if (el) {
-      const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
-      if (def && def.carveLevels.length > 1) canCarve = true;
-    }
+    $('btn-lock').textContent = isLocked ? '🔓' : '🔒';
+    $('btn-lock').title = isLocked ? 'Unlock (L)' : 'Lock (L)';
+  }
+  // Carve button: enabled when selected element has multiple carve levels and is not locked
+  let canCarve = false;
+  if (selEl && !isLocked) {
+    const def = MOKURI_ELEMENTS.find(d => d.id === selEl.defId);
+    if (def && def.carveLevels.length > 1) canCarve = true;
   }
   $('btn-carve').disabled = !canCarve;
   // Show carve level in button title
   if (canCarve) {
-    const el = STATE.elements.find(e => e.id === STATE.selectedId);
-    const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
-    const lvl = def.carveLevels[el.carveLevel];
-    $('btn-carve').title = `Carve: ${lvl.name} (${el.carveLevel + 1}/${def.carveLevels.length})`;
+    const def = MOKURI_ELEMENTS.find(d => d.id === selEl.defId);
+    const lvl = def.carveLevels[selEl.carveLevel];
+    $('btn-carve').title = `Carve: ${lvl.name} (${selEl.carveLevel + 1}/${def.carveLevels.length})`;
   }
 }
 
@@ -2899,7 +2974,7 @@ function setupInteraction() {
       if (!gEl) return;
       const id = parseInt(gEl.getAttribute('data-id'));
       const el = STATE.elements.find(el => el.id === id);
-      if (!el) return;
+      if (!el || el.locked) return;
       pushUndo();
       const svgPt = clientToSvg(e.clientX, e.clientY);
       const localPt = svgToElementLocal(svgPt.x, svgPt.y, el);
@@ -2915,7 +2990,7 @@ function setupInteraction() {
       if (!gEl) return;
       const id = parseInt(gEl.getAttribute('data-id'));
       const el = STATE.elements.find(el => el.id === id);
-      if (!el || !el.carveStrokes || !el.carveStrokes.length) return;
+      if (!el || el.locked || !el.carveStrokes || !el.carveStrokes.length) return;
       // Remove last carve stroke from this element
       pushUndo();
       const svgPt = clientToSvg(e.clientX, e.clientY);
@@ -2942,7 +3017,7 @@ function setupInteraction() {
     if (handleEl && STATE.selectedId) {
       const handleType = handleEl.getAttribute('data-handle');
       const el = STATE.elements.find(el => el.id === STATE.selectedId);
-      if (el) {
+      if (el && !el.locked) {
         if (handleType === 'rotate') {
           STATE.dragging = {
             type: 'rotate', elementId: el.id,
@@ -2972,13 +3047,15 @@ function setupInteraction() {
       const el = STATE.elements.find(el => el.id === id);
       if (el) {
         selectElement(id);
-        pushUndo();
-        STATE.dragging = {
-          type: 'move', elementId: id,
-          startX: pt.x, startY: pt.y,
-          origX: el.x, origY: el.y,
-        };
-        ws.setPointerCapture(e.pointerId);
+        if (!el.locked) {
+          pushUndo();
+          STATE.dragging = {
+            type: 'move', elementId: id,
+            startX: pt.x, startY: pt.y,
+            origX: el.x, origY: el.y,
+          };
+          ws.setPointerCapture(e.pointerId);
+        }
         return;
       }
     }
@@ -3131,6 +3208,12 @@ function setupKeyboard() {
     if (e.key === '-') { zoomBy(-0.15, workspaceEl.clientWidth / 2, workspaceEl.clientHeight / 2); e.preventDefault(); }
     if (e.key === '0') { fitPaperToView(); e.preventDefault(); }
 
+    // Flip, duplicate, lock
+    if (e.key === 'h' && !e.ctrlKey && !e.metaKey) { flipSelectedH(); e.preventDefault(); }
+    if (e.key === 'f' && !e.ctrlKey && !e.metaKey) { flipSelectedV(); e.preventDefault(); }
+    if (e.key === 'd' && (e.ctrlKey || e.metaKey)) { duplicateSelected(); e.preventDefault(); }
+    if (e.key === 'l' && !e.ctrlKey && !e.metaKey) { toggleLockSelected(); e.preventDefault(); }
+
     // Mode shortcuts
     if (e.key === 'v' && !e.ctrlKey && !e.metaKey) { setMode(STATE.mode === 'select' ? 'carve' : 'select'); e.preventDefault(); }
     if (e.key === 'e' && !e.ctrlKey && !e.metaKey) { setMode(STATE.mode === 'erase' ? 'select' : 'erase'); e.preventDefault(); }
@@ -3156,7 +3239,7 @@ function setupKeyboard() {
     // Arrow nudge
     if (STATE.mode === 'select' && STATE.selectedId && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
       const el = STATE.elements.find(el => el.id === STATE.selectedId);
-      if (el) {
+      if (el && !el.locked) {
         const step = e.shiftKey ? 10 : 2;
         pushUndo();
         if (e.key === 'ArrowUp') el.y -= step;
@@ -3186,6 +3269,10 @@ function setupToolbar() {
   $('btn-carve').addEventListener('click', carveSelected);
   $('btn-layer-up').addEventListener('click', () => moveLayer(1));
   $('btn-layer-down').addEventListener('click', () => moveLayer(-1));
+  $('btn-flip-h').addEventListener('click', flipSelectedH);
+  $('btn-flip-v').addEventListener('click', flipSelectedV);
+  $('btn-duplicate').addEventListener('click', duplicateSelected);
+  $('btn-lock').addEventListener('click', toggleLockSelected);
   $('btn-zoom-in').addEventListener('click', () => zoomBy(0.2, workspaceEl.clientWidth / 2, workspaceEl.clientHeight / 2));
   $('btn-zoom-out').addEventListener('click', () => zoomBy(-0.2, workspaceEl.clientWidth / 2, workspaceEl.clientHeight / 2));
   $('btn-zoom-fit').addEventListener('click', fitPaperToView);
