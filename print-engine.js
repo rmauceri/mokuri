@@ -47,10 +47,29 @@ const PrintEngine = (() => {
   // Perturb numeric coordinates in an SVG path `d` string
   // amount: max pixel offset per coordinate (e.g., 1.5)
   // rng: seeded random function returning 0-1
+  // Arc-aware: skips large-arc-flag and sweep-flag (must be 0 or 1)
   function perturbPath(d, amount, rng) {
     if (!amount || amount < 0.1) return d;
-    // Match numbers (including negatives and decimals) that are coordinates
-    return d.replace(/(-?\d+\.?\d*)/g, (match) => {
+    // Parse into tokens: commands + numbers
+    // Track which command we're in to know when numbers are arc flags
+    let cmd = '';
+    let paramIdx = 0;
+    return d.replace(/([A-Za-z])|(-?\d+\.?\d*)/g, (match, letter, num) => {
+      if (letter) {
+        cmd = letter.toUpperCase();
+        paramIdx = 0;
+        return match;
+      }
+      // For arc commands (A/a), params are: rx ry rotation flag flag x y
+      // Indices 3 and 4 (0-based) are the flags — don't perturb
+      if (cmd === 'A') {
+        const idx = paramIdx % 7;
+        paramIdx++;
+        if (idx === 3 || idx === 4) return match; // arc flags: leave as-is
+        if (idx === 2) return match; // x-rotation: leave as-is
+      } else {
+        paramIdx++;
+      }
       const val = parseFloat(match);
       const offset = (rng() - 0.5) * 2 * amount;
       return (val + offset).toFixed(1);
@@ -241,9 +260,9 @@ const PrintEngine = (() => {
 
       // Procedural variation — seeded per element instance
       const rng = seededRng(el.variationSeed || el.id * 31);
-      // Hanko stamps: no perturbation (precision-carved, and arcs break with perturbed flags)
+      // Hanko stamps: minimal variation (they're carved precisely)
       const isHanko = def.hanko;
-      const perturbAmt = isHanko ? 0 : (isBlock ? 0.6 : (el.carveLevel === 1 ? 0.9 : 1.3));
+      const perturbAmt = isHanko ? 0.15 : (isBlock ? 0.6 : (el.carveLevel === 1 ? 0.9 : 1.3));
       const perturb = (d) => perturbPath(d, perturbAmt, rng);
 
       // Per-element spatial misregistration + impression offset
