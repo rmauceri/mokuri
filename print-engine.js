@@ -303,7 +303,10 @@ const PrintEngine = (() => {
             const fill = zoneFillAttr(p.zone);
             svgContent += `<path d="${pd}" fill="${fill}" fill-opacity="${inkOpacity.toFixed(2)}" stroke="${darken(col, 0.3)}" stroke-width="0.8" stroke-opacity="${(0.4 * inkLoad.edgeMul).toFixed(2)}" stroke-linejoin="round"/>`;
           } else if (p.type === 'stroke') {
-            svgContent += `<path d="${pd}" fill="none" stroke="${darken(col, 0.45)}" stroke-width="${p.strokeWidth || 1.5}" stroke-opacity="0.85" stroke-linecap="round" stroke-linejoin="round"/>`;
+            // Hanko strokes are carved-away lines — reveal paper, not ink
+            const strokeCol = isHanko ? (atmosphere.paperBase || '#f5f0e6') : darken(col, 0.45);
+            const strokeOpac = isHanko ? '0.95' : '0.85';
+            svgContent += `<path d="${pd}" fill="none" stroke="${strokeCol}" stroke-width="${p.strokeWidth || 1.5}" stroke-opacity="${strokeOpac}" stroke-linecap="round" stroke-linejoin="round"/>`;
           }
         });
       }

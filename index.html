@@ -1790,9 +1790,10 @@ function renderElementSvg(el, layerIndex) {
       } else if (p.type === 'stroke') {
         path.setAttribute('fill', 'none');
         if (inkMode) {
-          const col = zoneColor(p.zone);
+          // Hanko strokes are carved-away lines — they reveal paper, not ink
+          const col = def.hanko ? PAPER_COLOR : zoneColor(p.zone);
           path.setAttribute('stroke', col);
-          path.setAttribute('stroke-opacity', '0.7');
+          path.setAttribute('stroke-opacity', def.hanko ? '1' : '0.7');
         } else {
           path.setAttribute('stroke', CARVED_STROKE);
         }
@@ -3221,7 +3222,7 @@ function exitCarveFocus() {
   STATE.preFocusViewBox = null;
   STATE.preFocusZoom = null;
 
-  setMode(STATE.mode);
+  setMode('select');
   autoSave();
 }
 
@@ -3631,6 +3632,9 @@ function setupInteraction() {
   const ws = workspaceEl;
 
   ws.addEventListener('pointerdown', (e) => {
+    // Don't intercept clicks on the focus toolbar
+    if (e.target.closest('.carve-focus-toolbar')) return;
+
     if (e.button === 1 || (e.button === 0 && e.altKey)) {
       // Middle click or alt+click: pan (always available)
       STATE.dragging = { type: 'pan', startX: e.clientX, startY: e.clientY, origVBx: STATE.viewBox.x, origVBy: STATE.viewBox.y };
