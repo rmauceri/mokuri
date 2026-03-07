@@ -290,6 +290,17 @@ const PrintEngine = (() => {
         });
       }
 
+      // Carve pattern for this element (adds texture to paper reveals in print)
+      let printPatternFill = null;
+      if (el.carvePattern && el.carvePattern !== 'none' && typeof generateCarvePatternSvg === 'function') {
+        const ppid = `pe-cp-${el.id}-${el.carvePattern}`;
+        const patSvg = generateCarvePatternSvg(el.carvePattern, ppid, '#f5f0e6', 'rgba(60,50,40,0.25)');
+        if (patSvg) {
+          bokashiDefs += patSvg;
+          printPatternFill = `url(#${ppid})`;
+        }
+      }
+
       // Custom carve strokes
       if (el.carveStrokes && el.carveStrokes.length) {
         el.carveStrokes.forEach(stroke => {
@@ -299,7 +310,8 @@ const PrintEngine = (() => {
             : [];
           items.forEach(item => {
             if (item.c === 'rgba(0,0,0,0)') return;
-            svgContent += `<path d="${item.d}" fill="none" stroke="${item.c}" stroke-width="${item.w}" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="${(item.a * 0.95).toFixed(3)}"/>`;
+            const sc = (printPatternFill && item.c === '#f5f0e6') ? printPatternFill : item.c;
+            svgContent += `<path d="${item.d}" fill="none" stroke="${sc}" stroke-width="${item.w}" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="${(item.a * 0.95).toFixed(3)}"/>`;
           });
         });
       }

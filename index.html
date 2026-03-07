@@ -1709,6 +1709,13 @@ function renderElementSvg(el, layerIndex) {
   const inner = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   inner.setAttribute('transform', `translate(${offsetX}, ${offsetY})`);
 
+  // Carve pattern fill (replaces flat paper color on carved areas)
+  let carvePatternFill = PAPER_COLOR;
+  if (!inkMode && el.carvePattern && el.carvePattern !== 'none') {
+    const patUrl = createCarvePatternDef(el.carvePattern, el.id, gradDefs);
+    if (patUrl) { carvePatternFill = patUrl; hasGrads = true; }
+  }
+
   if (isBlock) {
     // Uncarved block — fills use zone color (ink mode) or wood tone (carve mode)
     carve.paths.forEach(p => {
@@ -1741,7 +1748,7 @@ function renderElementSvg(el, layerIndex) {
           path.setAttribute('fill', zoneFill(p.zone));
           path.setAttribute('stroke', 'none');
         } else {
-          path.setAttribute('fill', PAPER_COLOR);
+          path.setAttribute('fill', carvePatternFill);
           path.setAttribute('stroke', CARVED_STROKE);
           path.setAttribute('stroke-width', 0.8);
           path.setAttribute('stroke-linejoin', 'round');
@@ -1770,7 +1777,10 @@ function renderElementSvg(el, layerIndex) {
         const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         p.setAttribute('d', item.d);
         p.setAttribute('fill', 'none');
-        p.setAttribute('stroke', item.c);
+        // Use pattern fill for paper-colored stroke layers (carved grooves)
+        const strokeColor = (!inkMode && item.c === PAPER_COLOR && carvePatternFill !== PAPER_COLOR)
+          ? carvePatternFill : item.c;
+        p.setAttribute('stroke', strokeColor);
         p.setAttribute('stroke-width', item.w);
         p.setAttribute('stroke-linecap', 'round');
         p.setAttribute('stroke-linejoin', 'round');
@@ -2718,6 +2728,73 @@ const CARVE_PATTERNS = {
   stipple:    { name: 'Stipple',    icon: '∴' },
   wave:       { name: 'Wave',       icon: '∿' },
 };
+
+// Generate SVG <pattern> markup for carve patterns (used in both workspace and print)
+function generateCarvePatternSvg(patternId, uniqueId, paperColor, strokeColor) {
+  const pc = paperColor || PAPER_COLOR;
+  const sc = strokeColor || CARVED_STROKE;
+  const opacity = '0.35';
+  switch (patternId) {
+    case 'crosshatch': {
+      const s = 6;
+      return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}">
+        <rect width="${s}" height="${s}" fill="${pc}"/>
+        <line x1="0" y1="0" x2="${s}" y2="${s}" stroke="${sc}" stroke-width="0.6" stroke-opacity="${opacity}"/>
+        <line x1="${s}" y1="0" x2="0" y2="${s}" stroke="${sc}" stroke-width="0.6" stroke-opacity="${opacity}"/>
+      </pattern>`;
+    }
+    case 'woodgrain': {
+      const s = 10;
+      return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}">
+        <rect width="${s}" height="${s}" fill="${pc}"/>
+        <path d="M0,3 Q${s/4},2 ${s/2},3 T${s},3" fill="none" stroke="${sc}" stroke-width="0.5" stroke-opacity="${opacity}"/>
+        <path d="M0,7 Q${s/4},6 ${s/2},7 T${s},7" fill="none" stroke="${sc}" stroke-width="0.5" stroke-opacity="${opacity}"/>
+      </pattern>`;
+    }
+    case 'diagonal': {
+      const s = 5;
+      return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}">
+        <rect width="${s}" height="${s}" fill="${pc}"/>
+        <line x1="0" y1="${s}" x2="${s}" y2="0" stroke="${sc}" stroke-width="0.6" stroke-opacity="${opacity}"/>
+      </pattern>`;
+    }
+    case 'stipple': {
+      const s = 8;
+      return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}">
+        <rect width="${s}" height="${s}" fill="${pc}"/>
+        <circle cx="2" cy="2" r="0.6" fill="${sc}" fill-opacity="${opacity}"/>
+        <circle cx="6" cy="5" r="0.5" fill="${sc}" fill-opacity="${opacity}"/>
+        <circle cx="4" cy="7" r="0.7" fill="${sc}" fill-opacity="${opacity}"/>
+        <circle cx="7" cy="1" r="0.5" fill="${sc}" fill-opacity="${opacity}"/>
+      </pattern>`;
+    }
+    case 'wave': {
+      const s = 12;
+      return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}">
+        <rect width="${s}" height="${s}" fill="${pc}"/>
+        <path d="M0,4 Q3,2 6,4 T12,4" fill="none" stroke="${sc}" stroke-width="0.5" stroke-opacity="${opacity}"/>
+        <path d="M0,8 Q3,6 6,8 T12,8" fill="none" stroke="${sc}" stroke-width="0.5" stroke-opacity="${opacity}"/>
+        <path d="M-2,12 Q1,10 4,12" fill="none" stroke="${sc}" stroke-width="0.4" stroke-opacity="0.2"/>
+      </pattern>`;
+    }
+    default:
+      return null;
+  }
+}
+
+// Create SVG <pattern> DOM element for workspace rendering
+function createCarvePatternDef(patternId, elementId, defsEl) {
+  if (!patternId || patternId === 'none') return null;
+  const pid = `cp-${elementId}-${patternId}`;
+  const svgMarkup = generateCarvePatternSvg(patternId, pid, PAPER_COLOR, CARVED_STROKE);
+  if (!svgMarkup) return null;
+  // Parse via innerHTML on the defs element
+  const temp = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  temp.innerHTML = svgMarkup;
+  const pat = temp.firstElementChild;
+  if (pat) defsEl.appendChild(pat);
+  return `url(#${pid})`;
+}
 
 function enterCarveFocus(elementId) {
   if (STATE.carveFocus) return;
