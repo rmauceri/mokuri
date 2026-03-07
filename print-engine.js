@@ -315,14 +315,22 @@ const PrintEngine = (() => {
         });
       }
 
-      // Carve pattern for this element (adds texture to paper reveals in print)
+      // Carve pattern for this element — texture from the carved block surface
       let printPatternFill = null;
       if (el.carvePattern && el.carvePattern !== 'none' && typeof generateCarvePatternSvg === 'function') {
         const ppid = `pe-cp-${el.id}-${el.carvePattern}`;
-        const patSvg = generateCarvePatternSvg(el.carvePattern, ppid, '#f5f0e6', 'rgba(60,50,40,0.25)');
+        const patSvg = generateCarvePatternSvg(el.carvePattern, ppid, '#f5f0e6', 'rgba(60,50,40,0.35)');
         if (patSvg) {
           bokashiDefs += patSvg;
           printPatternFill = `url(#${ppid})`;
+        }
+      }
+
+      // Pattern overlay on block silhouette — carving texture showing through ink
+      if (printPatternFill && !isBlock) {
+        const blockFill = def.carveLevels[0].paths.find(p => p.type === 'fill');
+        if (blockFill) {
+          svgContent += `<path d="${perturb(blockFill.d)}" fill="${printPatternFill}" fill-opacity="0.18" stroke="none"/>`;
         }
       }
 
