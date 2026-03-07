@@ -866,31 +866,38 @@ html, body {
 }
 .ink-studio.open .ink-studio-inner { opacity: 1; }
 
-/* Palette chips */
-.is-palette-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+/* Palette chips — 2-column grid */
+.is-palette-chips {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 10px;
+}
 .is-palette-chip {
-  padding: 5px 10px;
+  padding: 6px;
   font-size: 10px;
-  border-radius: 4px;
+  border-radius: var(--radius);
   border: 2px solid var(--panel-border);
   background: var(--bg);
   cursor: pointer;
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, background 0.15s;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 .is-palette-chip:hover { border-color: var(--text-muted); }
 .is-palette-chip.active { border-color: var(--accent); background: var(--selection); }
 .is-palette-chip-colors {
   display: flex;
-  gap: 1px;
+  gap: 2px;
 }
 .is-palette-chip-dot {
-  width: 8px; height: 8px;
+  width: 10px; height: 10px;
   border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.1);
 }
-.is-palette-name { font-size: 10px; color: var(--text); font-weight: 500; }
+.is-palette-name { font-size: 10px; color: var(--text); font-weight: 500; text-align: center; }
 
 /* Palette swatches (large preview) */
 .is-swatch-row { display: flex; gap: 4px; }
@@ -976,6 +983,25 @@ html, body {
   transition: color 0.15s, border-color 0.15s;
 }
 .is-zone-reset:hover { color: var(--text); border-color: var(--text-muted); }
+
+/* Atmosphere controls in Ink panel */
+.is-atmo-label {
+  font-size: 10px; color: var(--text-muted);
+  display: block; margin-bottom: 3px; margin-top: 8px;
+}
+.is-atmo-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.is-atmo-chip {
+  padding: 3px 8px; font-size: 10px;
+  border-radius: 4px; border: 1px solid var(--panel-border);
+  background: transparent; color: var(--text-muted);
+  cursor: pointer; transition: all 0.15s;
+}
+.is-atmo-chip:hover { border-color: var(--accent); color: var(--text); }
+.is-atmo-chip.active { border-color: var(--accent); background: var(--accent); color: #fff; }
+.is-atmo-slider {
+  width: 100%; accent-color: var(--accent);
+  margin-top: 4px;
+}
 
 /* Print animation layers */
 .print-anim-layer {
@@ -1311,6 +1337,11 @@ html, body {
         <div class="is-zone-section" id="is-zone-section">
           <div class="ps-section-label">Element Zones</div>
           <div id="is-zone-content"></div>
+        </div>
+
+        <div class="is-zone-section" id="is-atmo-section">
+          <div class="ps-section-label">Atmosphere</div>
+          <div id="is-atmo-content"></div>
         </div>
 
         <div class="ps-actions">
@@ -3235,33 +3266,21 @@ function buildPaletteUI() {
     }
   }
 
-  // Palette selector
+  // Show a small palette reference strip (non-interactive — use Ink Studio for changes)
   const palLabel = document.createElement('div');
   palLabel.className = 'palette-label';
   palLabel.style.marginTop = '8px';
-  palLabel.textContent = STATE.viewMode === 'ink' ? 'Ink Palette' : 'Print Palette';
+  palLabel.textContent = palette.name;
   bar.appendChild(palLabel);
 
-  const selector = document.createElement('div');
-  selector.className = 'palette-selector';
-  Object.entries(PALETTES).forEach(([id, pal]) => {
-    const chip = document.createElement('div');
-    chip.className = 'palette-chip' + (id === STATE.paletteId ? ' active' : '');
-    chip.title = pal.name;
-    pal.colors.forEach(c => {
-      const seg = document.createElement('div');
-      seg.className = 'palette-chip-color';
-      seg.style.background = c;
-      chip.appendChild(seg);
-    });
-    chip.addEventListener('click', () => {
-      STATE.paletteId = id;
-      if (STATE.viewMode === 'ink') rerenderAll();
-      buildPaletteUI();
-    });
-    selector.appendChild(chip);
+  const swatchRow = document.createElement('div');
+  swatchRow.style.cssText = 'display:flex;gap:3px;';
+  palette.colors.forEach(c => {
+    const s = document.createElement('div');
+    s.style.cssText = `width:24px;height:18px;border-radius:3px;background:${c};border:1px solid var(--panel-border);`;
+    swatchRow.appendChild(s);
   });
-  bar.appendChild(selector);
+  bar.appendChild(swatchRow);
 }
 
 // ============================================================
@@ -4004,6 +4023,94 @@ function buildInkStudioUI() {
       zoneContent.appendChild(resetBtn);
     }
   }
+
+  // Atmosphere controls
+  const atmoContent = $('is-atmo-content');
+  if (atmoContent) {
+    atmoContent.innerHTML = '';
+
+    // Sky
+    const skyLabel = document.createElement('label');
+    skyLabel.className = 'is-atmo-label';
+    skyLabel.textContent = 'Sky';
+    atmoContent.appendChild(skyLabel);
+    const skyRow = document.createElement('div');
+    skyRow.className = 'is-atmo-chips';
+    Object.entries(SKY_TYPES).forEach(([id, s]) => {
+      const chip = document.createElement('button');
+      chip.className = 'is-atmo-chip' + (STATE.sky === id ? ' active' : '');
+      chip.textContent = s.name;
+      chip.addEventListener('click', () => {
+        STATE.sky = id;
+        rerenderAll();
+        buildInkStudioUI();
+        autoSave();
+      });
+      skyRow.appendChild(chip);
+    });
+    atmoContent.appendChild(skyRow);
+
+    // Ground
+    const groundLabel = document.createElement('label');
+    groundLabel.className = 'is-atmo-label';
+    groundLabel.textContent = 'Ground';
+    atmoContent.appendChild(groundLabel);
+    const groundRow = document.createElement('div');
+    groundRow.className = 'is-atmo-chips';
+    Object.entries(GROUND_TYPES).forEach(([id, g]) => {
+      const chip = document.createElement('button');
+      chip.className = 'is-atmo-chip' + (STATE.ground === id ? ' active' : '');
+      chip.textContent = g.name;
+      chip.addEventListener('click', () => {
+        STATE.ground = id;
+        rerenderAll();
+        buildInkStudioUI();
+        autoSave();
+      });
+      groundRow.appendChild(chip);
+    });
+    atmoContent.appendChild(groundRow);
+
+    // Horizon slider
+    const horizLabel = document.createElement('label');
+    horizLabel.className = 'is-atmo-label';
+    horizLabel.innerHTML = `Horizon <span style="color:var(--text)">${Math.round(STATE.horizon * 100)}%</span>`;
+    atmoContent.appendChild(horizLabel);
+    const horizSlider = document.createElement('input');
+    horizSlider.type = 'range';
+    horizSlider.className = 'is-atmo-slider';
+    horizSlider.min = '20';
+    horizSlider.max = '85';
+    horizSlider.value = Math.round(STATE.horizon * 100);
+    horizSlider.addEventListener('input', () => {
+      STATE.horizon = parseInt(horizSlider.value) / 100;
+      horizLabel.innerHTML = `Horizon <span style="color:var(--text)">${horizSlider.value}%</span>`;
+      rerenderAll();
+    });
+    horizSlider.addEventListener('change', () => autoSave());
+    atmoContent.appendChild(horizSlider);
+
+    // Mist
+    const mistLabel = document.createElement('label');
+    mistLabel.className = 'is-atmo-label';
+    mistLabel.textContent = 'Mist Bands';
+    atmoContent.appendChild(mistLabel);
+    const mistRow = document.createElement('div');
+    mistRow.className = 'is-atmo-chips';
+    [0, 1, 2, 3].forEach(n => {
+      const chip = document.createElement('button');
+      chip.className = 'is-atmo-chip' + (STATE.mist === n ? ' active' : '');
+      chip.textContent = n === 0 ? 'None' : String(n);
+      chip.addEventListener('click', () => {
+        STATE.mist = n;
+        rerenderAll();
+        buildInkStudioUI();
+        autoSave();
+      });
+      mistRow.appendChild(chip);
+    });
+    atmoContent.appendChild(mistRow);
+  }
 }
 
 // ============================================================
@@ -4012,9 +4119,18 @@ function buildInkStudioUI() {
 
 function openPrintStudio() {
   if (STATE.printStudioOpen) return;
-  // Close other right panels first
-  if (STATE.carveStudioOpen) closeCarveStudio();
-  if (STATE.inkStudioOpen) closeInkStudio();
+  // Save which panel was open before (to restore on close)
+  STATE._prePrintPanel = STATE.carveStudioOpen ? 'carve' : STATE.inkStudioOpen ? 'ink' : null;
+  // Close other right panels without resetting view mode
+  if (STATE.carveStudioOpen) {
+    STATE.carveStudioOpen = false;
+    $('carve-studio').classList.remove('open');
+    if (STATE.carveFocus) exitCarveFocus();
+  }
+  if (STATE.inkStudioOpen) {
+    STATE.inkStudioOpen = false;
+    $('ink-studio').classList.remove('open');
+  }
 
   STATE.printStudioOpen = true;
 
@@ -4044,7 +4160,17 @@ function closePrintStudio() {
   $('print-studio').classList.remove('open');
   STATE.printStudioOpen = false;
   $('btn-print').style.display = '';
-  setMode(STATE.mode);
+
+  // Restore previously open panel
+  const prev = STATE._prePrintPanel;
+  STATE._prePrintPanel = null;
+  if (prev === 'carve') {
+    openCarveStudio();
+  } else if (prev === 'ink') {
+    openInkStudio();
+  } else {
+    setMode('select');
+  }
 }
 
 function buildPrintStudioUI() {
@@ -4383,6 +4509,12 @@ function setupInteraction() {
         const id = parseInt(gEl.getAttribute('data-id'));
         const el = STATE.elements.find(el => el.id === id);
         if (!el || el.locked) return;
+        // Click on a different element: select it first (allows choosing what to carve)
+        if (STATE.selectedId !== id) {
+          selectElement(id);
+          return;
+        }
+        // Click on already-selected element: start carving
         pushUndo();
         const svgPt = clientToSvg(e.clientX, e.clientY);
         const localPt = svgToElementLocal(svgPt.x, svgPt.y, el);
@@ -4867,7 +4999,26 @@ function setupToolbar() {
   // Ink Studio — back link
   $('is-back-compose').addEventListener('click', () => closeInkStudio());
 
-  // Light dismiss — click on workspace closes print studio (and any print preview)
+  // Light dismiss — click on non-canvas app areas closes right panels
+  // (toolbar, status bar, washi bg — but NOT workspace canvas for Carve/Ink)
+  function lightDismissRightPanel(e) {
+    // Don't dismiss if clicking inside a panel itself
+    if (e.target.closest('.carve-studio') || e.target.closest('.ink-studio') || e.target.closest('.print-studio') || e.target.closest('.panel')) return;
+    // Don't dismiss if clicking a toolbar button (they have their own handlers)
+    if (e.target.closest('.tool-btn') || e.target.closest('.print-btn')) return;
+    // Don't dismiss if clicking the file menu or atmo menu
+    if (e.target.closest('#file-menu') || e.target.closest('#atmo-menu')) return;
+
+    if (STATE.printStudioOpen) { closePrintStudio(); return; }
+    if (STATE.inkStudioOpen) { closeInkStudio(); return; }
+    if (STATE.carveStudioOpen) { closeCarveStudio(); return; }
+  }
+
+  // Toolbar clicks → light dismiss
+  document.querySelector('.toolbar').addEventListener('click', lightDismissRightPanel);
+  // Status bar clicks → light dismiss
+  document.querySelector('.status-bar').addEventListener('click', lightDismissRightPanel);
+  // Workspace clicks → light dismiss only for Print Studio (carve/ink need workspace interaction)
   workspaceEl.addEventListener('click', (e) => {
     if (STATE.printStudioOpen) {
       closePrintStudio();
