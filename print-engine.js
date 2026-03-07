@@ -257,7 +257,9 @@ const PrintEngine = (() => {
 
       svgContent += `<g transform="${xform}" filter="url(#wobble)"><g transform="${inner}">`;
 
+      const HANKO_VERMILLION = '#c23b22';
       const zoneColor = (zoneId) => {
+        if (isHanko) return (el.colorOverrides && el.colorOverrides[zoneId]) || HANKO_VERMILLION;
         const z = def.colorZones.find(c => c.id === zoneId);
         return (el.colorOverrides && el.colorOverrides[zoneId])
           || (z ? palette.colors[z.defaultPaletteSlot % palette.colors.length] : palette.colors[0]);

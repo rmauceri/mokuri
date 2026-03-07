@@ -1688,9 +1688,12 @@ function renderElementSvg(el, layerIndex) {
   const palette = inkMode ? PALETTES[STATE.paletteId] : null;
 
   // In ink mode, resolve zone colors; in carve mode, use wood tones
+  // Hanko elements always render in vermillion regardless of palette
+  const HANKO_VERMILLION = '#c23b22';
   const woodTone = WOOD_TONES[layerIndex % WOOD_TONES.length];
   const zoneColor = (zoneId) => {
-    if (!inkMode) return woodTone;
+    if (!inkMode) return def.hanko ? HANKO_VERMILLION : woodTone;
+    if (def.hanko) return el.colorOverrides && el.colorOverrides[zoneId] || HANKO_VERMILLION;
     if (el.colorOverrides && el.colorOverrides[zoneId]) return el.colorOverrides[zoneId];
     const z = def.colorZones.find(c => c.id === zoneId);
     return z ? palette.colors[z.defaultPaletteSlot % palette.colors.length] : palette.colors[0];
@@ -3959,8 +3962,9 @@ function setupKeyboard() {
     // Flip, duplicate, lock
     if (e.key === 'h' && !e.ctrlKey && !e.metaKey) { flipSelectedH(); e.preventDefault(); }
     if (e.key === 'f' && !e.ctrlKey && !e.metaKey) {
-      // F enters carve focus when in carve mode with selection, otherwise flips vertical
-      if (STATE.mode === 'carve' && STATE.selectedId && !STATE.carveFocus) {
+      // F enters carve focus when an element is selected, otherwise flips vertical
+      if (STATE.selectedId && !STATE.carveFocus) {
+        if (STATE.mode !== 'carve') setMode('carve');
         enterCarveFocus(STATE.selectedId);
       } else if (!STATE.carveFocus) {
         flipSelectedV();
