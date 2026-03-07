@@ -1121,21 +1121,14 @@ html, body {
     <button class="tool-btn" id="btn-delete" title="Delete" disabled>✕</button>
     <div class="toolbar-separator"></div>
 
-    <button class="tool-btn" id="btn-carve" title="Carve (reveal detail)" disabled>🪵</button>
+    <button class="tool-btn" id="btn-carve" title="Carve Studio (C)">🪵</button>
     <div class="toolbar-separator"></div>
 
     <!-- Mode toggle -->
     <button class="tool-btn active-mode" id="btn-mode-select" title="Select mode (V)">👆</button>
     <button class="tool-btn" id="btn-mode-carve" title="Carve mode (V)">🔪</button>
     <button class="tool-btn" id="btn-mode-erase" title="Erase carve strokes (E)">🧹</button>
-    <div class="toolbar-separator"></div>
 
-    <!-- Carve tool selector (visible in carve mode) -->
-    <span id="carve-width-group" style="display:none;align-items:center;gap:2px;">
-      <button class="tool-btn carve-w" data-tool="fine" title="Fine marking knife">╱</button>
-      <button class="tool-btn carve-w active-mode" data-tool="vgouge" title="V Gouge — graduated V-cut">∨</button>
-      <button class="tool-btn carve-w" data-tool="ugouge" title="U Gouge — rounded scoop">∪</button>
-    </span>
     <button class="tool-btn" id="btn-focus" title="Carve Focus — zoom into element (F)" disabled style="font-size:14px;">🔍</button>
     <div class="toolbar-separator"></div>
 
@@ -2747,13 +2740,8 @@ function updateToolbarState() {
     $('btn-lock').textContent = isLocked ? '🔓' : '🔒';
     $('btn-lock').title = isLocked ? 'Unlock (L)' : 'Lock (L)';
   }
-  // Carve button: enabled when selected element has multiple carve levels and is not locked
-  let canCarve = false;
-  if (selEl && !isLocked) {
-    const def = MOKURI_ELEMENTS.find(d => d.id === selEl.defId);
-    if (def && def.carveLevels.length > 1) canCarve = true;
-  }
-  $('btn-carve').disabled = !canCarve;
+  // Carve button: always enabled (opens Carve Studio)
+  $('btn-carve').disabled = false;
   // Focus button: enabled when element selected and not locked
   $('btn-focus').disabled = !hasSel || isLocked;
   if (STATE.carveFocus) {
@@ -2763,11 +2751,17 @@ function updateToolbarState() {
     $('btn-focus').classList.remove('active-mode');
     $('btn-focus').title = 'Carve Focus — zoom into element (F)';
   }
-  // Show carve level in button title
-  if (canCarve) {
+  // Show carve level in button title when element selected
+  if (selEl && !isLocked) {
     const def = MOKURI_ELEMENTS.find(d => d.id === selEl.defId);
-    const lvl = def.carveLevels[selEl.carveLevel];
-    $('btn-carve').title = `Carve: ${lvl.name} (${selEl.carveLevel + 1}/${def.carveLevels.length})`;
+    if (def && def.carveLevels.length > 1) {
+      const lvl = def.carveLevels[selEl.carveLevel];
+      $('btn-carve').title = `Carve Studio · ${lvl.name} (${selEl.carveLevel + 1}/${def.carveLevels.length})`;
+    } else {
+      $('btn-carve').title = 'Carve Studio (C)';
+    }
+  } else {
+    $('btn-carve').title = 'Carve Studio (C)';
   }
 }
 
@@ -2856,6 +2850,8 @@ function buildElementPicker() {
         const px = Math.max(0, Math.min(STATE.paperW, svgPt.x));
         const py = Math.max(0, Math.min(STATE.paperH, svgPt.y));
         addElement(def.id, px, py);
+        // Switch to select mode so the new element can be positioned/sized
+        if (STATE.mode !== 'select') setMode('select');
       });
 
       grid.appendChild(thumb);
@@ -3387,9 +3383,6 @@ function setMode(mode) {
   });
   workspaceEl.classList.toggle('carve-mode', mode === 'carve');
   workspaceEl.classList.toggle('erase-mode', mode === 'erase');
-  const wg = $('carve-width-group');
-  // Hide main carve tools when focus toolbar or carve studio panel is showing them
-  if (wg) wg.style.display = (mode === 'carve' && !STATE.carveFocus && !STATE.carveStudioOpen) ? 'flex' : 'none';
   // Status hints — studio panels provide their own context
   let hint;
   if (STATE.carveFocus) {
@@ -3546,10 +3539,6 @@ function enterCarveFocus(elementId) {
     g.classList.add('comp-layer-el');
   });
 
-  // Hide main carve tools (they're duplicated in focus toolbar)
-  const mainToolGroup = $('carve-width-group');
-  if (mainToolGroup) mainToolGroup.style.display = 'none';
-
   // Show floating focus toolbar
   buildCarveFocusToolbar(el);
   const cfBar = $('carve-focus-toolbar');
@@ -3574,10 +3563,6 @@ function exitCarveFocus() {
   workspaceEl.classList.remove('carve-focus-active');
   compLayer.querySelectorAll('.dimmed').forEach(g => g.classList.remove('dimmed'));
   compLayer.querySelectorAll('.comp-layer-el').forEach(g => g.classList.remove('comp-layer-el'));
-
-  // Restore main toolbar carve tools if still in carve mode
-  const mainToolGroup = $('carve-width-group');
-  if (mainToolGroup && STATE.mode === 'carve') mainToolGroup.style.display = 'flex';
 
   // Animate back to saved viewport
   if (STATE.preFocusViewBox) {
