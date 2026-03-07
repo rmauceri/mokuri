@@ -129,6 +129,54 @@ html, body {
 .workspace.carve-mode { cursor: crosshair; }
 .workspace.erase-mode { cursor: pointer; }
 
+/* Carve Focus Mode */
+.workspace.carve-focus-active .comp-layer-el { transition: opacity 0.3s ease; }
+.workspace.carve-focus-active .comp-layer-el.dimmed { opacity: 0.15; pointer-events: none; }
+.carve-focus-toolbar {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  display: none;
+  align-items: center;
+  gap: 4px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  padding: 4px 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.carve-focus-toolbar.visible { display: flex; opacity: 1; }
+.carve-focus-toolbar .cf-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-right: 4px;
+  white-space: nowrap;
+}
+.carve-focus-toolbar .cf-sep {
+  width: 1px;
+  height: 22px;
+  background: var(--panel-border);
+  margin: 0 4px;
+}
+.cf-pattern-chip {
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--panel-border);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.cf-pattern-chip:hover { border-color: var(--accent); color: var(--text); }
+.cf-pattern-chip.active { border-color: var(--accent); background: var(--accent); color: #fff; }
+
 .toolbar-spacer { flex: 1; }
 
 .file-menu-item {
@@ -820,6 +868,7 @@ html, body {
       <button class="tool-btn carve-w active-mode" data-tool="vgouge" title="V Gouge — graduated V-cut">∨</button>
       <button class="tool-btn carve-w" data-tool="ugouge" title="U Gouge — rounded scoop">∪</button>
     </span>
+    <button class="tool-btn" id="btn-focus" title="Carve Focus — zoom into element (F)" disabled style="font-size:14px;">🔍</button>
     <div class="toolbar-separator"></div>
 
     <!-- View mode toggle -->
@@ -935,6 +984,21 @@ html, body {
         <div class="print-peel-highlight" id="print-peel-highlight"></div>
       </div>
       <div class="print-mirror-label" id="print-mirror-label">↔ mirrored from block</div>
+
+      <!-- Carve Focus floating toolbar -->
+      <div class="carve-focus-toolbar" id="carve-focus-toolbar">
+        <span class="cf-label">🔪 Focus</span>
+        <div class="cf-sep"></div>
+        <button class="tool-btn carve-w cf-tool" data-tool="fine" title="Fine marking knife (1)">╱</button>
+        <button class="tool-btn carve-w cf-tool active-mode" data-tool="vgouge" title="V Gouge (2)">∨</button>
+        <button class="tool-btn carve-w cf-tool" data-tool="ugouge" title="U Gouge (3)">∪</button>
+        <div class="cf-sep"></div>
+        <span class="cf-label">Pattern</span>
+        <span id="cf-pattern-row"></span>
+        <div class="cf-sep"></div>
+        <button class="tool-btn" id="cf-clear-strokes" title="Clear all carve strokes on this element">🗑</button>
+        <button class="tool-btn" id="cf-done" title="Exit focus (Esc)">✓</button>
+      </div>
     </div>
 
     <!-- Print studio panel (right flyout) -->
@@ -1032,6 +1096,9 @@ const STATE = {
   mode: 'select',     // 'select' | 'carve' | 'erase'
   carveTool: 'vgouge', // active tool id
   carving: null,       // active carve stroke: { elementId, points: [{x,y},...] }
+  carveFocus: null,    // element id when in carve focus mode, null otherwise
+  preFocusViewBox: null, // saved viewBox before entering focus
+  preFocusZoom: null,    // saved zoom before entering focus
 
   // View mode
   viewMode: 'carve',   // 'carve' | 'ink'
@@ -1724,7 +1791,14 @@ function rerenderAll() {
   while (compLayer.firstChild) compLayer.removeChild(compLayer.firstChild);
   STATE.elements.forEach((el, i) => {
     const g = renderElementSvg(el, i);
-    if (g) compLayer.appendChild(g);
+    if (g) {
+      // In carve focus mode, dim non-focused elements
+      if (STATE.carveFocus) {
+        g.classList.add('comp-layer-el');
+        if (el.id !== STATE.carveFocus) g.classList.add('dimmed');
+      }
+      compLayer.appendChild(g);
+    }
   });
   updateSelection();
   updateStatus();
@@ -2231,6 +2305,15 @@ function updateToolbarState() {
     if (def && def.carveLevels.length > 1) canCarve = true;
   }
   $('btn-carve').disabled = !canCarve;
+  // Focus button: enabled when element selected and not locked
+  $('btn-focus').disabled = !hasSel || isLocked;
+  if (STATE.carveFocus) {
+    $('btn-focus').classList.add('active-mode');
+    $('btn-focus').title = 'Exit Carve Focus (Esc)';
+  } else {
+    $('btn-focus').classList.remove('active-mode');
+    $('btn-focus').title = 'Carve Focus — zoom into element (F)';
+  }
   // Show carve level in button title
   if (canCarve) {
     const def = MOKURI_ELEMENTS.find(d => d.id === selEl.defId);
@@ -2598,8 +2681,13 @@ function setMode(mode) {
   workspaceEl.classList.toggle('carve-mode', mode === 'carve');
   workspaceEl.classList.toggle('erase-mode', mode === 'erase');
   const wg = $('carve-width-group');
-  if (wg) wg.style.display = (mode === 'carve') ? 'flex' : 'none';
-  const hint = STATE.viewMode === 'ink'
+  // Hide main carve tools when focus toolbar is showing them
+  if (wg) wg.style.display = (mode === 'carve' && !STATE.carveFocus) ? 'flex' : 'none';
+  const hint = STATE.carveFocus
+    ? (mode === 'carve' ? 'Carve Focus — draw to carve · E to erase · Esc to exit'
+       : mode === 'erase' ? 'Carve Focus — click stroke to erase · V to carve · Esc to exit'
+       : 'Carve Focus — Esc to exit')
+    : STATE.viewMode === 'ink'
     ? 'Ink preview — click element zones to change colors · I to return to carve view'
     : mode === 'carve' ? 'Draw on elements to carve · Alt+click to pan'
     : mode === 'erase' ? 'Click near a carve stroke to remove it'
@@ -2616,6 +2704,167 @@ function setViewMode(mode) {
   // Refresh status hint
   setMode(STATE.mode);
   buildPaletteUI();
+}
+
+// ============================================================
+//  CARVE FOCUS MODE — zoom into selected element for detail carving
+// ============================================================
+
+const CARVE_PATTERNS = {
+  none:       { name: 'None',       icon: '◻' },
+  crosshatch: { name: 'Crosshatch', icon: '╳' },
+  woodgrain:  { name: 'Grain',      icon: '〰' },
+  diagonal:   { name: 'Diagonal',   icon: '╱' },
+  stipple:    { name: 'Stipple',    icon: '∴' },
+  wave:       { name: 'Wave',       icon: '∿' },
+};
+
+function enterCarveFocus(elementId) {
+  if (STATE.carveFocus) return;
+  const el = STATE.elements.find(e => e.id === elementId);
+  if (!el) return;
+  const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+  if (!def) return;
+
+  // Save current viewport
+  STATE.preFocusViewBox = { ...STATE.viewBox };
+  STATE.preFocusZoom = STATE.zoom;
+  STATE.carveFocus = elementId;
+
+  // Ensure we're in carve mode
+  if (STATE.mode !== 'carve') setMode('carve');
+  selectElement(elementId);
+
+  // Calculate element bounding box in SVG space
+  const vb = def.viewBox.split(' ').map(Number);
+  const hw = (vb[2] / 2) * Math.abs(el.scaleX);
+  const hh = (vb[3] / 2) * Math.abs(el.scaleY);
+  const pad = Math.max(hw, hh) * 0.3;
+  const targetBox = {
+    x: el.x - hw - pad,
+    y: el.y - hh - pad,
+    w: (hw + pad) * 2,
+    h: (hh + pad) * 2,
+  };
+
+  // Dim non-focused elements
+  workspaceEl.classList.add('carve-focus-active');
+  compLayer.querySelectorAll('g[data-id]').forEach(g => {
+    const id = parseInt(g.getAttribute('data-id'));
+    if (id !== elementId) g.classList.add('dimmed');
+    g.classList.add('comp-layer-el');
+  });
+
+  // Hide main carve tools (they're duplicated in focus toolbar)
+  const mainToolGroup = $('carve-width-group');
+  if (mainToolGroup) mainToolGroup.style.display = 'none';
+
+  // Show floating focus toolbar
+  buildCarveFocusToolbar(el);
+  const cfBar = $('carve-focus-toolbar');
+  cfBar.style.display = 'flex';
+  requestAnimationFrame(() => cfBar.classList.add('visible'));
+
+  // Animate viewBox to element
+  animateViewBox(targetBox, 350);
+
+  $('status-hint').textContent = 'Carve Focus — draw to carve · Esc to exit';
+}
+
+function exitCarveFocus() {
+  if (!STATE.carveFocus) return;
+
+  // Hide focus toolbar
+  const cfBar = $('carve-focus-toolbar');
+  cfBar.classList.remove('visible');
+  setTimeout(() => { cfBar.style.display = 'none'; }, 250);
+
+  // Restore element visibility
+  workspaceEl.classList.remove('carve-focus-active');
+  compLayer.querySelectorAll('.dimmed').forEach(g => g.classList.remove('dimmed'));
+  compLayer.querySelectorAll('.comp-layer-el').forEach(g => g.classList.remove('comp-layer-el'));
+
+  // Restore main toolbar carve tools if still in carve mode
+  const mainToolGroup = $('carve-width-group');
+  if (mainToolGroup && STATE.mode === 'carve') mainToolGroup.style.display = 'flex';
+
+  // Animate back to saved viewport
+  if (STATE.preFocusViewBox) {
+    animateViewBox(STATE.preFocusViewBox, 300);
+    STATE.zoom = STATE.preFocusZoom || 1;
+  }
+
+  STATE.carveFocus = null;
+  STATE.preFocusViewBox = null;
+  STATE.preFocusZoom = null;
+
+  setMode(STATE.mode);
+  autoSave();
+}
+
+function animateViewBox(target, durationMs) {
+  const start = { ...STATE.viewBox };
+  const rect = workspaceEl.getBoundingClientRect();
+
+  // For target, if it doesn't have all viewBox fields, compute them
+  let tx = target.x, ty = target.y, tw = target.w, th = target.h;
+
+  // Maintain aspect ratio: fit target box into workspace aspect ratio
+  const wsAspect = rect.width / rect.height;
+  const targetAspect = tw / th;
+  if (targetAspect > wsAspect) {
+    // Target is wider — expand height
+    const newH = tw / wsAspect;
+    ty -= (newH - th) / 2;
+    th = newH;
+  } else {
+    // Target is taller — expand width
+    const newW = th * wsAspect;
+    tx -= (newW - tw) / 2;
+    tw = newW;
+  }
+
+  const startTime = performance.now();
+  function step(now) {
+    const elapsed = now - startTime;
+    const t = Math.min(1, elapsed / durationMs);
+    // Ease out cubic
+    const ease = 1 - Math.pow(1 - t, 3);
+    STATE.viewBox.x = start.x + (tx - start.x) * ease;
+    STATE.viewBox.y = start.y + (ty - start.y) * ease;
+    STATE.viewBox.w = start.w + (tw - start.w) * ease;
+    STATE.viewBox.h = start.h + (th - start.h) * ease;
+    STATE.zoom = rect.width / STATE.viewBox.w;
+    updateViewBox();
+    if (t < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+function buildCarveFocusToolbar(el) {
+  // Sync tool buttons with current tool
+  document.querySelectorAll('.cf-tool').forEach(b => {
+    b.classList.toggle('active-mode', b.dataset.tool === STATE.carveTool);
+  });
+
+  // Build pattern chips
+  const patRow = $('cf-pattern-row');
+  patRow.innerHTML = '';
+  const currentPattern = el.carvePattern || 'none';
+  Object.entries(CARVE_PATTERNS).forEach(([id, pat]) => {
+    const chip = document.createElement('button');
+    chip.className = 'cf-pattern-chip' + (currentPattern === id ? ' active' : '');
+    chip.textContent = `${pat.icon} ${pat.name}`;
+    chip.title = pat.name;
+    chip.addEventListener('click', () => {
+      pushUndo();
+      el.carvePattern = id === 'none' ? undefined : id;
+      rerenderAll();
+      buildCarveFocusToolbar(el);
+      autoSave();
+    });
+    patRow.appendChild(chip);
+  });
 }
 
 // ============================================================
@@ -2971,6 +3220,18 @@ function setupInteraction() {
     // ---- CARVE MODE ----
     if (STATE.mode === 'carve') {
       const gEl = e.target.closest('g[data-id]');
+      // In focus mode, only carve the focused element; allow carving even on empty space
+      if (STATE.carveFocus) {
+        const el = STATE.elements.find(el => el.id === STATE.carveFocus);
+        if (!el || el.locked) return;
+        pushUndo();
+        const svgPt = clientToSvg(e.clientX, e.clientY);
+        const localPt = svgToElementLocal(svgPt.x, svgPt.y, el);
+        if (!el.carveStrokes) el.carveStrokes = [];
+        STATE.carving = { elementId: el.id, points: [localPt] };
+        ws.setPointerCapture(e.pointerId);
+        return;
+      }
       if (!gEl) return;
       const id = parseInt(gEl.getAttribute('data-id'));
       const el = STATE.elements.find(el => el.id === id);
@@ -2987,15 +3248,14 @@ function setupInteraction() {
     // ---- ERASE MODE ----
     if (STATE.mode === 'erase') {
       const gEl = e.target.closest('g[data-id]');
-      if (!gEl) return;
-      const id = parseInt(gEl.getAttribute('data-id'));
-      const el = STATE.elements.find(el => el.id === id);
+      // In focus mode, only erase from focused element
+      const targetId = STATE.carveFocus || (gEl ? parseInt(gEl.getAttribute('data-id')) : null);
+      if (!targetId) return;
+      const el = STATE.elements.find(el => el.id === targetId);
       if (!el || el.locked || !el.carveStrokes || !el.carveStrokes.length) return;
-      // Remove last carve stroke from this element
       pushUndo();
       const svgPt = clientToSvg(e.clientX, e.clientY);
       const localPt = svgToElementLocal(svgPt.x, svgPt.y, el);
-      // Find nearest stroke to click point
       let bestIdx = el.carveStrokes.length - 1;
       let bestDist = Infinity;
       el.carveStrokes.forEach((stroke, si) => {
@@ -3060,10 +3320,11 @@ function setupInteraction() {
       }
     }
 
-    // Clicked empty space — deselect
-    deselectAll();
+    // Clicked empty space — deselect (but not in carve focus mode)
+    if (!STATE.carveFocus) deselectAll();
 
-    // Start pan
+    // Start pan (but not in carve focus mode — keep viewport locked on element)
+    if (STATE.carveFocus) return;
     STATE.dragging = { type: 'pan', startX: e.clientX, startY: e.clientY, origVBx: STATE.viewBox.x, origVBy: STATE.viewBox.y };
     ws.setPointerCapture(e.pointerId);
     ws.style.cursor = 'grabbing';
@@ -3210,7 +3471,15 @@ function setupKeyboard() {
 
     // Flip, duplicate, lock
     if (e.key === 'h' && !e.ctrlKey && !e.metaKey) { flipSelectedH(); e.preventDefault(); }
-    if (e.key === 'f' && !e.ctrlKey && !e.metaKey) { flipSelectedV(); e.preventDefault(); }
+    if (e.key === 'f' && !e.ctrlKey && !e.metaKey) {
+      // F enters carve focus when in carve mode with selection, otherwise flips vertical
+      if (STATE.mode === 'carve' && STATE.selectedId && !STATE.carveFocus) {
+        enterCarveFocus(STATE.selectedId);
+      } else if (!STATE.carveFocus) {
+        flipSelectedV();
+      }
+      e.preventDefault();
+    }
     if (e.key === 'd' && (e.ctrlKey || e.metaKey)) { duplicateSelected(); e.preventDefault(); }
     if (e.key === 'l' && !e.ctrlKey && !e.metaKey) { toggleLockSelected(); e.preventDefault(); }
 
@@ -3224,16 +3493,17 @@ function setupKeyboard() {
       e.preventDefault();
     }
     if (e.key === 'Escape') {
-      if (STATE.printStudioOpen) { closePrintStudio(); }
+      if (STATE.carveFocus) { exitCarveFocus(); }
+      else if (STATE.printStudioOpen) { closePrintStudio(); }
       else { setMode('select'); if (STATE.viewMode === 'ink') setViewMode('carve'); }
       e.preventDefault();
     }
 
     // Tool shortcuts in carve mode
     if (STATE.mode === 'carve') {
-      if (e.key === '1') { STATE.carveTool = 'fine'; updateToolButtons(); }
-      if (e.key === '2') { STATE.carveTool = 'vgouge'; updateToolButtons(); }
-      if (e.key === '3') { STATE.carveTool = 'ugouge'; updateToolButtons(); }
+      if (e.key === '1') { STATE.carveTool = 'fine'; updateToolButtons(); updateFocusToolButtons(); }
+      if (e.key === '2') { STATE.carveTool = 'vgouge'; updateToolButtons(); updateFocusToolButtons(); }
+      if (e.key === '3') { STATE.carveTool = 'ugouge'; updateToolButtons(); updateFocusToolButtons(); }
     }
 
     // Arrow nudge
@@ -3255,6 +3525,12 @@ function setupKeyboard() {
 
 function updateToolButtons() {
   document.querySelectorAll('.carve-w').forEach(b => {
+    b.classList.toggle('active-mode', b.dataset.tool === STATE.carveTool);
+  });
+}
+
+function updateFocusToolButtons() {
+  document.querySelectorAll('.cf-tool').forEach(b => {
     b.classList.toggle('active-mode', b.dataset.tool === STATE.carveTool);
   });
 }
@@ -3282,10 +3558,19 @@ function setupToolbar() {
   $('btn-mode-carve').addEventListener('click', () => setMode('carve'));
   $('btn-mode-erase').addEventListener('click', () => setMode('erase'));
 
+  // Focus button
+  $('btn-focus').addEventListener('click', () => {
+    if (STATE.carveFocus) { exitCarveFocus(); return; }
+    if (STATE.selectedId) {
+      if (STATE.mode !== 'carve') setMode('carve');
+      enterCarveFocus(STATE.selectedId);
+    }
+  });
+
   // View mode toggle
   $('btn-view-ink').addEventListener('click', () => setViewMode(STATE.viewMode === 'ink' ? 'carve' : 'ink'));
 
-  // Carve tool buttons
+  // Carve tool buttons (both main toolbar and focus toolbar share .carve-w class)
   document.querySelectorAll('.carve-w').forEach(btn => {
     btn.addEventListener('click', () => {
       STATE.carveTool = btn.dataset.tool;
@@ -3293,6 +3578,19 @@ function setupToolbar() {
       btn.classList.add('active-mode');
     });
   });
+
+  // Carve Focus toolbar buttons
+  $('cf-clear-strokes').addEventListener('click', () => {
+    if (!STATE.carveFocus) return;
+    const el = STATE.elements.find(e => e.id === STATE.carveFocus);
+    if (el && el.carveStrokes && el.carveStrokes.length) {
+      pushUndo();
+      el.carveStrokes = [];
+      rerenderAll();
+      autoSave();
+    }
+  });
+  $('cf-done').addEventListener('click', () => exitCarveFocus());
 
   // Print Studio
   $('btn-print').addEventListener('click', () => {
