@@ -735,6 +735,248 @@ html, body {
 }
 .ps-back-link:hover { color: var(--text); }
 
+/* ============================================================
+   CARVE STUDIO PANEL (right flyout)
+   ============================================================ */
+.carve-studio {
+  width: 0;
+  background: var(--panel-bg);
+  border-left: 1px solid var(--panel-border);
+  display: flex;
+  flex-direction: column;
+  z-index: 5;
+  flex-shrink: 0;
+  overflow: hidden;
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.carve-studio.open { width: 260px; }
+.carve-studio-inner {
+  width: 260px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.25s ease 0.1s;
+  overflow-y: auto;
+}
+.carve-studio.open .carve-studio-inner { opacity: 1; }
+
+/* Gouge tool buttons */
+.cs-tool-row { display: flex; gap: 6px; }
+.cs-tool-cell { flex: 1; text-align: center; }
+.cs-tool-btn {
+  width: 100%;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--panel-border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 16px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.cs-tool-btn:hover { border-color: var(--accent); }
+.cs-tool-btn.active { border-color: var(--accent); background: var(--accent); color: #fff; }
+.cs-tool-name { font-size: 9px; color: var(--text-muted); margin-top: 2px; }
+
+/* Pattern chips */
+.cs-pattern-row { display: flex; flex-wrap: wrap; gap: 4px; }
+.cs-pattern-chip {
+  padding: 4px 10px;
+  font-size: 10px;
+  border-radius: 4px;
+  border: 1px solid var(--panel-border);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.cs-pattern-chip:hover { border-color: var(--accent); color: var(--text); }
+.cs-pattern-chip.active { border-color: var(--accent); background: var(--accent); color: #fff; }
+
+/* Element-specific section */
+.cs-element-section { border-top: 1px solid var(--panel-border); padding-top: 12px; }
+.cs-element-none {
+  font-size: 11px; color: var(--text-muted);
+  font-style: italic; padding: 8px 0;
+}
+.cs-carve-level-row { display: flex; gap: 4px; margin-bottom: 8px; }
+.cs-action-row { display: flex; gap: 6px; }
+.cs-action-btn {
+  flex: 1;
+  padding: 8px 4px;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 11px;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s;
+}
+.cs-action-btn:hover { border-color: var(--accent); }
+
+/* Background carving toggle */
+.cs-bg-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  font-size: 11px;
+  color: var(--text);
+}
+.cs-bg-toggle:hover { border-color: var(--accent); }
+.cs-bg-toggle.active { border-color: var(--accent); background: var(--selection); }
+
+/* ============================================================
+   INK STUDIO PANEL (right flyout)
+   ============================================================ */
+.ink-studio {
+  width: 0;
+  background: var(--panel-bg);
+  border-left: 1px solid var(--panel-border);
+  display: flex;
+  flex-direction: column;
+  z-index: 5;
+  flex-shrink: 0;
+  overflow: hidden;
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.ink-studio.open { width: 260px; }
+.ink-studio-inner {
+  width: 260px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.25s ease 0.1s;
+  overflow-y: auto;
+}
+.ink-studio.open .ink-studio-inner { opacity: 1; }
+
+/* Palette chips */
+.is-palette-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+.is-palette-chip {
+  padding: 5px 10px;
+  font-size: 10px;
+  border-radius: 4px;
+  border: 2px solid var(--panel-border);
+  background: var(--bg);
+  cursor: pointer;
+  transition: border-color 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.is-palette-chip:hover { border-color: var(--text-muted); }
+.is-palette-chip.active { border-color: var(--accent); background: var(--selection); }
+.is-palette-chip-colors {
+  display: flex;
+  gap: 1px;
+}
+.is-palette-chip-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+.is-palette-name { font-size: 10px; color: var(--text); font-weight: 500; }
+
+/* Palette swatches (large preview) */
+.is-swatch-row { display: flex; gap: 4px; }
+.is-swatch {
+  flex: 1;
+  height: 36px;
+  border-radius: 4px;
+  border: 1px solid var(--panel-border);
+}
+
+/* Zone editor */
+.is-zone-section { border-top: 1px solid var(--panel-border); padding-top: 12px; }
+.is-zone-none {
+  font-size: 11px; color: var(--text-muted);
+  font-style: italic; padding: 8px 0;
+}
+.is-zone-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 4px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.1s;
+}
+.is-zone-row:hover { background: var(--selection); }
+.is-zone-row.active { background: rgba(139, 107, 74, 0.15); }
+.is-zone-swatch {
+  width: 24px; height: 24px;
+  border-radius: 4px;
+  border: 2px solid var(--panel-border);
+  flex-shrink: 0;
+}
+.is-zone-row.active .is-zone-swatch { border-color: var(--accent); }
+.is-zone-name {
+  font-size: 11px; color: var(--text);
+  flex: 1; text-transform: capitalize;
+}
+/* Zone color picker */
+.is-zone-picker {
+  display: flex; gap: 3px;
+  padding: 4px 0 4px 32px;
+}
+.is-pick-swatch {
+  width: 22px; height: 22px;
+  border-radius: 3px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.1s, border-color 0.1s;
+}
+.is-pick-swatch:hover { transform: scale(1.15); }
+.is-pick-swatch.active { border-color: var(--accent); }
+/* Bokashi direction */
+.is-bokashi-row {
+  display: flex; gap: 4px;
+  padding: 4px 0 4px 32px;
+  align-items: center;
+}
+.is-bokashi-label {
+  font-size: 9px; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.5px;
+  margin-right: 4px;
+}
+.is-bokashi-btn {
+  width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 4px;
+  border: 1px solid var(--panel-border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.is-bokashi-btn:hover { border-color: var(--accent); color: var(--text); }
+.is-bokashi-btn.active { border-color: var(--accent); background: var(--accent); color: #fff; }
+.is-zone-reset {
+  font-size: 10px; color: var(--text-muted);
+  cursor: pointer; padding: 2px 8px;
+  border: 1px solid var(--panel-border);
+  border-radius: 3px;
+  margin-top: 6px; display: inline-block;
+  transition: color 0.15s, border-color 0.15s;
+}
+.is-zone-reset:hover { color: var(--text); border-color: var(--text-muted); }
+
 /* Print animation layers */
 .print-anim-layer {
   position: absolute;
@@ -1004,6 +1246,79 @@ html, body {
       </div>
     </div>
 
+    <!-- Carve studio panel (right flyout) -->
+    <div class="carve-studio" id="carve-studio">
+      <div class="carve-studio-inner">
+        <div class="ps-header">
+          <div class="ps-title">🪵 Carve Studio</div>
+        </div>
+
+        <div>
+          <div class="ps-section-label">Tools</div>
+          <div class="cs-tool-row" id="cs-tool-row">
+            <div class="cs-tool-cell">
+              <button class="cs-tool-btn" data-tool="fine" title="Fine marking knife (1)">╱</button>
+              <div class="cs-tool-name">Fine</div>
+            </div>
+            <div class="cs-tool-cell">
+              <button class="cs-tool-btn active" data-tool="vgouge" title="V Gouge (2)">∨</button>
+              <div class="cs-tool-name">V Gouge</div>
+            </div>
+            <div class="cs-tool-cell">
+              <button class="cs-tool-btn" data-tool="ugouge" title="U Gouge (3)">∪</button>
+              <div class="cs-tool-name">U Gouge</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="ps-section-label">Pattern</div>
+          <div class="cs-pattern-row" id="cs-pattern-row"></div>
+        </div>
+
+        <div class="cs-element-section" id="cs-element-section">
+          <div class="ps-section-label">Selected Element</div>
+          <div id="cs-element-content"></div>
+        </div>
+
+        <div>
+          <div class="ps-section-label">Background</div>
+          <div class="cs-bg-toggle" id="cs-bg-toggle">
+            <span>🪵</span>
+            <span>Carve on paper background</span>
+          </div>
+        </div>
+
+        <div class="ps-actions">
+          <div class="ps-back-link" id="cs-back-compose">← Back to Compose · Esc</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ink studio panel (right flyout) -->
+    <div class="ink-studio" id="ink-studio">
+      <div class="ink-studio-inner">
+        <div class="ps-header">
+          <div class="ps-title">🎨 Ink Studio</div>
+        </div>
+
+        <div>
+          <div class="ps-section-label">Palette</div>
+          <div class="is-palette-chips" id="is-palette-chips"></div>
+          <div class="is-swatch-row" id="is-swatch-row"></div>
+        </div>
+
+        <div class="is-zone-section" id="is-zone-section">
+          <div class="ps-section-label">Element Zones</div>
+          <div id="is-zone-content"></div>
+        </div>
+
+        <div class="ps-actions">
+          <div class="ps-back-link" id="is-back-compose">← Back to Compose · Esc</div>
+        </div>
+      </div>
+    </div>
+
     <!-- Print studio panel (right flyout) -->
     <div class="print-studio" id="print-studio">
       <div class="print-studio-inner">
@@ -1135,6 +1450,8 @@ const STATE = {
   viewMode: 'carve',   // 'carve' | 'ink'
   printPreview: false,  // true when showing inline print preview
   printStudioOpen: false, // true when print studio panel is open
+  carveStudioOpen: false, // true when carve studio panel is open
+  inkStudioOpen: false,   // true when ink studio panel is open
 
   // Studio materials
   paperType: 'kozo',    // 'hosho' | 'kozo' | 'torinoko'
@@ -1891,6 +2208,8 @@ function selectElement(id) {
   updateSelection();
   updateToolbarState();
   buildPaletteUI();
+  if (STATE.carveStudioOpen) buildCarveStudioUI();
+  if (STATE.inkStudioOpen) buildInkStudioUI();
 }
 
 function deselectAll() {
@@ -1899,6 +2218,8 @@ function deselectAll() {
   updateSelection();
   updateToolbarState();
   buildPaletteUI();
+  if (STATE.carveStudioOpen) buildCarveStudioUI();
+  if (STATE.inkStudioOpen) buildInkStudioUI();
 }
 
 function updateSelection() {
@@ -3048,17 +3369,27 @@ function setMode(mode) {
   workspaceEl.classList.toggle('carve-mode', mode === 'carve');
   workspaceEl.classList.toggle('erase-mode', mode === 'erase');
   const wg = $('carve-width-group');
-  // Hide main carve tools when focus toolbar is showing them
-  if (wg) wg.style.display = (mode === 'carve' && !STATE.carveFocus) ? 'flex' : 'none';
-  const hint = STATE.carveFocus
-    ? (mode === 'carve' ? 'Carve Focus — draw to carve · E to erase · Esc to exit'
-       : mode === 'erase' ? 'Carve Focus — click stroke to erase · V to carve · Esc to exit'
-       : 'Carve Focus — Esc to exit')
-    : STATE.viewMode === 'ink'
-    ? 'Ink preview — click element zones to change colors · I to return to carve view'
-    : mode === 'carve' ? 'Draw on elements or paper to carve · Alt+click to pan'
-    : mode === 'erase' ? 'Click near a carve stroke to remove it'
-    : 'Place elements · Select + 🪵 or C to carve · Print when ready';
+  // Hide main carve tools when focus toolbar or carve studio panel is showing them
+  if (wg) wg.style.display = (mode === 'carve' && !STATE.carveFocus && !STATE.carveStudioOpen) ? 'flex' : 'none';
+  // Status hints — studio panels provide their own context
+  let hint;
+  if (STATE.carveFocus) {
+    hint = mode === 'carve' ? 'Carve Focus — draw to carve · E to erase · Esc to exit'
+         : mode === 'erase' ? 'Carve Focus — click stroke to erase · V to carve · Esc to exit'
+         : 'Carve Focus — Esc to exit';
+  } else if (STATE.carveStudioOpen) {
+    hint = mode === 'carve' ? 'Carve Studio — draw on elements to carve · select tools and patterns'
+         : mode === 'erase' ? 'Carve Studio — click near a stroke to erase · V to carve'
+         : 'Carve Studio — V to start carving · Esc to close';
+  } else if (STATE.inkStudioOpen) {
+    hint = 'Ink Studio — choose palette and adjust element colors';
+  } else if (STATE.viewMode === 'ink') {
+    hint = 'Ink preview — click element zones to change colors · I to open Ink Studio';
+  } else {
+    hint = mode === 'carve' ? 'Draw on elements or paper to carve · Alt+click to pan'
+         : mode === 'erase' ? 'Click near a carve stroke to remove it'
+         : 'Place elements · 🪵 or C to open Carve Studio · I for Ink · P to print';
+  }
   $('status-hint').textContent = hint;
 }
 
@@ -3071,6 +3402,9 @@ function setViewMode(mode) {
   // Refresh status hint
   setMode(STATE.mode);
   buildPaletteUI();
+  // Refresh open studio panels
+  if (STATE.carveStudioOpen) buildCarveStudioUI();
+  if (STATE.inkStudioOpen) buildInkStudioUI();
 }
 
 // ============================================================
@@ -3306,11 +3640,382 @@ function buildCarveFocusToolbar(el) {
 }
 
 // ============================================================
+//  CARVE STUDIO (right flyout panel)
+// ============================================================
+
+function openCarveStudio() {
+  if (STATE.carveStudioOpen) return;
+  // Close other right panels first
+  if (STATE.printStudioOpen) closePrintStudio();
+  if (STATE.inkStudioOpen) closeInkStudio();
+
+  STATE.carveStudioOpen = true;
+
+  // Switch to carve view and carve mode
+  if (STATE.viewMode !== 'carve') setViewMode('carve');
+  if (STATE.mode !== 'carve') setMode('carve');
+
+  buildCarveStudioUI();
+  $('carve-studio').classList.add('open');
+  // Visual indicator on toolbar
+  const btn = $('btn-carve');
+  if (btn) btn.classList.add('active');
+  $('status-hint').textContent = 'Carve Studio — draw on elements to carve · select tools and patterns';
+}
+
+function closeCarveStudio() {
+  if (!STATE.carveStudioOpen) return;
+  STATE.carveStudioOpen = false;
+  $('carve-studio').classList.remove('open');
+
+  // Exit carve focus if active
+  if (STATE.carveFocus) exitCarveFocus();
+
+  // Remove toolbar indicator
+  const btn = $('btn-carve');
+  if (btn) btn.classList.remove('active');
+
+  // Return to select mode
+  setMode('select');
+}
+
+function buildCarveStudioUI() {
+  // Tool buttons — sync active state with STATE.carveTool
+  const toolRow = $('cs-tool-row');
+  if (toolRow) {
+    toolRow.querySelectorAll('.cs-tool-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tool === STATE.carveTool);
+    });
+  }
+
+  // Pattern chips
+  const patRow = $('cs-pattern-row');
+  if (patRow) {
+    patRow.innerHTML = '';
+    Object.entries(CARVE_PATTERNS).forEach(([pid, pat]) => {
+      const chip = document.createElement('button');
+      chip.className = 'cs-pattern-chip';
+      chip.textContent = `${pat.icon} ${pat.name}`;
+      // Determine active pattern: selected element's pattern or 'none'
+      const el = STATE.selectedId ? STATE.elements.find(e => e.id === STATE.selectedId) : null;
+      const activePat = el ? (el.carvePattern || 'none') : 'none';
+      if (pid === activePat) chip.classList.add('active');
+      chip.addEventListener('click', () => {
+        if (!el) return;
+        pushUndo();
+        el.carvePattern = pid === 'none' ? undefined : pid;
+        rerenderAll();
+        buildCarveStudioUI();
+        autoSave();
+      });
+      patRow.appendChild(chip);
+    });
+  }
+
+  // Element-specific section
+  const elSection = $('cs-element-section');
+  const elContent = $('cs-element-content');
+  if (elSection && elContent) {
+    elContent.innerHTML = '';
+    const el = STATE.selectedId ? STATE.elements.find(e => e.id === STATE.selectedId) : null;
+    if (!el) {
+      const hint = document.createElement('div');
+      hint.className = 'cs-element-none';
+      hint.textContent = 'Select an element to see carve options';
+      elContent.appendChild(hint);
+    } else {
+      const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+      if (def) {
+        // Carve level pips
+        const levelRow = document.createElement('div');
+        levelRow.className = 'cs-carve-level-row';
+        def.carveLevels.forEach((lvl, i) => {
+          const pip = document.createElement('div');
+          pip.className = 'carve-pip' + (i <= el.carveLevel ? ' active' : '');
+          pip.title = lvl.name;
+          pip.textContent = lvl.name.charAt(0).toUpperCase();
+          pip.addEventListener('click', () => {
+            if (el.carveLevel !== i) {
+              pushUndo();
+              el.carveLevel = i;
+              rerenderAll();
+              selectElement(el.id);
+            }
+          });
+          levelRow.appendChild(pip);
+        });
+        elContent.appendChild(levelRow);
+
+        // Action buttons
+        const actionRow = document.createElement('div');
+        actionRow.className = 'cs-action-row';
+
+        const focusBtn = document.createElement('button');
+        focusBtn.className = 'cs-action-btn';
+        focusBtn.textContent = '🔍 Focus';
+        focusBtn.title = 'Zoom into element for detailed carving';
+        focusBtn.addEventListener('click', () => enterCarveFocus(el.id));
+        actionRow.appendChild(focusBtn);
+
+        if (el.carveStrokes && el.carveStrokes.length) {
+          const clearBtn = document.createElement('button');
+          clearBtn.className = 'cs-action-btn';
+          clearBtn.textContent = '🗑 Clear';
+          clearBtn.title = 'Clear all carve strokes on this element';
+          clearBtn.addEventListener('click', () => {
+            pushUndo();
+            el.carveStrokes = [];
+            rerenderAll();
+            buildCarveStudioUI();
+            autoSave();
+          });
+          actionRow.appendChild(clearBtn);
+        }
+        elContent.appendChild(actionRow);
+      }
+    }
+  }
+
+  // Background toggle
+  const bgToggle = $('cs-bg-toggle');
+  if (bgToggle) {
+    bgToggle.classList.toggle('active', STATE.mode === 'carve');
+    bgToggle.onclick = () => {
+      // Deselect element so clicks go to background
+      deselectAll();
+      if (STATE.mode !== 'carve') setMode('carve');
+      buildCarveStudioUI();
+    };
+  }
+}
+
+// ============================================================
+//  INK STUDIO (right flyout panel)
+// ============================================================
+
+function openInkStudio() {
+  if (STATE.inkStudioOpen) return;
+  // Close other right panels first
+  if (STATE.printStudioOpen) closePrintStudio();
+  if (STATE.carveStudioOpen) closeCarveStudio();
+
+  STATE.inkStudioOpen = true;
+
+  // Switch to ink view and select mode
+  if (STATE.viewMode !== 'ink') setViewMode('ink');
+  setMode('select');
+
+  buildInkStudioUI();
+  $('ink-studio').classList.add('open');
+  // Visual indicator on toolbar
+  const btn = $('btn-view-ink');
+  if (btn) btn.classList.add('btn-ink-active');
+  $('status-hint').textContent = 'Ink Studio — choose palette and adjust element colors';
+}
+
+function closeInkStudio() {
+  if (!STATE.inkStudioOpen) return;
+  STATE.inkStudioOpen = false;
+  $('ink-studio').classList.remove('open');
+
+  // Remove toolbar indicator
+  const btn = $('btn-view-ink');
+  if (btn) btn.classList.remove('btn-ink-active');
+
+  // Return to carve view + select mode
+  if (STATE.viewMode !== 'carve') setViewMode('carve');
+  setMode('select');
+}
+
+function buildInkStudioUI() {
+  const palette = PALETTES[STATE.paletteId];
+
+  // Palette chips
+  const chipContainer = $('is-palette-chips');
+  if (chipContainer) {
+    chipContainer.innerHTML = '';
+    Object.entries(PALETTES).forEach(([pid, pal]) => {
+      const chip = document.createElement('div');
+      chip.className = 'is-palette-chip' + (pid === STATE.paletteId ? ' active' : '');
+      chip.title = pal.name;
+
+      const dots = document.createElement('span');
+      dots.className = 'is-palette-chip-colors';
+      pal.colors.forEach(c => {
+        const dot = document.createElement('span');
+        dot.className = 'is-palette-chip-dot';
+        dot.style.background = c;
+        dots.appendChild(dot);
+      });
+      chip.appendChild(dots);
+
+      const name = document.createElement('span');
+      name.className = 'is-palette-name';
+      name.textContent = pal.name;
+      chip.appendChild(name);
+
+      chip.addEventListener('click', () => {
+        STATE.paletteId = pid;
+        rerenderAll();
+        buildInkStudioUI();
+        buildPaletteUI();
+        autoSave();
+      });
+      chipContainer.appendChild(chip);
+    });
+  }
+
+  // Palette swatches (large preview)
+  const swatchRow = $('is-swatch-row');
+  if (swatchRow) {
+    swatchRow.innerHTML = '';
+    palette.colors.forEach(c => {
+      const s = document.createElement('div');
+      s.className = 'is-swatch';
+      s.style.background = c;
+      swatchRow.appendChild(s);
+    });
+  }
+
+  // Zone editor
+  const zoneContent = $('is-zone-content');
+  if (zoneContent) {
+    zoneContent.innerHTML = '';
+    const el = STATE.selectedId ? STATE.elements.find(e => e.id === STATE.selectedId) : null;
+    if (!el) {
+      const hint = document.createElement('div');
+      hint.className = 'is-zone-none';
+      hint.textContent = 'Select an element to edit its colors';
+      zoneContent.appendChild(hint);
+      return;
+    }
+
+    const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+    if (!def || !def.colorZones.length) return;
+
+    def.colorZones.forEach(z => {
+      const currentColor = (el.colorOverrides && el.colorOverrides[z.id])
+        || palette.colors[z.defaultPaletteSlot % palette.colors.length];
+      const isActive = STATE.activeZone === z.id;
+
+      // Zone row
+      const row = document.createElement('div');
+      row.className = 'is-zone-row' + (isActive ? ' active' : '');
+
+      const swatch = document.createElement('div');
+      swatch.className = 'is-zone-swatch';
+      swatch.style.background = currentColor;
+
+      const name = document.createElement('span');
+      name.className = 'is-zone-name';
+      name.textContent = z.id;
+
+      row.appendChild(swatch);
+      row.appendChild(name);
+      row.addEventListener('click', () => {
+        STATE.activeZone = z.id;
+        buildInkStudioUI();
+      });
+      zoneContent.appendChild(row);
+
+      // Expanded picker for active zone
+      if (isActive) {
+        // Color picker
+        const picker = document.createElement('div');
+        picker.className = 'is-zone-picker';
+        palette.colors.forEach((col, ci) => {
+          const ps = document.createElement('div');
+          ps.className = 'is-pick-swatch' + (currentColor === col ? ' active' : '');
+          ps.style.background = col;
+          ps.title = `Palette slot ${ci + 1}`;
+          ps.addEventListener('click', (e) => {
+            e.stopPropagation();
+            pushUndo();
+            if (!el.colorOverrides) el.colorOverrides = {};
+            if (ci === z.defaultPaletteSlot % palette.colors.length) {
+              delete el.colorOverrides[z.id];
+            } else {
+              el.colorOverrides[z.id] = col;
+            }
+            rerenderAll();
+            buildInkStudioUI();
+            buildPaletteUI();
+            autoSave();
+          });
+          picker.appendChild(ps);
+        });
+        zoneContent.appendChild(picker);
+
+        // Bokashi direction
+        const bokRow = document.createElement('div');
+        bokRow.className = 'is-bokashi-row';
+        const currentBok = (el.zoneBokashi && el.zoneBokashi[z.id]) || null;
+
+        const bLabel = document.createElement('span');
+        bLabel.className = 'is-bokashi-label';
+        bLabel.textContent = 'Bokashi';
+        bokRow.appendChild(bLabel);
+
+        const dirs = [
+          { id: null, label: '⊘', title: 'No gradient' },
+          { id: 'up', label: '↑', title: 'Fade upward' },
+          { id: 'down', label: '↓', title: 'Fade downward' },
+          { id: 'left', label: '←', title: 'Fade left' },
+          { id: 'right', label: '→', title: 'Fade right' },
+        ];
+        dirs.forEach(dir => {
+          const btn = document.createElement('button');
+          btn.className = 'is-bokashi-btn' + (currentBok === dir.id ? ' active' : '');
+          btn.textContent = dir.label;
+          btn.title = dir.title;
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            pushUndo();
+            if (!el.zoneBokashi) el.zoneBokashi = {};
+            if (dir.id === null) {
+              delete el.zoneBokashi[z.id];
+            } else {
+              el.zoneBokashi[z.id] = dir.id;
+            }
+            rerenderAll();
+            buildInkStudioUI();
+            buildPaletteUI();
+            autoSave();
+          });
+          bokRow.appendChild(btn);
+        });
+        zoneContent.appendChild(bokRow);
+      }
+    });
+
+    // Reset button
+    if (el.colorOverrides && Object.keys(el.colorOverrides).length > 0) {
+      const resetBtn = document.createElement('div');
+      resetBtn.className = 'is-zone-reset';
+      resetBtn.textContent = '↩ Reset to defaults';
+      resetBtn.addEventListener('click', () => {
+        pushUndo();
+        el.colorOverrides = {};
+        rerenderAll();
+        buildInkStudioUI();
+        buildPaletteUI();
+        autoSave();
+      });
+      zoneContent.appendChild(resetBtn);
+    }
+  }
+}
+
+// ============================================================
 //  PRINT STUDIO (flyout panel + animation + mirror)
 // ============================================================
 
 function openPrintStudio() {
   if (STATE.printStudioOpen) return;
+  // Close other right panels first
+  if (STATE.carveStudioOpen) closeCarveStudio();
+  if (STATE.inkStudioOpen) closeInkStudio();
+
   STATE.printStudioOpen = true;
 
   // Switch to ink view for print context
@@ -3971,7 +4676,18 @@ function setupKeyboard() {
     if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) return;
 
     if (e.key === 'Delete' || e.key === 'Backspace') { deleteSelected(); e.preventDefault(); }
-    if (e.key === 'c' && !e.ctrlKey && !e.metaKey) { carveSelected(); e.preventDefault(); }
+    if (e.key === 'c' && !e.ctrlKey && !e.metaKey) {
+      // C key: if an element is selected, carve it (cycle level) and open Carve Studio
+      if (STATE.selectedId) {
+        carveSelected();
+        if (!STATE.carveStudioOpen) openCarveStudio();
+      } else if (STATE.carveStudioOpen) {
+        closeCarveStudio();
+      } else {
+        openCarveStudio();
+      }
+      e.preventDefault();
+    }
     if (e.key === 'z' && (e.ctrlKey || e.metaKey) && !e.shiftKey) { undo(); e.preventDefault(); }
     if ((e.key === 'y' && (e.ctrlKey || e.metaKey)) || (e.key === 'z' && (e.ctrlKey || e.metaKey) && e.shiftKey)) { redo(); e.preventDefault(); }
     if (e.key === ']') { moveLayer(1); e.preventDefault(); }
@@ -3998,7 +4714,11 @@ function setupKeyboard() {
     // Mode shortcuts
     if (e.key === 'v' && !e.ctrlKey && !e.metaKey) { setMode(STATE.mode === 'select' ? 'carve' : 'select'); e.preventDefault(); }
     if (e.key === 'e' && !e.ctrlKey && !e.metaKey) { setMode(STATE.mode === 'erase' ? 'select' : 'erase'); e.preventDefault(); }
-    if (e.key === 'i' && !e.ctrlKey && !e.metaKey) { setViewMode(STATE.viewMode === 'ink' ? 'carve' : 'ink'); e.preventDefault(); }
+    if (e.key === 'i' && !e.ctrlKey && !e.metaKey) {
+      if (STATE.inkStudioOpen) closeInkStudio();
+      else openInkStudio();
+      e.preventDefault();
+    }
     if (e.key === 'p' && !e.ctrlKey && !e.metaKey) {
       if (STATE.printStudioOpen) closePrintStudio();
       else openPrintStudio();
@@ -4006,6 +4726,8 @@ function setupKeyboard() {
     }
     if (e.key === 'Escape') {
       if (STATE.carveFocus) { exitCarveFocus(); }
+      else if (STATE.carveStudioOpen) { closeCarveStudio(); }
+      else if (STATE.inkStudioOpen) { closeInkStudio(); }
       else if (STATE.printStudioOpen) { closePrintStudio(); }
       else { setMode('select'); if (STATE.viewMode === 'ink') setViewMode('carve'); }
       e.preventDefault();
@@ -4013,9 +4735,9 @@ function setupKeyboard() {
 
     // Tool shortcuts in carve mode
     if (STATE.mode === 'carve') {
-      if (e.key === '1') { STATE.carveTool = 'fine'; updateToolButtons(); updateFocusToolButtons(); }
-      if (e.key === '2') { STATE.carveTool = 'vgouge'; updateToolButtons(); updateFocusToolButtons(); }
-      if (e.key === '3') { STATE.carveTool = 'ugouge'; updateToolButtons(); updateFocusToolButtons(); }
+      if (e.key === '1') { STATE.carveTool = 'fine'; updateToolButtons(); updateFocusToolButtons(); if (STATE.carveStudioOpen) buildCarveStudioUI(); }
+      if (e.key === '2') { STATE.carveTool = 'vgouge'; updateToolButtons(); updateFocusToolButtons(); if (STATE.carveStudioOpen) buildCarveStudioUI(); }
+      if (e.key === '3') { STATE.carveTool = 'ugouge'; updateToolButtons(); updateFocusToolButtons(); if (STATE.carveStudioOpen) buildCarveStudioUI(); }
     }
 
     // Arrow nudge
@@ -4054,7 +4776,10 @@ function setupToolbar() {
   $('btn-undo').addEventListener('click', undo);
   $('btn-redo').addEventListener('click', redo);
   $('btn-delete').addEventListener('click', deleteSelected);
-  $('btn-carve').addEventListener('click', carveSelected);
+  $('btn-carve').addEventListener('click', () => {
+    if (STATE.carveStudioOpen) closeCarveStudio();
+    else openCarveStudio();
+  });
   $('btn-layer-up').addEventListener('click', () => moveLayer(1));
   $('btn-layer-down').addEventListener('click', () => moveLayer(-1));
   $('btn-flip-h').addEventListener('click', flipSelectedH);
@@ -4079,8 +4804,11 @@ function setupToolbar() {
     }
   });
 
-  // View mode toggle
-  $('btn-view-ink').addEventListener('click', () => setViewMode(STATE.viewMode === 'ink' ? 'carve' : 'ink'));
+  // View mode toggle — now opens Ink Studio panel
+  $('btn-view-ink').addEventListener('click', () => {
+    if (STATE.inkStudioOpen) closeInkStudio();
+    else openInkStudio();
+  });
 
   // Carve tool buttons (both main toolbar and focus toolbar share .carve-w class)
   document.querySelectorAll('.carve-w').forEach(btn => {
@@ -4123,6 +4851,21 @@ function setupToolbar() {
     }
   });
   $('ps-back-edit').addEventListener('click', () => closePrintStudio());
+
+  // Carve Studio — tool buttons
+  $('cs-tool-row').addEventListener('click', (e) => {
+    const btn = e.target.closest('.cs-tool-btn');
+    if (!btn) return;
+    STATE.carveTool = btn.dataset.tool;
+    // Sync all tool button active states (main toolbar + focus toolbar + carve studio)
+    document.querySelectorAll('.carve-w').forEach(b => b.classList.toggle('active-mode', b.dataset.tool === STATE.carveTool));
+    $('cs-tool-row').querySelectorAll('.cs-tool-btn').forEach(b => b.classList.toggle('active', b.dataset.tool === STATE.carveTool));
+  });
+  $('cs-back-compose').addEventListener('click', () => closeCarveStudio());
+  $('cs-bg-toggle').addEventListener('click', () => {});  // handled in buildCarveStudioUI
+
+  // Ink Studio — back link
+  $('is-back-compose').addEventListener('click', () => closeInkStudio());
 
   // Light dismiss — click on workspace closes print studio (and any print preview)
   workspaceEl.addEventListener('click', (e) => {
