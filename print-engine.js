@@ -114,7 +114,7 @@ const PrintEngine = (() => {
   //  RENDER COLORED SVG — organic edges, ink pooling, misregistration
   // ============================================================
 
-  function renderColoredSvg(elements, palette, paperW, paperH, scale, inkLoad, impOffset, atmosphere) {
+  function renderColoredSvg(elements, palette, paperW, paperH, scale, inkLoad, impOffset, atmosphere, backgroundCarveStrokes) {
     inkLoad = inkLoad || { opacityMul: 1.0, edgeMul: 1.0, turbScale: 3.5, misreg: 3 };
     impOffset = impOffset || { x: 0, y: 0 };
     atmosphere = atmosphere || {};
@@ -216,6 +216,18 @@ const PrintEngine = (() => {
 
       if (atmoDefs) bokashiDefs += atmoDefs;
       if (atmoBody) svgContent += `<g filter="url(#wobble)">${atmoBody}</g>`;
+    }
+
+    // Background carve strokes (between atmosphere and elements)
+    if (backgroundCarveStrokes && backgroundCarveStrokes.length && typeof carveStrokeRenderData === 'function') {
+      backgroundCarveStrokes.forEach(stroke => {
+        if (!stroke.points || stroke.points.length < 2) return;
+        const items = carveStrokeRenderData(stroke, '#f5f0e6', 'rgba(0,0,0,0)');
+        items.forEach(item => {
+          if (item.c === 'rgba(0,0,0,0)') return;
+          svgContent += `<path d="${item.d}" fill="none" stroke="${item.c}" stroke-width="${item.w}" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="${(item.a * 0.95).toFixed(3)}"/>`;
+        });
+      });
     }
 
     elements.forEach(el => {
@@ -472,6 +484,7 @@ const PrintEngine = (() => {
     const inkLoad = opts.inkLoad || INK_LOADS.standard;
     const impressions = opts.impressions || 1;
     const atmosphere = opts.atmosphere || {};
+    const bgStrokes = opts.backgroundCarveStrokes || [];
     const palette = PALETTES[paletteId];
     const scale = 2;
     const w = Math.round(paperW * scale);
@@ -493,7 +506,7 @@ const PrintEngine = (() => {
       };
       const impOpacity = impressions === 1 ? 1.0 : (imp === 0 ? 0.85 : 0.5);
 
-      const svgStr = renderColoredSvg(elements, palette, paperW, paperH, scale, inkLoad, impOffset, atmosphere);
+      const svgStr = renderColoredSvg(elements, palette, paperW, paperH, scale, inkLoad, impOffset, atmosphere, bgStrokes);
       const blob = new Blob([svgStr], { type: 'image/svg+xml' });
       const url = URL.createObjectURL(blob);
 

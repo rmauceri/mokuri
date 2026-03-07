@@ -966,6 +966,9 @@ html, body {
         <!-- Atmosphere layer (sky, ground, mist — behind elements) -->
         <g id="atmo-layer" clip-path="url(#paper-clip)"></g>
 
+        <!-- Background carve strokes (between atmosphere and elements) -->
+        <g id="bg-carve-layer" clip-path="url(#paper-clip)"></g>
+
         <!-- Composition layer (elements go here) -->
         <g id="comp-layer"></g>
 
@@ -1095,10 +1098,11 @@ const STATE = {
   // Carve tool
   mode: 'select',     // 'select' | 'carve' | 'erase'
   carveTool: 'vgouge', // active tool id
-  carving: null,       // active carve stroke: { elementId, points: [{x,y},...] }
+  carving: null,       // active carve stroke: { elementId, points: [{x,y},...] } or { background: true, points }
   carveFocus: null,    // element id when in carve focus mode, null otherwise
   preFocusViewBox: null, // saved viewBox before entering focus
   preFocusZoom: null,    // saved zoom before entering focus
+  backgroundCarveStrokes: [], // freeform carve strokes on the paper background
 
   // View mode
   viewMode: 'carve',   // 'carve' | 'ink'
@@ -1797,6 +1801,7 @@ function renderElementSvg(el, layerIndex) {
 
 function rerenderAll() {
   renderAtmosphere();
+  renderBackgroundCarveStrokes();
   // Clear and re-render all elements
   while (compLayer.firstChild) compLayer.removeChild(compLayer.firstChild);
   STATE.elements.forEach((el, i) => {
@@ -1812,6 +1817,33 @@ function rerenderAll() {
   });
   updateSelection();
   updateStatus();
+}
+
+function renderBackgroundCarveStrokes() {
+  const layer = $('bg-carve-layer');
+  while (layer.firstChild) layer.removeChild(layer.firstChild);
+  if (!STATE.backgroundCarveStrokes || !STATE.backgroundCarveStrokes.length) return;
+
+  const inkMode = STATE.viewMode === 'ink';
+  const paperColor = inkMode ? PAPER_COLOR : PAPER_COLOR;
+  const grooveColor = inkMode ? 'rgba(0,0,0,0)' : CARVED_STROKE;
+
+  STATE.backgroundCarveStrokes.forEach(stroke => {
+    if (!stroke.points || stroke.points.length < 2) return;
+    const items = carveStrokeRenderData(stroke, paperColor, grooveColor);
+    items.forEach(item => {
+      if (inkMode && item.c === 'rgba(0,0,0,0)') return;
+      const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      p.setAttribute('d', item.d);
+      p.setAttribute('fill', 'none');
+      p.setAttribute('stroke', item.c);
+      p.setAttribute('stroke-width', item.w);
+      p.setAttribute('stroke-linecap', 'round');
+      p.setAttribute('stroke-linejoin', 'round');
+      p.setAttribute('stroke-opacity', item.a);
+      layer.appendChild(p);
+    });
+  });
 }
 
 // ============================================================
@@ -2063,7 +2095,10 @@ function moveLayer(dir) {
 //  UNDO / REDO
 // ============================================================
 function pushUndo() {
-  STATE.undoStack.push(JSON.parse(JSON.stringify(STATE.elements)));
+  STATE.undoStack.push({
+    elements: JSON.parse(JSON.stringify(STATE.elements)),
+    bgStrokes: JSON.parse(JSON.stringify(STATE.backgroundCarveStrokes)),
+  });
   STATE.redoStack = [];
   if (STATE.undoStack.length > 50) STATE.undoStack.shift();
   updateToolbarState();
@@ -2072,8 +2107,18 @@ function pushUndo() {
 
 function undo() {
   if (!STATE.undoStack.length) return;
-  STATE.redoStack.push(JSON.parse(JSON.stringify(STATE.elements)));
-  STATE.elements = STATE.undoStack.pop();
+  STATE.redoStack.push({
+    elements: JSON.parse(JSON.stringify(STATE.elements)),
+    bgStrokes: JSON.parse(JSON.stringify(STATE.backgroundCarveStrokes)),
+  });
+  const snap = STATE.undoStack.pop();
+  // Support old format (plain array) and new format (object with bgStrokes)
+  if (Array.isArray(snap)) {
+    STATE.elements = snap;
+  } else {
+    STATE.elements = snap.elements;
+    STATE.backgroundCarveStrokes = snap.bgStrokes || [];
+  }
   deselectAll();
   rerenderAll();
   updateToolbarState();
@@ -2082,8 +2127,17 @@ function undo() {
 
 function redo() {
   if (!STATE.redoStack.length) return;
-  STATE.undoStack.push(JSON.parse(JSON.stringify(STATE.elements)));
-  STATE.elements = STATE.redoStack.pop();
+  STATE.undoStack.push({
+    elements: JSON.parse(JSON.stringify(STATE.elements)),
+    bgStrokes: JSON.parse(JSON.stringify(STATE.backgroundCarveStrokes)),
+  });
+  const snap = STATE.redoStack.pop();
+  if (Array.isArray(snap)) {
+    STATE.elements = snap;
+  } else {
+    STATE.elements = snap.elements;
+    STATE.backgroundCarveStrokes = snap.bgStrokes || [];
+  }
   deselectAll();
   rerenderAll();
   updateToolbarState();
@@ -2110,6 +2164,7 @@ function getCompositionData() {
     ground: STATE.ground,
     horizon: STATE.horizon,
     mist: STATE.mist,
+    backgroundCarveStrokes: STATE.backgroundCarveStrokes,
     savedAt: Date.now(),
   };
 }
@@ -2127,6 +2182,7 @@ function applyCompositionData(data) {
   STATE.ground = data.ground || 'none';
   STATE.horizon = data.horizon ?? 0.62;
   STATE.mist = data.mist || 0;
+  STATE.backgroundCarveStrokes = data.backgroundCarveStrokes || [];
   // Update workspace paper color for paper type
   const pt = PAPER_TYPES[STATE.paperType];
   if (pt) paperEl.setAttribute('fill', pt.base);
@@ -2656,6 +2712,32 @@ function clearCarvePreview() {
   if (prev) prev.remove();
 }
 
+// Background carve stroke preview (renders directly in bg-carve-layer space)
+function renderBgCarvePreview(points) {
+  clearBgCarvePreview();
+  const fakeStroke = { points, tool: STATE.carveTool };
+  const items = carveStrokeRenderData(fakeStroke, PAPER_COLOR, CARVED_STROKE);
+  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  g.id = 'bg-carve-preview';
+  items.forEach(item => {
+    const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    p.setAttribute('d', item.d);
+    p.setAttribute('fill', 'none');
+    p.setAttribute('stroke', item.c);
+    p.setAttribute('stroke-width', item.w);
+    p.setAttribute('stroke-linecap', 'round');
+    p.setAttribute('stroke-linejoin', 'round');
+    p.setAttribute('stroke-opacity', item.a);
+    g.appendChild(p);
+  });
+  $('bg-carve-layer').appendChild(g);
+}
+
+function clearBgCarvePreview() {
+  const prev = document.getElementById('bg-carve-preview');
+  if (prev) prev.remove();
+}
+
 // Ramer-Douglas-Peucker simplification
 function simplifyStroke(points, tolerance) {
   if (points.length <= 2) return points;
@@ -2699,7 +2781,7 @@ function setMode(mode) {
        : 'Carve Focus — Esc to exit')
     : STATE.viewMode === 'ink'
     ? 'Ink preview — click element zones to change colors · I to return to carve view'
-    : mode === 'carve' ? 'Draw on elements to carve · Alt+click to pan'
+    : mode === 'carve' ? 'Draw on elements or paper to carve · Alt+click to pan'
     : mode === 'erase' ? 'Click near a carve stroke to remove it'
     : 'Place elements · Select + 🪵 or C to carve · Print when ready';
   $('status-hint').textContent = hint;
@@ -3160,6 +3242,7 @@ async function pullPrint() {
         mist: STATE.mist,
         paperBase: PAPER_TYPES[STATE.paperType].base,
       },
+      backgroundCarveStrokes: STATE.backgroundCarveStrokes,
     }
   );
 
@@ -3309,16 +3392,26 @@ function setupInteraction() {
         ws.setPointerCapture(e.pointerId);
         return;
       }
-      if (!gEl) return;
-      const id = parseInt(gEl.getAttribute('data-id'));
-      const el = STATE.elements.find(el => el.id === id);
-      if (!el || el.locked) return;
-      pushUndo();
+      if (gEl) {
+        const id = parseInt(gEl.getAttribute('data-id'));
+        const el = STATE.elements.find(el => el.id === id);
+        if (!el || el.locked) return;
+        pushUndo();
+        const svgPt = clientToSvg(e.clientX, e.clientY);
+        const localPt = svgToElementLocal(svgPt.x, svgPt.y, el);
+        if (!el.carveStrokes) el.carveStrokes = [];
+        STATE.carving = { elementId: id, points: [localPt] };
+        ws.setPointerCapture(e.pointerId);
+        return;
+      }
+      // No element hit — carve the background
       const svgPt = clientToSvg(e.clientX, e.clientY);
-      const localPt = svgToElementLocal(svgPt.x, svgPt.y, el);
-      if (!el.carveStrokes) el.carveStrokes = [];
-      STATE.carving = { elementId: id, points: [localPt] };
-      ws.setPointerCapture(e.pointerId);
+      // Only carve within paper bounds
+      if (svgPt.x >= 0 && svgPt.x <= STATE.paperW && svgPt.y >= 0 && svgPt.y <= STATE.paperH) {
+        pushUndo();
+        STATE.carving = { background: true, points: [{ x: svgPt.x, y: svgPt.y }] };
+        ws.setPointerCapture(e.pointerId);
+      }
       return;
     }
 
@@ -3326,23 +3419,58 @@ function setupInteraction() {
     if (STATE.mode === 'erase') {
       const gEl = e.target.closest('g[data-id]');
       // In focus mode, only erase from focused element
-      const targetId = STATE.carveFocus || (gEl ? parseInt(gEl.getAttribute('data-id')) : null);
-      if (!targetId) return;
-      const el = STATE.elements.find(el => el.id === targetId);
-      if (!el || el.locked || !el.carveStrokes || !el.carveStrokes.length) return;
-      pushUndo();
-      const svgPt = clientToSvg(e.clientX, e.clientY);
-      const localPt = svgToElementLocal(svgPt.x, svgPt.y, el);
-      let bestIdx = el.carveStrokes.length - 1;
-      let bestDist = Infinity;
-      el.carveStrokes.forEach((stroke, si) => {
-        stroke.points.forEach(p => {
-          const dist = Math.hypot(p.x - localPt.x, p.y - localPt.y);
-          if (dist < bestDist) { bestDist = dist; bestIdx = si; }
+      if (STATE.carveFocus) {
+        const el = STATE.elements.find(el => el.id === STATE.carveFocus);
+        if (!el || !el.carveStrokes || !el.carveStrokes.length) return;
+        pushUndo();
+        const svgPt = clientToSvg(e.clientX, e.clientY);
+        const localPt = svgToElementLocal(svgPt.x, svgPt.y, el);
+        let bestIdx = el.carveStrokes.length - 1;
+        let bestDist = Infinity;
+        el.carveStrokes.forEach((stroke, si) => {
+          stroke.points.forEach(p => {
+            const dist = Math.hypot(p.x - localPt.x, p.y - localPt.y);
+            if (dist < bestDist) { bestDist = dist; bestIdx = si; }
+          });
         });
-      });
-      el.carveStrokes.splice(bestIdx, 1);
-      rerenderAll();
+        el.carveStrokes.splice(bestIdx, 1);
+        rerenderAll();
+        return;
+      }
+      if (gEl) {
+        const id = parseInt(gEl.getAttribute('data-id'));
+        const el = STATE.elements.find(el => el.id === id);
+        if (!el || el.locked || !el.carveStrokes || !el.carveStrokes.length) return;
+        pushUndo();
+        const svgPt = clientToSvg(e.clientX, e.clientY);
+        const localPt = svgToElementLocal(svgPt.x, svgPt.y, el);
+        let bestIdx = el.carveStrokes.length - 1;
+        let bestDist = Infinity;
+        el.carveStrokes.forEach((stroke, si) => {
+          stroke.points.forEach(p => {
+            const dist = Math.hypot(p.x - localPt.x, p.y - localPt.y);
+            if (dist < bestDist) { bestDist = dist; bestIdx = si; }
+          });
+        });
+        el.carveStrokes.splice(bestIdx, 1);
+        rerenderAll();
+        return;
+      }
+      // No element hit — erase background strokes
+      if (STATE.backgroundCarveStrokes.length) {
+        const svgPt = clientToSvg(e.clientX, e.clientY);
+        let bestIdx = STATE.backgroundCarveStrokes.length - 1;
+        let bestDist = Infinity;
+        STATE.backgroundCarveStrokes.forEach((stroke, si) => {
+          stroke.points.forEach(p => {
+            const dist = Math.hypot(p.x - svgPt.x, p.y - svgPt.y);
+            if (dist < bestDist) { bestDist = dist; bestIdx = si; }
+          });
+        });
+        pushUndo();
+        STATE.backgroundCarveStrokes.splice(bestIdx, 1);
+        rerenderAll();
+      }
       return;
     }
 
@@ -3410,6 +3538,13 @@ function setupInteraction() {
   ws.addEventListener('pointermove', (e) => {
     // Carve stroke in progress
     if (STATE.carving) {
+      if (STATE.carving.background) {
+        // Background carve stroke — points in paper coordinates
+        const svgPt = clientToSvg(e.clientX, e.clientY);
+        STATE.carving.points.push({ x: svgPt.x, y: svgPt.y });
+        renderBgCarvePreview(STATE.carving.points);
+        return;
+      }
       const el = STATE.elements.find(el => el.id === STATE.carving.elementId);
       if (!el) return;
       const svgPt = clientToSvg(e.clientX, e.clientY);
@@ -3478,6 +3613,20 @@ function setupInteraction() {
   ws.addEventListener('pointerup', () => {
     // Finalize carve stroke
     if (STATE.carving) {
+      if (STATE.carving.background) {
+        // Background carve stroke
+        if (STATE.carving.points.length >= 2) {
+          const simplified = simplifyStroke(STATE.carving.points, 1.5);
+          STATE.backgroundCarveStrokes.push({ points: simplified, tool: STATE.carveTool });
+          rerenderAll();
+          autoSave();
+        } else {
+          STATE.undoStack.pop();
+        }
+        clearBgCarvePreview();
+        STATE.carving = null;
+        return;
+      }
       const el = STATE.elements.find(e => e.id === STATE.carving.elementId);
       if (el && STATE.carving.points.length >= 2) {
         // Simplify the stroke (reduce point count for storage)
