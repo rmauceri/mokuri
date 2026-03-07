@@ -3087,15 +3087,18 @@ const CARVE_PATTERNS = {
 };
 
 // Generate SVG <pattern> markup for carve patterns (used in both workspace and print)
-function generateCarvePatternSvg(patternId, uniqueId, paperColor, strokeColor) {
-  const pc = paperColor || PAPER_COLOR;
+// opts.opacity overrides the default stroke opacity (0.35)
+// opts.bg overrides the background fill (default: paperColor)
+function generateCarvePatternSvg(patternId, uniqueId, paperColor, strokeColor, opts) {
+  const pc = (opts && opts.bg !== undefined) ? opts.bg : (paperColor || PAPER_COLOR);
   const sc = strokeColor || CARVED_STROKE;
-  const opacity = '0.35';
+  const opacity = (opts && opts.opacity) || '0.35';
+  const bgRect = (pc && pc !== 'none') ? `<rect width="W" height="W" fill="${pc}"/>` : '';
   switch (patternId) {
     case 'crosshatch': {
       const s = 6;
       return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}">
-        <rect width="${s}" height="${s}" fill="${pc}"/>
+        ${bgRect.replace(/W/g, s)}
         <line x1="0" y1="0" x2="${s}" y2="${s}" stroke="${sc}" stroke-width="0.6" stroke-opacity="${opacity}"/>
         <line x1="${s}" y1="0" x2="0" y2="${s}" stroke="${sc}" stroke-width="0.6" stroke-opacity="${opacity}"/>
       </pattern>`;
@@ -3103,7 +3106,7 @@ function generateCarvePatternSvg(patternId, uniqueId, paperColor, strokeColor) {
     case 'woodgrain': {
       const s = 10;
       return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}">
-        <rect width="${s}" height="${s}" fill="${pc}"/>
+        ${bgRect.replace(/W/g, s)}
         <path d="M0,3 Q${s/4},2 ${s/2},3 T${s},3" fill="none" stroke="${sc}" stroke-width="0.5" stroke-opacity="${opacity}"/>
         <path d="M0,7 Q${s/4},6 ${s/2},7 T${s},7" fill="none" stroke="${sc}" stroke-width="0.5" stroke-opacity="${opacity}"/>
       </pattern>`;
@@ -3111,14 +3114,14 @@ function generateCarvePatternSvg(patternId, uniqueId, paperColor, strokeColor) {
     case 'diagonal': {
       const s = 5;
       return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}">
-        <rect width="${s}" height="${s}" fill="${pc}"/>
+        ${bgRect.replace(/W/g, s)}
         <line x1="0" y1="${s}" x2="${s}" y2="0" stroke="${sc}" stroke-width="0.6" stroke-opacity="${opacity}"/>
       </pattern>`;
     }
     case 'stipple': {
       const s = 8;
       return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}">
-        <rect width="${s}" height="${s}" fill="${pc}"/>
+        ${bgRect.replace(/W/g, s)}
         <circle cx="2" cy="2" r="0.6" fill="${sc}" fill-opacity="${opacity}"/>
         <circle cx="6" cy="5" r="0.5" fill="${sc}" fill-opacity="${opacity}"/>
         <circle cx="4" cy="7" r="0.7" fill="${sc}" fill-opacity="${opacity}"/>
@@ -3127,11 +3130,12 @@ function generateCarvePatternSvg(patternId, uniqueId, paperColor, strokeColor) {
     }
     case 'wave': {
       const s = 12;
+      const minorOp = Math.max(0.1, parseFloat(opacity) * 0.6).toFixed(2);
       return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}">
-        <rect width="${s}" height="${s}" fill="${pc}"/>
+        ${bgRect.replace(/W/g, s)}
         <path d="M0,4 Q3,2 6,4 T12,4" fill="none" stroke="${sc}" stroke-width="0.5" stroke-opacity="${opacity}"/>
         <path d="M0,8 Q3,6 6,8 T12,8" fill="none" stroke="${sc}" stroke-width="0.5" stroke-opacity="${opacity}"/>
-        <path d="M-2,12 Q1,10 4,12" fill="none" stroke="${sc}" stroke-width="0.4" stroke-opacity="0.2"/>
+        <path d="M-2,12 Q1,10 4,12" fill="none" stroke="${sc}" stroke-width="0.4" stroke-opacity="${minorOp}"/>
       </pattern>`;
     }
     default:

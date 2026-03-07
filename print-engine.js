@@ -316,13 +316,23 @@ const PrintEngine = (() => {
       }
 
       // Carve pattern for this element — texture from the carved block surface
+      // For print: transparent bg (no paper rect through multiply), bold dark strokes
       let printPatternFill = null;
+      let strokePatternFill = null;
       if (el.carvePattern && el.carvePattern !== 'none' && typeof generateCarvePatternSvg === 'function') {
+        // Dark overlay pattern — carving marks visible through ink
         const ppid = `pe-cp-${el.id}-${el.carvePattern}`;
-        const patSvg = generateCarvePatternSvg(el.carvePattern, ppid, '#f5f0e6', 'rgba(60,50,40,0.35)');
+        const patSvg = generateCarvePatternSvg(el.carvePattern, ppid, null, '#1a1510', { bg: 'none', opacity: '0.8' });
         if (patSvg) {
           bokashiDefs += patSvg;
           printPatternFill = `url(#${ppid})`;
+        }
+        // Paper-colored groove pattern — subtle texture in carved grooves
+        const spid = `pe-sp-${el.id}-${el.carvePattern}`;
+        const spatSvg = generateCarvePatternSvg(el.carvePattern, spid, '#f5f0e6', 'rgba(60,50,40,0.4)');
+        if (spatSvg) {
+          bokashiDefs += spatSvg;
+          strokePatternFill = `url(#${spid})`;
         }
       }
 
@@ -330,7 +340,7 @@ const PrintEngine = (() => {
       if (printPatternFill && !isBlock) {
         const blockFill = def.carveLevels[0].paths.find(p => p.type === 'fill');
         if (blockFill) {
-          svgContent += `<path d="${perturb(blockFill.d)}" fill="${printPatternFill}" fill-opacity="0.18" stroke="none"/>`;
+          svgContent += `<path d="${perturb(blockFill.d)}" fill="${printPatternFill}" fill-opacity="0.45" stroke="none"/>`;
         }
       }
 
@@ -343,7 +353,7 @@ const PrintEngine = (() => {
             : [];
           items.forEach(item => {
             if (item.c === 'rgba(0,0,0,0)') return;
-            const sc = (printPatternFill && item.c === '#f5f0e6') ? printPatternFill : item.c;
+            const sc = (strokePatternFill && item.c === '#f5f0e6') ? strokePatternFill : item.c;
             svgContent += `<path d="${item.d}" fill="none" stroke="${sc}" stroke-width="${item.w}" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="${(item.a * 0.95).toFixed(3)}"/>`;
           });
         });
