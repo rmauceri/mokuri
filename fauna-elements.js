@@ -606,6 +606,7 @@ const MOKURI_FAUNA_ELEMENTS = [
     ],
   },
 
+
   // ── Leaping Koi ──────────────────────────────────────────
   {
     id: 'koi-leaping',
@@ -623,51 +624,52 @@ const MOKURI_FAUNA_ELEMENTS = [
       {
         name: 'block',
         paths: [
-          // Body — dynamic upward arc, tail lower-left, head upper-right
-          { d: 'M52 188 Q30 158 40 125 Q48 92 68 62 Q85 38 108 26 Q122 20 128 28 Q134 36 126 46 Q112 40 95 52 Q75 68 62 98 Q50 128 48 162 Q46 178 52 192 Z', type: 'fill', zone: 'body' },
-          // Belly
-          { d: 'M60 160 Q50 135 55 108 Q60 85 74 64 Q64 88 56 112 Q50 140 58 164 Z', type: 'fill', zone: 'belly' },
+          // Body — dynamic upward arc, rounder head, fuller belly, narrow peduncle
+          { d: 'M50 192 Q24 162 34 128 Q44 94 64 64 Q82 40 104 28 Q118 20 126 24 Q136 30 134 44 Q130 52 118 50 Q98 54 82 70 Q64 90 56 116 Q48 144 44 170 Q42 184 50 192 Z', type: 'fill', zone: 'body' },
+          // Belly — fuller inner curve
+          { d: 'M58 164 Q48 138 52 110 Q58 84 76 64 Q66 86 56 114 Q48 142 56 168 Z', type: 'fill', zone: 'belly' },
           // Dorsal fin
-          { d: 'M44 118 Q30 108 34 92 Q40 100 44 112 Z', type: 'fill', zone: 'fin' },
+          { d: 'M42 120 Q28 108 32 92 Q38 100 42 114 Z', type: 'fill', zone: 'fin' },
           // Tail fan — two lobes
-          { d: 'M48 185 Q26 198 15 215 Q28 210 44 196 Z', type: 'fill', zone: 'fin' },
-          { d: 'M54 190 Q40 208 34 220 Q48 214 58 200 Z', type: 'fill', zone: 'fin' },
+          { d: 'M46 188 Q24 200 14 216 Q26 212 42 198 Z', type: 'fill', zone: 'fin' },
+          { d: 'M52 192 Q38 210 32 222 Q46 216 56 202 Z', type: 'fill', zone: 'fin' },
         ],
       },
       {
         name: 'shape',
         paths: [
-          { d: 'M52 188 Q30 158 40 125 Q48 92 68 62 Q85 38 108 26 Q122 20 128 28 Q134 36 126 46 Q112 40 95 52 Q75 68 62 98 Q50 128 48 162 Q46 178 52 192 Z', type: 'fill', zone: 'body' },
-          { d: 'M60 160 Q50 135 55 108 Q60 85 74 64 Q64 88 56 112 Q50 140 58 164 Z', type: 'fill', zone: 'belly' },
-          { d: 'M44 118 Q30 108 34 92 Q40 100 44 112 Z', type: 'fill', zone: 'fin' },
-          { d: 'M48 185 Q26 198 15 215 Q28 210 44 196 Z', type: 'fill', zone: 'fin' },
-          { d: 'M54 190 Q40 208 34 220 Q48 214 58 200 Z', type: 'fill', zone: 'fin' },
+          { d: 'M50 192 Q24 162 34 128 Q44 94 64 64 Q82 40 104 28 Q118 20 126 24 Q136 30 134 44 Q130 52 118 50 Q98 54 82 70 Q64 90 56 116 Q48 144 44 170 Q42 184 50 192 Z', type: 'fill', zone: 'body' },
+          { d: 'M58 164 Q48 138 52 110 Q58 84 76 64 Q66 86 56 114 Q48 142 56 168 Z', type: 'fill', zone: 'belly' },
+          { d: 'M42 120 Q28 108 32 92 Q38 100 42 114 Z', type: 'fill', zone: 'fin' },
+          { d: 'M46 188 Q24 200 14 216 Q26 212 42 198 Z', type: 'fill', zone: 'fin' },
+          { d: 'M52 192 Q38 210 32 222 Q46 216 56 202 Z', type: 'fill', zone: 'fin' },
           // Body outline
-          { d: 'M52 188 Q30 158 40 125 Q48 92 68 62 Q85 38 108 26 Q122 20 128 28 Q134 36 126 46 Q112 40 95 52 Q75 68 62 98 Q50 128 48 162 Q46 178 52 192 Z', type: 'stroke', zone: 'detail', strokeWidth: 2 },
+          { d: 'M50 192 Q24 162 34 128 Q44 94 64 64 Q82 40 104 28 Q118 20 126 24 Q136 30 134 44 Q130 52 118 50 Q98 54 82 70 Q64 90 56 116 Q48 144 44 170 Q42 184 50 192 Z', type: 'stroke', zone: 'detail', strokeWidth: 2 },
           // Eye
-          { d: 'M112 30 A3 3 0 1 1 111.99 30 Z', type: 'fill', zone: 'detail' },
+          { d: 'M118 32 A3 3 0 1 1 117.99 32 Z', type: 'fill', zone: 'detail' },
           // Gill line
-          { d: 'M100 38 Q102 48 98 56', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
+          { d: 'M108 40 Q110 50 106 58', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
         ],
       },
       {
         name: 'detail',
         paths: [
-          { d: 'M52 188 Q30 158 40 125 Q48 92 68 62 Q85 38 108 26 Q122 20 128 28 Q134 36 126 46 Q112 40 95 52 Q75 68 62 98 Q50 128 48 162 Q46 178 52 192 Z', type: 'fill', zone: 'body' },
-          { d: 'M60 160 Q50 135 55 108 Q60 85 74 64 Q64 88 56 112 Q50 140 58 164 Z', type: 'fill', zone: 'belly' },
-          { d: 'M44 118 Q30 108 34 92 Q40 100 44 112 Z', type: 'fill', zone: 'fin' },
-          { d: 'M48 185 Q26 198 15 215 Q28 210 44 196 Z', type: 'fill', zone: 'fin' },
-          { d: 'M54 190 Q40 208 34 220 Q48 214 58 200 Z', type: 'fill', zone: 'fin' },
-          { d: 'M52 188 Q30 158 40 125 Q48 92 68 62 Q85 38 108 26 Q122 20 128 28 Q134 36 126 46 Q112 40 95 52 Q75 68 62 98 Q50 128 48 162 Q46 178 52 192 Z', type: 'stroke', zone: 'detail', strokeWidth: 2 },
-          { d: 'M112 30 A3 3 0 1 1 111.99 30 Z', type: 'fill', zone: 'detail' },
-          { d: 'M100 38 Q102 48 98 56', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
+          { d: 'M50 192 Q24 162 34 128 Q44 94 64 64 Q82 40 104 28 Q118 20 126 24 Q136 30 134 44 Q130 52 118 50 Q98 54 82 70 Q64 90 56 116 Q48 144 44 170 Q42 184 50 192 Z', type: 'fill', zone: 'body' },
+          { d: 'M58 164 Q48 138 52 110 Q58 84 76 64 Q66 86 56 114 Q48 142 56 168 Z', type: 'fill', zone: 'belly' },
+          { d: 'M42 120 Q28 108 32 92 Q38 100 42 114 Z', type: 'fill', zone: 'fin' },
+          { d: 'M46 188 Q24 200 14 216 Q26 212 42 198 Z', type: 'fill', zone: 'fin' },
+          { d: 'M52 192 Q38 210 32 222 Q46 216 56 202 Z', type: 'fill', zone: 'fin' },
+          { d: 'M50 192 Q24 162 34 128 Q44 94 64 64 Q82 40 104 28 Q118 20 126 24 Q136 30 134 44 Q130 52 118 50 Q98 54 82 70 Q64 90 56 116 Q48 144 44 170 Q42 184 50 192 Z', type: 'stroke', zone: 'detail', strokeWidth: 2 },
+          { d: 'M118 32 A3 3 0 1 1 117.99 32 Z', type: 'fill', zone: 'detail' },
+          { d: 'M108 40 Q110 50 106 58', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
           // Scale pattern following body curve
-          { d: 'M78 60 Q82 55 88 60 M86 68 Q92 63 96 68 M72 72 Q78 67 82 72 M80 80 Q86 75 90 80 M66 82 Q72 77 76 82 M74 92 Q80 87 84 92 M60 96 Q66 91 70 96 M68 106 Q74 101 78 106 M56 112 Q62 107 66 112', type: 'stroke', zone: 'detail', strokeWidth: 0.7 },
-          // Fin rays
-          { d: 'M38 108 L32 96 M40 104 L35 90 M42 100 L38 88', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
-          { d: 'M36 192 L20 208 M42 196 L30 212 M46 198 L36 216', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
+          { d: 'M80 62 Q84 57 90 62 M88 70 Q94 65 98 70 M74 74 Q80 69 84 74 M82 82 Q88 77 92 82 M68 84 Q74 79 78 84 M76 94 Q82 89 86 94 M62 98 Q68 93 72 98 M70 108 Q76 103 80 108 M58 114 Q64 109 68 114', type: 'stroke', zone: 'detail', strokeWidth: 0.7 },
+          // Dorsal fin rays
+          { d: 'M36 110 L30 98 M38 106 L33 92 M40 102 L36 90', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
+          // Tail fin rays
+          { d: 'M36 194 L18 210 M40 198 L28 214 M44 200 L34 218', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
           // Pectoral fin
-          { d: 'M70 78 Q62 88 56 94 Q60 86 68 80', type: 'stroke', zone: 'fin', strokeWidth: 1 },
+          { d: 'M72 80 Q64 90 58 96 Q62 88 70 82', type: 'stroke', zone: 'fin', strokeWidth: 1 },
           // Water splash
           { d: 'M22 205 Q26 198 34 202 Q42 196 50 203 Q46 208 36 210 Q28 210 22 205 Z', type: 'fill', zone: 'body' },
         ],
@@ -692,28 +694,28 @@ const MOKURI_FAUNA_ELEMENTS = [
       {
         name: 'block',
         paths: [
-          // Body — symmetrical top-down teardrop
-          { d: 'M70 15 Q92 20 105 42 Q115 65 118 90 Q118 118 110 142 Q100 162 88 172 L70 180 L52 172 Q40 162 30 142 Q22 118 22 90 Q25 65 35 42 Q48 20 70 15 Z', type: 'fill', zone: 'body' },
+          // Body — organic: wider head, forward widest point, narrow caudal peduncle
+          { d: 'M70 15 Q84 18 96 30 Q110 44 116 62 Q120 78 118 96 Q115 114 108 132 Q100 148 90 160 Q82 168 78 174 L70 178 L62 174 Q58 168 50 160 Q40 148 32 132 Q25 114 22 96 Q20 78 24 62 Q30 44 44 30 Q56 18 70 15 Z', type: 'fill', zone: 'body' },
           // Belly — central lighter stripe
-          { d: 'M70 28 Q84 34 90 55 Q95 78 95 100 Q95 122 90 142 Q84 160 70 170 Q56 160 50 142 Q45 122 45 100 Q45 78 50 55 Q56 34 70 28 Z', type: 'fill', zone: 'belly' },
-          // Left pectoral fin
-          { d: 'M30 78 Q15 65 8 52 Q12 68 22 80 Q28 86 32 82 Z', type: 'fill', zone: 'fin' },
-          // Right pectoral fin
-          { d: 'M110 78 Q125 65 132 52 Q128 68 118 80 Q112 86 108 82 Z', type: 'fill', zone: 'fin' },
+          { d: 'M70 30 Q82 34 92 48 Q98 64 100 82 Q100 100 96 118 Q90 136 82 152 Q76 162 70 168 Q64 162 58 152 Q50 136 44 118 Q40 100 40 82 Q42 64 48 48 Q58 34 70 30 Z', type: 'fill', zone: 'belly' },
+          // Left pectoral fin — sweeps backward toward tail
+          { d: 'M28 76 Q14 88 10 106 Q16 102 26 92 Q34 84 30 78 Z', type: 'fill', zone: 'fin' },
+          // Right pectoral fin — sweeps backward toward tail
+          { d: 'M112 76 Q126 88 130 106 Q124 102 114 92 Q106 84 110 78 Z', type: 'fill', zone: 'fin' },
           // Tail fan
-          { d: 'M88 172 Q102 186 110 205 Q92 198 70 195 Q48 198 30 205 Q38 186 52 172 Z', type: 'fill', zone: 'fin' },
+          { d: 'M78 174 Q96 188 108 208 Q90 200 70 196 Q50 200 32 208 Q44 188 62 174 Z', type: 'fill', zone: 'fin' },
         ],
       },
       {
         name: 'shape',
         paths: [
-          { d: 'M70 15 Q92 20 105 42 Q115 65 118 90 Q118 118 110 142 Q100 162 88 172 L70 180 L52 172 Q40 162 30 142 Q22 118 22 90 Q25 65 35 42 Q48 20 70 15 Z', type: 'fill', zone: 'body' },
-          { d: 'M70 28 Q84 34 90 55 Q95 78 95 100 Q95 122 90 142 Q84 160 70 170 Q56 160 50 142 Q45 122 45 100 Q45 78 50 55 Q56 34 70 28 Z', type: 'fill', zone: 'belly' },
-          { d: 'M30 78 Q15 65 8 52 Q12 68 22 80 Q28 86 32 82 Z', type: 'fill', zone: 'fin' },
-          { d: 'M110 78 Q125 65 132 52 Q128 68 118 80 Q112 86 108 82 Z', type: 'fill', zone: 'fin' },
-          { d: 'M88 172 Q102 186 110 205 Q92 198 70 195 Q48 198 30 205 Q38 186 52 172 Z', type: 'fill', zone: 'fin' },
+          { d: 'M70 15 Q84 18 96 30 Q110 44 116 62 Q120 78 118 96 Q115 114 108 132 Q100 148 90 160 Q82 168 78 174 L70 178 L62 174 Q58 168 50 160 Q40 148 32 132 Q25 114 22 96 Q20 78 24 62 Q30 44 44 30 Q56 18 70 15 Z', type: 'fill', zone: 'body' },
+          { d: 'M70 30 Q82 34 92 48 Q98 64 100 82 Q100 100 96 118 Q90 136 82 152 Q76 162 70 168 Q64 162 58 152 Q50 136 44 118 Q40 100 40 82 Q42 64 48 48 Q58 34 70 30 Z', type: 'fill', zone: 'belly' },
+          { d: 'M28 76 Q14 88 10 106 Q16 102 26 92 Q34 84 30 78 Z', type: 'fill', zone: 'fin' },
+          { d: 'M112 76 Q126 88 130 106 Q124 102 114 92 Q106 84 110 78 Z', type: 'fill', zone: 'fin' },
+          { d: 'M78 174 Q96 188 108 208 Q90 200 70 196 Q50 200 32 208 Q44 188 62 174 Z', type: 'fill', zone: 'fin' },
           // Body outline
-          { d: 'M70 15 Q92 20 105 42 Q115 65 118 90 Q118 118 110 142 Q100 162 88 172 L70 180 L52 172 Q40 162 30 142 Q22 118 22 90 Q25 65 35 42 Q48 20 70 15 Z', type: 'stroke', zone: 'detail', strokeWidth: 2 },
+          { d: 'M70 15 Q84 18 96 30 Q110 44 116 62 Q120 78 118 96 Q115 114 108 132 Q100 148 90 160 Q82 168 78 174 L70 178 L62 174 Q58 168 50 160 Q40 148 32 132 Q25 114 22 96 Q20 78 24 62 Q30 44 44 30 Q56 18 70 15 Z', type: 'stroke', zone: 'detail', strokeWidth: 2 },
           // Eyes
           { d: 'M56 32 A3 3 0 1 1 55.99 32 Z', type: 'fill', zone: 'detail' },
           { d: 'M84 32 A3 3 0 1 1 83.99 32 Z', type: 'fill', zone: 'detail' },
@@ -727,29 +729,29 @@ const MOKURI_FAUNA_ELEMENTS = [
       {
         name: 'detail',
         paths: [
-          { d: 'M70 15 Q92 20 105 42 Q115 65 118 90 Q118 118 110 142 Q100 162 88 172 L70 180 L52 172 Q40 162 30 142 Q22 118 22 90 Q25 65 35 42 Q48 20 70 15 Z', type: 'fill', zone: 'body' },
-          { d: 'M70 28 Q84 34 90 55 Q95 78 95 100 Q95 122 90 142 Q84 160 70 170 Q56 160 50 142 Q45 122 45 100 Q45 78 50 55 Q56 34 70 28 Z', type: 'fill', zone: 'belly' },
-          { d: 'M30 78 Q15 65 8 52 Q12 68 22 80 Q28 86 32 82 Z', type: 'fill', zone: 'fin' },
-          { d: 'M110 78 Q125 65 132 52 Q128 68 118 80 Q112 86 108 82 Z', type: 'fill', zone: 'fin' },
-          { d: 'M88 172 Q102 186 110 205 Q92 198 70 195 Q48 198 30 205 Q38 186 52 172 Z', type: 'fill', zone: 'fin' },
-          { d: 'M70 15 Q92 20 105 42 Q115 65 118 90 Q118 118 110 142 Q100 162 88 172 L70 180 L52 172 Q40 162 30 142 Q22 118 22 90 Q25 65 35 42 Q48 20 70 15 Z', type: 'stroke', zone: 'detail', strokeWidth: 2 },
+          { d: 'M70 15 Q84 18 96 30 Q110 44 116 62 Q120 78 118 96 Q115 114 108 132 Q100 148 90 160 Q82 168 78 174 L70 178 L62 174 Q58 168 50 160 Q40 148 32 132 Q25 114 22 96 Q20 78 24 62 Q30 44 44 30 Q56 18 70 15 Z', type: 'fill', zone: 'body' },
+          { d: 'M70 30 Q82 34 92 48 Q98 64 100 82 Q100 100 96 118 Q90 136 82 152 Q76 162 70 168 Q64 162 58 152 Q50 136 44 118 Q40 100 40 82 Q42 64 48 48 Q58 34 70 30 Z', type: 'fill', zone: 'belly' },
+          { d: 'M28 76 Q14 88 10 106 Q16 102 26 92 Q34 84 30 78 Z', type: 'fill', zone: 'fin' },
+          { d: 'M112 76 Q126 88 130 106 Q124 102 114 92 Q106 84 110 78 Z', type: 'fill', zone: 'fin' },
+          { d: 'M78 174 Q96 188 108 208 Q90 200 70 196 Q50 200 32 208 Q44 188 62 174 Z', type: 'fill', zone: 'fin' },
+          { d: 'M70 15 Q84 18 96 30 Q110 44 116 62 Q120 78 118 96 Q115 114 108 132 Q100 148 90 160 Q82 168 78 174 L70 178 L62 174 Q58 168 50 160 Q40 148 32 132 Q25 114 22 96 Q20 78 24 62 Q30 44 44 30 Q56 18 70 15 Z', type: 'stroke', zone: 'detail', strokeWidth: 2 },
           { d: 'M56 32 A3 3 0 1 1 55.99 32 Z', type: 'fill', zone: 'detail' },
           { d: 'M84 32 A3 3 0 1 1 83.99 32 Z', type: 'fill', zone: 'detail' },
           { d: 'M64 17 Q70 12 76 17', type: 'stroke', zone: 'detail', strokeWidth: 1.2 },
           { d: 'M48 38 Q44 50 48 62', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
           { d: 'M92 38 Q96 50 92 62', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
-          // Scale pattern — symmetric rows
-          { d: 'M52 55 Q57 50 62 55 M62 55 Q67 50 72 55 M72 55 Q77 50 82 55 M82 55 Q87 50 92 55 M48 70 Q53 65 58 70 M58 70 Q63 65 68 70 M68 70 Q73 65 78 70 M78 70 Q83 65 88 70 M88 70 Q93 65 98 70 M46 85 Q51 80 56 85 M56 85 Q61 80 66 85 M66 85 Q71 80 76 85 M76 85 Q81 80 86 85 M86 85 Q91 80 96 85 M48 100 Q53 95 58 100 M58 100 Q63 95 68 100 M68 100 Q73 95 78 100 M78 100 Q83 95 88 100 M50 115 Q55 110 60 115 M60 115 Q65 110 70 115 M70 115 Q75 110 80 115 M80 115 Q85 110 90 115 M54 130 Q59 125 64 130 M64 130 Q69 125 74 130 M74 130 Q79 125 84 130', type: 'stroke', zone: 'detail', strokeWidth: 0.7 },
+          // Scale pattern — rows scaled to body width at each depth
+          { d: 'M50 55 Q55 50 60 55 M60 55 Q65 50 70 55 M70 55 Q75 50 80 55 M80 55 Q85 50 90 55 M44 72 Q49 67 54 72 M54 72 Q59 67 64 72 M64 72 Q69 67 74 72 M74 72 Q79 67 84 72 M84 72 Q89 67 94 72 M94 72 Q99 67 104 72 M40 88 Q45 83 50 88 M50 88 Q55 83 60 88 M60 88 Q65 83 70 88 M70 88 Q75 83 80 88 M80 88 Q85 83 90 88 M90 88 Q95 83 100 88 M42 104 Q47 99 52 104 M52 104 Q57 99 62 104 M62 104 Q67 99 72 104 M72 104 Q77 99 82 104 M82 104 Q87 99 92 104 M48 120 Q53 115 58 120 M58 120 Q63 115 68 120 M68 120 Q73 115 78 120 M78 120 Q83 115 88 120 M54 136 Q59 131 64 136 M64 136 Q69 131 74 136 M74 136 Q79 131 84 136', type: 'stroke', zone: 'detail', strokeWidth: 0.7 },
           // Tail fin rays
-          { d: 'M70 180 L70 195 M80 175 L92 195 M60 175 L48 195 M86 173 L102 200 M54 173 L38 200', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
-          // Pectoral fin rays
-          { d: 'M26 76 L12 60 M24 80 L10 68 M22 84 L8 75', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
-          { d: 'M114 76 L128 60 M116 80 L130 68 M118 84 L132 75', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
+          { d: 'M70 178 L70 196 M78 176 L94 198 M62 176 L46 198 M82 174 L104 204 M58 174 L36 204', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
+          // Pectoral fin rays — sweeping backward
+          { d: 'M26 80 L14 96 M24 84 L12 100 M28 78 L16 92', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
+          { d: 'M114 80 L126 96 M116 84 L128 100 M112 78 L124 92', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
           // Lateral line
-          { d: 'M70 35 L70 170', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
+          { d: 'M70 30 L70 174', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
           // Ventral fins
-          { d: 'M58 130 Q48 138 42 145 Q48 140 56 132', type: 'stroke', zone: 'fin', strokeWidth: 0.8 },
-          { d: 'M82 130 Q92 138 98 145 Q92 140 84 132', type: 'stroke', zone: 'fin', strokeWidth: 0.8 },
+          { d: 'M58 135 Q48 143 42 150 Q48 145 56 137', type: 'stroke', zone: 'fin', strokeWidth: 0.8 },
+          { d: 'M82 135 Q92 143 98 150 Q92 145 84 137', type: 'stroke', zone: 'fin', strokeWidth: 0.8 },
         ],
       },
     ],
