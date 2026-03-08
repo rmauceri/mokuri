@@ -417,6 +417,14 @@ html, body {
   cursor: grab;
 }
 
+.handle-edge {
+  fill: #fff;
+  stroke: var(--accent);
+  stroke-width: 1.2;
+  cursor: pointer;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+}
+
 /* Ghost element (dragging from picker) */
 .ghost-element {
   position: fixed;
@@ -2706,6 +2714,29 @@ function updateSelection() {
     h.classList.add('handle');
     h.style.cursor = c.cursor;
     h.setAttribute('data-handle', c.cursor);
+    g.appendChild(h);
+  });
+
+  // Edge midpoint handles (stretch one axis)
+  const edgeW = 10, edgeH = 4;
+  const edges = [
+    { cx: 0, cy: -hh - pad, cursor: 'n-resize', horiz: true },
+    { cx: 0, cy: hh + pad, cursor: 's-resize', horiz: true },
+    { cx: -hw - pad, cy: 0, cursor: 'w-resize', horiz: false },
+    { cx: hw + pad, cy: 0, cursor: 'e-resize', horiz: false },
+  ];
+  edges.forEach(ed => {
+    const h = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    const w = ed.horiz ? edgeW : edgeH;
+    const ht = ed.horiz ? edgeH : edgeW;
+    h.setAttribute('x', ed.cx - w / 2);
+    h.setAttribute('y', ed.cy - ht / 2);
+    h.setAttribute('width', w);
+    h.setAttribute('height', ht);
+    h.setAttribute('rx', 2);
+    h.classList.add('handle-edge');
+    h.style.cursor = ed.cursor;
+    h.setAttribute('data-handle', ed.cursor);
     g.appendChild(h);
   });
 
@@ -5569,13 +5600,25 @@ function setupInteraction() {
         const vb = def.viewBox.split(' ').map(Number);
         const dx = pt.x - d.startX;
         const dy = pt.y - d.startY;
-        // Sign flip based on which corner: dragging outward should always grow
-        const sx = d.handle.includes('w') ? -1 : 1;
-        const sy = d.handle.includes('n') ? -1 : 1;
-        const diag = (dx * sx + dy * sy) / 2;
-        const scaleFactor = 1 + diag / ((vb[2] + vb[3]) / 2);
-        el.scaleX = d.origScaleX * Math.max(0.1, scaleFactor);
-        el.scaleY = d.origScaleY * Math.max(0.1, scaleFactor);
+
+        // Edge handles: single-axis stretch
+        if (d.handle === 'n-resize' || d.handle === 's-resize') {
+          const sy = d.handle === 'n-resize' ? -1 : 1;
+          const factor = 1 + (dy * sy) / (vb[3] * Math.abs(d.origScaleY));
+          el.scaleY = d.origScaleY * Math.max(0.1, factor);
+        } else if (d.handle === 'e-resize' || d.handle === 'w-resize') {
+          const sx = d.handle === 'w-resize' ? -1 : 1;
+          const factor = 1 + (dx * sx) / (vb[2] * Math.abs(d.origScaleX));
+          el.scaleX = d.origScaleX * Math.max(0.1, factor);
+        } else {
+          // Corner handles: proportional resize
+          const sx = d.handle.includes('w') ? -1 : 1;
+          const sy = d.handle.includes('n') ? -1 : 1;
+          const diag = (dx * sx + dy * sy) / 2;
+          const scaleFactor = 1 + diag / ((vb[2] + vb[3]) / 2);
+          el.scaleX = d.origScaleX * Math.max(0.1, scaleFactor);
+          el.scaleY = d.origScaleY * Math.max(0.1, scaleFactor);
+        }
         rerenderAll();
       }
       return;
