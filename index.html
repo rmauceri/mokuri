@@ -1838,6 +1838,7 @@ html, body {
 <script src="fauna-elements.js"></script>
 <script src="scene-elements.js"></script>
 <script src="hanko-elements.js"></script>
+<script src="forms-elements.js"></script>
 <script src="print-engine.js"></script>
 <script src="audio-engine.js"></script>
 <script>
@@ -1853,6 +1854,9 @@ if (typeof MOKURI_SCENE_ELEMENTS !== 'undefined') {
 }
 if (typeof MOKURI_HANKO_ELEMENTS !== 'undefined') {
   MOKURI_ELEMENTS.push(...MOKURI_HANKO_ELEMENTS);
+}
+if (typeof MOKURI_FORMS_ELEMENTS !== 'undefined') {
+  MOKURI_ELEMENTS.push(...MOKURI_FORMS_ELEMENTS);
 }
 
 // ============================================================
