@@ -2719,9 +2719,11 @@ function generateThumbnailSvg(data) {
   const vw = 120, vh = Math.round(120 * h / w);
   const sc = vw / w;
   const pt = PAPER_TYPES[data.paperType || 'kozo'];
+  const palette = PALETTES[data.paletteId || 'edo'] || PALETTES.edo;
   let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${vw} ${vh}" width="${vw}" height="${vh}">`;
   s += `<rect width="${vw}" height="${vh}" fill="${pt ? pt.base : '#f5f0e6'}"/>`;
 
+  // Atmosphere
   if (data.sky && data.sky !== 'none') {
     const cols = { dawn: '#e8a87c', day: '#87ceeb', dusk: '#c47a90', night: '#1a1a3a', overcast: '#8a8a98' };
     const hy = Math.round((data.horizon || 0.62) * vh);
@@ -2733,15 +2735,36 @@ function generateThumbnailSvg(data) {
     s += `<rect y="${hy}" width="${vw}" height="${vh - hy}" fill="${cols[data.ground] || '#8b6b4a'}" opacity="0.3"/>`;
   }
 
+  // Element silhouettes using actual SVG paths
   if (data.elements) {
     for (const el of data.elements) {
       const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
-      if (!def) continue;
+      if (!def || !def.carveLevels || !def.carveLevels[0]) continue;
       const vb = def.viewBox.split(' ').map(Number);
-      const ex = Math.round(el.x * sc), ey = Math.round(el.y * sc);
-      const ew = Math.round(vb[2] * Math.abs(el.scaleX || 1) * sc);
-      const eh = Math.round(vb[3] * Math.abs(el.scaleY || 1) * sc);
-      s += `<rect x="${ex - ew/2}" y="${ey - eh/2}" width="${ew}" height="${eh}" fill="#5c4a3a" opacity="0.4" rx="1"/>`;
+      const sx = (el.scaleX || 1) * sc;
+      const sy = (el.scaleY || 1) * sc;
+      const tx = el.x * sc;
+      const ty = el.y * sc;
+      const rot = el.rotation || 0;
+      s += `<g transform="translate(${tx},${ty}) rotate(${rot}) scale(${sx},${sy}) translate(${-vb[2]/2},${-vb[3]/2})">`;
+
+      // Render block-level fill paths with palette colors
+      const lvl = def.carveLevels[Math.min(el.carveLevel || 0, def.carveLevels.length - 1)];
+      for (const p of lvl.paths) {
+        if (p.type === 'fill') {
+          let col;
+          if (def.hanko) {
+            col = '#c23b22';
+          } else if (el.colorOverrides && el.colorOverrides[p.zone]) {
+            col = el.colorOverrides[p.zone];
+          } else {
+            const z = def.colorZones.find(c => c.id === p.zone);
+            col = z ? palette.colors[z.defaultPaletteSlot % palette.colors.length] : palette.colors[0];
+          }
+          s += `<path d="${p.d}" fill="${col}" opacity="0.85"/>`;
+        }
+      }
+      s += '</g>';
     }
   }
 
@@ -3198,15 +3221,32 @@ function buildGalleryUI() {
     infoDiv.appendChild(metaDiv);
     card.appendChild(infoDiv);
 
-    // Delete button
+    // Delete button with confirmation
     const delBtn = document.createElement('button');
     delBtn.className = 'gallery-recent-delete';
     delBtn.textContent = '✕';
     delBtn.title = 'Delete this print';
+    let confirmTimer = null;
     delBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      deleteComposition(entry.id);
-      buildGalleryUI();
+      if (delBtn.dataset.confirm === 'true') {
+        clearTimeout(confirmTimer);
+        deleteComposition(entry.id);
+        buildGalleryUI();
+      } else {
+        delBtn.dataset.confirm = 'true';
+        delBtn.textContent = '?';
+        delBtn.style.background = '#c23b22';
+        delBtn.style.display = 'flex';
+        delBtn.title = 'Click again to confirm delete';
+        confirmTimer = setTimeout(() => {
+          delBtn.dataset.confirm = '';
+          delBtn.textContent = '✕';
+          delBtn.style.background = '';
+          delBtn.style.display = '';
+          delBtn.title = 'Delete this print';
+        }, 3000);
+      }
     });
     card.appendChild(delBtn);
 
