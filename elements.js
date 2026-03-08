@@ -456,7 +456,7 @@ const MOKURI_ELEMENTS = [
   {
     id: 'torii-gate',
     name: 'Torii Gate',
-    category: 'objects',
+    category: 'objects & patterns',
     viewBox: '0 0 180 200',
     suggestedLayer: 'midground',
     colorZones: [

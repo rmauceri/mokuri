@@ -479,7 +479,7 @@ const MOKURI_SCENE_ELEMENTS = [
   {
     id: 'rain-curtain',
     name: 'Rain Curtain',
-    category: 'atmospheric',
+    category: 'objects & patterns',
     viewBox: '0 0 200 300',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -604,7 +604,7 @@ const MOKURI_SCENE_ELEMENTS = [
   {
     id: 'snow-fall',
     name: 'Snow Fall',
-    category: 'atmospheric',
+    category: 'objects & patterns',
     viewBox: '0 0 200 280',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -700,7 +700,7 @@ const MOKURI_SCENE_ELEMENTS = [
   {
     id: 'cloud-wisp',
     name: 'Cloud Wisp',
-    category: 'atmospheric',
+    category: 'objects & patterns',
     viewBox: '0 0 260 80',
     suggestedLayer: 'background',
     colorZones: [

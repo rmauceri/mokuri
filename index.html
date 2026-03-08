@@ -3693,7 +3693,17 @@ function buildElementPicker() {
     cats[def.category].push(def);
   });
 
-  Object.entries(cats).forEach(([cat, defs]) => {
+  // Display order
+  const catOrder = ['landscape', 'flora', 'fauna', 'objects & patterns', 'basic forms', 'hanko'];
+  const orderedCats = catOrder
+    .filter(c => cats[c])
+    .map(c => [c, cats[c]]);
+  // Append any categories not in the order list
+  Object.entries(cats).forEach(([c, defs]) => {
+    if (!catOrder.includes(c)) orderedCats.push([c, defs]);
+  });
+
+  orderedCats.forEach(([cat, defs]) => {
     const section = document.createElement('div');
     section.className = 'element-category';
 

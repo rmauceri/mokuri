@@ -178,7 +178,7 @@ const MOKURI_CORE_ELEMENTS = [
   {
     id: 'asanoha-star',
     name: 'Asanoha Star',
-    category: 'patterns',
+    category: 'objects & patterns',
     viewBox: '0 0 120 120',
     suggestedLayer: 'midground',
     colorZones: [
@@ -259,7 +259,7 @@ const MOKURI_CORE_ELEMENTS = [
   {
     id: 'seigaiha-tile',
     name: 'Seigaiha Wave Tile',
-    category: 'patterns',
+    category: 'objects & patterns',
     viewBox: '0 0 120 60',
     suggestedLayer: 'background',
     colorZones: [
@@ -343,7 +343,7 @@ const MOKURI_CORE_ELEMENTS = [
   {
     id: 'sensu-fan',
     name: 'Folding Fan',
-    category: 'objects',
+    category: 'objects & patterns',
     viewBox: '0 0 140 80',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -425,7 +425,7 @@ const MOKURI_CORE_ELEMENTS = [
   {
     id: 'paper-lantern',
     name: 'Paper Lantern',
-    category: 'objects',
+    category: 'objects & patterns',
     viewBox: '0 0 100 140',
     suggestedLayer: 'midground',
     colorZones: [
@@ -590,7 +590,7 @@ const MOKURI_CORE_ELEMENTS = [
   {
     id: 'woodgrain-knot',
     name: 'Woodgrain Knot',
-    category: 'patterns',
+    category: 'objects & patterns',
     viewBox: '0 0 120 80',
     suggestedLayer: 'midground',
     colorZones: [
@@ -671,7 +671,7 @@ const MOKURI_CORE_ELEMENTS = [
   {
     id: 'gouge-mark',
     name: 'Gouge Mark',
-    category: 'patterns',
+    category: 'objects & patterns',
     viewBox: '0 0 120 40',
     suggestedLayer: 'foreground',
     colorZones: [
