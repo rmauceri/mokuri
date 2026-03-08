@@ -442,6 +442,41 @@ html, body {
 }
 
 .status-bar span { margin-right: 16px; }
+.status-bar-spacer { flex: 1; }
+
+/* Audio controls */
+.audio-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+.audio-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0 2px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.audio-btn:hover { color: var(--text); }
+.audio-btn.active { color: var(--accent); }
+.audio-slider {
+  width: 48px;
+  height: 3px;
+  accent-color: var(--accent);
+  cursor: pointer;
+  opacity: 0.7;
+}
+.audio-slider:hover { opacity: 1; }
+.audio-sep {
+  width: 1px;
+  height: 14px;
+  background: var(--panel-border);
+  margin: 0 2px;
+}
 
 /* Zone editor in palette bar */
 .zone-row {
@@ -1502,6 +1537,12 @@ html, body {
     <span id="status-elements">0 elements</span>
     <span id="status-zoom">100%</span>
     <span id="status-hint">Place elements · Select + 🪵 or C to carve · Print when ready</span>
+    <div class="audio-controls">
+      <button class="audio-btn" id="audio-ambient-btn" title="Ambient sound">🔇</button>
+      <input type="range" class="audio-slider" id="audio-ambient-vol" min="0" max="100" value="15" title="Ambient volume">
+      <div class="audio-sep"></div>
+      <button class="audio-btn active" id="audio-activity-btn" title="Activity sounds">🔔</button>
+    </div>
   </div>
 </div>
 
@@ -1558,6 +1599,7 @@ html, body {
 <script src="scene-elements.js"></script>
 <script src="hanko-elements.js"></script>
 <script src="print-engine.js"></script>
+<script src="audio-engine.js"></script>
 <script>
 // Merge extended and fauna elements into main array
 if (typeof MOKURI_CORE_ELEMENTS !== 'undefined') {
@@ -2516,6 +2558,7 @@ function addElement(defId, x, y) {
   STATE.elements.push(el);
   rerenderAll();
   selectElement(el.id);
+  MokuriAudio.playElementPlace();
   return el;
 }
 
@@ -2527,6 +2570,7 @@ function deleteSelected() {
   STATE.elements = STATE.elements.filter(e => e.id !== STATE.selectedId);
   deselectAll();
   rerenderAll();
+  MokuriAudio.playElementDelete();
 }
 
 function carveSelected() {
@@ -2539,6 +2583,7 @@ function carveSelected() {
   el.carveLevel = (el.carveLevel + 1) % def.carveLevels.length;
   rerenderAll();
   selectElement(el.id);
+  MokuriAudio.playCarveLevel();
 }
 
 // ============================================================
@@ -2638,6 +2683,7 @@ function undo() {
   rerenderAll();
   updateToolbarState();
   autoSave();
+  MokuriAudio.playUndoRedo();
 }
 
 function redo() {
@@ -2657,6 +2703,7 @@ function redo() {
   rerenderAll();
   updateToolbarState();
   autoSave();
+  MokuriAudio.playUndoRedo();
 }
 
 // ============================================================
@@ -3732,6 +3779,7 @@ function buildPaletteUI() {
                   rerenderAll();
                   buildPaletteUI();
                   autoSave();
+                  MokuriAudio.playColorChange();
                 });
                 picker.appendChild(ps);
               });
@@ -4076,6 +4124,7 @@ function enterCarveFocus(elementId) {
   animateViewBox(targetBox, 350);
 
   $('status-hint').textContent = 'Carve Focus — draw to carve · Esc to exit';
+  MokuriAudio.playFocusEnter();
 }
 
 function exitCarveFocus() {
@@ -4103,6 +4152,7 @@ function exitCarveFocus() {
 
   setMode('select');
   autoSave();
+  MokuriAudio.playFocusExit();
 }
 
 function animateViewBox(target, durationMs) {
@@ -4190,6 +4240,7 @@ function openCarveStudio() {
   $('carve-studio').classList.add('open');
   updatePhaseButtons();
   $('status-hint').textContent = 'Carve Studio — draw on elements to carve · select tools and patterns';
+  MokuriAudio.playPanelToggle();
 }
 
 function closeCarveStudio() {
@@ -4201,6 +4252,7 @@ function closeCarveStudio() {
 
   setMode('select');
   updatePhaseButtons();
+  MokuriAudio.playPanelToggle();
 }
 
 function buildCarveStudioUI() {
@@ -4333,6 +4385,7 @@ function openInkStudio() {
   $('ink-studio').classList.add('open');
   updatePhaseButtons();
   $('status-hint').textContent = 'Ink Studio — choose palette and adjust element colors';
+  MokuriAudio.playPanelToggle();
 }
 
 function closeInkStudio() {
@@ -4343,6 +4396,7 @@ function closeInkStudio() {
   if (STATE.viewMode !== 'carve') setViewMode('carve');
   setMode('select');
   updatePhaseButtons();
+  MokuriAudio.playPanelToggle();
 }
 
 function buildInkStudioUI() {
@@ -4378,6 +4432,7 @@ function buildInkStudioUI() {
         buildInkStudioUI();
         buildPaletteUI();
         autoSave();
+        MokuriAudio.playColorChange();
       });
       chipContainer.appendChild(chip);
     });
@@ -4459,6 +4514,7 @@ function buildInkStudioUI() {
             buildInkStudioUI();
             buildPaletteUI();
             autoSave();
+            MokuriAudio.playColorChange();
           });
           picker.appendChild(ps);
         });
@@ -4544,6 +4600,7 @@ function buildInkStudioUI() {
         rerenderAll();
         buildInkStudioUI();
         autoSave();
+        MokuriAudio.setAmbienceForAtmosphere(STATE.sky, STATE.ground);
       });
       skyRow.appendChild(chip);
     });
@@ -4565,6 +4622,7 @@ function buildInkStudioUI() {
         rerenderAll();
         buildInkStudioUI();
         autoSave();
+        MokuriAudio.setAmbienceForAtmosphere(STATE.sky, STATE.ground);
       });
       groundRow.appendChild(chip);
     });
@@ -4643,6 +4701,7 @@ function openPrintStudio() {
   $('print-studio').classList.add('open');
   updatePhaseButtons();
   $('status-hint').textContent = 'Print Studio — choose settings and Pull Print';
+  MokuriAudio.playPanelToggle();
 }
 
 function closePrintStudio() {
@@ -4965,6 +5024,7 @@ async function pullPrint() {
 
   pullBtn.disabled = false;
   $('status-hint').textContent = 'Print complete — adjust settings and re-pull, or save PNG · Esc to exit';
+  MokuriAudio.playPrintPull();
 }
 
 // ============================================================
@@ -4999,6 +5059,7 @@ function setupInteraction() {
         const localPt = svgToElementLocal(svgPt.x, svgPt.y, el);
         if (!el.carveStrokes) el.carveStrokes = [];
         STATE.carving = { elementId: el.id, points: [localPt] };
+        MokuriAudio.playCarveStart();
         ws.setPointerCapture(e.pointerId);
         return;
       }
@@ -5017,6 +5078,7 @@ function setupInteraction() {
         const localPt = svgToElementLocal(svgPt.x, svgPt.y, el);
         if (!el.carveStrokes) el.carveStrokes = [];
         STATE.carving = { elementId: id, points: [localPt] };
+        MokuriAudio.playCarveStart();
         ws.setPointerCapture(e.pointerId);
         return;
       }
@@ -5026,6 +5088,7 @@ function setupInteraction() {
       if (svgPt.x >= 0 && svgPt.x <= STATE.paperW && svgPt.y >= 0 && svgPt.y <= STATE.paperH) {
         pushUndo();
         STATE.carving = { background: true, points: [{ x: svgPt.x, y: svgPt.y }] };
+        MokuriAudio.playCarveStart();
         ws.setPointerCapture(e.pointerId);
       }
       return;
@@ -5236,6 +5299,7 @@ function setupInteraction() {
           STATE.backgroundCarveStrokes.push({ points: simplified, tool: STATE.carveTool });
           rerenderAll();
           autoSave();
+          MokuriAudio.playCarveEnd();
         } else {
           STATE.undoStack.pop();
         }
@@ -5251,6 +5315,7 @@ function setupInteraction() {
         el.carveStrokes.push({ points: simplified, tool: STATE.carveTool });
         rerenderAll();
         autoSave();
+        MokuriAudio.playCarveEnd();
       } else if (el) {
         // Too short — remove the undo entry
         STATE.undoStack.pop();
@@ -5499,6 +5564,7 @@ function setupToolbar() {
     // Don't dismiss if clicking a toolbar button (they have their own handlers)
     if (e.target.closest('.tool-btn') || e.target.closest('.mode-btn')) return;
     if (e.target.closest('.gallery-modal')) return;
+    if (e.target.closest('.audio-controls')) return;
 
     if (STATE.printStudioOpen) { closePrintStudio(); return; }
     if (STATE.inkStudioOpen) { closeInkStudio(); return; }
@@ -5525,6 +5591,32 @@ function setupToolbar() {
   $('gallery-modal').addEventListener('click', (e) => {
     if (e.target === $('gallery-modal')) closeGallery();
   });
+
+  // Audio controls
+  function syncAudioUI() {
+    const ap = MokuriAudio.prefs;
+    $('audio-ambient-btn').textContent = ap.ambientOn ? '🔊' : '🔇';
+    $('audio-ambient-btn').classList.toggle('active', ap.ambientOn);
+    $('audio-ambient-vol').value = Math.round(ap.ambientVol * 100);
+    $('audio-activity-btn').textContent = ap.activityOn ? '🔔' : '🔕';
+    $('audio-activity-btn').classList.toggle('active', ap.activityOn);
+  }
+  $('audio-ambient-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    MokuriAudio.setAmbientOn(!MokuriAudio.prefs.ambientOn);
+    syncAudioUI();
+  });
+  $('audio-ambient-vol').addEventListener('input', (e) => {
+    e.stopPropagation();
+    MokuriAudio.setAmbientVolume(parseInt(e.target.value) / 100);
+  });
+  $('audio-ambient-vol').addEventListener('click', (e) => e.stopPropagation());
+  $('audio-activity-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    MokuriAudio.setActivityOn(!MokuriAudio.prefs.activityOn);
+    syncAudioUI();
+  });
+  syncAudioUI();
 
   // Paper selector modal
   $('paper-modal-cancel').addEventListener('click', () => $('paper-modal').classList.remove('visible'));
@@ -5589,6 +5681,8 @@ function init() {
     STATE.compositionName = 'Untitled Print';
     setActiveCompositionId(id);
   }
+  // Sync ambient tone to current atmosphere
+  MokuriAudio.setAmbienceForAtmosphere(STATE.sky, STATE.ground);
 }
 
 init();
