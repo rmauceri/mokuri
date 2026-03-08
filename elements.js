@@ -507,4 +507,133 @@ const MOKURI_ELEMENTS = [
       },
     ],
   },
+
+  // ── Twisted Pine ──────────────────────────────────────────
+  {
+    id: 'twisted-pine',
+    name: 'Twisted Pine',
+    category: 'flora',
+    viewBox: '0 0 200 220',
+    suggestedLayer: 'midground',
+    colorZones: [
+      { id: 'trunk', defaultPaletteSlot: 4 },
+      { id: 'foliage', defaultPaletteSlot: 3 },
+      { id: 'detail', defaultPaletteSlot: 0 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          // Trunk — gnarled, curving to the right
+          { d: 'M65 220 L62 180 Q55 150 50 120 Q44 90 55 65 Q62 48 75 42 Q85 38 92 42 Q82 48 72 60 Q60 80 62 110 Q64 140 68 170 L72 220 Z', type: 'fill', zone: 'trunk' },
+          // Main foliage cluster (upper right)
+          { d: 'M70 50 Q60 35 65 18 Q72 8 85 5 Q100 2 115 8 Q135 15 150 28 Q165 40 170 55 Q172 68 160 72 Q145 70 125 62 Q105 52 90 48 Q78 46 70 50 Z', type: 'fill', zone: 'foliage' },
+          // Secondary foliage cluster (left)
+          { d: 'M55 72 Q35 60 22 48 Q12 38 15 28 Q20 20 30 22 Q42 25 52 35 Q60 45 62 58 Q62 65 55 72 Z', type: 'fill', zone: 'foliage' },
+          // Small foliage tuft (mid-right)
+          { d: 'M78 80 Q85 68 98 65 Q110 62 118 68 Q122 75 115 80 Q105 82 92 80 Q82 78 78 80 Z', type: 'fill', zone: 'foliage' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M65 220 L62 180 Q55 150 50 120 Q44 90 55 65 Q62 48 75 42 Q85 38 92 42 Q82 48 72 60 Q60 80 62 110 Q64 140 68 170 L72 220 Z', type: 'fill', zone: 'trunk' },
+          { d: 'M70 50 Q60 35 65 18 Q72 8 85 5 Q100 2 115 8 Q135 15 150 28 Q165 40 170 55 Q172 68 160 72 Q145 70 125 62 Q105 52 90 48 Q78 46 70 50 Z', type: 'fill', zone: 'foliage' },
+          { d: 'M55 72 Q35 60 22 48 Q12 38 15 28 Q20 20 30 22 Q42 25 52 35 Q60 45 62 58 Q62 65 55 72 Z', type: 'fill', zone: 'foliage' },
+          { d: 'M78 80 Q85 68 98 65 Q110 62 118 68 Q122 75 115 80 Q105 82 92 80 Q82 78 78 80 Z', type: 'fill', zone: 'foliage' },
+          // Foliage outlines
+          { d: 'M70 50 Q60 35 65 18 Q72 8 85 5 Q100 2 115 8 Q135 15 150 28 Q165 40 170 55 Q172 68 160 72 Q145 70 125 62 Q105 52 90 48 Q78 46 70 50', type: 'stroke', zone: 'detail', strokeWidth: 2 },
+          { d: 'M55 72 Q35 60 22 48 Q12 38 15 28 Q20 20 30 22 Q42 25 52 35 Q60 45 62 58', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
+          // Branches from trunk to foliage
+          { d: 'M60 65 Q50 58 40 52 M72 52 Q80 45 90 42 M66 80 Q75 72 85 68', type: 'stroke', zone: 'trunk', strokeWidth: 2 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M65 220 L62 180 Q55 150 50 120 Q44 90 55 65 Q62 48 75 42 Q85 38 92 42 Q82 48 72 60 Q60 80 62 110 Q64 140 68 170 L72 220 Z', type: 'fill', zone: 'trunk' },
+          { d: 'M70 50 Q60 35 65 18 Q72 8 85 5 Q100 2 115 8 Q135 15 150 28 Q165 40 170 55 Q172 68 160 72 Q145 70 125 62 Q105 52 90 48 Q78 46 70 50 Z', type: 'fill', zone: 'foliage' },
+          { d: 'M55 72 Q35 60 22 48 Q12 38 15 28 Q20 20 30 22 Q42 25 52 35 Q60 45 62 58 Q62 65 55 72 Z', type: 'fill', zone: 'foliage' },
+          { d: 'M78 80 Q85 68 98 65 Q110 62 118 68 Q122 75 115 80 Q105 82 92 80 Q82 78 78 80 Z', type: 'fill', zone: 'foliage' },
+          { d: 'M70 50 Q60 35 65 18 Q72 8 85 5 Q100 2 115 8 Q135 15 150 28 Q165 40 170 55 Q172 68 160 72 Q145 70 125 62 Q105 52 90 48 Q78 46 70 50', type: 'stroke', zone: 'detail', strokeWidth: 2 },
+          { d: 'M55 72 Q35 60 22 48 Q12 38 15 28 Q20 20 30 22 Q42 25 52 35 Q60 45 62 58', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
+          { d: 'M60 65 Q50 58 40 52 M72 52 Q80 45 90 42 M66 80 Q75 72 85 68', type: 'stroke', zone: 'trunk', strokeWidth: 2 },
+          // Bark texture — gnarled knots and grain
+          { d: 'M58 130 Q55 125 58 120 M62 150 Q60 145 62 140 M60 170 Q57 165 60 160 M64 195 Q62 190 64 185 M56 100 Q53 95 56 90', type: 'stroke', zone: 'detail', strokeWidth: 0.8 },
+          // Needle clusters — main canopy
+          { d: 'M80 18 Q88 10 98 14 M95 20 Q105 14 115 18 M110 28 Q120 22 130 26 M130 38 Q142 32 150 36 M145 50 Q155 44 162 48 M105 45 Q115 38 125 42 M82 35 Q90 28 100 32', type: 'stroke', zone: 'detail', strokeWidth: 1.2 },
+          // Needle clusters — secondary canopy
+          { d: 'M30 30 Q38 22 48 28 M25 40 Q34 34 42 38 M35 50 Q44 44 52 48', type: 'stroke', zone: 'detail', strokeWidth: 1 },
+          // Needle clusters — small tuft
+          { d: 'M85 70 Q92 64 100 68 M95 72 Q102 66 110 70 M100 76 Q108 70 115 74', type: 'stroke', zone: 'detail', strokeWidth: 0.8 },
+          // Root suggestions at base
+          { d: 'M62 218 Q50 215 42 218 M72 218 Q80 215 88 218', type: 'stroke', zone: 'trunk', strokeWidth: 1.5 },
+        ],
+      },
+    ],
+  },
+
+  // ── Weeping Willow ──────────────────────────────────────────
+  {
+    id: 'weeping-willow',
+    name: 'Weeping Willow',
+    category: 'flora',
+    viewBox: '0 0 200 240',
+    suggestedLayer: 'midground',
+    colorZones: [
+      { id: 'trunk', defaultPaletteSlot: 4 },
+      { id: 'foliage', defaultPaletteSlot: 3 },
+      { id: 'detail', defaultPaletteSlot: 0 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          // Trunk — straight with slight curve
+          { d: 'M90 240 L88 160 Q86 120 90 80 Q92 60 95 45 L105 45 Q108 60 110 80 Q114 120 112 160 L110 240 Z', type: 'fill', zone: 'trunk' },
+          // Canopy mass — large drooping oval
+          { d: 'M20 100 Q8 70 15 42 Q22 18 50 8 Q70 0 100 0 Q130 0 150 8 Q178 18 185 42 Q192 70 180 100 Q172 130 158 160 Q148 180 140 195 Q130 175 135 150 Q138 125 140 100 Q142 75 130 55 Q120 40 100 38 Q80 40 70 55 Q58 75 60 100 Q62 125 65 150 Q70 175 60 195 Q52 180 42 160 Q28 130 20 100 Z', type: 'fill', zone: 'foliage' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M90 240 L88 160 Q86 120 90 80 Q92 60 95 45 L105 45 Q108 60 110 80 Q114 120 112 160 L110 240 Z', type: 'fill', zone: 'trunk' },
+          { d: 'M20 100 Q8 70 15 42 Q22 18 50 8 Q70 0 100 0 Q130 0 150 8 Q178 18 185 42 Q192 70 180 100 Q172 130 158 160 Q148 180 140 195 Q130 175 135 150 Q138 125 140 100 Q142 75 130 55 Q120 40 100 38 Q80 40 70 55 Q58 75 60 100 Q62 125 65 150 Q70 175 60 195 Q52 180 42 160 Q28 130 20 100 Z', type: 'fill', zone: 'foliage' },
+          // Canopy outline
+          { d: 'M20 100 Q8 70 15 42 Q22 18 50 8 Q70 0 100 0 Q130 0 150 8 Q178 18 185 42 Q192 70 180 100', type: 'stroke', zone: 'detail', strokeWidth: 2 },
+          // Main branch structure
+          { d: 'M95 48 Q85 35 70 30 Q55 28 40 35 M105 48 Q115 35 130 30 Q145 28 160 35 M95 55 Q80 48 60 50 M105 55 Q120 48 140 50', type: 'stroke', zone: 'trunk', strokeWidth: 1.8 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M90 240 L88 160 Q86 120 90 80 Q92 60 95 45 L105 45 Q108 60 110 80 Q114 120 112 160 L110 240 Z', type: 'fill', zone: 'trunk' },
+          { d: 'M20 100 Q8 70 15 42 Q22 18 50 8 Q70 0 100 0 Q130 0 150 8 Q178 18 185 42 Q192 70 180 100 Q172 130 158 160 Q148 180 140 195 Q130 175 135 150 Q138 125 140 100 Q142 75 130 55 Q120 40 100 38 Q80 40 70 55 Q58 75 60 100 Q62 125 65 150 Q70 175 60 195 Q52 180 42 160 Q28 130 20 100 Z', type: 'fill', zone: 'foliage' },
+          { d: 'M20 100 Q8 70 15 42 Q22 18 50 8 Q70 0 100 0 Q130 0 150 8 Q178 18 185 42 Q192 70 180 100', type: 'stroke', zone: 'detail', strokeWidth: 2 },
+          { d: 'M95 48 Q85 35 70 30 Q55 28 40 35 M105 48 Q115 35 130 30 Q145 28 160 35 M95 55 Q80 48 60 50 M105 55 Q120 48 140 50', type: 'stroke', zone: 'trunk', strokeWidth: 1.8 },
+          // Hanging fronds — left side
+          { d: 'M40 38 Q35 60 30 90 Q25 120 22 150 Q20 175 18 195', type: 'stroke', zone: 'foliage', strokeWidth: 0.8 },
+          { d: 'M50 30 Q45 55 40 85 Q35 115 32 145 Q28 172 26 192', type: 'stroke', zone: 'foliage', strokeWidth: 0.8 },
+          { d: 'M60 28 Q55 52 50 80 Q45 108 42 135 Q38 162 36 185', type: 'stroke', zone: 'foliage', strokeWidth: 0.8 },
+          { d: 'M72 30 Q67 55 62 82 Q58 110 55 140 Q52 165 50 188', type: 'stroke', zone: 'foliage', strokeWidth: 0.8 },
+          { d: 'M80 35 Q76 58 72 85 Q68 112 66 142 Q64 168 62 190', type: 'stroke', zone: 'foliage', strokeWidth: 0.8 },
+          // Hanging fronds — right side
+          { d: 'M120 35 Q124 58 128 85 Q132 112 134 142 Q136 168 138 190', type: 'stroke', zone: 'foliage', strokeWidth: 0.8 },
+          { d: 'M130 30 Q134 55 138 82 Q142 110 145 140 Q148 165 150 188', type: 'stroke', zone: 'foliage', strokeWidth: 0.8 },
+          { d: 'M140 28 Q145 52 150 80 Q155 108 158 135 Q162 162 164 185', type: 'stroke', zone: 'foliage', strokeWidth: 0.8 },
+          { d: 'M150 30 Q155 55 160 85 Q165 115 168 145 Q172 172 174 192', type: 'stroke', zone: 'foliage', strokeWidth: 0.8 },
+          { d: 'M160 38 Q165 60 170 90 Q175 120 178 150 Q180 175 182 195', type: 'stroke', zone: 'foliage', strokeWidth: 0.8 },
+          // Bark texture
+          { d: 'M93 80 L93 100 M107 85 L107 105 M95 120 L95 145 M105 130 L105 155 M94 165 L94 185 M106 170 L106 195', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
+          // Small leaf clusters along fronds
+          { d: 'M28 100 Q32 96 36 100 M22 155 Q26 151 30 155 M45 90 Q49 86 53 90 M40 140 Q44 136 48 140 M55 85 Q59 81 63 85 M165 90 Q169 86 173 90 M172 140 Q176 136 180 140 M155 85 Q159 81 163 85 M148 135 Q152 131 156 135', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
+          // Root flare at base
+          { d: 'M88 238 Q75 235 65 238 M112 238 Q125 235 135 238', type: 'stroke', zone: 'trunk', strokeWidth: 1.5 },
+        ],
+      },
+    ],
+  },
+
 ];

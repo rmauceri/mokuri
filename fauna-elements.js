@@ -605,4 +605,323 @@ const MOKURI_FAUNA_ELEMENTS = [
       },
     ],
   },
+
+  // ── Leaping Koi ──────────────────────────────────────────
+  {
+    id: 'koi-leaping',
+    name: 'Leaping Koi',
+    category: 'fauna',
+    viewBox: '0 0 160 220',
+    suggestedLayer: 'foreground',
+    colorZones: [
+      { id: 'body', defaultPaletteSlot: 0 },
+      { id: 'belly', defaultPaletteSlot: 4 },
+      { id: 'fin', defaultPaletteSlot: 1 },
+      { id: 'detail', defaultPaletteSlot: 3 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          // Body — dynamic upward arc, tail lower-left, head upper-right
+          { d: 'M52 188 Q30 158 40 125 Q48 92 68 62 Q85 38 108 26 Q122 20 128 28 Q134 36 126 46 Q112 40 95 52 Q75 68 62 98 Q50 128 48 162 Q46 178 52 192 Z', type: 'fill', zone: 'body' },
+          // Belly
+          { d: 'M60 160 Q50 135 55 108 Q60 85 74 64 Q64 88 56 112 Q50 140 58 164 Z', type: 'fill', zone: 'belly' },
+          // Dorsal fin
+          { d: 'M44 118 Q30 108 34 92 Q40 100 44 112 Z', type: 'fill', zone: 'fin' },
+          // Tail fan — two lobes
+          { d: 'M48 185 Q26 198 15 215 Q28 210 44 196 Z', type: 'fill', zone: 'fin' },
+          { d: 'M54 190 Q40 208 34 220 Q48 214 58 200 Z', type: 'fill', zone: 'fin' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M52 188 Q30 158 40 125 Q48 92 68 62 Q85 38 108 26 Q122 20 128 28 Q134 36 126 46 Q112 40 95 52 Q75 68 62 98 Q50 128 48 162 Q46 178 52 192 Z', type: 'fill', zone: 'body' },
+          { d: 'M60 160 Q50 135 55 108 Q60 85 74 64 Q64 88 56 112 Q50 140 58 164 Z', type: 'fill', zone: 'belly' },
+          { d: 'M44 118 Q30 108 34 92 Q40 100 44 112 Z', type: 'fill', zone: 'fin' },
+          { d: 'M48 185 Q26 198 15 215 Q28 210 44 196 Z', type: 'fill', zone: 'fin' },
+          { d: 'M54 190 Q40 208 34 220 Q48 214 58 200 Z', type: 'fill', zone: 'fin' },
+          // Body outline
+          { d: 'M52 188 Q30 158 40 125 Q48 92 68 62 Q85 38 108 26 Q122 20 128 28 Q134 36 126 46 Q112 40 95 52 Q75 68 62 98 Q50 128 48 162 Q46 178 52 192 Z', type: 'stroke', zone: 'detail', strokeWidth: 2 },
+          // Eye
+          { d: 'M112 30 A3 3 0 1 1 111.99 30 Z', type: 'fill', zone: 'detail' },
+          // Gill line
+          { d: 'M100 38 Q102 48 98 56', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M52 188 Q30 158 40 125 Q48 92 68 62 Q85 38 108 26 Q122 20 128 28 Q134 36 126 46 Q112 40 95 52 Q75 68 62 98 Q50 128 48 162 Q46 178 52 192 Z', type: 'fill', zone: 'body' },
+          { d: 'M60 160 Q50 135 55 108 Q60 85 74 64 Q64 88 56 112 Q50 140 58 164 Z', type: 'fill', zone: 'belly' },
+          { d: 'M44 118 Q30 108 34 92 Q40 100 44 112 Z', type: 'fill', zone: 'fin' },
+          { d: 'M48 185 Q26 198 15 215 Q28 210 44 196 Z', type: 'fill', zone: 'fin' },
+          { d: 'M54 190 Q40 208 34 220 Q48 214 58 200 Z', type: 'fill', zone: 'fin' },
+          { d: 'M52 188 Q30 158 40 125 Q48 92 68 62 Q85 38 108 26 Q122 20 128 28 Q134 36 126 46 Q112 40 95 52 Q75 68 62 98 Q50 128 48 162 Q46 178 52 192 Z', type: 'stroke', zone: 'detail', strokeWidth: 2 },
+          { d: 'M112 30 A3 3 0 1 1 111.99 30 Z', type: 'fill', zone: 'detail' },
+          { d: 'M100 38 Q102 48 98 56', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
+          // Scale pattern following body curve
+          { d: 'M78 60 Q82 55 88 60 M86 68 Q92 63 96 68 M72 72 Q78 67 82 72 M80 80 Q86 75 90 80 M66 82 Q72 77 76 82 M74 92 Q80 87 84 92 M60 96 Q66 91 70 96 M68 106 Q74 101 78 106 M56 112 Q62 107 66 112', type: 'stroke', zone: 'detail', strokeWidth: 0.7 },
+          // Fin rays
+          { d: 'M38 108 L32 96 M40 104 L35 90 M42 100 L38 88', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
+          { d: 'M36 192 L20 208 M42 196 L30 212 M46 198 L36 216', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
+          // Pectoral fin
+          { d: 'M70 78 Q62 88 56 94 Q60 86 68 80', type: 'stroke', zone: 'fin', strokeWidth: 1 },
+          // Water splash
+          { d: 'M22 205 Q26 198 34 202 Q42 196 50 203 Q46 208 36 210 Q28 210 22 205 Z', type: 'fill', zone: 'body' },
+        ],
+      },
+    ],
+  },
+
+  // ── Koi Overhead ──────────────────────────────────────────
+  {
+    id: 'koi-overhead',
+    name: 'Koi (Overhead)',
+    category: 'fauna',
+    viewBox: '0 0 140 220',
+    suggestedLayer: 'midground',
+    colorZones: [
+      { id: 'body', defaultPaletteSlot: 0 },
+      { id: 'belly', defaultPaletteSlot: 4 },
+      { id: 'fin', defaultPaletteSlot: 1 },
+      { id: 'detail', defaultPaletteSlot: 3 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          // Body — symmetrical top-down teardrop
+          { d: 'M70 15 Q92 20 105 42 Q115 65 118 90 Q118 118 110 142 Q100 162 88 172 L70 180 L52 172 Q40 162 30 142 Q22 118 22 90 Q25 65 35 42 Q48 20 70 15 Z', type: 'fill', zone: 'body' },
+          // Belly — central lighter stripe
+          { d: 'M70 28 Q84 34 90 55 Q95 78 95 100 Q95 122 90 142 Q84 160 70 170 Q56 160 50 142 Q45 122 45 100 Q45 78 50 55 Q56 34 70 28 Z', type: 'fill', zone: 'belly' },
+          // Left pectoral fin
+          { d: 'M30 78 Q15 65 8 52 Q12 68 22 80 Q28 86 32 82 Z', type: 'fill', zone: 'fin' },
+          // Right pectoral fin
+          { d: 'M110 78 Q125 65 132 52 Q128 68 118 80 Q112 86 108 82 Z', type: 'fill', zone: 'fin' },
+          // Tail fan
+          { d: 'M88 172 Q102 186 110 205 Q92 198 70 195 Q48 198 30 205 Q38 186 52 172 Z', type: 'fill', zone: 'fin' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M70 15 Q92 20 105 42 Q115 65 118 90 Q118 118 110 142 Q100 162 88 172 L70 180 L52 172 Q40 162 30 142 Q22 118 22 90 Q25 65 35 42 Q48 20 70 15 Z', type: 'fill', zone: 'body' },
+          { d: 'M70 28 Q84 34 90 55 Q95 78 95 100 Q95 122 90 142 Q84 160 70 170 Q56 160 50 142 Q45 122 45 100 Q45 78 50 55 Q56 34 70 28 Z', type: 'fill', zone: 'belly' },
+          { d: 'M30 78 Q15 65 8 52 Q12 68 22 80 Q28 86 32 82 Z', type: 'fill', zone: 'fin' },
+          { d: 'M110 78 Q125 65 132 52 Q128 68 118 80 Q112 86 108 82 Z', type: 'fill', zone: 'fin' },
+          { d: 'M88 172 Q102 186 110 205 Q92 198 70 195 Q48 198 30 205 Q38 186 52 172 Z', type: 'fill', zone: 'fin' },
+          // Body outline
+          { d: 'M70 15 Q92 20 105 42 Q115 65 118 90 Q118 118 110 142 Q100 162 88 172 L70 180 L52 172 Q40 162 30 142 Q22 118 22 90 Q25 65 35 42 Q48 20 70 15 Z', type: 'stroke', zone: 'detail', strokeWidth: 2 },
+          // Eyes
+          { d: 'M56 32 A3 3 0 1 1 55.99 32 Z', type: 'fill', zone: 'detail' },
+          { d: 'M84 32 A3 3 0 1 1 83.99 32 Z', type: 'fill', zone: 'detail' },
+          // Mouth
+          { d: 'M64 17 Q70 12 76 17', type: 'stroke', zone: 'detail', strokeWidth: 1.2 },
+          // Gill lines
+          { d: 'M48 38 Q44 50 48 62', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
+          { d: 'M92 38 Q96 50 92 62', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M70 15 Q92 20 105 42 Q115 65 118 90 Q118 118 110 142 Q100 162 88 172 L70 180 L52 172 Q40 162 30 142 Q22 118 22 90 Q25 65 35 42 Q48 20 70 15 Z', type: 'fill', zone: 'body' },
+          { d: 'M70 28 Q84 34 90 55 Q95 78 95 100 Q95 122 90 142 Q84 160 70 170 Q56 160 50 142 Q45 122 45 100 Q45 78 50 55 Q56 34 70 28 Z', type: 'fill', zone: 'belly' },
+          { d: 'M30 78 Q15 65 8 52 Q12 68 22 80 Q28 86 32 82 Z', type: 'fill', zone: 'fin' },
+          { d: 'M110 78 Q125 65 132 52 Q128 68 118 80 Q112 86 108 82 Z', type: 'fill', zone: 'fin' },
+          { d: 'M88 172 Q102 186 110 205 Q92 198 70 195 Q48 198 30 205 Q38 186 52 172 Z', type: 'fill', zone: 'fin' },
+          { d: 'M70 15 Q92 20 105 42 Q115 65 118 90 Q118 118 110 142 Q100 162 88 172 L70 180 L52 172 Q40 162 30 142 Q22 118 22 90 Q25 65 35 42 Q48 20 70 15 Z', type: 'stroke', zone: 'detail', strokeWidth: 2 },
+          { d: 'M56 32 A3 3 0 1 1 55.99 32 Z', type: 'fill', zone: 'detail' },
+          { d: 'M84 32 A3 3 0 1 1 83.99 32 Z', type: 'fill', zone: 'detail' },
+          { d: 'M64 17 Q70 12 76 17', type: 'stroke', zone: 'detail', strokeWidth: 1.2 },
+          { d: 'M48 38 Q44 50 48 62', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
+          { d: 'M92 38 Q96 50 92 62', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
+          // Scale pattern — symmetric rows
+          { d: 'M52 55 Q57 50 62 55 M62 55 Q67 50 72 55 M72 55 Q77 50 82 55 M82 55 Q87 50 92 55 M48 70 Q53 65 58 70 M58 70 Q63 65 68 70 M68 70 Q73 65 78 70 M78 70 Q83 65 88 70 M88 70 Q93 65 98 70 M46 85 Q51 80 56 85 M56 85 Q61 80 66 85 M66 85 Q71 80 76 85 M76 85 Q81 80 86 85 M86 85 Q91 80 96 85 M48 100 Q53 95 58 100 M58 100 Q63 95 68 100 M68 100 Q73 95 78 100 M78 100 Q83 95 88 100 M50 115 Q55 110 60 115 M60 115 Q65 110 70 115 M70 115 Q75 110 80 115 M80 115 Q85 110 90 115 M54 130 Q59 125 64 130 M64 130 Q69 125 74 130 M74 130 Q79 125 84 130', type: 'stroke', zone: 'detail', strokeWidth: 0.7 },
+          // Tail fin rays
+          { d: 'M70 180 L70 195 M80 175 L92 195 M60 175 L48 195 M86 173 L102 200 M54 173 L38 200', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
+          // Pectoral fin rays
+          { d: 'M26 76 L12 60 M24 80 L10 68 M22 84 L8 75', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
+          { d: 'M114 76 L128 60 M116 80 L130 68 M118 84 L132 75', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
+          // Lateral line
+          { d: 'M70 35 L70 170', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
+          // Ventral fins
+          { d: 'M58 130 Q48 138 42 145 Q48 140 56 132', type: 'stroke', zone: 'fin', strokeWidth: 0.8 },
+          { d: 'M82 130 Q92 138 98 145 Q92 140 84 132', type: 'stroke', zone: 'fin', strokeWidth: 0.8 },
+        ],
+      },
+    ],
+  },
+
+  // ── Standing Crane ──────────────────────────────────────────
+  {
+    id: 'crane-standing',
+    name: 'Standing Crane',
+    category: 'fauna',
+    viewBox: '0 0 120 260',
+    suggestedLayer: 'midground',
+    colorZones: [
+      { id: 'body', defaultPaletteSlot: 4 },
+      { id: 'wing', defaultPaletteSlot: 3 },
+      { id: 'accent', defaultPaletteSlot: 1 },
+      { id: 'detail', defaultPaletteSlot: 0 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          // Body
+          { d: 'M42 92 Q52 78 68 76 Q84 74 92 82 Q98 92 95 104 Q90 114 75 118 Q58 120 46 112 Q36 102 42 92 Z', type: 'fill', zone: 'body' },
+          // Neck + head — S-curve
+          { d: 'M48 92 Q40 72 34 50 Q28 32 30 18 Q34 10 40 14 Q46 22 40 38 Q36 52 44 75 Q48 88 50 94 Z', type: 'fill', zone: 'body' },
+          // Red crown
+          { d: 'M32 14 Q36 8 42 12 Q40 16 36 18 Q32 16 32 14 Z', type: 'fill', zone: 'accent' },
+          // Wing folded
+          { d: 'M55 86 Q70 80 86 84 Q96 90 92 102 Q86 110 72 108 Q58 104 55 94 Z', type: 'fill', zone: 'wing' },
+          // Tail feathers
+          { d: 'M90 95 Q102 88 112 84 Q116 82 114 90 Q108 96 96 102 Z', type: 'fill', zone: 'detail' },
+          // Left leg
+          { d: 'M52 118 L48 200 L46 248 L44 255 L50 255 L52 248 L54 200 L56 118 Z', type: 'fill', zone: 'detail' },
+          // Right leg
+          { d: 'M64 118 L60 200 L58 248 L56 255 L62 255 L64 248 L66 200 L68 118 Z', type: 'fill', zone: 'detail' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M42 92 Q52 78 68 76 Q84 74 92 82 Q98 92 95 104 Q90 114 75 118 Q58 120 46 112 Q36 102 42 92 Z', type: 'fill', zone: 'body' },
+          { d: 'M48 92 Q40 72 34 50 Q28 32 30 18 Q34 10 40 14 Q46 22 40 38 Q36 52 44 75 Q48 88 50 94 Z', type: 'fill', zone: 'body' },
+          { d: 'M32 14 Q36 8 42 12 Q40 16 36 18 Q32 16 32 14 Z', type: 'fill', zone: 'accent' },
+          { d: 'M55 86 Q70 80 86 84 Q96 90 92 102 Q86 110 72 108 Q58 104 55 94 Z', type: 'fill', zone: 'wing' },
+          { d: 'M90 95 Q102 88 112 84 Q116 82 114 90 Q108 96 96 102 Z', type: 'fill', zone: 'detail' },
+          { d: 'M52 118 L48 200 L46 248 L44 255 L50 255 L52 248 L54 200 L56 118 Z', type: 'fill', zone: 'detail' },
+          { d: 'M64 118 L60 200 L58 248 L56 255 L62 255 L64 248 L66 200 L68 118 Z', type: 'fill', zone: 'detail' },
+          // Body outline
+          { d: 'M42 92 Q52 78 68 76 Q84 74 92 82 Q98 92 95 104 Q90 114 75 118 Q58 120 46 112 Q36 102 42 92 Z', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
+          // Neck outline
+          { d: 'M48 92 Q40 72 34 50 Q28 32 30 18', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
+          // Eye
+          { d: 'M35 20 A2 2 0 1 1 34.99 20 Z', type: 'fill', zone: 'detail' },
+          // Beak
+          { d: 'M30 16 L20 14 L30 19', type: 'stroke', zone: 'detail', strokeWidth: 1 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M42 92 Q52 78 68 76 Q84 74 92 82 Q98 92 95 104 Q90 114 75 118 Q58 120 46 112 Q36 102 42 92 Z', type: 'fill', zone: 'body' },
+          { d: 'M48 92 Q40 72 34 50 Q28 32 30 18 Q34 10 40 14 Q46 22 40 38 Q36 52 44 75 Q48 88 50 94 Z', type: 'fill', zone: 'body' },
+          { d: 'M32 14 Q36 8 42 12 Q40 16 36 18 Q32 16 32 14 Z', type: 'fill', zone: 'accent' },
+          { d: 'M55 86 Q70 80 86 84 Q96 90 92 102 Q86 110 72 108 Q58 104 55 94 Z', type: 'fill', zone: 'wing' },
+          { d: 'M90 95 Q102 88 112 84 Q116 82 114 90 Q108 96 96 102 Z', type: 'fill', zone: 'detail' },
+          { d: 'M52 118 L48 200 L46 248 L44 255 L50 255 L52 248 L54 200 L56 118 Z', type: 'fill', zone: 'detail' },
+          { d: 'M64 118 L60 200 L58 248 L56 255 L62 255 L64 248 L66 200 L68 118 Z', type: 'fill', zone: 'detail' },
+          { d: 'M42 92 Q52 78 68 76 Q84 74 92 82 Q98 92 95 104 Q90 114 75 118 Q58 120 46 112 Q36 102 42 92 Z', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
+          { d: 'M48 92 Q40 72 34 50 Q28 32 30 18', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
+          { d: 'M35 20 A2 2 0 1 1 34.99 20 Z', type: 'fill', zone: 'detail' },
+          { d: 'M30 16 L20 14 L30 19', type: 'stroke', zone: 'detail', strokeWidth: 1 },
+          // Wing feather lines
+          { d: 'M60 88 L76 82 M62 92 L80 86 M64 96 L84 90 M66 100 L86 95 M68 104 L88 100', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
+          // Tail feather detail
+          { d: 'M92 94 L106 86 M94 96 L108 90 M96 98 L112 88', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
+          // Breast feather texture
+          { d: 'M50 86 Q55 84 60 86 M48 90 Q53 88 58 90 M46 94 Q52 92 56 94 M44 98 Q50 96 54 98 M44 102 Q50 100 54 102', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
+          // Leg joint details
+          { d: 'M47 200 Q50 198 53 200 M59 200 Q62 198 65 200', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
+          // Foot toes
+          { d: 'M44 255 L40 258 M44 255 L44 260 M50 255 L52 258', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
+          { d: 'M56 255 L52 258 M56 255 L56 260 M62 255 L64 258', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
+        ],
+      },
+    ],
+  },
+
+  // ── Landing Crane ──────────────────────────────────────────
+  {
+    id: 'crane-landing',
+    name: 'Landing Crane',
+    category: 'fauna',
+    viewBox: '0 0 280 200',
+    suggestedLayer: 'midground',
+    colorZones: [
+      { id: 'body', defaultPaletteSlot: 4 },
+      { id: 'wing', defaultPaletteSlot: 3 },
+      { id: 'accent', defaultPaletteSlot: 1 },
+      { id: 'detail', defaultPaletteSlot: 0 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          // Body
+          { d: 'M125 72 Q135 62 150 60 Q165 58 172 64 Q178 72 175 82 Q170 90 155 94 Q138 96 128 88 Q120 80 125 72 Z', type: 'fill', zone: 'body' },
+          // Neck + head reaching forward
+          { d: 'M128 76 Q115 68 100 58 Q88 48 78 40 Q72 36 68 38 Q65 42 70 44 Q78 46 88 52 Q102 62 118 72 Z', type: 'fill', zone: 'body' },
+          // Red crown
+          { d: 'M70 36 Q74 30 78 34 Q76 38 72 40 Q68 38 70 36 Z', type: 'fill', zone: 'accent' },
+          // Left wing — up and back
+          { d: 'M130 70 Q108 42 82 22 Q62 8 42 4 Q28 2 22 8 Q28 14 45 16 Q65 20 88 40 Q110 56 128 72 Z', type: 'fill', zone: 'wing' },
+          // Right wing — up and forward
+          { d: 'M145 68 Q168 40 195 22 Q218 8 240 4 Q256 2 260 10 Q254 18 238 20 Q218 24 195 42 Q172 58 150 72 Z', type: 'fill', zone: 'wing' },
+          // Tail
+          { d: 'M170 70 Q185 62 198 58 Q205 56 202 64 Q195 70 180 76 Z', type: 'fill', zone: 'detail' },
+          // Left leg dangling
+          { d: 'M140 92 Q138 115 134 140 Q132 158 128 178 Q126 185 130 188 Q134 185 136 178 Q138 158 142 140 Q144 115 144 92 Z', type: 'fill', zone: 'detail' },
+          // Right leg dangling
+          { d: 'M155 92 Q152 115 150 140 Q148 158 146 178 Q144 185 148 188 Q152 185 154 178 Q156 158 158 140 Q160 115 158 92 Z', type: 'fill', zone: 'detail' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M125 72 Q135 62 150 60 Q165 58 172 64 Q178 72 175 82 Q170 90 155 94 Q138 96 128 88 Q120 80 125 72 Z', type: 'fill', zone: 'body' },
+          { d: 'M128 76 Q115 68 100 58 Q88 48 78 40 Q72 36 68 38 Q65 42 70 44 Q78 46 88 52 Q102 62 118 72 Z', type: 'fill', zone: 'body' },
+          { d: 'M70 36 Q74 30 78 34 Q76 38 72 40 Q68 38 70 36 Z', type: 'fill', zone: 'accent' },
+          { d: 'M130 70 Q108 42 82 22 Q62 8 42 4 Q28 2 22 8 Q28 14 45 16 Q65 20 88 40 Q110 56 128 72 Z', type: 'fill', zone: 'wing' },
+          { d: 'M145 68 Q168 40 195 22 Q218 8 240 4 Q256 2 260 10 Q254 18 238 20 Q218 24 195 42 Q172 58 150 72 Z', type: 'fill', zone: 'wing' },
+          { d: 'M170 70 Q185 62 198 58 Q205 56 202 64 Q195 70 180 76 Z', type: 'fill', zone: 'detail' },
+          { d: 'M140 92 Q138 115 134 140 Q132 158 128 178 Q126 185 130 188 Q134 185 136 178 Q138 158 142 140 Q144 115 144 92 Z', type: 'fill', zone: 'detail' },
+          { d: 'M155 92 Q152 115 150 140 Q148 158 146 178 Q144 185 148 188 Q152 185 154 178 Q156 158 158 140 Q160 115 158 92 Z', type: 'fill', zone: 'detail' },
+          // Wing outlines
+          { d: 'M130 70 Q108 42 82 22 Q62 8 42 4 Q28 2 22 8 Q28 14 45 16 Q65 20 88 40 Q110 56 128 72', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
+          { d: 'M145 68 Q168 40 195 22 Q218 8 240 4 Q256 2 260 10 Q254 18 238 20 Q218 24 195 42 Q172 58 150 72', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
+          // Eye
+          { d: 'M72 40 A1.5 1.5 0 1 1 71.99 40 Z', type: 'fill', zone: 'detail' },
+          // Beak
+          { d: 'M68 38 L60 36 L68 42', type: 'stroke', zone: 'detail', strokeWidth: 1 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M125 72 Q135 62 150 60 Q165 58 172 64 Q178 72 175 82 Q170 90 155 94 Q138 96 128 88 Q120 80 125 72 Z', type: 'fill', zone: 'body' },
+          { d: 'M128 76 Q115 68 100 58 Q88 48 78 40 Q72 36 68 38 Q65 42 70 44 Q78 46 88 52 Q102 62 118 72 Z', type: 'fill', zone: 'body' },
+          { d: 'M70 36 Q74 30 78 34 Q76 38 72 40 Q68 38 70 36 Z', type: 'fill', zone: 'accent' },
+          { d: 'M130 70 Q108 42 82 22 Q62 8 42 4 Q28 2 22 8 Q28 14 45 16 Q65 20 88 40 Q110 56 128 72 Z', type: 'fill', zone: 'wing' },
+          { d: 'M145 68 Q168 40 195 22 Q218 8 240 4 Q256 2 260 10 Q254 18 238 20 Q218 24 195 42 Q172 58 150 72 Z', type: 'fill', zone: 'wing' },
+          { d: 'M170 70 Q185 62 198 58 Q205 56 202 64 Q195 70 180 76 Z', type: 'fill', zone: 'detail' },
+          { d: 'M140 92 Q138 115 134 140 Q132 158 128 178 Q126 185 130 188 Q134 185 136 178 Q138 158 142 140 Q144 115 144 92 Z', type: 'fill', zone: 'detail' },
+          { d: 'M155 92 Q152 115 150 140 Q148 158 146 178 Q144 185 148 188 Q152 185 154 178 Q156 158 158 140 Q160 115 158 92 Z', type: 'fill', zone: 'detail' },
+          { d: 'M130 70 Q108 42 82 22 Q62 8 42 4 Q28 2 22 8 Q28 14 45 16 Q65 20 88 40 Q110 56 128 72', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
+          { d: 'M145 68 Q168 40 195 22 Q218 8 240 4 Q256 2 260 10 Q254 18 238 20 Q218 24 195 42 Q172 58 150 72', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
+          { d: 'M72 40 A1.5 1.5 0 1 1 71.99 40 Z', type: 'fill', zone: 'detail' },
+          { d: 'M68 38 L60 36 L68 42', type: 'stroke', zone: 'detail', strokeWidth: 1 },
+          // Left wing feather details
+          { d: 'M118 58 L100 38 M112 52 L90 28 M106 48 L80 18 M100 44 L68 10 M94 42 L56 6', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
+          // Right wing feather details
+          { d: 'M158 58 L180 38 M164 52 L192 28 M170 48 L202 18 M176 44 L215 10 M182 42 L228 6', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
+          // Black wingtips
+          { d: 'M22 8 Q24 4 32 4 Q40 5 42 4 L28 2 Q22 2 22 8 Z', type: 'fill', zone: 'detail' },
+          { d: 'M260 10 Q258 4 250 4 Q242 5 240 4 L256 2 Q262 2 260 10 Z', type: 'fill', zone: 'detail' },
+          // Breast feather texture
+          { d: 'M132 76 Q138 74 144 76 M130 80 Q136 78 142 80 M128 84 Q135 82 140 84 M130 88 Q136 86 142 88', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
+          // Leg joint details
+          { d: 'M132 140 Q136 137 140 140 M148 140 Q152 137 156 140', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
+        ],
+      },
+    ],
+  },
+
 ];
