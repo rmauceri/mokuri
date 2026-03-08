@@ -797,9 +797,9 @@ html, body {
   inset: 0;
   z-index: 300;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  background: rgba(20, 17, 12, 0.92);
+  background: rgba(20, 17, 12, 0.94);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.6s ease;
@@ -807,131 +807,123 @@ html, body {
 .makimono.visible { opacity: 1; pointer-events: auto; }
 .makimono.fade-out { opacity: 0; pointer-events: none; }
 
+/* Fixed title header */
+.maki-header {
+  flex-shrink: 0;
+  text-align: center;
+  padding: 48px 24px 20px;
+}
+.maki-kanji {
+  font-size: 56px;
+  letter-spacing: 0.15em;
+  color: #c9a96e;
+  margin-bottom: 4px;
+  font-family: serif;
+}
+.maki-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: #e8ddd0;
+  letter-spacing: 0.1em;
+  margin-bottom: 4px;
+}
+.maki-subtitle {
+  font-size: 14px;
+  color: #a09484;
+  letter-spacing: 0.06em;
+  font-style: italic;
+}
+
+/* Scrollable body below fixed header */
 .makimono-scroll {
+  flex: 1;
   width: 90vw;
-  max-width: 520px;
-  max-height: 88vh;
+  max-width: 500px;
   overflow-y: auto;
-  scroll-snap-type: y proximity;
   scroll-behavior: smooth;
-  padding: 0 8px;
+  padding: 0 8px 32px;
 }
 .makimono-scroll::-webkit-scrollbar { width: 4px; }
 .makimono-scroll::-webkit-scrollbar-thumb { background: rgba(180,160,130,0.25); border-radius: 2px; }
 
 .makimono-panel {
-  min-height: 40vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 48px 24px;
-  scroll-snap-align: start;
+  padding: 20px 24px;
   text-align: center;
-  position: relative;
 }
 
-/* Title panel */
-.maki-kanji {
-  font-size: 64px;
-  letter-spacing: 0.15em;
-  color: var(--accent);
-  opacity: 0.85;
-  margin-bottom: 8px;
-  font-family: serif;
-}
-.maki-title {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: 0.08em;
-  margin-bottom: 6px;
-}
-.maki-subtitle {
-  font-size: 13px;
-  color: var(--text-muted);
-  letter-spacing: 0.06em;
-  font-style: italic;
-}
-
-/* Philosophy panel */
+/* Philosophy */
 .maki-philosophy {
-  font-size: 14px;
-  line-height: 1.9;
-  color: var(--text-muted);
-  max-width: 380px;
+  font-size: 15px;
+  line-height: 1.85;
+  color: #b0a494;
+  max-width: 400px;
   letter-spacing: 0.02em;
 }
 .maki-philosophy em {
-  color: var(--text);
+  color: #e0d4c4;
   font-style: normal;
   font-weight: 500;
 }
 
 /* Step panels */
 .maki-step-icon {
-  font-size: 28px;
-  margin-bottom: 10px;
-  opacity: 0.8;
+  font-size: 24px;
+  margin-bottom: 6px;
 }
 .maki-step-num {
-  font-size: 10px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.2em;
-  color: var(--accent);
-  margin-bottom: 6px;
+  color: #c9a96e;
+  margin-bottom: 4px;
   font-weight: 600;
 }
 .maki-step-name {
   font-size: 20px;
   font-weight: 600;
-  color: var(--text);
-  margin-bottom: 8px;
+  color: #e8ddd0;
+  margin-bottom: 6px;
 }
 .maki-step-desc {
-  font-size: 13px;
-  color: var(--text-muted);
+  font-size: 14px;
+  color: #a09484;
   line-height: 1.7;
-  max-width: 340px;
+  max-width: 360px;
 }
-.maki-step-art {
-  margin-top: 16px;
-  opacity: 0.5;
-  height: 56px;
-}
-.maki-step-art svg { height: 100%; width: auto; }
 
 /* Divider */
 .maki-divider {
-  width: 40px;
+  width: 36px;
   height: 1px;
-  background: var(--panel-border);
-  margin: 0 auto;
-  opacity: 0.5;
+  background: #5a4e40;
+  margin: 8px auto 16px;
 }
 
 /* Begin button */
 .maki-begin {
   background: none;
-  border: 1px solid var(--accent);
-  color: var(--accent);
+  border: 1px solid #c9a96e;
+  color: #c9a96e;
   padding: 10px 36px;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 15px;
   cursor: pointer;
   letter-spacing: 0.06em;
-  margin-top: 20px;
+  margin-top: 12px;
   transition: background 0.2s, color 0.2s;
 }
 .maki-begin:hover {
-  background: var(--accent);
-  color: var(--panel-bg);
+  background: #c9a96e;
+  color: #1e1912;
 }
 
 /* Splash mode (brief title only) */
-.makimono.splash .makimono-scroll { overflow: hidden; }
-.makimono.splash .makimono-panel:not(.maki-panel-title) { display: none; }
-.makimono.splash .maki-panel-title { min-height: auto; padding: 60px 24px; }
+.makimono.splash { justify-content: center; }
+.makimono.splash .makimono-scroll { display: none; }
+.makimono.splash .maki-header { padding: 0 24px; }
 
 /* Gallery about link */
 .gallery-about-link {
@@ -1719,17 +1711,17 @@ html, body {
 
 <!-- Makimono (巻物) — Welcome / About / FRE scroll -->
 <div class="makimono" id="makimono">
-  <div class="makimono-scroll" id="makimono-scroll">
+  <div class="maki-header">
+    <div class="maki-kanji">墨栗</div>
+    <div class="maki-title">MOKURI</div>
+    <div class="maki-subtitle">A Japanese woodblock print studio</div>
+  </div>
 
-    <div class="makimono-panel maki-panel-title">
-      <div class="maki-kanji">墨栗</div>
-      <div class="maki-title">MOKURI</div>
-      <div class="maki-subtitle">A Japanese woodblock print studio</div>
-    </div>
+  <div class="makimono-scroll" id="makimono-scroll">
 
     <div class="makimono-panel maki-panel-philosophy">
       <div class="maki-divider"></div>
-      <div class="maki-philosophy" style="margin-top: 28px;">
+      <div class="maki-philosophy">
         <em>Mokuhanga</em> is the art of Japanese woodblock printing —
         carving an image into wood, inking it by hand, and pressing
         paper to reveal the print. Each impression is unique: the grain
@@ -1744,7 +1736,7 @@ html, body {
 
     <div class="makimono-panel">
       <div class="maki-divider"></div>
-      <div class="maki-step-icon" style="margin-top: 28px;">🖼</div>
+      <div class="maki-step-icon">🖼</div>
       <div class="maki-step-num">Step One</div>
       <div class="maki-step-name">Compose</div>
       <div class="maki-step-desc">
@@ -1756,7 +1748,7 @@ html, body {
 
     <div class="makimono-panel">
       <div class="maki-divider"></div>
-      <div class="maki-step-icon" style="margin-top: 28px;">🪵</div>
+      <div class="maki-step-icon">🪵</div>
       <div class="maki-step-num">Step Two</div>
       <div class="maki-step-name">Carve</div>
       <div class="maki-step-desc">
@@ -1769,7 +1761,7 @@ html, body {
 
     <div class="makimono-panel">
       <div class="maki-divider"></div>
-      <div class="maki-step-icon" style="margin-top: 28px;">🎨</div>
+      <div class="maki-step-icon">🎨</div>
       <div class="maki-step-num">Step Three</div>
       <div class="maki-step-name">Ink</div>
       <div class="maki-step-desc">
@@ -1781,7 +1773,7 @@ html, body {
 
     <div class="makimono-panel">
       <div class="maki-divider"></div>
-      <div class="maki-step-icon" style="margin-top: 28px;">🖨</div>
+      <div class="maki-step-icon">🖨</div>
       <div class="maki-step-num">Step Four</div>
       <div class="maki-step-name">Make Print</div>
       <div class="maki-step-desc">
@@ -1791,7 +1783,7 @@ html, body {
       </div>
     </div>
 
-    <div class="makimono-panel" style="min-height: 25vh;">
+    <div class="makimono-panel">
       <button class="maki-begin" id="maki-begin">Begin Creating</button>
     </div>
 
