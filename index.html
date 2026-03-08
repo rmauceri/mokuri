@@ -3595,14 +3595,11 @@ function handleFirstRun() {
   const visits = getMokuriVisits();
   incrementMokuriVisits();
 
-  if (visits === 0) {
-    // First run: show full scroll walkthrough
+  if (visits < 3) {
     showMakimono('full');
-  } else if (visits <= 2) {
-    // Second/third run: brief splash
+  } else if (visits < 5) {
     showMakimono('splash');
   }
-  // After that: straight to app
 }
 
 // ============================================================
