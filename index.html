@@ -206,16 +206,6 @@ html, body {
   box-shadow: 0 1px 6px rgba(0,0,0,0.2);
 }
 
-.file-menu-item {
-  padding: 6px 14px;
-  cursor: pointer;
-  font-size: 13px;
-  color: var(--text);
-  white-space: nowrap;
-}
-.file-menu-item:hover { background: rgba(255,255,255,0.08); }
-.file-menu-item small { opacity: 0.5; margin-left: 4px; }
-
 /* --- Main area --- */
 .main {
   display: flex;
@@ -583,6 +573,185 @@ html, body {
   cursor: pointer;
 }
 .paper-modal-btn:hover { border-color: var(--accent); color: var(--text); }
+
+/* ============================================================
+   COMPOSITION GALLERY MODAL
+   ============================================================ */
+.gallery-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 25, 18, 0.75);
+  z-index: 200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.gallery-modal.visible { display: flex; }
+.gallery-content {
+  background: var(--panel-bg);
+  border-radius: 14px;
+  padding: 28px 32px;
+  max-width: 640px;
+  width: 92vw;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.4);
+}
+.gallery-content::-webkit-scrollbar { width: 6px; }
+.gallery-content::-webkit-scrollbar-thumb { background: var(--panel-border); border-radius: 3px; }
+.gallery-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 10px;
+}
+.gallery-section-title:not(:first-child) { margin-top: 22px; }
+
+/* Paper size selector row */
+.gallery-paper-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.gallery-paper-chip {
+  padding: 5px 12px;
+  border: 1.5px solid var(--panel-border);
+  border-radius: 5px;
+  background: none;
+  color: var(--text-muted);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.gallery-paper-chip:hover { border-color: var(--accent); color: var(--text); }
+.gallery-paper-chip.active { border-color: var(--accent); background: var(--accent); color: #fff; }
+
+/* Starter cards (blank + presets) */
+.gallery-starters {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.gallery-starter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 6px 8px;
+  border: 1.5px solid var(--panel-border);
+  border-radius: 8px;
+  background: var(--bg);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.gallery-starter:hover { border-color: var(--accent); background: var(--selection); }
+.gallery-starter-thumb {
+  width: 64px;
+  height: 44px;
+  border-radius: 3px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f0e6;
+  border: 1px solid rgba(0,0,0,0.08);
+}
+.gallery-starter-thumb svg { display: block; width: 100%; height: 100%; }
+.gallery-starter-name {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Recent prints grid */
+.gallery-recents {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+}
+.gallery-recent {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1.5px solid var(--panel-border);
+  border-radius: 8px;
+  background: var(--bg);
+  cursor: pointer;
+  transition: all 0.15s;
+  overflow: hidden;
+}
+.gallery-recent:hover { border-color: var(--accent); background: var(--selection); }
+.gallery-recent.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.gallery-recent-thumb {
+  width: 100%;
+  aspect-ratio: 3/2;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f0e6;
+}
+.gallery-recent-thumb svg { display: block; width: 100%; height: 100%; }
+.gallery-recent-info {
+  padding: 6px 8px;
+}
+.gallery-recent-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gallery-recent-name-input {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--selection);
+  border: 1px solid var(--accent);
+  border-radius: 3px;
+  padding: 0 2px;
+  width: 100%;
+  outline: none;
+}
+.gallery-recent-meta {
+  font-size: 9px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.gallery-recent-delete {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+  font-size: 11px;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.gallery-recent:hover .gallery-recent-delete { display: flex; }
+.gallery-recent-delete:hover { background: #c23b22; }
+.gallery-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 20px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-style: italic;
+}
 
 
 /* ============================================================
@@ -1144,30 +1313,7 @@ html, body {
       <button class="tool-btn" id="btn-zoom-fit" title="Fit to View (0)">⊡</button>
     </div>
     <div class="toolbar-separator"></div>
-    <!-- File menu -->
-    <div style="position:relative;display:inline-block;">
-      <button class="tool-btn" id="btn-file" title="File menu">📁</button>
-      <div id="file-menu" style="display:none;position:absolute;right:0;top:100%;background:var(--panel-bg);border:1px solid var(--border);border-radius:6px;padding:6px 0;min-width:160px;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
-        <div class="file-menu-item" id="fm-new">📄 New Composition</div>
-        <div class="file-menu-item" id="fm-paper">📐 Paper Size...</div>
-        <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
-        <div class="file-menu-item" id="fm-save-1">💾 Save Slot 1</div>
-        <div class="file-menu-item" id="fm-save-2">💾 Save Slot 2</div>
-        <div class="file-menu-item" id="fm-save-3">💾 Save Slot 3</div>
-        <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
-        <div class="file-menu-item" id="fm-load-1">📂 Load Slot 1 <small></small></div>
-        <div class="file-menu-item" id="fm-load-2">📂 Load Slot 2 <small></small></div>
-        <div class="file-menu-item" id="fm-load-3">📂 Load Slot 3 <small></small></div>
-        <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
-        <div style="font-size:10px;color:var(--text-dim);padding:2px 12px;">Scene Presets</div>
-        <div class="file-menu-item" id="fm-preset-mountain">🏔️ Mountain Dawn</div>
-        <div class="file-menu-item" id="fm-preset-garden">🌸 Garden Pond</div>
-        <div class="file-menu-item" id="fm-preset-ocean">🌊 Ocean Night</div>
-        <div class="file-menu-item" id="fm-preset-snow">❄️ Snow Village</div>
-        <div class="file-menu-item" id="fm-preset-bamboo">🎋 Bamboo Forest</div>
-        <div class="file-menu-item" id="fm-preset-autumn">🍁 Autumn Valley</div>
-      </div>
-    </div>
+    <button class="tool-btn" id="btn-file" title="Gallery — compositions & presets">📁</button>
   </div>
 
   <!-- Main area -->
@@ -1359,6 +1505,18 @@ html, body {
   </div>
 </div>
 
+<!-- Composition Gallery modal -->
+<div class="gallery-modal" id="gallery-modal">
+  <div class="gallery-content">
+    <div class="gallery-section-title">New Print</div>
+    <div class="gallery-paper-row" id="gallery-paper-row"></div>
+    <div class="gallery-starters" id="gallery-starters"></div>
+
+    <div class="gallery-section-title">Recent Prints</div>
+    <div class="gallery-recents" id="gallery-recents"></div>
+  </div>
+</div>
+
 <!-- Paper selector modal (size only — paper type is in Print Studio) -->
 <div class="paper-modal" id="paper-modal">
   <div class="paper-modal-content">
@@ -1464,6 +1622,10 @@ const STATE = {
   ground: 'none',       // 'none' | 'earth' | 'grass' | 'snow' | 'sand' | 'water'
   horizon: 0.62,        // 0-1, fraction from top (0.62 = 62% down)
   mist: 0,              // 0-3 mist bands
+
+  // Composition identity (set at runtime, not serialized)
+  activeCompositionId: null,
+  compositionName: 'Untitled Print',
 
   // Undo
   undoStack: [],
@@ -2498,10 +2660,107 @@ function redo() {
 }
 
 // ============================================================
-//  SAVE / LOAD (LocalStorage)
+//  SAVE / LOAD — Composition Gallery (LocalStorage)
 // ============================================================
-const STORAGE_KEY = 'mokuri-autosave';
-const SLOTS_KEY = 'mokuri-slots';
+const GALLERY_KEY = 'mokuri-gallery';
+const ACTIVE_ID_KEY = 'mokuri-active-id';
+const MAX_GALLERY_SIZE = 10;
+
+function getGallery() {
+  try { return JSON.parse(localStorage.getItem(GALLERY_KEY) || '[]'); }
+  catch (e) { return []; }
+}
+
+function saveGallery(gallery) {
+  try { localStorage.setItem(GALLERY_KEY, JSON.stringify(gallery)); }
+  catch (e) { /* quota exceeded */ }
+}
+
+function getActiveCompositionId() {
+  return localStorage.getItem(ACTIVE_ID_KEY) || null;
+}
+
+function setActiveCompositionId(id) {
+  if (id) localStorage.setItem(ACTIVE_ID_KEY, id);
+  else localStorage.removeItem(ACTIVE_ID_KEY);
+}
+
+function generateCompositionId() {
+  return 'comp-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+}
+
+function generateCompositionName(data) {
+  const parts = [];
+  const skyNames = { dawn: 'Dawn', day: 'Daylight', dusk: 'Dusk', night: 'Night', overcast: 'Overcast' };
+  if (data.sky && data.sky !== 'none' && skyNames[data.sky]) parts.push(skyNames[data.sky]);
+
+  if (data.elements && data.elements.length) {
+    const names = [];
+    for (const el of data.elements) {
+      const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+      if (def && !names.includes(def.name)) {
+        names.push(def.name);
+        if (names.length >= 2) break;
+      }
+    }
+    if (names.length) parts.push(names.join(' & '));
+  }
+
+  if (!parts.length && data.ground && data.ground !== 'none') {
+    const groundNames = { earth: 'Earth', grass: 'Meadow', snow: 'Snow', sand: 'Sand', water: 'Water' };
+    if (groundNames[data.ground]) parts.push(groundNames[data.ground]);
+  }
+
+  return parts.join(' ') || 'Untitled Print';
+}
+
+function generateThumbnailSvg(data) {
+  const w = data.paperW || 600, h = data.paperH || 420;
+  const vw = 120, vh = Math.round(120 * h / w);
+  const sc = vw / w;
+  const pt = PAPER_TYPES[data.paperType || 'kozo'];
+  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${vw} ${vh}" width="${vw}" height="${vh}">`;
+  s += `<rect width="${vw}" height="${vh}" fill="${pt ? pt.base : '#f5f0e6'}"/>`;
+
+  if (data.sky && data.sky !== 'none') {
+    const cols = { dawn: '#e8a87c', day: '#87ceeb', dusk: '#c47a90', night: '#1a1a3a', overcast: '#8a8a98' };
+    const hy = Math.round((data.horizon || 0.62) * vh);
+    s += `<rect width="${vw}" height="${hy}" fill="${cols[data.sky] || '#87ceeb'}" opacity="0.3"/>`;
+  }
+  if (data.ground && data.ground !== 'none') {
+    const cols = { earth: '#8b6b4a', grass: '#4a6a3a', snow: '#d8dce8', sand: '#c4a868', water: '#2a5a7a' };
+    const hy = Math.round((data.horizon || 0.62) * vh);
+    s += `<rect y="${hy}" width="${vw}" height="${vh - hy}" fill="${cols[data.ground] || '#8b6b4a'}" opacity="0.3"/>`;
+  }
+
+  if (data.elements) {
+    for (const el of data.elements) {
+      const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+      if (!def) continue;
+      const vb = def.viewBox.split(' ').map(Number);
+      const ex = Math.round(el.x * sc), ey = Math.round(el.y * sc);
+      const ew = Math.round(vb[2] * Math.abs(el.scaleX || 1) * sc);
+      const eh = Math.round(vb[3] * Math.abs(el.scaleY || 1) * sc);
+      s += `<rect x="${ex - ew/2}" y="${ey - eh/2}" width="${ew}" height="${eh}" fill="#5c4a3a" opacity="0.4" rx="1"/>`;
+    }
+  }
+
+  s += '</svg>';
+  return s;
+}
+
+function relativeTime(timestamp) {
+  const diff = Date.now() - timestamp;
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return mins + 'm ago';
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + 'h ago';
+  const days = Math.floor(hrs / 24);
+  if (days === 1) return 'Yesterday';
+  if (days < 7) return days + 'd ago';
+  return new Date(timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
 
 function getCompositionData() {
   return {
@@ -2536,7 +2795,6 @@ function applyCompositionData(data) {
   STATE.horizon = data.horizon ?? 0.62;
   STATE.mist = data.mist || 0;
   STATE.backgroundCarveStrokes = data.backgroundCarveStrokes || [];
-  // Update workspace paper color for paper type
   const pt = PAPER_TYPES[STATE.paperType];
   if (pt) paperEl.setAttribute('fill', pt.base);
   STATE.undoStack = [];
@@ -2551,96 +2809,189 @@ function applyCompositionData(data) {
 }
 
 function autoSave() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(getCompositionData()));
-  } catch (e) { /* quota exceeded — silent */ }
+  const id = STATE.activeCompositionId;
+  if (!id) return;
+
+  const gallery = getGallery();
+  const idx = gallery.findIndex(e => e.id === id);
+  const data = getCompositionData();
+
+  if (idx >= 0) {
+    gallery[idx].data = data;
+    gallery[idx].updatedAt = Date.now();
+    if (!gallery[idx].userNamed) {
+      gallery[idx].name = generateCompositionName(data);
+    }
+    gallery[idx].thumbnail = generateThumbnailSvg(data);
+  } else {
+    gallery.unshift({
+      id: id,
+      name: STATE.compositionName || generateCompositionName(data),
+      data: data,
+      thumbnail: generateThumbnailSvg(data),
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      userNamed: false,
+    });
+    if (gallery.length > MAX_GALLERY_SIZE) gallery.length = MAX_GALLERY_SIZE;
+  }
+
+  saveGallery(gallery);
 }
 
 function autoLoad() {
+  // Try gallery system
+  const activeId = getActiveCompositionId();
+  if (activeId) {
+    const gallery = getGallery();
+    const entry = gallery.find(e => e.id === activeId);
+    if (entry && entry.data) {
+      STATE.activeCompositionId = activeId;
+      STATE.compositionName = entry.name || 'Untitled Print';
+      applyCompositionData(entry.data);
+      return true;
+    }
+  }
+
+  // Migration from old storage
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem('mokuri-autosave');
     if (raw) {
       const data = JSON.parse(raw);
       if (data.elements && data.elements.length) {
+        const id = generateCompositionId();
+        STATE.activeCompositionId = id;
         applyCompositionData(data);
+        STATE.compositionName = generateCompositionName(data);
+        setActiveCompositionId(id);
+        autoSave();
+
+        // Migrate old slots
+        try {
+          const slots = JSON.parse(localStorage.getItem('mokuri-slots') || '[]');
+          const gallery = getGallery();
+          slots.forEach((slot, i) => {
+            if (slot && slot.elements) {
+              gallery.push({
+                id: generateCompositionId() + '-s' + i,
+                name: slot.slotName || generateCompositionName(slot),
+                data: slot,
+                thumbnail: generateThumbnailSvg(slot),
+                createdAt: slot.savedAt || Date.now(),
+                updatedAt: slot.savedAt || Date.now(),
+                userNamed: !!slot.slotName,
+              });
+            }
+          });
+          if (gallery.length > MAX_GALLERY_SIZE) gallery.length = MAX_GALLERY_SIZE;
+          saveGallery(gallery);
+        } catch (e) {}
+
+        localStorage.removeItem('mokuri-autosave');
+        localStorage.removeItem('mokuri-slots');
         return true;
       }
     }
-  } catch (e) { /* corrupt — ignore */ }
+  } catch (e) {}
+
   return false;
 }
 
-function saveToSlot(slotIdx) {
-  const slots = JSON.parse(localStorage.getItem(SLOTS_KEY) || '[]');
-  const data = getCompositionData();
-  data.slotName = `Slot ${slotIdx + 1}`;
-  slots[slotIdx] = data;
-  localStorage.setItem(SLOTS_KEY, JSON.stringify(slots));
-  $('status-hint').textContent = `Saved to slot ${slotIdx + 1}`;
-}
+function newComposition(paperW, paperH, presetId) {
+  autoSave();
 
-function loadFromSlot(slotIdx) {
-  const slots = JSON.parse(localStorage.getItem(SLOTS_KEY) || '[]');
-  if (!slots[slotIdx]) {
-    $('status-hint').textContent = `Slot ${slotIdx + 1} is empty`;
-    return;
+  const id = generateCompositionId();
+  STATE.activeCompositionId = id;
+  setActiveCompositionId(id);
+
+  if (presetId && SCENE_PRESETS[presetId]) {
+    const preset = SCENE_PRESETS[presetId];
+    const W = paperW || STATE.paperW;
+    const H = paperH || STATE.paperH;
+    applyCompositionData({
+      elements: preset.elements(W, H),
+      nextId: 100,
+      paletteId: preset.palette,
+      paperW: W, paperH: H,
+      paperType: preset.paperType || 'kozo',
+      inkLoad: 'standard', impressions: 1,
+      sky: preset.sky, ground: preset.ground,
+      horizon: preset.horizon, mist: preset.mist || 0,
+    });
+    STATE.compositionName = preset.name;
+  } else {
+    STATE.elements = [];
+    STATE.nextId = 1;
+    STATE.selectedId = null;
+    if (paperW) STATE.paperW = paperW;
+    if (paperH) STATE.paperH = paperH;
+    STATE.sky = 'none';
+    STATE.ground = 'none';
+    STATE.horizon = 0.62;
+    STATE.mist = 0;
+    STATE.backgroundCarveStrokes = [];
+    STATE.paperType = 'kozo';
+    STATE.inkLoad = 'standard';
+    STATE.impressions = 1;
+    STATE.undoStack = [];
+    STATE.redoStack = [];
+    layoutPaper();
+    fitPaperToView();
+    deselectAll();
+    rerenderAll();
+    buildPaletteUI();
+    updateToolbarState();
+    updateStatus();
+    STATE.compositionName = 'Untitled Print';
   }
-  applyCompositionData(slots[slotIdx]);
-  $('status-hint').textContent = `Loaded from slot ${slotIdx + 1}`;
-}
 
-function getSlotInfo() {
-  const slots = JSON.parse(localStorage.getItem(SLOTS_KEY) || '[]');
-  return [0, 1, 2].map(i => {
-    if (!slots[i]) return null;
-    return {
-      elementCount: (slots[i].elements || []).length,
-      savedAt: slots[i].savedAt,
-    };
-  });
-}
-
-function newComposition() {
-  STATE.elements = [];
-  STATE.nextId = 1;
-  STATE.selectedId = null;
-  STATE.sky = 'none';
-  STATE.ground = 'none';
-  STATE.horizon = 0.62;
-  STATE.mist = 0;
-  STATE.undoStack = [];
-  STATE.redoStack = [];
-  deselectAll();
-  rerenderAll();
-  buildPaletteUI();
-  updateToolbarState();
-  updateStatus();
   autoSave();
-  $('status-hint').textContent = 'New composition';
+  $('status-hint').textContent = STATE.compositionName;
 }
 
+function switchToComposition(compositionId) {
+  autoSave();
+  const gallery = getGallery();
+  const entry = gallery.find(e => e.id === compositionId);
+  if (!entry || !entry.data) return;
+
+  STATE.activeCompositionId = compositionId;
+  STATE.compositionName = entry.name;
+  setActiveCompositionId(compositionId);
+  applyCompositionData(entry.data);
+  $('status-hint').textContent = entry.name;
+}
+
+function deleteComposition(compositionId) {
+  let gallery = getGallery();
+  gallery = gallery.filter(e => e.id !== compositionId);
+  saveGallery(gallery);
+
+  if (STATE.activeCompositionId === compositionId) {
+    if (gallery.length > 0) {
+      switchToComposition(gallery[0].id);
+    } else {
+      newComposition();
+    }
+  }
+}
+
+function renameComposition(compositionId, newName) {
+  const gallery = getGallery();
+  const entry = gallery.find(e => e.id === compositionId);
+  if (entry) {
+    entry.name = newName;
+    entry.userNamed = true;
+    saveGallery(gallery);
+    if (compositionId === STATE.activeCompositionId) {
+      STATE.compositionName = newName;
+    }
+  }
+}
+
+// Legacy: loadScenePreset still used by old preset menu items during migration
 function loadScenePreset(presetId) {
-  const preset = SCENE_PRESETS[presetId];
-  if (!preset) return;
-  const W = STATE.paperW;
-  const H = STATE.paperH;
-  const data = {
-    elements: preset.elements(W, H),
-    nextId: 100,
-    paletteId: preset.palette,
-    paperW: W,
-    paperH: H,
-    paperType: preset.paperType || 'kozo',
-    inkLoad: 'standard',
-    impressions: 1,
-    sky: preset.sky,
-    ground: preset.ground,
-    horizon: preset.horizon,
-    mist: preset.mist || 0,
-  };
-  applyCompositionData(data);
-  autoSave();
-  $('status-hint').textContent = `Loaded preset: ${preset.name}`;
+  newComposition(STATE.paperW, STATE.paperH, presetId);
 }
 
 // ============================================================
@@ -2694,6 +3045,183 @@ function setPaperSize(w, h) {
   rerenderAll();
   autoSave();
   $('status-hint').textContent = `Paper: ${w} × ${h}`;
+}
+
+// ============================================================
+//  COMPOSITION GALLERY
+// ============================================================
+let galleryPaperW = 600, galleryPaperH = 420;
+
+function openGallery() {
+  galleryPaperW = STATE.paperW;
+  galleryPaperH = STATE.paperH;
+  buildGalleryUI();
+  $('gallery-modal').classList.add('visible');
+}
+
+function closeGallery() {
+  $('gallery-modal').classList.remove('visible');
+}
+
+function buildGalleryUI() {
+  // Paper size chips
+  const paperRow = $('gallery-paper-row');
+  paperRow.innerHTML = '';
+  PAPER_PRESETS.forEach(p => {
+    const chip = document.createElement('button');
+    chip.className = 'gallery-paper-chip' + (galleryPaperW === p.w && galleryPaperH === p.h ? ' active' : '');
+    chip.textContent = p.name;
+    chip.addEventListener('click', () => {
+      galleryPaperW = p.w;
+      galleryPaperH = p.h;
+      buildGalleryUI();
+    });
+    paperRow.appendChild(chip);
+  });
+
+  // Starter cards: blank + presets
+  const starters = $('gallery-starters');
+  starters.innerHTML = '';
+
+  // Blank card
+  const blankCard = document.createElement('div');
+  blankCard.className = 'gallery-starter';
+  const blankThumb = document.createElement('div');
+  blankThumb.className = 'gallery-starter-thumb';
+  const pt = PAPER_TYPES[STATE.paperType || 'kozo'];
+  blankThumb.innerHTML = `<svg viewBox="0 0 64 44"><rect width="64" height="44" fill="${pt.base}"/><text x="32" y="24" text-anchor="middle" fill="#c8c0b0" font-size="8" font-weight="600">+</text></svg>`;
+  const blankName = document.createElement('div');
+  blankName.className = 'gallery-starter-name';
+  blankName.textContent = 'Blank';
+  blankCard.appendChild(blankThumb);
+  blankCard.appendChild(blankName);
+  blankCard.addEventListener('click', () => {
+    closeGallery();
+    newComposition(galleryPaperW, galleryPaperH);
+  });
+  starters.appendChild(blankCard);
+
+  // Preset cards
+  Object.entries(SCENE_PRESETS).forEach(([pid, preset]) => {
+    const card = document.createElement('div');
+    card.className = 'gallery-starter';
+    const thumb = document.createElement('div');
+    thumb.className = 'gallery-starter-thumb';
+    // Generate a preview thumbnail for this preset
+    const previewData = {
+      paperW: galleryPaperW, paperH: galleryPaperH,
+      paperType: preset.paperType || 'kozo',
+      sky: preset.sky, ground: preset.ground,
+      horizon: preset.horizon, mist: preset.mist || 0,
+      elements: preset.elements(galleryPaperW, galleryPaperH),
+    };
+    thumb.innerHTML = generateThumbnailSvg(previewData);
+    const name = document.createElement('div');
+    name.className = 'gallery-starter-name';
+    name.textContent = preset.name;
+    card.appendChild(thumb);
+    card.appendChild(name);
+    card.addEventListener('click', () => {
+      closeGallery();
+      newComposition(galleryPaperW, galleryPaperH, pid);
+    });
+    starters.appendChild(card);
+  });
+
+  // Recent prints
+  const recents = $('gallery-recents');
+  recents.innerHTML = '';
+  const gallery = getGallery();
+
+  if (gallery.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'gallery-empty';
+    empty.textContent = 'No recent prints yet. Create one above!';
+    recents.appendChild(empty);
+    return;
+  }
+
+  // Sort by updatedAt descending
+  gallery.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+
+  gallery.forEach(entry => {
+    const card = document.createElement('div');
+    card.className = 'gallery-recent' + (entry.id === STATE.activeCompositionId ? ' active' : '');
+
+    // Thumbnail
+    const thumbDiv = document.createElement('div');
+    thumbDiv.className = 'gallery-recent-thumb';
+    if (entry.thumbnail) {
+      thumbDiv.innerHTML = entry.thumbnail;
+    } else {
+      thumbDiv.innerHTML = `<svg viewBox="0 0 120 84"><rect width="120" height="84" fill="#f5f0e6"/></svg>`;
+    }
+    card.appendChild(thumbDiv);
+
+    // Info
+    const infoDiv = document.createElement('div');
+    infoDiv.className = 'gallery-recent-info';
+
+    const nameDiv = document.createElement('div');
+    nameDiv.className = 'gallery-recent-name';
+    nameDiv.textContent = entry.name || 'Untitled Print';
+    nameDiv.title = 'Click to rename';
+    nameDiv.addEventListener('click', (e) => {
+      e.stopPropagation();
+      // Inline rename
+      const input = document.createElement('input');
+      input.className = 'gallery-recent-name-input';
+      input.value = entry.name || '';
+      input.maxLength = 40;
+      nameDiv.replaceWith(input);
+      input.focus();
+      input.select();
+      const finish = () => {
+        const newName = input.value.trim() || 'Untitled Print';
+        renameComposition(entry.id, newName);
+        input.replaceWith(nameDiv);
+        nameDiv.textContent = newName;
+      };
+      input.addEventListener('blur', finish);
+      input.addEventListener('keydown', (ke) => {
+        if (ke.key === 'Enter') input.blur();
+        if (ke.key === 'Escape') { input.value = entry.name || ''; input.blur(); }
+        ke.stopPropagation();
+      });
+    });
+    infoDiv.appendChild(nameDiv);
+
+    const metaDiv = document.createElement('div');
+    metaDiv.className = 'gallery-recent-meta';
+    const elCount = (entry.data && entry.data.elements) ? entry.data.elements.length : 0;
+    metaDiv.textContent = `${elCount} element${elCount !== 1 ? 's' : ''} · ${relativeTime(entry.updatedAt || entry.createdAt)}`;
+    infoDiv.appendChild(metaDiv);
+    card.appendChild(infoDiv);
+
+    // Delete button
+    const delBtn = document.createElement('button');
+    delBtn.className = 'gallery-recent-delete';
+    delBtn.textContent = '✕';
+    delBtn.title = 'Delete this print';
+    delBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteComposition(entry.id);
+      buildGalleryUI();
+    });
+    card.appendChild(delBtn);
+
+    // Click to switch
+    card.addEventListener('click', () => {
+      if (entry.id === STATE.activeCompositionId) {
+        closeGallery();
+        return;
+      }
+      switchToComposition(entry.id);
+      closeGallery();
+    });
+
+    recents.appendChild(card);
+  });
 }
 
 // ============================================================
@@ -4785,7 +5313,8 @@ function setupKeyboard() {
       e.preventDefault();
     }
     if (e.key === 'Escape') {
-      if (STATE.carveFocus) { exitCarveFocus(); }
+      if ($('gallery-modal').classList.contains('visible')) { closeGallery(); }
+      else if (STATE.carveFocus) { exitCarveFocus(); }
       else if (STATE.carveStudioOpen) { closeCarveStudio(); }
       else if (STATE.inkStudioOpen) { closeInkStudio(); }
       else if (STATE.printStudioOpen) { closePrintStudio(); }
@@ -4928,7 +5457,7 @@ function setupToolbar() {
     if (e.target.closest('.carve-studio') || e.target.closest('.ink-studio') || e.target.closest('.print-studio') || e.target.closest('.panel')) return;
     // Don't dismiss if clicking a toolbar button (they have their own handlers)
     if (e.target.closest('.tool-btn') || e.target.closest('.mode-btn')) return;
-    if (e.target.closest('#file-menu')) return;
+    if (e.target.closest('.gallery-modal')) return;
 
     if (STATE.printStudioOpen) { closePrintStudio(); return; }
     if (STATE.inkStudioOpen) { closeInkStudio(); return; }
@@ -4946,33 +5475,15 @@ function setupToolbar() {
     }
   });
 
-  // File menu
-  const fileMenu = $('file-menu');
+  // Composition Gallery
   $('btn-file').addEventListener('click', (e) => {
     e.stopPropagation();
-    const visible = fileMenu.style.display !== 'none';
-    fileMenu.style.display = visible ? 'none' : 'block';
-    if (!visible) updateSlotLabels();
+    openGallery();
   });
-  document.addEventListener('click', () => { fileMenu.style.display = 'none'; });
-  fileMenu.addEventListener('click', (e) => e.stopPropagation());
-
-  $('fm-new').addEventListener('click', () => { newComposition(); fileMenu.style.display = 'none'; });
-  $('fm-paper').addEventListener('click', () => { openPaperSelector(); fileMenu.style.display = 'none'; });
-  $('fm-save-1').addEventListener('click', () => { saveToSlot(0); fileMenu.style.display = 'none'; });
-  $('fm-save-2').addEventListener('click', () => { saveToSlot(1); fileMenu.style.display = 'none'; });
-  $('fm-save-3').addEventListener('click', () => { saveToSlot(2); fileMenu.style.display = 'none'; });
-  $('fm-load-1').addEventListener('click', () => { loadFromSlot(0); fileMenu.style.display = 'none'; });
-  $('fm-load-2').addEventListener('click', () => { loadFromSlot(1); fileMenu.style.display = 'none'; });
-  $('fm-load-3').addEventListener('click', () => { loadFromSlot(2); fileMenu.style.display = 'none'; });
-
-  // Scene presets
-  $('fm-preset-mountain').addEventListener('click', () => { loadScenePreset('mountain'); fileMenu.style.display = 'none'; });
-  $('fm-preset-garden').addEventListener('click', () => { loadScenePreset('garden'); fileMenu.style.display = 'none'; });
-  $('fm-preset-ocean').addEventListener('click', () => { loadScenePreset('ocean'); fileMenu.style.display = 'none'; });
-  $('fm-preset-snow').addEventListener('click', () => { loadScenePreset('snow'); fileMenu.style.display = 'none'; });
-  $('fm-preset-bamboo').addEventListener('click', () => { loadScenePreset('bamboo'); fileMenu.style.display = 'none'; });
-  $('fm-preset-autumn').addEventListener('click', () => { loadScenePreset('autumn'); fileMenu.style.display = 'none'; });
+  // Gallery modal dismiss
+  $('gallery-modal').addEventListener('click', (e) => {
+    if (e.target === $('gallery-modal')) closeGallery();
+  });
 
   // Paper selector modal
   $('paper-modal-cancel').addEventListener('click', () => $('paper-modal').classList.remove('visible'));
@@ -5006,18 +5517,6 @@ function setupToolbar() {
   });
 }
 
-function updateSlotLabels() {
-  const info = getSlotInfo();
-  for (let i = 0; i < 3; i++) {
-    const small = $(`fm-load-${i + 1}`).querySelector('small');
-    if (info[i]) {
-      small.textContent = `(${info[i].elementCount} el)`;
-    } else {
-      small.textContent = '(empty)';
-    }
-  }
-}
-
 // ============================================================
 //  RESIZE HANDLER
 // ============================================================
@@ -5039,9 +5538,15 @@ function init() {
   updateToolbarState();
   updateStatus();
   window.addEventListener('resize', onResize);
-  // Restore previous session
+  // Restore previous session from gallery
   if (autoLoad()) {
-    $('status-hint').textContent = 'Session restored';
+    $('status-hint').textContent = STATE.compositionName || 'Session restored';
+  } else {
+    // First run — create initial composition entry
+    const id = generateCompositionId();
+    STATE.activeCompositionId = id;
+    STATE.compositionName = 'Untitled Print';
+    setActiveCompositionId(id);
   }
 }
 
