@@ -178,6 +178,33 @@ html, body {
 .cf-pattern-chip.active { border-color: var(--accent); background: var(--accent); color: #fff; }
 
 .toolbar-spacer { flex: 1; }
+.toolbar-group { display: flex; align-items: center; gap: 4px; }
+.toolbar-mode-group { gap: 2px; }
+
+.mode-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 14px;
+  border: 1.5px solid transparent;
+  border-radius: 6px;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+  white-space: nowrap;
+  height: 34px;
+}
+.mode-btn .mode-icon { font-size: 16px; line-height: 1; }
+.mode-btn .mode-label { font-size: 11px; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase; }
+.mode-btn:hover { background: var(--selection); color: var(--text); }
+.mode-btn.active {
+  background: rgba(255,255,255,0.10);
+  border-color: var(--accent);
+  color: var(--text);
+  box-shadow: 0 1px 6px rgba(0,0,0,0.2);
+}
 
 .file-menu-item {
   padding: 6px 14px;
@@ -188,36 +215,6 @@ html, body {
 }
 .file-menu-item:hover { background: rgba(255,255,255,0.08); }
 .file-menu-item small { opacity: 0.5; margin-left: 4px; }
-
-.atmo-chip {
-  font-size: 10px;
-  padding: 3px 8px;
-  border-radius: 4px;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--text-dim);
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.atmo-chip:hover { border-color: var(--accent); color: var(--text); }
-.atmo-chip.active { border-color: var(--accent); background: var(--accent); color: #fff; }
-
-.print-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 16px;
-  border: 1px solid var(--accent);
-  border-radius: var(--radius);
-  background: var(--accent);
-  color: #fff;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s;
-  letter-spacing: 0.3px;
-}
-.print-btn:hover { background: var(--accent-hover); }
 
 /* --- Main area --- */
 .main {
@@ -455,12 +452,6 @@ html, body {
 }
 
 .status-bar span { margin-right: 16px; }
-
-/* Ink mode indicator */
-.btn-ink-active {
-  background: var(--accent) !important;
-  color: #fff !important;
-}
 
 /* Zone editor in palette bar */
 .zone-row {
@@ -1108,65 +1099,52 @@ html, body {
     <div class="toolbar-title">墨栗 Mokuri <span>Woodblock Studio</span></div>
     <div class="toolbar-separator"></div>
 
-    <button class="tool-btn" id="btn-undo" title="Undo" disabled>↩</button>
-    <button class="tool-btn" id="btn-redo" title="Redo" disabled>↪</button>
-    <div class="toolbar-separator"></div>
-
-    <button class="tool-btn" id="btn-layer-up" title="Bring Forward" disabled>▲</button>
-    <button class="tool-btn" id="btn-layer-down" title="Send Back" disabled>▼</button>
-    <button class="tool-btn" id="btn-flip-h" title="Flip Horizontal (H)" disabled>⇔</button>
-    <button class="tool-btn" id="btn-flip-v" title="Flip Vertical (F)" disabled>⇕</button>
-    <button class="tool-btn" id="btn-duplicate" title="Duplicate (Ctrl+D)" disabled>⧉</button>
-    <button class="tool-btn" id="btn-lock" title="Lock / Unlock (L)" disabled>🔒</button>
-    <button class="tool-btn" id="btn-delete" title="Delete" disabled>✕</button>
-    <div class="toolbar-separator"></div>
-
-    <button class="tool-btn" id="btn-carve" title="Carve Studio (C)">🪵</button>
-    <div class="toolbar-separator"></div>
-
-    <!-- Mode toggle -->
-    <button class="tool-btn active-mode" id="btn-mode-select" title="Select mode (V)">👆</button>
-    <button class="tool-btn" id="btn-mode-carve" title="Carve mode (V)">🔪</button>
-    <button class="tool-btn" id="btn-mode-erase" title="Erase carve strokes (E)">🧹</button>
-
-    <button class="tool-btn" id="btn-focus" title="Carve Focus — zoom into element (F)" disabled style="font-size:14px;">🔍</button>
-    <div class="toolbar-separator"></div>
-
-    <!-- View mode toggle -->
-    <button class="tool-btn" id="btn-view-ink" title="Ink preview mode (I)">🎨</button>
-    <div class="toolbar-separator"></div>
-
-    <!-- Atmosphere menu -->
-    <div style="position:relative;display:inline-block;">
-      <button class="tool-btn" id="btn-atmo" title="Atmosphere (sky, ground, mist)">🌄</button>
-      <div id="atmo-menu" style="display:none;position:absolute;left:0;top:100%;background:var(--panel-bg);border:1px solid var(--border);border-radius:8px;padding:12px;min-width:220px;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
-        <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;font-weight:600;">Atmosphere</div>
-        <div style="margin-bottom:8px;">
-          <label style="font-size:10px;color:var(--text-dim);display:block;margin-bottom:3px;">Sky</label>
-          <div id="atmo-sky-row" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
-        </div>
-        <div style="margin-bottom:8px;">
-          <label style="font-size:10px;color:var(--text-dim);display:block;margin-bottom:3px;">Ground</label>
-          <div id="atmo-ground-row" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
-        </div>
-        <div style="margin-bottom:8px;">
-          <label style="font-size:10px;color:var(--text-dim);display:block;margin-bottom:3px;">Horizon <span id="atmo-horizon-val" style="color:var(--text);">62%</span></label>
-          <input type="range" id="atmo-horizon" min="20" max="85" value="62" style="width:100%;accent-color:var(--accent);">
-        </div>
-        <div>
-          <label style="font-size:10px;color:var(--text-dim);display:block;margin-bottom:3px;">Mist bands</label>
-          <div id="atmo-mist-row" style="display:flex;gap:4px;"></div>
-        </div>
-      </div>
+    <!-- Left group: Editing commands -->
+    <div class="toolbar-group toolbar-edit-group">
+      <button class="tool-btn" id="btn-undo" title="Undo (Ctrl+Z)" disabled>↩</button>
+      <button class="tool-btn" id="btn-redo" title="Redo (Ctrl+Y)" disabled>↪</button>
+      <div class="toolbar-separator"></div>
+      <button class="tool-btn" id="btn-layer-up" title="Bring Forward (])" disabled>⬆</button>
+      <button class="tool-btn" id="btn-layer-down" title="Send Back ([)" disabled>⬇</button>
+      <button class="tool-btn" id="btn-flip-h" title="Flip Horizontal (H)" disabled>⇄</button>
+      <button class="tool-btn" id="btn-flip-v" title="Flip Vertical (F)" disabled>⇅</button>
+      <button class="tool-btn" id="btn-duplicate" title="Duplicate (Ctrl+D)" disabled>⧉</button>
+      <button class="tool-btn" id="btn-lock" title="Lock / Unlock (L)" disabled>🔒</button>
+      <button class="tool-btn" id="btn-delete" title="Delete" disabled>✕</button>
     </div>
-    <div class="toolbar-separator"></div>
-
-    <button class="tool-btn" id="btn-zoom-in" title="Zoom In">+</button>
-    <button class="tool-btn" id="btn-zoom-out" title="Zoom Out">−</button>
-    <button class="tool-btn" id="btn-zoom-fit" title="Fit to View">⊡</button>
 
     <div class="toolbar-spacer"></div>
-    <!-- Save/Load menu -->
+
+    <!-- Center group: Phase mode buttons -->
+    <div class="toolbar-group toolbar-mode-group">
+      <button class="mode-btn active" id="btn-phase-compose" title="Compose — select and arrange elements">
+        <span class="mode-icon">✎</span>
+        <span class="mode-label">Compose</span>
+      </button>
+      <button class="mode-btn" id="btn-phase-carve" title="Carve — carve elements and background (C)">
+        <span class="mode-icon">🪵</span>
+        <span class="mode-label">Carve</span>
+      </button>
+      <button class="mode-btn" id="btn-phase-ink" title="Ink — choose colors and palettes (I)">
+        <span class="mode-icon">🎨</span>
+        <span class="mode-label">Ink</span>
+      </button>
+      <button class="mode-btn" id="btn-phase-print" title="Make Print — choose paper and pull a print (P)">
+        <span class="mode-icon">🖨</span>
+        <span class="mode-label">Make Print</span>
+      </button>
+    </div>
+
+    <div class="toolbar-spacer"></div>
+
+    <!-- Right group: Zoom + File -->
+    <div class="toolbar-group">
+      <button class="tool-btn" id="btn-zoom-in" title="Zoom In (+)">+</button>
+      <button class="tool-btn" id="btn-zoom-out" title="Zoom Out (−)">−</button>
+      <button class="tool-btn" id="btn-zoom-fit" title="Fit to View (0)">⊡</button>
+    </div>
+    <div class="toolbar-separator"></div>
+    <!-- File menu -->
     <div style="position:relative;display:inline-block;">
       <button class="tool-btn" id="btn-file" title="File menu">📁</button>
       <div id="file-menu" style="display:none;position:absolute;right:0;top:100%;background:var(--panel-bg);border:1px solid var(--border);border-radius:6px;padding:6px 0;min-width:160px;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
@@ -1190,7 +1168,6 @@ html, body {
         <div class="file-menu-item" id="fm-preset-autumn">🍁 Autumn Valley</div>
       </div>
     </div>
-    <button class="print-btn" id="btn-print">🖨 Print</button>
   </div>
 
   <!-- Main area -->
@@ -2735,34 +2712,23 @@ function updateToolbarState() {
   $('btn-flip-v').disabled = !hasSel || isLocked;
   $('btn-duplicate').disabled = !hasSel;
   $('btn-lock').disabled = !hasSel;
-  // Lock button shows current state
   if (hasSel) {
     $('btn-lock').textContent = isLocked ? '🔓' : '🔒';
     $('btn-lock').title = isLocked ? 'Unlock (L)' : 'Lock (L)';
   }
-  // Carve button: always enabled (opens Carve Studio)
-  $('btn-carve').disabled = false;
-  // Focus button: enabled when element selected and not locked
-  $('btn-focus').disabled = !hasSel || isLocked;
-  if (STATE.carveFocus) {
-    $('btn-focus').classList.add('active-mode');
-    $('btn-focus').title = 'Exit Carve Focus (Esc)';
-  } else {
-    $('btn-focus').classList.remove('active-mode');
-    $('btn-focus').title = 'Carve Focus — zoom into element (F)';
-  }
-  // Show carve level in button title when element selected
-  if (selEl && !isLocked) {
-    const def = MOKURI_ELEMENTS.find(d => d.id === selEl.defId);
-    if (def && def.carveLevels.length > 1) {
-      const lvl = def.carveLevels[selEl.carveLevel];
-      $('btn-carve').title = `Carve Studio · ${lvl.name} (${selEl.carveLevel + 1}/${def.carveLevels.length})`;
-    } else {
-      $('btn-carve').title = 'Carve Studio (C)';
-    }
-  } else {
-    $('btn-carve').title = 'Carve Studio (C)';
-  }
+  updatePhaseButtons();
+}
+
+function updatePhaseButtons() {
+  const phases = ['compose', 'carve', 'ink', 'print'];
+  let active = 'compose';
+  if (STATE.printStudioOpen) active = 'print';
+  else if (STATE.inkStudioOpen) active = 'ink';
+  else if (STATE.carveStudioOpen) active = 'carve';
+  phases.forEach(p => {
+    const btn = $(`btn-phase-${p}`);
+    if (btn) btn.classList.toggle('active', p === active);
+  });
 }
 
 function updateStatus() {
@@ -3377,10 +3343,6 @@ function pointToLineDist(p, a, b) {
 // Set mode and update UI
 function setMode(mode) {
   STATE.mode = mode;
-  ['select', 'carve', 'erase'].forEach(m => {
-    const btn = $(`btn-mode-${m}`);
-    if (btn) btn.classList.toggle('active-mode', m === mode);
-  });
   workspaceEl.classList.toggle('carve-mode', mode === 'carve');
   workspaceEl.classList.toggle('erase-mode', mode === 'erase');
   // Status hints — studio panels provide their own context
@@ -3400,7 +3362,7 @@ function setMode(mode) {
   } else {
     hint = mode === 'carve' ? 'Draw on elements or paper to carve · Alt+click to pan'
          : mode === 'erase' ? 'Click near a carve stroke to remove it'
-         : 'Place elements · 🪵 or C to open Carve Studio · I for Ink · P to print';
+         : 'Place elements · C to open Carve Studio · I for Ink · P to print';
   }
   $('status-hint').textContent = hint;
 }
@@ -3408,13 +3370,9 @@ function setMode(mode) {
 // Toggle between carve and ink view modes
 function setViewMode(mode) {
   STATE.viewMode = mode;
-  const inkBtn = $('btn-view-ink');
-  if (inkBtn) inkBtn.classList.toggle('btn-ink-active', mode === 'ink');
   rerenderAll();
-  // Refresh status hint
   setMode(STATE.mode);
   buildPaletteUI();
-  // Refresh open studio panels
   if (STATE.carveStudioOpen) buildCarveStudioUI();
   if (STATE.inkStudioOpen) buildInkStudioUI();
 }
@@ -3661,9 +3619,7 @@ function openCarveStudio() {
 
   buildCarveStudioUI();
   $('carve-studio').classList.add('open');
-  // Visual indicator on toolbar
-  const btn = $('btn-carve');
-  if (btn) btn.classList.add('active');
+  updatePhaseButtons();
   $('status-hint').textContent = 'Carve Studio — draw on elements to carve · select tools and patterns';
 }
 
@@ -3672,15 +3628,10 @@ function closeCarveStudio() {
   STATE.carveStudioOpen = false;
   $('carve-studio').classList.remove('open');
 
-  // Exit carve focus if active
   if (STATE.carveFocus) exitCarveFocus();
 
-  // Remove toolbar indicator
-  const btn = $('btn-carve');
-  if (btn) btn.classList.remove('active');
-
-  // Return to select mode
   setMode('select');
+  updatePhaseButtons();
 }
 
 function buildCarveStudioUI() {
@@ -3811,9 +3762,7 @@ function openInkStudio() {
 
   buildInkStudioUI();
   $('ink-studio').classList.add('open');
-  // Visual indicator on toolbar
-  const btn = $('btn-view-ink');
-  if (btn) btn.classList.add('btn-ink-active');
+  updatePhaseButtons();
   $('status-hint').textContent = 'Ink Studio — choose palette and adjust element colors';
 }
 
@@ -3822,13 +3771,9 @@ function closeInkStudio() {
   STATE.inkStudioOpen = false;
   $('ink-studio').classList.remove('open');
 
-  // Remove toolbar indicator
-  const btn = $('btn-view-ink');
-  if (btn) btn.classList.remove('btn-ink-active');
-
-  // Return to carve view + select mode
   if (STATE.viewMode !== 'carve') setViewMode('carve');
   setMode('select');
+  updatePhaseButtons();
 }
 
 function buildInkStudioUI() {
@@ -4127,24 +4072,21 @@ function openPrintStudio() {
 
   // Open panel
   $('print-studio').classList.add('open');
-  $('btn-print').style.display = 'none';
+  updatePhaseButtons();
   $('status-hint').textContent = 'Print Studio — choose settings and Pull Print';
 }
 
 function closePrintStudio() {
   if (!STATE.printStudioOpen) return;
 
-  // If print is showing, hide it
   const c = $('inline-print-canvas');
   c.style.display = 'none';
   workspaceEl.classList.remove('print-preview-active');
   $('print-mirror-label').classList.remove('visible');
   STATE.printPreview = false;
 
-  // Close panel
   $('print-studio').classList.remove('open');
   STATE.printStudioOpen = false;
-  $('btn-print').style.display = '';
 
   // Restore previously open panel
   const prev = STATE._prePrintPanel;
@@ -4155,6 +4097,7 @@ function closePrintStudio() {
     openInkStudio();
   } else {
     setMode('select');
+    updatePhaseButtons();
   }
 }
 
@@ -4893,10 +4836,6 @@ function setupToolbar() {
   $('btn-undo').addEventListener('click', undo);
   $('btn-redo').addEventListener('click', redo);
   $('btn-delete').addEventListener('click', deleteSelected);
-  $('btn-carve').addEventListener('click', () => {
-    if (STATE.carveStudioOpen) closeCarveStudio();
-    else openCarveStudio();
-  });
   $('btn-layer-up').addEventListener('click', () => moveLayer(1));
   $('btn-layer-down').addEventListener('click', () => moveLayer(-1));
   $('btn-flip-h').addEventListener('click', flipSelectedH);
@@ -4907,27 +4846,29 @@ function setupToolbar() {
   $('btn-zoom-out').addEventListener('click', () => zoomBy(-0.2, workspaceEl.clientWidth / 2, workspaceEl.clientHeight / 2));
   $('btn-zoom-fit').addEventListener('click', fitPaperToView);
 
-  // Mode toggles
-  $('btn-mode-select').addEventListener('click', () => setMode('select'));
-  $('btn-mode-carve').addEventListener('click', () => setMode('carve'));
-  $('btn-mode-erase').addEventListener('click', () => setMode('erase'));
-
-  // Focus button
-  $('btn-focus').addEventListener('click', () => {
-    if (STATE.carveFocus) { exitCarveFocus(); return; }
-    if (STATE.selectedId) {
-      if (STATE.mode !== 'carve') setMode('carve');
-      enterCarveFocus(STATE.selectedId);
-    }
+  // Phase mode buttons
+  $('btn-phase-compose').addEventListener('click', () => {
+    if (STATE.carveStudioOpen) closeCarveStudio();
+    else if (STATE.inkStudioOpen) closeInkStudio();
+    else if (STATE.printStudioOpen) closePrintStudio();
+    setMode('select');
+    if (STATE.viewMode !== 'carve') setViewMode('carve');
+    updatePhaseButtons();
   });
-
-  // View mode toggle — now opens Ink Studio panel
-  $('btn-view-ink').addEventListener('click', () => {
+  $('btn-phase-carve').addEventListener('click', () => {
+    if (STATE.carveStudioOpen) closeCarveStudio();
+    else openCarveStudio();
+  });
+  $('btn-phase-ink').addEventListener('click', () => {
     if (STATE.inkStudioOpen) closeInkStudio();
     else openInkStudio();
   });
+  $('btn-phase-print').addEventListener('click', () => {
+    if (STATE.printStudioOpen) closePrintStudio();
+    else openPrintStudio();
+  });
 
-  // Carve tool buttons (both main toolbar and focus toolbar share .carve-w class)
+  // Carve tool buttons (focus toolbar .carve-w class)
   document.querySelectorAll('.carve-w').forEach(btn => {
     btn.addEventListener('click', () => {
       STATE.carveTool = btn.dataset.tool;
@@ -4950,10 +4891,6 @@ function setupToolbar() {
   $('cf-done').addEventListener('click', () => exitCarveFocus());
 
   // Print Studio
-  $('btn-print').addEventListener('click', () => {
-    if (STATE.printStudioOpen) closePrintStudio();
-    else openPrintStudio();
-  });
   $('ps-pull-print').addEventListener('click', () => pullPrint());
   $('ps-save-png').addEventListener('click', () => {
     const c = $('inline-print-canvas');
@@ -4990,9 +4927,8 @@ function setupToolbar() {
     // Don't dismiss if clicking inside a panel itself
     if (e.target.closest('.carve-studio') || e.target.closest('.ink-studio') || e.target.closest('.print-studio') || e.target.closest('.panel')) return;
     // Don't dismiss if clicking a toolbar button (they have their own handlers)
-    if (e.target.closest('.tool-btn') || e.target.closest('.print-btn')) return;
-    // Don't dismiss if clicking the file menu or atmo menu
-    if (e.target.closest('#file-menu') || e.target.closest('#atmo-menu')) return;
+    if (e.target.closest('.tool-btn') || e.target.closest('.mode-btn')) return;
+    if (e.target.closest('#file-menu')) return;
 
     if (STATE.printStudioOpen) { closePrintStudio(); return; }
     if (STATE.inkStudioOpen) { closeInkStudio(); return; }
@@ -5010,89 +4946,15 @@ function setupToolbar() {
     }
   });
 
-  // Atmosphere menu
-  const atmoMenu = $('atmo-menu');
-  $('btn-atmo').addEventListener('click', (e) => {
-    e.stopPropagation();
-    fileMenu.style.display = 'none';
-    const visible = atmoMenu.style.display !== 'none';
-    atmoMenu.style.display = visible ? 'none' : 'block';
-    if (!visible) buildAtmoMenuUI();
-  });
-  atmoMenu.addEventListener('click', (e) => e.stopPropagation());
-
-  function buildAtmoMenuUI() {
-    // Sky chips
-    const skyRow = $('atmo-sky-row');
-    skyRow.innerHTML = '';
-    Object.entries(SKY_TYPES).forEach(([id, s]) => {
-      const chip = document.createElement('button');
-      chip.className = 'atmo-chip' + (STATE.sky === id ? ' active' : '');
-      chip.textContent = s.name;
-      chip.addEventListener('click', () => {
-        STATE.sky = id;
-        buildAtmoMenuUI();
-        rerenderAll();
-        autoSave();
-      });
-      skyRow.appendChild(chip);
-    });
-
-    // Ground chips
-    const groundRow = $('atmo-ground-row');
-    groundRow.innerHTML = '';
-    Object.entries(GROUND_TYPES).forEach(([id, g]) => {
-      const chip = document.createElement('button');
-      chip.className = 'atmo-chip' + (STATE.ground === id ? ' active' : '');
-      chip.textContent = g.name;
-      chip.addEventListener('click', () => {
-        STATE.ground = id;
-        buildAtmoMenuUI();
-        rerenderAll();
-        autoSave();
-      });
-      groundRow.appendChild(chip);
-    });
-
-    // Horizon slider
-    const slider = $('atmo-horizon');
-    slider.value = Math.round(STATE.horizon * 100);
-    $('atmo-horizon-val').textContent = Math.round(STATE.horizon * 100) + '%';
-
-    // Mist chips
-    const mistRow = $('atmo-mist-row');
-    mistRow.innerHTML = '';
-    for (let i = 0; i <= 3; i++) {
-      const chip = document.createElement('button');
-      chip.className = 'atmo-chip' + (STATE.mist === i ? ' active' : '');
-      chip.textContent = i === 0 ? 'None' : String(i);
-      chip.addEventListener('click', () => {
-        STATE.mist = i;
-        buildAtmoMenuUI();
-        rerenderAll();
-        autoSave();
-      });
-      mistRow.appendChild(chip);
-    }
-  }
-
-  $('atmo-horizon').addEventListener('input', (e) => {
-    STATE.horizon = parseInt(e.target.value) / 100;
-    $('atmo-horizon-val').textContent = e.target.value + '%';
-    renderAtmosphere();
-  });
-  $('atmo-horizon').addEventListener('change', () => autoSave());
-
   // File menu
   const fileMenu = $('file-menu');
   $('btn-file').addEventListener('click', (e) => {
     e.stopPropagation();
-    atmoMenu.style.display = 'none';
     const visible = fileMenu.style.display !== 'none';
     fileMenu.style.display = visible ? 'none' : 'block';
     if (!visible) updateSlotLabels();
   });
-  document.addEventListener('click', () => { fileMenu.style.display = 'none'; atmoMenu.style.display = 'none'; });
+  document.addEventListener('click', () => { fileMenu.style.display = 'none'; });
   fileMenu.addEventListener('click', (e) => e.stopPropagation());
 
   $('fm-new').addEventListener('click', () => { newComposition(); fileMenu.style.display = 'none'; });
