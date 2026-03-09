@@ -2247,9 +2247,9 @@ function carveStrokeRenderData(stroke, paperColor, grooveColor) {
   const data = [];
   const seed = pts[0].x * 13.7 + pts[0].y * 7.3 + pts.length * 3.1;
 
-  // Improved pressure curves — power function for better light-touch response
-  function pressureWidth(p) { return 0.3 + Math.pow(Math.max(0, p), 0.6) * 1.4; }
-  function pressureOpacity(p) { return 0.65 + Math.pow(Math.max(0, p), 0.7) * 0.55; }
+  // Pressure curves — gradual ramp, medium press ≈ 1.0×, full range 0.5×–1.4×
+  function pressureWidth(p) { return 0.5 + Math.pow(Math.max(0, p), 0.85) * 0.9; }
+  function pressureOpacity(p) { return 0.5 + Math.pow(Math.max(0, p), 0.75) * 0.65; }
 
   // Chisel entry/exit taper — pointed tips tapering to full width
   const taperLen = Math.min(4, Math.max(1, Math.floor(pts.length * 0.2)));
@@ -5539,7 +5539,7 @@ function setupInteraction() {
   ws.addEventListener('pointermove', (e) => {
     // Carve stroke in progress
     if (STATE.carving) {
-      const alpha = 0.35, pAlpha = 0.5;
+      const alpha = 0.45, pAlpha = 0.5;
       if (STATE.carving.background) {
         const svgPt = clientToSvg(e.clientX, e.clientY);
         const rawP = e.pressure || 0.5;
@@ -5572,7 +5572,7 @@ function setupInteraction() {
         const svgPt = clientToSvg(e.clientX, e.clientY);
         const tool = CARVE_TOOLS[STATE.carveTool];
         const livePressure = e.pressure || 0.5;
-        const pw = 0.3 + Math.pow(Math.max(0, livePressure), 0.6) * 1.4;
+        const pw = 0.5 + Math.pow(Math.max(0, livePressure), 0.85) * 0.9;
         ring.setAttribute('cx', svgPt.x);
         ring.setAttribute('cy', svgPt.y);
         ring.setAttribute('r', Math.max(1, (tool.width / 2) * pw));
