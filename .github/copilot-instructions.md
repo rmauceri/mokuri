@@ -58,9 +58,9 @@ backgroundCarveStrokes   — freeform carve strokes on paper background
 strokeRedoBuffer         — quick stroke undo buffer (Z key in carve mode)
 
 printPreview             — boolean, inline print canvas visible
-printStudioOpen          — boolean, Print Studio panel open
-carveStudioOpen          — boolean, Carve Studio panel open
-inkStudioOpen            — boolean, Ink Studio panel open
+printStudioOpen          — boolean, Printing Workbench panel open
+carveStudioOpen          — boolean, Carving Workbench panel open
+inkStudioOpen            — boolean, Inking Workbench panel open
 
 paperType                — 'hosho' | 'kozo' | 'torinoko'
 inkLoad                  — 'light' | 'standard' | 'heavy'
@@ -105,7 +105,7 @@ Background layer rendered behind all elements in both workspace and print:
 - **Mist bands**: 0–3 semi-transparent paper-colored horizontal bands for depth layering
 - Config objects: `SKY_TYPES`, `GROUND_TYPES` in index.html
 - STATE fields: `sky`, `ground`, `horizon`, `mist` — persisted in save/load
-- UI: atmosphere controls in Ink Studio panel
+- UI: atmosphere controls in Inking Workbench panel
 
 ### Audio System (`audio-engine.js`)
 Procedural audio via Web Audio API, exposed as global `MokuriAudio` object:
@@ -123,20 +123,20 @@ Centered phase-based layout with grouped controls:
 - **Center**: Phase buttons — 🏞️ Compose, 🪵 Carve, 🎨 Ink, 📜 Print
 - **Right**: Zoom controls, paper selector
 
-### Carve Studio (right-side flyout, 260px)
+### Carving Workbench (right-side flyout, 260px)
 Opens via 🪵 Carve button or V key. Contains:
 - **Tool selector**: Fine (╱), V Gouge (∨), U Gouge (∪) — keys 1/2/3
 - **Carve pattern selector**: None, Crosshatch, Woodgrain, Diagonal, Stipple, Wave — stored in `el.carvePattern`
 - **Element section** (when element selected): carve level pips, Focus button, Clear strokes button
 - **Background toggle**: carve on paper background vs. elements
 
-### Ink Studio (right-side flyout, 260px)
+### Inking Workbench (right-side flyout, 260px)
 Opens via 🎨 Ink button or I key. Contains:
 - **Palette selector**: 10 palettes in 2-column grid with color dot previews
 - **Zone editor** (when element selected): per-zone color picker (5 palette swatches), bokashi direction (⊘↑↓←→), reset button
 - **Atmosphere controls**: sky chips, ground chips, horizon slider, mist band selector
 
-### Print Studio (right-side flyout)
+### Printing Workbench (right-side flyout)
 Opens via 📜 Print button or P key. Contains:
 - Paper type cards (Hosho / Kozo / Torinoko)
 - Ink load toggles (淡 / 中 / 濃)
@@ -213,7 +213,7 @@ Strokes are stored in element-local coordinates (`el.carveStrokes[]`) and move/s
 **Quick stroke undo**: Z key (no modifier) undoes last stroke in carve/erase mode; Shift+Z redoes. Uses `STATE.strokeRedoBuffer`.
 
 ### Carve Focus Mode
-F key (or Focus button in Carve Studio) zooms smoothly into a selected element for detailed carving:
+F key (or Focus button in Carving Workbench) zooms smoothly into a selected element for detailed carving:
 - `STATE.carveFocus` holds the focused element id
 - Viewport animates to element bounds (350ms ease-out), non-focused elements dim (opacity 0.15, no pointer events)
 - Escape exits focus and restores previous viewport
@@ -224,13 +224,13 @@ F key (or Focus button in Carve Studio) zooms smoothly into a selected element f
 - None, Crosshatch (╳), Woodgrain (〰), Diagonal (╱), Stipple (∴), Wave (∿)
 - Stored per-element in `el.carvePattern`
 - Renders in both workspace and print output (dark overlay + paper-colored groove pattern)
-- Selected via chips in Carve Studio panel
+- Selected via chips in Carving Workbench panel
 
 ### Background Carving
 Paper background is carveable — click empty space in carve mode:
 - Strokes stored in `STATE.backgroundCarveStrokes[]`
 - Rendered in `bg-carve-layer` SVG group between atmosphere and elements
-- Toggle in Carve Studio panel to switch between element and background carving
+- Toggle in Carving Workbench panel to switch between element and background carving
 - Included in undo/redo and auto-save
 
 ### Hanko Stamps
@@ -245,7 +245,7 @@ Traditional seal stamps for signing compositions:
 - 10 palettes: Sumi 墨, Edo, Hokusai, Hiroshige, Sakura 桜, Aki 秋, Yoru 夜, Fuyu 冬, Beni 紅, Matcha 抹茶 (5 colors each)
 - Global palette selection via `STATE.paletteId`
 - Per-element zone overrides via `el.colorOverrides[zoneId]`
-- Zone editor in Ink Studio panel when element is selected
+- Zone editor in Inking Workbench panel when element is selected
 - Palette switching re-renders all elements immediately
 
 ## Studio Materials
@@ -259,7 +259,7 @@ Three papers with distinct textures and ink behavior:
 - **Torinoko** (鳥の子) — warm cream, elegant. Ink sits on surface more.
 
 Each defines: `base` (bg color), `fiberDensity`, `fiberOpacity`, `warmPatches`, `inkOpacity`, `barenIntensity`, `noiseAmt`.
-Selected in Print Studio panel. Persisted in save data.
+Selected in Printing Workbench panel. Persisted in save data.
 
 ### Ink Load (`INK_LOADS` in index.html)
 Three levels controlling ink opacity, edge weight, turbulence, and misregistration:
@@ -268,7 +268,7 @@ Three levels controlling ink opacity, edge weight, turbulence, and misregistrati
 - **Heavy** (濃) — deep saturated, bold
 
 ### Bokashi (per-zone gradient)
-Per-zone gradient fade — darker at one side, fading to paper at the other. Direction widget (⊘↑↓←→) in the zone editor (Ink Studio). Stored in `el.zoneBokashi[zoneId]` as `'up'|'down'|'left'|'right'`. Renders as SVG `<linearGradient>` in both workspace and print engine.
+Per-zone gradient fade — darker at one side, fading to paper at the other. Direction widget (⊘↑↓←→) in the zone editor (Inking Workbench). Stored in `el.zoneBokashi[zoneId]` as `'up'|'down'|'left'|'right'`. Renders as SVG `<linearGradient>` in both workspace and print engine.
 
 ### Impression Count
 1–3 presses of the same block. Multiple impressions build richer color with slight edge doubling from natural misalignment.
@@ -293,11 +293,11 @@ Per-zone gradient fade — darker at one side, fading to paper at the other. Dir
 
 | Key | Action |
 |-----|--------|
-| V | Toggle select ↔ carve mode (opens Carve Studio) |
+| V | Toggle select ↔ carve mode (opens Carving Workbench) |
 | E | Toggle select ↔ erase mode |
-| I | Toggle Ink Studio |
-| P | Toggle Print Studio |
-| C | Carve selected element (cycle level) / toggle Carve Studio |
+| I | Toggle Inking Workbench |
+| P | Toggle Printing Workbench |
+| C | Carve selected element (cycle level) / toggle Carving Workbench |
 | F | Enter carve focus (if element selected in carve mode) |
 | H | Flip selected element horizontally |
 | L | Lock / unlock selected element |

@@ -1531,7 +1531,7 @@ html, body {
     <div class="carve-studio" id="carve-studio">
       <div class="carve-studio-inner">
         <div class="ps-header">
-          <div class="ps-title">🪵 Carve Studio</div>
+          <div class="ps-title">🪵 Carving Workbench</div>
         </div>
 
         <div>
@@ -1580,7 +1580,7 @@ html, body {
     <div class="ink-studio" id="ink-studio">
       <div class="ink-studio-inner">
         <div class="ps-header">
-          <div class="ps-title">🎨 Ink Studio</div>
+          <div class="ps-title">🎨 Inking Workbench</div>
         </div>
 
         <div>
@@ -1609,7 +1609,7 @@ html, body {
     <div class="print-studio" id="print-studio">
       <div class="print-studio-inner">
         <div class="ps-header">
-          <div class="ps-title">🖨 Print Studio</div>
+          <div class="ps-title">🖨 Printing Workbench</div>
         </div>
 
         <div>
@@ -1744,7 +1744,7 @@ html, body {
   </div>
 </div>
 
-<!-- Paper selector modal (size only — paper type is in Print Studio) -->
+<!-- Paper selector modal (size only — paper type is in Printing Workbench) -->
 <div class="paper-modal" id="paper-modal">
   <div class="paper-modal-content">
     <div class="paper-modal-title">Paper Size</div>
@@ -4082,7 +4082,7 @@ function buildPaletteUI() {
     }
   }
 
-  // Show a small palette reference strip (non-interactive — use Ink Studio for changes)
+  // Show a small palette reference strip (non-interactive — use Inking Workbench for changes)
   const palLabel = document.createElement('div');
   palLabel.className = 'palette-label';
   palLabel.style.marginTop = '8px';
@@ -4211,17 +4211,17 @@ function setMode(mode) {
          : mode === 'erase' ? 'Carve Focus — click stroke to erase · V to carve · Esc to exit'
          : 'Carve Focus — Esc to exit';
   } else if (STATE.carveStudioOpen) {
-    hint = mode === 'carve' ? 'Carve Studio — draw on elements to carve · select tools and patterns'
-         : mode === 'erase' ? 'Carve Studio — click near a stroke to erase · V to carve'
-         : 'Carve Studio — V to start carving · Esc to close';
+    hint = mode === 'carve' ? 'Carving Workbench — draw on elements to carve · select tools and patterns'
+         : mode === 'erase' ? 'Carving Workbench — click near a stroke to erase · V to carve'
+         : 'Carving Workbench — V to start carving · Esc to close';
   } else if (STATE.inkStudioOpen) {
-    hint = 'Ink Studio — choose palette and adjust element colors';
+    hint = 'Inking Workbench — choose palette and adjust element colors';
   } else if (STATE.viewMode === 'ink') {
-    hint = 'Ink preview — click element zones to change colors · I to open Ink Studio';
+    hint = 'Ink preview — click element zones to change colors · I to open Inking Workbench';
   } else {
     hint = mode === 'carve' ? 'Draw on elements or paper to carve · Alt+click to pan'
          : mode === 'erase' ? 'Click near a carve stroke to remove it'
-         : 'Place elements · C to open Carve Studio · I for Ink · P to print';
+         : 'Place elements · C to Carve · I for Ink · P to Print';
   }
   $('status-hint').textContent = hint;
 }
@@ -4401,7 +4401,7 @@ function enterCarveFocus(elementId) {
     g.classList.add('comp-layer-el');
   });
 
-  // Update Carve Studio focus button state
+  // Update Carving Workbench focus button state
   if (STATE.carveStudioOpen) buildCarveStudioUI();
 
   // Animate viewBox to element
@@ -4429,10 +4429,10 @@ function exitCarveFocus() {
   STATE.preFocusViewBox = null;
   STATE.preFocusZoom = null;
 
-  // Update Carve Studio focus button state
+  // Update Carving Workbench focus button state
   if (STATE.carveStudioOpen) buildCarveStudioUI();
 
-  $('status-hint').textContent = 'Carve Studio — draw on elements to carve · select tools and patterns';
+  $('status-hint').textContent = 'Carving Workbench — draw on elements to carve · select tools and patterns';
   autoSave();
   MokuriAudio.playFocusExit();
 }
@@ -4495,7 +4495,7 @@ function openCarveStudio() {
   buildCarveStudioUI();
   $('carve-studio').classList.add('open');
   updatePhaseButtons();
-  $('status-hint').textContent = 'Carve Studio — draw on elements to carve · select tools and patterns';
+  $('status-hint').textContent = 'Carving Workbench — draw on elements to carve · select tools and patterns';
   MokuriAudio.playPanelToggle();
 }
 
@@ -4647,7 +4647,7 @@ function openInkStudio() {
   buildInkStudioUI();
   $('ink-studio').classList.add('open');
   updatePhaseButtons();
-  $('status-hint').textContent = 'Ink Studio — choose palette and adjust element colors';
+  $('status-hint').textContent = 'Inking Workbench — choose palette and adjust element colors';
   MokuriAudio.playPanelToggle();
 }
 
@@ -4994,7 +4994,7 @@ function openPrintStudio() {
   // Open panel
   $('print-studio').classList.add('open');
   updatePhaseButtons();
-  $('status-hint').textContent = 'Print Studio — choose settings and Pull Print';
+  $('status-hint').textContent = 'Printing Workbench — choose settings and Pull Print';
   MokuriAudio.playPanelToggle();
 }
 
@@ -5698,7 +5698,7 @@ function setupKeyboard() {
 
     if (e.key === 'Delete' || e.key === 'Backspace') { deleteSelected(); e.preventDefault(); }
     if (e.key === 'c' && !e.ctrlKey && !e.metaKey) {
-      // C key: if an element is selected, carve it (cycle level) and open Carve Studio
+      // C key: if an element is selected, carve it (cycle level) and open Carving Workbench
       if (STATE.selectedId) {
         carveSelected();
         if (!STATE.carveStudioOpen) openCarveStudio();
@@ -5835,7 +5835,7 @@ function setupToolbar() {
     else openPrintStudio();
   });
 
-  // Print Studio
+  // Printing Workbench
   $('ps-pull-print').addEventListener('click', () => pullPrint());
   $('ps-save-png').addEventListener('click', () => {
     const c = $('inline-print-canvas');
@@ -5851,7 +5851,7 @@ function setupToolbar() {
   });
   $('ps-back-edit').addEventListener('click', () => closePrintStudio());
 
-  // Carve Studio — tool buttons
+  // Carving Workbench — tool buttons
   $('cs-tool-row').addEventListener('click', (e) => {
     const btn = e.target.closest('.cs-tool-btn');
     if (!btn) return;
@@ -5863,7 +5863,7 @@ function setupToolbar() {
   $('cs-back-compose').addEventListener('click', () => closeCarveStudio());
   $('cs-bg-toggle').addEventListener('click', () => {});  // handled in buildCarveStudioUI
 
-  // Ink Studio — back link
+  // Inking Workbench — back link
   $('is-back-compose').addEventListener('click', () => closeInkStudio());
 
   // Light dismiss — click on non-canvas app areas closes right panels
@@ -5885,7 +5885,7 @@ function setupToolbar() {
   document.querySelector('.toolbar').addEventListener('click', lightDismissRightPanel);
   // Status bar clicks → light dismiss
   document.querySelector('.status-bar').addEventListener('click', lightDismissRightPanel);
-  // Workspace clicks → light dismiss only for Print Studio (carve/ink need workspace interaction)
+  // Workspace clicks → light dismiss only for Printing Workbench (carve/ink need workspace interaction)
   workspaceEl.addEventListener('click', (e) => {
     if (STATE.printStudioOpen) {
       closePrintStudio();
