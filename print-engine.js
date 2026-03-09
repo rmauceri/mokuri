@@ -70,12 +70,15 @@ const PrintEngine = (() => {
         return match;
       }
       // For arc commands (A/a), params are: rx ry rotation flag flag x y
+      // Only perturb endpoint coordinates (x,y) — NOT radii or flags.
+      // Perturbing radii shifts the computed arc center, causing visible
+      // misalignment between concentric arcs of different sizes (e.g., moon).
       if (cmd === 'A') {
         const idx = paramIdx % 7;
         paramIdx++;
-        if (idx === 2 || idx === 3 || idx === 4) return match; // rotation + flags
-        // rx(0), ry(1) get their own axis; x(5), y(6) alternate
-        const axis = (idx === 0 || idx === 5) ? 0 : 1;
+        if (idx < 5) return match; // rx, ry, rotation, flags — keep exact
+        // x(5), y(6) — perturb endpoint coordinates
+        const axis = idx === 5 ? 0 : 1;
         const val = parseFloat(match);
         return (val + noise(val, axis)).toFixed(1);
       }
