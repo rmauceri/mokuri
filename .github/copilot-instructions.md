@@ -10,14 +10,19 @@ Open `index.html` directly in a browser, or serve the directory (e.g. via GitHub
 
 ```
 mokuri/
-  index.html              — App shell, CSS, HTML, all UI + interaction JS (~3200 lines)
-  elements.js             — Core element library (8 elements: landscape, flora, fauna, objects)
-  extended-elements.js    — Extended elements (9: flora, patterns, objects)
-  fauna-elements.js       — Fauna elements (8: koi, dragonfly, turtle, crane, rabbit, frog, butterfly, sparrow)
-  scene-elements.js       — Scene elements (11: landscape, atmospheric, flora — bamboo, rocks, temple, village, bridge, rain, snow, clouds, maple, iris)
+  index.html              — App shell, CSS, HTML, all UI + interaction JS (~5400 lines)
+  elements.js             — Core element library (landscape, flora, fauna, objects)
+  extended-elements.js    — Extended elements (flora, patterns, objects)
+  fauna-elements.js       — Fauna elements (koi, dragonfly, turtle, crane, rabbit, frog, butterfly, sparrow + variant poses)
+  scene-elements.js       — Scene elements (bamboo, rocks, temple, village, bridge, rain, snow, clouds, maple, iris)
+  forms-elements.js       — Basic Forms (12 geometric/organic shapes for hand carving)
+  hanko-elements.js       — Hanko seal stamps (6 shapes: circle, square, gourd, oval, diamond, cloud)
   print-engine.js         — Canvas-based print renderer (paper texture, ink effects, post-processing)
+  audio-engine.js         — Procedural audio (ambient soundscape + activity sounds, Web Audio API)
   concept.md              — Full vision document — READ THIS for design intent
   plan.md                 — Original implementation plan (6 phases)
+  ROADMAP.md              — Completed work and future plans
+  README.md               — Project link
 ```
 
 ## Architecture
@@ -31,11 +36,45 @@ mokuri/
 ### State
 Single `STATE` object holds all app state:
 ```
-elements[]       — placed elements with position, scale, rotation, carveLevel, colorOverrides, carveStrokes
-viewMode         — 'carve' (wood tones) | 'ink' (palette colors)
-mode             — 'select' | 'carve' | 'erase' (tool mode)
-paletteId        — active palette key
-printPreview     — boolean, inline print canvas visible
+elements[]               — placed elements with position, scale, rotation, carveLevel, colorOverrides, carveStrokes
+nextId                   — auto-incrementing element id counter
+selectedId               — currently selected element id (or null)
+activeZone               — active color zone id for editing
+
+viewBox                  — { x, y, w, h } current viewport
+paperW, paperH           — paper dimensions
+zoom                     — current zoom level
+
+paletteId                — active palette key
+viewMode                 — 'carve' (wood tones) | 'ink' (palette colors)
+mode                     — 'select' | 'carve' | 'erase' (tool mode)
+carveTool                — active carve tool id ('fine' | 'vgouge' | 'ugouge')
+carving                  — active carve stroke in progress (or null)
+
+carveFocus               — element id when in carve focus mode (or null)
+preFocusViewBox          — saved viewBox before entering focus
+preFocusZoom             — saved zoom before entering focus
+backgroundCarveStrokes   — freeform carve strokes on paper background
+strokeRedoBuffer         — quick stroke undo buffer (Z key in carve mode)
+
+printPreview             — boolean, inline print canvas visible
+printStudioOpen          — boolean, Print Studio panel open
+carveStudioOpen          — boolean, Carve Studio panel open
+inkStudioOpen            — boolean, Ink Studio panel open
+
+paperType                — 'hosho' | 'kozo' | 'torinoko'
+inkLoad                  — 'light' | 'standard' | 'heavy'
+impressions              — 1-3
+
+sky                      — 'none' | 'dawn' | 'day' | 'dusk' | 'night' | 'overcast'
+ground                   — 'none' | 'earth' | 'grass' | 'snow' | 'sand' | 'water'
+horizon                  — 0-1, fraction from top (default 0.62)
+mist                     — 0-3 mist bands
+
+activeCompositionId      — current composition id in gallery (or null)
+compositionName          — display name for current composition
+
+undoStack, redoStack     — undo/redo command stacks
 ```
 
 ### Rendering Pipeline
@@ -46,11 +85,13 @@ printPreview     — boolean, inline print canvas visible
 ### Print Engine (`print-engine.js`)
 Multi-stage Canvas pipeline:
 1. Paper texture (washi fibers, tonal warmth patches — varies by paper type)
-2. SVG render with feTurbulence (wobbly edges), edge darkening (ink pooling), per-element misregistration, bokashi gradients, atmosphere layer (sky/ground/mist)
+2. SVG render with feTurbulence (wobbly edges), edge darkening (ink pooling), per-element misregistration, bokashi gradients, atmosphere layer (sky/ground/mist), background carve strokes
 3. Procedural variation: seeded path perturbation per element instance (mulberry32 PRNG, amount scales with carve level)
-4. Multi-impression rendering (1–3 passes with tiny offsets)
-5. Multiply composite (ink absorbs into paper)
-6. Post-processing: color muting → ink absorption variation → baren pressure → wood grain → fine noise
+4. Carve pattern fills rendered per-element if `el.carvePattern` is set
+5. Hanko elements get special treatment: vermillion color (#c23b22), reduced perturbation (0.15 vs 0.6–1.3), reduced misregistration (0.2x), pre-flipped transform for correct reading
+6. Multi-impression rendering (1–3 passes with tiny offsets)
+7. Multiply composite (ink absorbs into paper)
+8. Post-processing: color muting → ink absorption variation → baren pressure → wood grain → fine noise
 
 `print(elements, paletteId, paperW, paperH, opts)` — opts: `{ paperType, inkLoad, impressions, atmosphere }`
 atmosphere: `{ sky, ground, horizon, mist, paperBase }` — sky/ground are type objects with gradient stops.
@@ -64,7 +105,60 @@ Background layer rendered behind all elements in both workspace and print:
 - **Mist bands**: 0–3 semi-transparent paper-colored horizontal bands for depth layering
 - Config objects: `SKY_TYPES`, `GROUND_TYPES` in index.html
 - STATE fields: `sky`, `ground`, `horizon`, `mist` — persisted in save/load
-- UI: 🌄 toolbar button opens atmosphere dropdown with chip selectors + horizon slider
+- UI: atmosphere controls in Ink Studio panel
+
+### Audio System (`audio-engine.js`)
+Procedural audio via Web Audio API, exposed as global `MokuriAudio` object:
+- **Ambient soundscape**: generative chimes (Japanese pentatonic scales), temple bell, wind texture, water drops — all synthesized, no audio files
+- **Atmosphere-reactive**: sky/ground conditions adjust chime register, spacing, volume, and wind character via `setAmbienceForAtmosphere(sky, ground)`
+- **Activity sounds**: one-shot procedural synthesis for carving, element placement, deletion, color changes, print pull, focus enter/exit, panel toggles, undo/redo
+- **Controls**: 🔊/🔇 ambient toggle, volume slider, 🔔/🔕 activity toggle in status bar
+- **Preferences**: persisted in localStorage (`ambientOn`, `ambientVol`, `activityOn`, `activityVol`)
+
+## UI Panels
+
+### Toolbar
+Centered phase-based layout with grouped controls:
+- **Left**: Composition Gallery button, editing tools (undo/redo, flip, duplicate, lock, delete, layer order)
+- **Center**: Phase buttons — 🏞️ Compose, 🪵 Carve, 🎨 Ink, 📜 Print
+- **Right**: Zoom controls, paper selector
+
+### Carve Studio (right-side flyout, 260px)
+Opens via 🪵 Carve button or V key. Contains:
+- **Tool selector**: Fine (╱), V Gouge (∨), U Gouge (∪) — keys 1/2/3
+- **Carve pattern selector**: None, Crosshatch, Woodgrain, Diagonal, Stipple, Wave — stored in `el.carvePattern`
+- **Element section** (when element selected): carve level pips, Focus button, Clear strokes button
+- **Background toggle**: carve on paper background vs. elements
+
+### Ink Studio (right-side flyout, 260px)
+Opens via 🎨 Ink button or I key. Contains:
+- **Palette selector**: 10 palettes in 2-column grid with color dot previews
+- **Zone editor** (when element selected): per-zone color picker (5 palette swatches), bokashi direction (⊘↑↓←→), reset button
+- **Atmosphere controls**: sky chips, ground chips, horizon slider, mist band selector
+
+### Print Studio (right-side flyout)
+Opens via 📜 Print button or P key. Contains:
+- Paper type cards (Hosho / Kozo / Torinoko)
+- Ink load toggles (淡 / 中 / 濃)
+- Impression count (1× / 2× / 3×)
+- Pull Print button + Save PNG + Back to Edit
+- Light dismiss: click workspace or Esc to close
+
+### Composition Gallery
+Replaces the old file menu. Accessed via gallery button in toolbar:
+- **Paper size presets**: 6 sizes (Landscape, Portrait, Square, Panoramic, Tall Scroll, Postcard)
+- **Scene presets**: 6 curated starting compositions (Mountain Dawn, Garden Pond, Ocean Night, Snow Village, Bamboo Forest, Autumn Valley)
+- **Saved compositions**: grid with SVG thumbnails, inline rename, delete with confirmation
+- **Storage**: `mokuri-gallery` localStorage key, up to 10 compositions (`MAX_GALLERY_SIZE`)
+- **Functions**: `openGallery()`, `buildGalleryUI()`, `switchToComposition()`, `autoSave()`, `autoLoad()`
+
+### Makimono (巻物) — First-Run Experience
+Scroll-style welcome screen with Japanese woodblock print philosophy and 4-step workflow guide:
+- **Visits 1–3**: full makimono (scrollable content with Begin Creating button)
+- **Visits 4–5**: splash mode (title only, auto-closes after 1.8s)
+- **Visit 6+**: not shown
+- Also accessible as About screen
+- Tracks visits via `mokuri-visits` localStorage counter
 
 ## Element Data Model
 
@@ -72,7 +166,7 @@ Background layer rendered behind all elements in both workspace and print:
 {
   id: 'koi',
   name: 'Koi',
-  category: 'fauna',              // landscape | flora | fauna | objects | patterns
+  category: 'fauna',              // landscape | flora | fauna | objects | patterns | basic forms | hanko
   viewBox: '0 0 160 100',
   suggestedLayer: 'foreground',
   colorZones: [
@@ -95,6 +189,16 @@ Background layer rendered behind all elements in both workspace and print:
 - `type` is either `'fill'` or `'stroke'`
 - Adding new elements: create a new JS file declaring an array, add `<script>` tag to index.html, merge into `MOKURI_ELEMENTS` at runtime (see fauna-elements.js pattern)
 
+**Element files and script load order:**
+1. `elements.js` → `MOKURI_CORE_ELEMENTS`
+2. `extended-elements.js` → merged into core
+3. `fauna-elements.js` → `MOKURI_FAUNA_ELEMENTS`
+4. `scene-elements.js` → `MOKURI_SCENE_ELEMENTS`
+5. `hanko-elements.js` → `MOKURI_HANKO_ELEMENTS`
+6. `forms-elements.js` → `MOKURI_FORMS_ELEMENTS`
+
+All merged into `MOKURI_ELEMENTS` array at startup.
+
 ## Carve Tool System
 
 Three freeform carve tools with graduated gouge profiles:
@@ -102,21 +206,51 @@ Three freeform carve tools with graduated gouge profiles:
 - **V Gouge** (∨): 4px width, 3 layers with graduated opacity (shallow at edges)
 - **U Gouge** (∪): 8px width, 5 layers with smooth rounded cross-section
 
-Strokes are stored in element-local coordinates (`el.carveStrokes[]`) and move/scale/rotate with the element. Each stroke has entry/exit taper and per-segment organic variation (deterministic noise).
+Strokes are stored in element-local coordinates (`el.carveStrokes[]`) and move/scale/rotate with the element. Each stroke has entry/exit taper and per-segment organic variation (deterministic noise). Custom cursors show tool profile; pressure sensitivity adjusts stroke width.
 
 `carveStrokeRenderData(stroke, paperColor, grooveColor)` is the shared rendering helper used by the workspace, live preview, AND print engine.
 
+**Quick stroke undo**: Z key (no modifier) undoes last stroke in carve/erase mode; Shift+Z redoes. Uses `STATE.strokeRedoBuffer`.
+
+### Carve Focus Mode
+F key (or Focus button in Carve Studio) zooms smoothly into a selected element for detailed carving:
+- `STATE.carveFocus` holds the focused element id
+- Viewport animates to element bounds (350ms ease-out), non-focused elements dim (opacity 0.15, no pointer events)
+- Escape exits focus and restores previous viewport
+- Auto-enters carve mode on focus
+
+### Carve Patterns (`CARVE_PATTERNS`)
+6 patterns replace flat paper reveals on carved areas:
+- None, Crosshatch (╳), Woodgrain (〰), Diagonal (╱), Stipple (∴), Wave (∿)
+- Stored per-element in `el.carvePattern`
+- Renders in both workspace and print output (dark overlay + paper-colored groove pattern)
+- Selected via chips in Carve Studio panel
+
+### Background Carving
+Paper background is carveable — click empty space in carve mode:
+- Strokes stored in `STATE.backgroundCarveStrokes[]`
+- Rendered in `bg-carve-layer` SVG group between atmosphere and elements
+- Toggle in Carve Studio panel to switch between element and background carving
+- Included in undo/redo and auto-save
+
+### Hanko Stamps
+Traditional seal stamps for signing compositions:
+- 6 pre-designed seal shapes in `hanko-elements.js` (circle, square, gourd, oval, diamond, cloud)
+- **Custom initials generator**: `showHankoCreator()` modal — enter 1–3 characters, choose shape (○□◇), generates procedural brush-stroke seal with 3 carve levels
+- Always renders in vermillion (#c23b22) regardless of palette
+- Print engine: reduced misregistration (0.2x), reduced perturbation (0.15), pre-flipped transform for correct reading after mirror
+
 ## Color System
 
-- 7 palettes: Sumi, Edo, Hokusai, Hiroshige, Sakura, Aki, Yoru (5 colors each)
+- 10 palettes: Sumi 墨, Edo, Hokusai, Hiroshige, Sakura 桜, Aki 秋, Yoru 夜, Fuyu 冬, Beni 紅, Matcha 抹茶 (5 colors each)
 - Global palette selection via `STATE.paletteId`
 - Per-element zone overrides via `el.colorOverrides[zoneId]`
-- Zone editor visible in Ink mode when element is selected
-- Palette switching in ink mode re-renders all elements immediately
+- Zone editor in Ink Studio panel when element is selected
+- Palette switching re-renders all elements immediately
 
 ## Studio Materials
 
-Creative depth settings that affect the final print output — zero new screens or tool modes.
+Creative depth settings that affect the final print output.
 
 ### Paper Types (`PAPER_TYPES` in index.html)
 Three papers with distinct textures and ink behavior:
@@ -125,7 +259,7 @@ Three papers with distinct textures and ink behavior:
 - **Torinoko** (鳥の子) — warm cream, elegant. Ink sits on surface more.
 
 Each defines: `base` (bg color), `fiberDensity`, `fiberOpacity`, `warmPatches`, `inkOpacity`, `barenIntensity`, `noiseAmt`.
-Selected via chips in the paper selector modal. Persisted in save data.
+Selected in Print Studio panel. Persisted in save data.
 
 ### Ink Load (`INK_LOADS` in index.html)
 Three levels controlling ink opacity, edge weight, turbulence, and misregistration:
@@ -133,48 +267,51 @@ Three levels controlling ink opacity, edge weight, turbulence, and misregistrati
 - **Standard** (中) — default behavior
 - **Heavy** (濃) — deep saturated, bold
 
-Three-button toggle in print preview toolbar. Change and re-print instantly.
-
 ### Bokashi (per-zone gradient)
-Per-zone gradient fade — darker at one side, fading to paper at the other. Direction widget (↑↓←→) in the zone editor (ink mode). Stored in `el.zoneBokashi[zoneId]` as `'up'|'down'|'left'|'right'`. Renders as SVG `<linearGradient>` in both workspace and print engine.
+Per-zone gradient fade — darker at one side, fading to paper at the other. Direction widget (⊘↑↓←→) in the zone editor (Ink Studio). Stored in `el.zoneBokashi[zoneId]` as `'up'|'down'|'left'|'right'`. Renders as SVG `<linearGradient>` in both workspace and print engine.
 
 ### Impression Count
-1–3 presses of the same block. Multiple impressions build richer color with slight edge doubling from natural misalignment. Toggle in print preview toolbar.
+1–3 presses of the same block. Multiple impressions build richer color with slight edge doubling from natural misalignment.
+
+## Element Manipulation
+
+- **Flip Horizontal** (H) / **Flip Vertical** (F) — negates `scaleX`/`scaleY`; carve strokes flip automatically (stored in local coords)
+- **Duplicate** (Ctrl+D) — deep-clones selected element with +20px offset, fresh `id` and `variationSeed`
+- **Lock/Unlock** (L) — `el.locked` flag prevents move, resize, rotate, carve, delete, nudge, and layer reorder; locked elements show dimmed handles and a 🔒 icon; can still be selected and duplicated
+- **Resize handles** — corner handles for proportional scaling, edge midpoint handles for free-form (non-proportional) resize
+- **Layer ordering** ([ / ]) — move element forward/backward in render order
 
 ## Save/Load
 
-- **Auto-save**: every mutation (undo push, redo) saves to `localStorage` key `mokuri-autosave`
-- **3 named slots**: `mokuri-slots` key stores array of slot data
-- **Serialization**: `getCompositionData()` / `applyCompositionData()` — elements, nextId, paletteId, paper dimensions
-- File menu (📁) in toolbar with New, Save 1-3, Load 1-3
+- **Composition Gallery**: replaces old file menu — grid of saved compositions with SVG thumbnails
+- **Auto-save**: every state mutation auto-saves to gallery (`mokuri-gallery` localStorage key)
+- **Auto-load**: restores last active composition on startup; migrates from old `mokuri-autosave` format
+- **Serialization**: `getCompositionData()` / `applyCompositionData()` — elements, nextId, paletteId, paper dimensions, atmosphere, materials, background carve strokes
+- **Scene presets**: 6 curated starting compositions accessible from gallery
 
 ## Key Keyboard Shortcuts
 
 | Key | Action |
 |-----|--------|
-| V | Toggle select ↔ carve mode |
+| V | Toggle select ↔ carve mode (opens Carve Studio) |
 | E | Toggle select ↔ erase mode |
-| I | Toggle carve ↔ ink view |
-| P | Toggle print preview |
-| C | Carve selected element (cycle level) |
+| I | Toggle Ink Studio |
+| P | Toggle Print Studio |
+| C | Carve selected element (cycle level) / toggle Carve Studio |
+| F | Enter carve focus (if element selected in carve mode) |
 | H | Flip selected element horizontally |
-| F | Flip selected element vertically |
 | L | Lock / unlock selected element |
 | Ctrl+D | Duplicate selected element |
 | 1/2/3 | Select carve tool (in carve mode) |
+| Z | Quick stroke undo (in carve/erase mode, no modifier) |
+| Shift+Z | Quick stroke redo (in carve/erase mode) |
 | Delete/Backspace | Delete selected element |
 | Ctrl+Z / Ctrl+Y | Undo / Redo |
 | [ / ] | Layer order |
 | +/- | Zoom |
 | 0 | Fit to view |
 | Arrows | Nudge selected (Shift = 10px) |
-| Escape | Exit print preview / ink mode / return to select |
-
-## Element Manipulation
-
-- **Flip Horizontal/Vertical** — negates `scaleX`/`scaleY`; carve strokes flip automatically (stored in local coords)
-- **Duplicate** — deep-clones selected element with +20px offset, fresh `id` and `variationSeed`
-- **Lock/Unlock** — `el.locked` flag prevents move, resize, rotate, carve, delete, nudge, and layer reorder; locked elements show dimmed handles and a 🔒 icon; can still be selected and duplicated
+| Escape | Context-dependent close: modal → panel → focus → view mode |
 
 ## Conventions
 
