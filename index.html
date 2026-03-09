@@ -4053,8 +4053,8 @@ function buildPaletteUI() {
         });
         bar.appendChild(carveRow);
 
-        // Zone color editor (visible in ink mode)
-        if (STATE.viewMode === 'ink' && def.colorZones.length) {
+        // Zone color editor — only show here if Ink Studio is NOT open (it has its own zone editor)
+        if (STATE.viewMode === 'ink' && !STATE.inkStudioOpen && def.colorZones.length) {
           const zoneLabel = document.createElement('div');
           zoneLabel.className = 'palette-label';
           zoneLabel.style.marginTop = '8px';
@@ -4815,11 +4815,9 @@ function buildInkStudioUI() {
       hint.className = 'is-zone-none';
       hint.textContent = 'Select an element to edit its colors';
       zoneContent.appendChild(hint);
-      return;
-    }
-
+    } else {
     const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
-    if (!def || !def.colorZones.length) return;
+    if (def && def.colorZones.length) {
 
     def.colorZones.forEach(z => {
       const currentColor = (el.colorOverrides && el.colorOverrides[z.id])
@@ -4932,6 +4930,8 @@ function buildInkStudioUI() {
       });
       zoneContent.appendChild(resetBtn);
     }
+    } // end if (def && colorZones)
+    } // end else (element selected)
   }
 
   // Atmosphere controls
