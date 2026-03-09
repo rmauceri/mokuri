@@ -1557,6 +1557,11 @@ html, body {
           <div class="cs-pattern-row" id="cs-pattern-row"></div>
         </div>
 
+        <div>
+          <div class="ps-section-label">Pressure</div>
+          <div class="cs-pattern-row" id="cs-pressure-row"></div>
+        </div>
+
         <div class="cs-element-section" id="cs-element-section">
           <div class="ps-section-label">Carve Level</div>
           <div id="cs-element-content"></div>
@@ -1831,6 +1836,7 @@ const STATE = {
   // Carve tool
   mode: 'select',     // 'select' | 'carve' | 'erase'
   carveTool: 'vgouge', // active tool id
+  pressureCurve: localStorage.getItem('mokuri-pressure') || 'medium',
   carving: null,       // active carve stroke: { elementId, points: [{x,y},...] } or { background: true, points }
   carveFocus: null,    // element id when in carve focus mode, null otherwise
   preFocusViewBox: null, // saved viewBox before entering focus
@@ -2154,6 +2160,12 @@ const CARVE_TOOLS = {
   },
 };
 
+const PRESSURE_CURVES = {
+  soft:   { name: 'Soft',   icon: '╴', wBase: 0.6, wPow: 0.5,  wMul: 0.7,  oBase: 0.6, oPow: 0.5,  oMul: 0.5  },
+  medium: { name: 'Medium', icon: '─', wBase: 0.5, wPow: 0.85, wMul: 0.9,  oBase: 0.5, oPow: 0.75, oMul: 0.65 },
+  firm:   { name: 'Firm',   icon: '━', wBase: 0.4, wPow: 1.2,  wMul: 1.1,  oBase: 0.4, oPow: 1.0,  oMul: 0.75 },
+};
+
 // Stroke path helpers — Catmull-Rom spline curves + variable-width ribbons
 
 // Convert points to smooth cubic Bezier path via Catmull-Rom interpolation
@@ -2259,9 +2271,10 @@ function carveStrokeRenderData(stroke, paperColor, grooveColor) {
   const data = [];
   const seed = pts[0].x * 13.7 + pts[0].y * 7.3 + pts.length * 3.1;
 
-  // Pressure curves — gradual ramp, medium press ≈ 1.0×, full range 0.5×–1.4×
-  function pressureWidth(p) { return 0.5 + Math.pow(Math.max(0, p), 0.85) * 0.9; }
-  function pressureOpacity(p) { return 0.5 + Math.pow(Math.max(0, p), 0.75) * 0.65; }
+  // Pressure curves from active preset
+  const _pc = PRESSURE_CURVES[STATE.pressureCurve || 'medium'];
+  function pressureWidth(p) { return _pc.wBase + Math.pow(Math.max(0, p), _pc.wPow) * _pc.wMul; }
+  function pressureOpacity(p) { return _pc.oBase + Math.pow(Math.max(0, p), _pc.oPow) * _pc.oMul; }
 
   // Chisel entry/exit taper — pointed tips tapering to full width
   const taperLen = Math.min(4, Math.max(1, Math.floor(pts.length * 0.2)));
@@ -4581,6 +4594,24 @@ function buildCarveStudioUI() {
     });
   }
 
+  // Pressure curve chips
+  const pressRow = $('cs-pressure-row');
+  if (pressRow) {
+    pressRow.innerHTML = '';
+    Object.entries(PRESSURE_CURVES).forEach(([pid, curve]) => {
+      const chip = document.createElement('button');
+      chip.className = 'cs-pattern-chip';
+      chip.textContent = `${curve.icon} ${curve.name}`;
+      if (pid === (STATE.pressureCurve || 'medium')) chip.classList.add('active');
+      chip.addEventListener('click', () => {
+        STATE.pressureCurve = pid;
+        localStorage.setItem('mokuri-pressure', pid);
+        buildCarveStudioUI();
+      });
+      pressRow.appendChild(chip);
+    });
+  }
+
   // Element-specific section
   const elSection = $('cs-element-section');
   const elContent = $('cs-element-content');
@@ -5601,7 +5632,8 @@ function setupInteraction() {
         const svgPt = clientToSvg(e.clientX, e.clientY);
         const tool = CARVE_TOOLS[STATE.carveTool];
         const livePressure = e.pressure || 0.5;
-        const pw = 0.5 + Math.pow(Math.max(0, livePressure), 0.85) * 0.9;
+        const _pc = PRESSURE_CURVES[STATE.pressureCurve || 'medium'];
+        const pw = _pc.wBase + Math.pow(Math.max(0, livePressure), _pc.wPow) * _pc.wMul;
         ring.setAttribute('cx', svgPt.x);
         ring.setAttribute('cy', svgPt.y);
         ring.setAttribute('r', Math.max(1, (tool.width / 2) * pw));
