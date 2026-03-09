@@ -1907,6 +1907,13 @@ function getAccentColors(paletteId, count = 5) {
   return accents;
 }
 
+// Resolve a color override: slot index (number) → palette lookup, hex string → literal
+function resolveOverride(override, paletteColors) {
+  if (override === undefined || override === null) return null;
+  if (typeof override === 'number') return paletteColors[override % paletteColors.length];
+  return override;
+}
+
 // Monochrome wood tones for the carving workspace
 const WOOD_TONES = ['#5c4a3a', '#6b5a48', '#7a6955', '#8a7963', '#6f5c4b'];
 const PAPER_COLOR = '#f5f0e6';
@@ -2464,8 +2471,12 @@ function renderElementSvg(el, layerIndex) {
   const woodTone = WOOD_TONES[layerIndex % WOOD_TONES.length];
   const zoneColor = (zoneId) => {
     if (!inkMode) return def.hanko ? HANKO_VERMILLION : woodTone;
-    if (def.hanko) return el.colorOverrides && el.colorOverrides[zoneId] || HANKO_VERMILLION;
-    if (el.colorOverrides && el.colorOverrides[zoneId]) return el.colorOverrides[zoneId];
+    if (def.hanko) {
+      const ov = resolveOverride(el.colorOverrides && el.colorOverrides[zoneId], palette.colors);
+      return ov || HANKO_VERMILLION;
+    }
+    const ov = resolveOverride(el.colorOverrides && el.colorOverrides[zoneId], palette.colors);
+    if (ov) return ov;
     const z = def.colorZones.find(c => c.id === zoneId);
     return z ? palette.colors[z.defaultPaletteSlot % palette.colors.length] : palette.colors[0];
   };
@@ -3074,8 +3085,8 @@ function generateThumbnailSvg(data) {
           let col;
           if (def.hanko) {
             col = '#c23b22';
-          } else if (el.colorOverrides && el.colorOverrides[p.zone]) {
-            col = el.colorOverrides[p.zone];
+          } else if (el.colorOverrides && el.colorOverrides[p.zone] !== undefined) {
+            col = resolveOverride(el.colorOverrides[p.zone], palette.colors) || palette.colors[0];
           } else {
             const z = def.colorZones.find(c => c.id === p.zone);
             col = z ? palette.colors[z.defaultPaletteSlot % palette.colors.length] : palette.colors[0];
@@ -4714,7 +4725,8 @@ function buildInkStudioUI() {
     if (def && def.colorZones.length) {
 
     def.colorZones.forEach(z => {
-      const currentColor = (el.colorOverrides && el.colorOverrides[z.id])
+      const rawOverride = el.colorOverrides && el.colorOverrides[z.id];
+      const currentColor = resolveOverride(rawOverride, palette.colors)
         || palette.colors[z.defaultPaletteSlot % palette.colors.length];
       const isActive = STATE.activeZone === z.id;
 
@@ -4745,7 +4757,7 @@ function buildInkStudioUI() {
         picker.className = 'is-zone-picker';
         palette.colors.forEach((col, ci) => {
           const ps = document.createElement('div');
-          ps.className = 'is-pick-swatch' + (currentColor === col ? ' active' : '');
+          ps.className = 'is-pick-swatch' + (typeof rawOverride === 'number' ? (rawOverride === ci ? ' active' : '') : (rawOverride === undefined || rawOverride === null) && ci === z.defaultPaletteSlot % palette.colors.length ? ' active' : '');
           ps.style.background = col;
           ps.title = `Palette slot ${ci + 1}`;
           ps.addEventListener('click', (e) => {
@@ -4755,7 +4767,7 @@ function buildInkStudioUI() {
             if (ci === z.defaultPaletteSlot % palette.colors.length) {
               delete el.colorOverrides[z.id];
             } else {
-              el.colorOverrides[z.id] = col;
+              el.colorOverrides[z.id] = ci;
             }
             rerenderAll();
             buildInkStudioUI();
@@ -4778,7 +4790,7 @@ function buildInkStudioUI() {
           accentRow.appendChild(aLabel);
           accents.forEach(a => {
             const as = document.createElement('div');
-            as.className = 'is-accent-swatch' + (currentColor === a.color ? ' active' : '');
+            as.className = 'is-accent-swatch' + (typeof rawOverride === 'string' && rawOverride === a.color ? ' active' : '');
             as.style.background = a.color;
             as.title = `${a.from}`;
             as.addEventListener('click', (e) => {

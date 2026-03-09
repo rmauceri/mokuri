@@ -292,11 +292,16 @@ const PrintEngine = (() => {
       svgContent += `<g transform="${xform}" filter="url(#wobble)"><g transform="${inner}">`;
 
       const HANKO_VERMILLION = '#c23b22';
+      const resolveOv = (ov) => {
+        if (ov === undefined || ov === null) return null;
+        if (typeof ov === 'number') return palette.colors[ov % palette.colors.length];
+        return ov;
+      };
       const zoneColor = (zoneId) => {
-        if (isHanko) return (el.colorOverrides && el.colorOverrides[zoneId]) || HANKO_VERMILLION;
+        const ov = resolveOv(el.colorOverrides && el.colorOverrides[zoneId]);
+        if (isHanko) return ov || HANKO_VERMILLION;
         const z = def.colorZones.find(c => c.id === zoneId);
-        return (el.colorOverrides && el.colorOverrides[zoneId])
-          || (z ? palette.colors[z.defaultPaletteSlot % palette.colors.length] : palette.colors[0]);
+        return ov || (z ? palette.colors[z.defaultPaletteSlot % palette.colors.length] : palette.colors[0]);
       };
 
       // Bokashi fill — returns solid color or gradient URL
