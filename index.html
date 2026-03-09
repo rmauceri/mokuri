@@ -5784,7 +5784,7 @@ function setupInteraction() {
       }
     }
     STATE.dragging = null;
-    ws.style.cursor = 'crosshair';
+    ws.style.cursor = '';  // Clear inline cursor — let CSS classes control it
   });
 
   // Zoom with wheel
@@ -5888,7 +5888,7 @@ function setupKeyboard() {
     }
 
     // Quick stroke undo/redo (Z / Shift+Z in carve mode, without Ctrl)
-    if (e.key === 'z' && !e.ctrlKey && !e.metaKey && (STATE.mode === 'carve' || STATE.mode === 'erase')) {
+    if (e.key.toLowerCase() === 'z' && !e.ctrlKey && !e.metaKey && (STATE.mode === 'carve' || STATE.mode === 'erase')) {
       if (e.shiftKey) {
         quickStrokeRedo();
       } else {
