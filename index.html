@@ -1532,7 +1532,7 @@ html, body {
         </div>
 
         <div class="cs-element-section" id="cs-element-section">
-          <div class="ps-section-label">Selected Element</div>
+          <div class="ps-section-label">Carve Level</div>
           <div id="cs-element-content"></div>
         </div>
 
@@ -3989,7 +3989,7 @@ function buildPaletteUI() {
           const pip = document.createElement('div');
           pip.className = 'carve-pip' + (i <= el.carveLevel ? ' active' : '');
           pip.title = lvl.name;
-          pip.textContent = lvl.name.charAt(0).toUpperCase();
+          pip.textContent = lvl.name.charAt(0).toUpperCase() + lvl.name.slice(1);
           pip.addEventListener('click', () => {
             if (el.carveLevel !== i) {
               pushUndo();
@@ -4489,7 +4489,7 @@ function buildCarveStudioUI() {
           const pip = document.createElement('div');
           pip.className = 'carve-pip' + (i <= el.carveLevel ? ' active' : '');
           pip.title = lvl.name;
-          pip.textContent = lvl.name.charAt(0).toUpperCase();
+          pip.textContent = lvl.name.charAt(0).toUpperCase() + lvl.name.slice(1);
           pip.addEventListener('click', () => {
             if (el.carveLevel !== i) {
               pushUndo();
