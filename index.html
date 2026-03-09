@@ -5557,31 +5557,39 @@ function setupInteraction() {
     // Carve stroke in progress
     if (STATE.carving) {
       const alpha = 0.45, pAlpha = 0.5, tAlpha = 0.4;
+      // Use coalesced events for full digitizer resolution (~240Hz on Surface Pen)
+      let events = e.getCoalescedEvents ? e.getCoalescedEvents() : null;
+      if (!events || !events.length) events = [e];
+
       if (STATE.carving.background) {
-        const svgPt = clientToSvg(e.clientX, e.clientY);
-        const rawP = e.pressure || 0.5;
-        const tilt = Math.min(1, Math.hypot(e.tiltX || 0, e.tiltY || 0) / 90);
-        STATE.carving.smoothX += (svgPt.x - STATE.carving.smoothX) * alpha;
-        STATE.carving.smoothY += (svgPt.y - STATE.carving.smoothY) * alpha;
-        STATE.carving.smoothP += (rawP - STATE.carving.smoothP) * pAlpha;
-        STATE.carving.smoothTiltX += ((e.tiltX || 0) - STATE.carving.smoothTiltX) * tAlpha;
-        STATE.carving.smoothTiltY += ((e.tiltY || 0) - STATE.carving.smoothTiltY) * tAlpha;
-        STATE.carving.points.push({ x: STATE.carving.smoothX, y: STATE.carving.smoothY, pressure: STATE.carving.smoothP, tilt, tiltX: STATE.carving.smoothTiltX, tiltY: STATE.carving.smoothTiltY });
+        for (const evt of events) {
+          const svgPt = clientToSvg(evt.clientX, evt.clientY);
+          const rawP = evt.pressure || 0.5;
+          const tilt = Math.min(1, Math.hypot(evt.tiltX || 0, evt.tiltY || 0) / 90);
+          STATE.carving.smoothX += (svgPt.x - STATE.carving.smoothX) * alpha;
+          STATE.carving.smoothY += (svgPt.y - STATE.carving.smoothY) * alpha;
+          STATE.carving.smoothP += (rawP - STATE.carving.smoothP) * pAlpha;
+          STATE.carving.smoothTiltX += ((evt.tiltX || 0) - STATE.carving.smoothTiltX) * tAlpha;
+          STATE.carving.smoothTiltY += ((evt.tiltY || 0) - STATE.carving.smoothTiltY) * tAlpha;
+          STATE.carving.points.push({ x: STATE.carving.smoothX, y: STATE.carving.smoothY, pressure: STATE.carving.smoothP, tilt, tiltX: STATE.carving.smoothTiltX, tiltY: STATE.carving.smoothTiltY });
+        }
         renderBgCarvePreview(STATE.carving.points);
         return;
       }
       const el = STATE.elements.find(el => el.id === STATE.carving.elementId);
       if (!el) return;
-      const svgPt = clientToSvg(e.clientX, e.clientY);
-      const localPt = svgToElementLocal(svgPt.x, svgPt.y, el);
-      const rawP = e.pressure || 0.5;
-      const tilt = Math.min(1, Math.hypot(e.tiltX || 0, e.tiltY || 0) / 90);
-      STATE.carving.smoothX += (localPt.x - STATE.carving.smoothX) * alpha;
-      STATE.carving.smoothY += (localPt.y - STATE.carving.smoothY) * alpha;
-      STATE.carving.smoothP += (rawP - STATE.carving.smoothP) * pAlpha;
-      STATE.carving.smoothTiltX += ((e.tiltX || 0) - STATE.carving.smoothTiltX) * tAlpha;
-      STATE.carving.smoothTiltY += ((e.tiltY || 0) - STATE.carving.smoothTiltY) * tAlpha;
-      STATE.carving.points.push({ x: STATE.carving.smoothX, y: STATE.carving.smoothY, pressure: STATE.carving.smoothP, tilt, tiltX: STATE.carving.smoothTiltX, tiltY: STATE.carving.smoothTiltY });
+      for (const evt of events) {
+        const svgPt = clientToSvg(evt.clientX, evt.clientY);
+        const localPt = svgToElementLocal(svgPt.x, svgPt.y, el);
+        const rawP = evt.pressure || 0.5;
+        const tilt = Math.min(1, Math.hypot(evt.tiltX || 0, evt.tiltY || 0) / 90);
+        STATE.carving.smoothX += (localPt.x - STATE.carving.smoothX) * alpha;
+        STATE.carving.smoothY += (localPt.y - STATE.carving.smoothY) * alpha;
+        STATE.carving.smoothP += (rawP - STATE.carving.smoothP) * pAlpha;
+        STATE.carving.smoothTiltX += ((evt.tiltX || 0) - STATE.carving.smoothTiltX) * tAlpha;
+        STATE.carving.smoothTiltY += ((evt.tiltY || 0) - STATE.carving.smoothTiltY) * tAlpha;
+        STATE.carving.points.push({ x: STATE.carving.smoothX, y: STATE.carving.smoothY, pressure: STATE.carving.smoothP, tilt, tiltX: STATE.carving.smoothTiltX, tiltY: STATE.carving.smoothTiltY });
+      }
       renderCarvePreview(el, STATE.carving.points);
       return;
     }
