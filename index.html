@@ -2335,17 +2335,16 @@ function renderAtmosphere() {
 }
 
 function zoomBy(delta, cx, cy) {
+  // cx, cy are workspace-relative (clientX - rect.left)
+  const rect = workspaceEl.getBoundingClientRect();
+  const svgPt = clientToSvg(rect.left + cx, rect.top + cy);
   const oldZoom = STATE.zoom;
   STATE.zoom = Math.max(0.2, Math.min(5, STATE.zoom * (1 + delta)));
   const ratio = oldZoom / STATE.zoom;
-  const rect = workspaceEl.getBoundingClientRect();
-  // Zoom toward cursor position
-  const svgX = STATE.viewBox.x + (cx / rect.width) * STATE.viewBox.w;
-  const svgY = STATE.viewBox.y + (cy / rect.height) * STATE.viewBox.h;
   STATE.viewBox.w *= ratio;
   STATE.viewBox.h *= ratio;
-  STATE.viewBox.x = svgX - (cx / rect.width) * STATE.viewBox.w;
-  STATE.viewBox.y = svgY - (cy / rect.height) * STATE.viewBox.h;
+  STATE.viewBox.x = svgPt.x - (cx / rect.width) * STATE.viewBox.w;
+  STATE.viewBox.y = svgPt.y - (cy / rect.height) * STATE.viewBox.h;
   updateViewBox();
 }
 
@@ -2353,6 +2352,17 @@ function zoomBy(delta, cx, cy) {
 //  SVG COORDINATE HELPERS
 // ============================================================
 function clientToSvg(clientX, clientY) {
+  // Use getScreenCTM for robust conversion that accounts for
+  // viewBox, preserveAspectRatio, panel resizes, and CSS transforms
+  const ctm = svgEl.getScreenCTM();
+  if (ctm) {
+    const inv = ctm.inverse();
+    return {
+      x: inv.a * clientX + inv.c * clientY + inv.e,
+      y: inv.b * clientX + inv.d * clientY + inv.f,
+    };
+  }
+  // Fallback
   const rect = workspaceEl.getBoundingClientRect();
   return {
     x: STATE.viewBox.x + ((clientX - rect.left) / rect.width) * STATE.viewBox.w,
@@ -5860,6 +5870,19 @@ function onResize() {
   fitPaperToView();
 }
 
+// Keep viewBox in sync when workspace resizes (e.g. panel open/close)
+function adjustViewBoxForResize() {
+  const rect = workspaceEl.getBoundingClientRect();
+  if (rect.width === 0 || rect.height === 0) return;
+  const cx = STATE.viewBox.x + STATE.viewBox.w / 2;
+  const cy = STATE.viewBox.y + STATE.viewBox.h / 2;
+  STATE.viewBox.w = rect.width / STATE.zoom;
+  STATE.viewBox.h = rect.height / STATE.zoom;
+  STATE.viewBox.x = cx - STATE.viewBox.w / 2;
+  STATE.viewBox.y = cy - STATE.viewBox.h / 2;
+  updateViewBox();
+}
+
 // ============================================================
 //  INIT
 // ============================================================
@@ -5874,6 +5897,8 @@ function init() {
   updateToolbarState();
   updateStatus();
   window.addEventListener('resize', onResize);
+  // Keep viewBox in sync when workspace resizes (panel open/close, layout shifts)
+  new ResizeObserver(adjustViewBoxForResize).observe(workspaceEl);
   // Restore previous session from gallery
   if (autoLoad()) {
     $('status-hint').textContent = STATE.compositionName || 'Session restored';
