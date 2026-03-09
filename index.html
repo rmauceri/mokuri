@@ -2129,10 +2129,12 @@ const SCENE_PRESETS = {
 const CARVE_TOOLS = {
   fine: {
     name: 'Fine', icon: '╱', width: 2,
+    tiltStrength: 0,
     profile: [{ w: 1.0, opacity: 1.0 }],
   },
   vgouge: {
     name: 'V Gouge', icon: '∨', width: 4,
+    tiltStrength: 0.5,
     profile: [
       { w: 1.3, opacity: 0.15 },
       { w: 0.65, opacity: 0.55 },
@@ -2141,6 +2143,7 @@ const CARVE_TOOLS = {
   },
   ugouge: {
     name: 'U Gouge', icon: '∪', width: 8,
+    tiltStrength: 0.35,
     profile: [
       { w: 1.15, opacity: 0.08 },
       { w: 0.85, opacity: 0.22 },
@@ -2194,7 +2197,8 @@ function appendCurveD(pts) {
 }
 
 // Compute variable-width ribbon fill path from points + per-point widths
-function computeRibbonD(pts, widths) {
+// tiltStrength > 0 enables asymmetric gouging based on pen tilt vs stroke direction
+function computeRibbonD(pts, widths, tiltStrength) {
   if (pts.length < 2) return '';
   const leftEdge = [];
   const rightEdge = [];
@@ -2206,8 +2210,16 @@ function computeRibbonD(pts, widths) {
     const len = Math.sqrt(tx * tx + ty * ty) || 1;
     const nx = -ty / len, ny = tx / len;
     const hw = widths[i] / 2;
-    leftEdge.push({ x: pts[i].x + nx * hw, y: pts[i].y + ny * hw });
-    rightEdge.push({ x: pts[i].x - nx * hw, y: pts[i].y - ny * hw });
+    let leftHW = hw, rightHW = hw;
+    // Tilt asymmetry: project pen tilt onto stroke normal for cross-tilt
+    if (tiltStrength > 0 && pts[i].tiltX !== undefined) {
+      const crossTilt = ((pts[i].tiltX || 0) * nx + (pts[i].tiltY || 0) * ny) / 90;
+      const asym = crossTilt * tiltStrength;
+      leftHW = Math.max(0.05, hw * (1 + asym));
+      rightHW = Math.max(0.05, hw * (1 - asym));
+    }
+    leftEdge.push({ x: pts[i].x + nx * leftHW, y: pts[i].y + ny * leftHW });
+    rightEdge.push({ x: pts[i].x - nx * rightHW, y: pts[i].y - ny * rightHW });
   }
   // Left edge forward (Catmull-Rom), connect to right edge reversed, close
   let d = pointsToD(leftEdge);
@@ -2284,7 +2296,8 @@ function carveStrokeRenderData(stroke, paperColor, grooveColor) {
   // Groove shadow ribbon (wider, behind everything)
   const grooveLayerW = tool.profile.length > 1 ? tool.profile[0].w + 0.3 : 1.3;
   const grooveWidths = computeWidths(grooveLayerW);
-  const grooveD = computeRibbonD(pts, grooveWidths);
+  const tiltS = tool.tiltStrength || 0;
+  const grooveD = computeRibbonD(pts, grooveWidths, tiltS);
   if (grooveD) {
     data.push({ d: grooveD, a: tool.profile.length > 1 ? 0.2 : 0.35, c: grooveColor, fill: true });
   }
@@ -2292,7 +2305,7 @@ function carveStrokeRenderData(stroke, paperColor, grooveColor) {
   // Profile layers as smooth ribbons
   tool.profile.forEach((layer, li) => {
     const widths = computeWidths(layer.w);
-    const ribbonD = computeRibbonD(pts, widths);
+    const ribbonD = computeRibbonD(pts, widths, tiltS);
     if (ribbonD) {
       data.push({ d: ribbonD, a: layerOpacity(layer.opacity, li), c: paperColor, fill: true });
     }
@@ -5377,8 +5390,10 @@ function setupInteraction() {
         const localPt = svgToElementLocal(svgPt.x, svgPt.y, el);
         localPt.pressure = e.pressure || 0.5;
         localPt.tilt = Math.min(1, Math.hypot(e.tiltX || 0, e.tiltY || 0) / 90);
+        localPt.tiltX = e.tiltX || 0;
+        localPt.tiltY = e.tiltY || 0;
         if (!el.carveStrokes) el.carveStrokes = [];
-        STATE.carving = { elementId: el.id, points: [localPt], smoothX: localPt.x, smoothY: localPt.y, smoothP: localPt.pressure };
+        STATE.carving = { elementId: el.id, points: [localPt], smoothX: localPt.x, smoothY: localPt.y, smoothP: localPt.pressure, smoothTiltX: localPt.tiltX, smoothTiltY: localPt.tiltY };
         MokuriAudio.playCarveStart();
         ws.setPointerCapture(e.pointerId);
         return;
@@ -5398,8 +5413,10 @@ function setupInteraction() {
         const localPt = svgToElementLocal(svgPt.x, svgPt.y, el);
         localPt.pressure = e.pressure || 0.5;
         localPt.tilt = Math.min(1, Math.hypot(e.tiltX || 0, e.tiltY || 0) / 90);
+        localPt.tiltX = e.tiltX || 0;
+        localPt.tiltY = e.tiltY || 0;
         if (!el.carveStrokes) el.carveStrokes = [];
-        STATE.carving = { elementId: id, points: [localPt], smoothX: localPt.x, smoothY: localPt.y, smoothP: localPt.pressure };
+        STATE.carving = { elementId: id, points: [localPt], smoothX: localPt.x, smoothY: localPt.y, smoothP: localPt.pressure, smoothTiltX: localPt.tiltX, smoothTiltY: localPt.tiltY };
         MokuriAudio.playCarveStart();
         ws.setPointerCapture(e.pointerId);
         return;
@@ -5409,7 +5426,7 @@ function setupInteraction() {
       // Only carve within paper bounds
       if (svgPt.x >= 0 && svgPt.x <= STATE.paperW && svgPt.y >= 0 && svgPt.y <= STATE.paperH) {
         pushUndo();
-        STATE.carving = { background: true, points: [{ x: svgPt.x, y: svgPt.y, pressure: e.pressure || 0.5, tilt: Math.min(1, Math.hypot(e.tiltX || 0, e.tiltY || 0) / 90) }], smoothX: svgPt.x, smoothY: svgPt.y, smoothP: e.pressure || 0.5 };
+        STATE.carving = { background: true, points: [{ x: svgPt.x, y: svgPt.y, pressure: e.pressure || 0.5, tilt: Math.min(1, Math.hypot(e.tiltX || 0, e.tiltY || 0) / 90), tiltX: e.tiltX || 0, tiltY: e.tiltY || 0 }], smoothX: svgPt.x, smoothY: svgPt.y, smoothP: e.pressure || 0.5, smoothTiltX: e.tiltX || 0, smoothTiltY: e.tiltY || 0 };
         MokuriAudio.playCarveStart();
         ws.setPointerCapture(e.pointerId);
       }
@@ -5539,7 +5556,7 @@ function setupInteraction() {
   ws.addEventListener('pointermove', (e) => {
     // Carve stroke in progress
     if (STATE.carving) {
-      const alpha = 0.45, pAlpha = 0.5;
+      const alpha = 0.45, pAlpha = 0.5, tAlpha = 0.4;
       if (STATE.carving.background) {
         const svgPt = clientToSvg(e.clientX, e.clientY);
         const rawP = e.pressure || 0.5;
@@ -5547,7 +5564,9 @@ function setupInteraction() {
         STATE.carving.smoothX += (svgPt.x - STATE.carving.smoothX) * alpha;
         STATE.carving.smoothY += (svgPt.y - STATE.carving.smoothY) * alpha;
         STATE.carving.smoothP += (rawP - STATE.carving.smoothP) * pAlpha;
-        STATE.carving.points.push({ x: STATE.carving.smoothX, y: STATE.carving.smoothY, pressure: STATE.carving.smoothP, tilt });
+        STATE.carving.smoothTiltX += ((e.tiltX || 0) - STATE.carving.smoothTiltX) * tAlpha;
+        STATE.carving.smoothTiltY += ((e.tiltY || 0) - STATE.carving.smoothTiltY) * tAlpha;
+        STATE.carving.points.push({ x: STATE.carving.smoothX, y: STATE.carving.smoothY, pressure: STATE.carving.smoothP, tilt, tiltX: STATE.carving.smoothTiltX, tiltY: STATE.carving.smoothTiltY });
         renderBgCarvePreview(STATE.carving.points);
         return;
       }
@@ -5560,7 +5579,9 @@ function setupInteraction() {
       STATE.carving.smoothX += (localPt.x - STATE.carving.smoothX) * alpha;
       STATE.carving.smoothY += (localPt.y - STATE.carving.smoothY) * alpha;
       STATE.carving.smoothP += (rawP - STATE.carving.smoothP) * pAlpha;
-      STATE.carving.points.push({ x: STATE.carving.smoothX, y: STATE.carving.smoothY, pressure: STATE.carving.smoothP, tilt });
+      STATE.carving.smoothTiltX += ((e.tiltX || 0) - STATE.carving.smoothTiltX) * tAlpha;
+      STATE.carving.smoothTiltY += ((e.tiltY || 0) - STATE.carving.smoothTiltY) * tAlpha;
+      STATE.carving.points.push({ x: STATE.carving.smoothX, y: STATE.carving.smoothY, pressure: STATE.carving.smoothP, tilt, tiltX: STATE.carving.smoothTiltX, tiltY: STATE.carving.smoothTiltY });
       renderCarvePreview(el, STATE.carving.points);
       return;
     }
