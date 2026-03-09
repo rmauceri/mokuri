@@ -126,8 +126,13 @@ html, body {
 .tool-btn.active { background: var(--selection); border-color: var(--accent); }
 .tool-btn:disabled { opacity: 0.35; cursor: default; }
 .tool-btn.active-mode { background: rgba(255,255,255,0.15); box-shadow: inset 0 0 0 1.5px var(--accent); }
+/* Tool-specific cursors — SVG data URIs with gouge profile shapes */
 .workspace.carve-mode { cursor: crosshair; }
-.workspace.erase-mode { cursor: pointer; }
+.workspace.carve-mode.tool-fine { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cline x1='7' y1='17' x2='17' y2='7' stroke='%23000' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='7' y1='17' x2='17' y2='7' stroke='%23f5f0e6' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") 12 12, crosshair; }
+.workspace.carve-mode.tool-vgouge { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath d='M6 7L12 18L18 7' fill='none' stroke='%23000' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M6 7L12 18L18 7' fill='none' stroke='%23f5f0e6' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") 12 12, crosshair; }
+.workspace.carve-mode.tool-ugouge { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath d='M5 7Q5 19 12 19Q19 19 19 7' fill='none' stroke='%23000' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M5 7Q5 19 12 19Q19 19 19 7' fill='none' stroke='%23f5f0e6' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") 12 12, crosshair; }
+.workspace.erase-mode { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='7' fill='none' stroke='%23000' stroke-width='2'/%3E%3Ccircle cx='12' cy='12' r='7' fill='none' stroke='%23f5f0e6' stroke-width='1'/%3E%3Cline x1='8' y1='8' x2='16' y2='16' stroke='%23f5f0e6' stroke-width='1.5' stroke-linecap='round'/%3E%3Cline x1='16' y1='8' x2='8' y2='16' stroke='%23f5f0e6' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") 12 12, pointer; }
+#carve-ring { pointer-events: none; }
 
 /* Carve Focus Mode */
 .workspace.carve-focus-active .comp-layer-el { transition: opacity 0.3s ease; }
@@ -1551,6 +1556,9 @@ html, body {
 
         <!-- Selection overlay -->
         <g id="selection-layer"></g>
+
+        <!-- Carve tool width indicator ring -->
+        <circle id="carve-ring" r="4" fill="rgba(245,240,230,0.12)" stroke="rgba(245,240,230,0.5)" stroke-width="0.3" stroke-dasharray="2 2" style="display:none; pointer-events:none;"/>
       </svg>
       <!-- Inline print preview canvas (positioned over paper) -->
       <canvas id="inline-print-canvas" style="display:none;position:absolute;pointer-events:none;"></canvas>
@@ -1890,6 +1898,7 @@ const STATE = {
   preFocusViewBox: null, // saved viewBox before entering focus
   preFocusZoom: null,    // saved zoom before entering focus
   backgroundCarveStrokes: [], // freeform carve strokes on the paper background
+  strokeRedoBuffer: [],      // quick stroke undo buffer (Z key in carve mode)
 
   // View mode
   viewMode: 'carve',   // 'carve' | 'ink'
@@ -2196,6 +2205,19 @@ function carveStrokeRenderData(stroke, paperColor, grooveColor) {
   const data = [];
   const seed = pts[0].x * 13.7 + pts[0].y * 7.3 + pts.length * 3.1;
 
+  // Average pressure for a set of points (backward compat: default 0.5 for mouse/old strokes)
+  function avgPressure(points) {
+    if (!points.length || points[0].pressure === undefined) return 0.5;
+    let sum = 0;
+    for (const p of points) sum += (p.pressure !== undefined ? p.pressure : 0.5);
+    return sum / points.length;
+  }
+
+  // Pressure → width factor: mouse(0.5)→1.0, light(0.2)→0.64, heavy(1.0)→1.6
+  function pressureWidth(p) { return 0.4 + p * 1.2; }
+  // Pressure → opacity factor: mouse(0.5)→1.0, light(0.2)→0.82, heavy(1.0)→1.3
+  function pressureOpacity(p) { return 0.7 + p * 0.6; }
+
   // Chisel entry/exit taper — width ramps from ~20% at tip to 100% at body
   const taperLen = Math.min(3, Math.max(1, Math.floor(pts.length * 0.25)));
   function taperAt(i) {
@@ -2211,38 +2233,44 @@ function carveStrokeRenderData(stroke, paperColor, grooveColor) {
 
   // Entry taper: individual point-pairs with increasing width
   for (let i = 0; i < bodyStart; i++) {
-    segs.push({ d: pointsToD(pts.slice(i, i + 2)), taper: (taperAt(i) + taperAt(i + 1)) / 2 });
+    const slice = pts.slice(i, i + 2);
+    segs.push({ d: pointsToD(slice), taper: (taperAt(i) + taperAt(i + 1)) / 2, pressure: avgPressure(slice) });
   }
 
   // Body: chunked segments with organic variation
   if (bodyStart < bodyEnd) {
     segmentStroke(pts.slice(bodyStart, bodyEnd + 1), 5).forEach(seg => {
-      segs.push({ d: pointsToD(seg), taper: 1.0 });
+      segs.push({ d: pointsToD(seg), taper: 1.0, pressure: avgPressure(seg) });
     });
   }
 
   // Exit taper: individual point-pairs with decreasing width
   for (let i = Math.max(bodyEnd, 1); i < pts.length - 1; i++) {
-    segs.push({ d: pointsToD(pts.slice(i, i + 2)), taper: (taperAt(i) + taperAt(i + 1)) / 2 });
+    const slice = pts.slice(i, i + 2);
+    segs.push({ d: pointsToD(slice), taper: (taperAt(i) + taperAt(i + 1)) / 2, pressure: avgPressure(slice) });
   }
 
-  // Groove shadow (full stroke, butt cap so shadow doesn't balloon past taper)
+  // Groove shadow (full stroke, pressure-modulated)
   const fullD = pointsToD(pts);
+  const avgP = avgPressure(pts);
+  const groovePW = pressureWidth(avgP);
   if (tool.profile.length > 1) {
-    data.push({ d: fullD, w: baseW * tool.profile[0].w + 1, a: 0.25, c: grooveColor });
+    data.push({ d: fullD, w: (baseW * tool.profile[0].w + 1) * groovePW, a: 0.25, c: grooveColor });
   } else {
-    data.push({ d: fullD, w: baseW + 1, a: 0.4, c: grooveColor });
+    data.push({ d: fullD, w: (baseW + 1) * groovePW, a: 0.4, c: grooveColor });
   }
 
-  // Profile layers × segments with taper + grain noise
+  // Profile layers × segments with taper + pressure + grain noise
   tool.profile.forEach((layer, li) => {
     segs.forEach((seg, si) => {
       const depthNoise = Math.sin(seed + li * 5.3 + si * 8.7) * 0.18 * seg.taper;
       const widthNoise = Math.cos(seed + li * 3.1 + si * 11.3) * 0.12;
+      const pw = pressureWidth(seg.pressure);
+      const po = pressureOpacity(seg.pressure);
       data.push({
         d: seg.d,
-        w: Math.max(0.3, baseW * layer.w * seg.taper * (1 + widthNoise)),
-        a: Math.max(0, Math.min(1, layer.opacity * seg.taper + depthNoise)),
+        w: Math.max(0.3, baseW * layer.w * seg.taper * pw * (1 + widthNoise)),
+        a: Math.max(0, Math.min(1, layer.opacity * seg.taper * po + depthNoise)),
         c: paperColor,
       });
     });
@@ -4300,6 +4328,11 @@ function setMode(mode) {
   STATE.mode = mode;
   workspaceEl.classList.toggle('carve-mode', mode === 'carve');
   workspaceEl.classList.toggle('erase-mode', mode === 'erase');
+  updateToolCursorClass();
+  STATE.strokeRedoBuffer = [];
+  // Hide carve ring when leaving carve/erase mode
+  const ring = document.getElementById('carve-ring');
+  if (ring && mode === 'select') ring.style.display = 'none';
   // Status hints — studio panels provide their own context
   let hint;
   if (STATE.carveFocus) {
@@ -4320,6 +4353,51 @@ function setMode(mode) {
          : 'Place elements · C to open Carve Studio · I for Ink · P to print';
   }
   $('status-hint').textContent = hint;
+}
+
+// Update workspace cursor class to match active carve tool
+function updateToolCursorClass() {
+  workspaceEl.classList.remove('tool-fine', 'tool-vgouge', 'tool-ugouge');
+  if (STATE.mode === 'carve') {
+    workspaceEl.classList.add('tool-' + STATE.carveTool);
+  }
+}
+
+// Quick stroke undo — Z key in carve mode removes last stroke without full undo
+function quickStrokeUndo() {
+  if (STATE.carveFocus) {
+    const el = STATE.elements.find(e => e.id === STATE.carveFocus);
+    if (el && el.carveStrokes && el.carveStrokes.length) {
+      STATE.strokeRedoBuffer.push({ type: 'element', elementId: el.id, stroke: el.carveStrokes.pop() });
+      rerenderAll();
+    }
+  } else if (STATE.selectedId) {
+    const el = STATE.elements.find(e => e.id === STATE.selectedId);
+    if (el && el.carveStrokes && el.carveStrokes.length) {
+      STATE.strokeRedoBuffer.push({ type: 'element', elementId: el.id, stroke: el.carveStrokes.pop() });
+      rerenderAll();
+    }
+  } else if (STATE.backgroundCarveStrokes.length) {
+    STATE.strokeRedoBuffer.push({ type: 'background', stroke: STATE.backgroundCarveStrokes.pop() });
+    rerenderAll();
+  }
+}
+
+// Quick stroke redo — Shift+Z in carve mode restores last undone stroke
+function quickStrokeRedo() {
+  if (!STATE.strokeRedoBuffer.length) return;
+  const item = STATE.strokeRedoBuffer.pop();
+  if (item.type === 'element') {
+    const el = STATE.elements.find(e => e.id === item.elementId);
+    if (el) {
+      if (!el.carveStrokes) el.carveStrokes = [];
+      el.carveStrokes.push(item.stroke);
+      rerenderAll();
+    }
+  } else if (item.type === 'background') {
+    STATE.backgroundCarveStrokes.push(item.stroke);
+    rerenderAll();
+  }
 }
 
 // Toggle between carve and ink view modes
@@ -5387,6 +5465,8 @@ function setupInteraction() {
 
     // ---- CARVE MODE ----
     if (STATE.mode === 'carve') {
+      const ring = document.getElementById('carve-ring');
+      if (ring) ring.style.display = 'none';
       const gEl = e.target.closest('g[data-id]');
       // In focus mode, only carve the focused element; allow carving even on empty space
       if (STATE.carveFocus) {
@@ -5395,6 +5475,8 @@ function setupInteraction() {
         pushUndo();
         const svgPt = clientToSvg(e.clientX, e.clientY);
         const localPt = svgToElementLocal(svgPt.x, svgPt.y, el);
+        localPt.pressure = e.pressure || 0.5;
+        localPt.tilt = Math.min(1, Math.hypot(e.tiltX || 0, e.tiltY || 0) / 90);
         if (!el.carveStrokes) el.carveStrokes = [];
         STATE.carving = { elementId: el.id, points: [localPt] };
         MokuriAudio.playCarveStart();
@@ -5414,6 +5496,8 @@ function setupInteraction() {
         pushUndo();
         const svgPt = clientToSvg(e.clientX, e.clientY);
         const localPt = svgToElementLocal(svgPt.x, svgPt.y, el);
+        localPt.pressure = e.pressure || 0.5;
+        localPt.tilt = Math.min(1, Math.hypot(e.tiltX || 0, e.tiltY || 0) / 90);
         if (!el.carveStrokes) el.carveStrokes = [];
         STATE.carving = { elementId: id, points: [localPt] };
         MokuriAudio.playCarveStart();
@@ -5425,7 +5509,7 @@ function setupInteraction() {
       // Only carve within paper bounds
       if (svgPt.x >= 0 && svgPt.x <= STATE.paperW && svgPt.y >= 0 && svgPt.y <= STATE.paperH) {
         pushUndo();
-        STATE.carving = { background: true, points: [{ x: svgPt.x, y: svgPt.y }] };
+        STATE.carving = { background: true, points: [{ x: svgPt.x, y: svgPt.y, pressure: e.pressure || 0.5, tilt: Math.min(1, Math.hypot(e.tiltX || 0, e.tiltY || 0) / 90) }] };
         MokuriAudio.playCarveStart();
         ws.setPointerCapture(e.pointerId);
       }
@@ -5558,7 +5642,7 @@ function setupInteraction() {
       if (STATE.carving.background) {
         // Background carve stroke — points in paper coordinates
         const svgPt = clientToSvg(e.clientX, e.clientY);
-        STATE.carving.points.push({ x: svgPt.x, y: svgPt.y });
+        STATE.carving.points.push({ x: svgPt.x, y: svgPt.y, pressure: e.pressure || 0.5, tilt: Math.min(1, Math.hypot(e.tiltX || 0, e.tiltY || 0) / 90) });
         renderBgCarvePreview(STATE.carving.points);
         return;
       }
@@ -5566,10 +5650,27 @@ function setupInteraction() {
       if (!el) return;
       const svgPt = clientToSvg(e.clientX, e.clientY);
       const localPt = svgToElementLocal(svgPt.x, svgPt.y, el);
+      localPt.pressure = e.pressure || 0.5;
+      localPt.tilt = Math.min(1, Math.hypot(e.tiltX || 0, e.tiltY || 0) / 90);
       STATE.carving.points.push(localPt);
       // Live preview: update the stroke on the element temporarily
       renderCarvePreview(el, STATE.carving.points);
       return;
+    }
+
+    // Update carve width indicator ring when hovering (not drawing)
+    if ((STATE.mode === 'carve' || STATE.mode === 'erase') && !STATE.dragging) {
+      const ring = document.getElementById('carve-ring');
+      if (ring) {
+        const svgPt = clientToSvg(e.clientX, e.clientY);
+        const tool = CARVE_TOOLS[STATE.carveTool];
+        const livePressure = e.pressure || 0.5;
+        const pw = 0.4 + livePressure * 1.2;
+        ring.setAttribute('cx', svgPt.x);
+        ring.setAttribute('cy', svgPt.y);
+        ring.setAttribute('r', Math.max(1, (tool.width / 2) * pw));
+        ring.style.display = '';
+      }
     }
 
     if (!STATE.dragging) return;
@@ -5781,9 +5882,19 @@ function setupKeyboard() {
 
     // Tool shortcuts in carve mode
     if (STATE.mode === 'carve') {
-      if (e.key === '1') { STATE.carveTool = 'fine'; updateToolButtons(); updateFocusToolButtons(); if (STATE.carveStudioOpen) buildCarveStudioUI(); }
-      if (e.key === '2') { STATE.carveTool = 'vgouge'; updateToolButtons(); updateFocusToolButtons(); if (STATE.carveStudioOpen) buildCarveStudioUI(); }
-      if (e.key === '3') { STATE.carveTool = 'ugouge'; updateToolButtons(); updateFocusToolButtons(); if (STATE.carveStudioOpen) buildCarveStudioUI(); }
+      if (e.key === '1') { STATE.carveTool = 'fine'; updateToolButtons(); updateFocusToolButtons(); updateToolCursorClass(); if (STATE.carveStudioOpen) buildCarveStudioUI(); }
+      if (e.key === '2') { STATE.carveTool = 'vgouge'; updateToolButtons(); updateFocusToolButtons(); updateToolCursorClass(); if (STATE.carveStudioOpen) buildCarveStudioUI(); }
+      if (e.key === '3') { STATE.carveTool = 'ugouge'; updateToolButtons(); updateFocusToolButtons(); updateToolCursorClass(); if (STATE.carveStudioOpen) buildCarveStudioUI(); }
+    }
+
+    // Quick stroke undo/redo (Z / Shift+Z in carve mode, without Ctrl)
+    if (e.key === 'z' && !e.ctrlKey && !e.metaKey && (STATE.mode === 'carve' || STATE.mode === 'erase')) {
+      if (e.shiftKey) {
+        quickStrokeRedo();
+      } else {
+        quickStrokeUndo();
+      }
+      e.preventDefault();
     }
 
     // Arrow nudge
@@ -5860,6 +5971,7 @@ function setupToolbar() {
       STATE.carveTool = btn.dataset.tool;
       document.querySelectorAll('.carve-w').forEach(b => b.classList.remove('active-mode'));
       btn.classList.add('active-mode');
+      updateToolCursorClass();
     });
   });
 
@@ -5900,6 +6012,7 @@ function setupToolbar() {
     // Sync all tool button active states (main toolbar + focus toolbar + carve studio)
     document.querySelectorAll('.carve-w').forEach(b => b.classList.toggle('active-mode', b.dataset.tool === STATE.carveTool));
     $('cs-tool-row').querySelectorAll('.cs-tool-btn').forEach(b => b.classList.toggle('active', b.dataset.tool === STATE.carveTool));
+    updateToolCursorClass();
   });
   $('cs-back-compose').addEventListener('click', () => closeCarveStudio());
   $('cs-bg-toggle').addEventListener('click', () => {});  // handled in buildCarveStudioUI
