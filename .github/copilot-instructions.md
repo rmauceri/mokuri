@@ -62,7 +62,7 @@ printStudioOpen          — boolean, Printing Workbench panel open
 carveStudioOpen          — boolean, Carving Workbench panel open
 inkStudioOpen            — boolean, Inking Workbench panel open
 
-paperType                — 'hosho' | 'kozo' | 'torinoko'
+paperType                — 'hosho' | 'kozo' | 'torinoko' | 'gampi' | 'unryu' | 'kakishibu'
 inkLoad                  — 'light' | 'standard' | 'heavy'
 impressions              — 1-3
 
@@ -253,12 +253,16 @@ Traditional seal stamps for signing compositions:
 Creative depth settings that affect the final print output.
 
 ### Paper Types (`PAPER_TYPES` in index.html)
-Three papers with distinct textures and ink behavior:
+Six papers with distinct textures and ink behavior:
 - **Hosho** (奉書) — smooth, bright white, clean. Colors pop. Minimal fiber.
 - **Kozo** (楮) — warm, fibrous, organic. The default workhorse.
 - **Torinoko** (鳥の子) — warm cream, elegant. Ink sits on surface more.
+- **Gampi** (雁皮) — silky, luminous, cool-toned. Ultra-smooth, cleanest prints.
+- **Unryu** (雲龍) — cloud dragon paper. Dramatic long fibers visible through print.
+- **Kakishibu** (柿渋) — persimmon-tanned, rich brown. Dark paper, inverted aesthetic.
 
 Each defines: `base` (bg color), `fiberDensity`, `fiberOpacity`, `warmPatches`, `inkOpacity`, `barenIntensity`, `noiseAmt`.
+Unryu additionally defines `longFibers` and `longFiberLen` for its signature sweeping fibers.
 Selected in Printing Workbench panel. Persisted in save data.
 
 ### Ink Load (`INK_LOADS` in index.html)

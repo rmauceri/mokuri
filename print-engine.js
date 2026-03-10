@@ -141,16 +141,39 @@ const PrintEngine = (() => {
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, w, h);
     }
+
+    // Long dramatic fibers (Unryu-style cloud dragon fibers)
+    if (paperType.longFibers) {
+      for (let i = 0; i < paperType.longFibers; i++) {
+        const x = Math.random() * w;
+        const y = Math.random() * h;
+        const len = paperType.longFiberLen * (0.5 + Math.random());
+        const angle = (Math.random() - 0.5) * 0.6;
+        const curve = (Math.random() - 0.5) * 60;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        const mx = x + Math.cos(angle) * len * 0.5;
+        const my = y + Math.sin(angle) * len * 0.5 + curve;
+        const ex = x + Math.cos(angle) * len;
+        const ey = y + Math.sin(angle) * len;
+        ctx.quadraticCurveTo(mx, my, ex, ey);
+        const a = (paperType.fiberOpacity * 0.6 + Math.random() * paperType.fiberOpacity * 0.8).toFixed(3);
+        ctx.strokeStyle = `rgba(210,195,165,${a})`;
+        ctx.lineWidth = 0.8 + Math.random() * 2.5;
+        ctx.stroke();
+      }
+    }
   }
 
   // ============================================================
   //  RENDER COLORED SVG — organic edges, ink pooling, misregistration
   // ============================================================
 
-  function renderColoredSvg(elements, palette, paperW, paperH, scale, inkLoad, impOffset, atmosphere, backgroundCarveStrokes) {
+  function renderColoredSvg(elements, palette, paperW, paperH, scale, inkLoad, impOffset, atmosphere, backgroundCarveStrokes, paperBase) {
     inkLoad = inkLoad || { opacityMul: 1.0, edgeMul: 1.0, turbScale: 3.5, misreg: 3 };
     impOffset = impOffset || { x: 0, y: 0 };
     atmosphere = atmosphere || {};
+    paperBase = paperBase || '#f5f0e6';
     const w = paperW * scale;
     const h = paperH * scale;
     const seed = Math.floor(Math.random() * 10000);
@@ -255,7 +278,7 @@ const PrintEngine = (() => {
     if (backgroundCarveStrokes && backgroundCarveStrokes.length && typeof carveStrokeRenderData === 'function') {
       backgroundCarveStrokes.forEach(stroke => {
         if (!stroke.points || stroke.points.length < 2) return;
-        const items = carveStrokeRenderData(stroke, '#f5f0e6', 'rgba(0,0,0,0)', { forPrint: true });
+        const items = carveStrokeRenderData(stroke, paperBase, 'rgba(0,0,0,0)', { forPrint: true });
         items.forEach(item => {
           if (item.c === 'rgba(0,0,0,0)') return;
           if (item.fill) {
@@ -391,11 +414,11 @@ const PrintEngine = (() => {
         el.carveStrokes.forEach(stroke => {
           if (stroke.points.length < 2) return;
           const items = (typeof carveStrokeRenderData === 'function')
-            ? carveStrokeRenderData(stroke, '#f5f0e6', 'rgba(0,0,0,0)', { forPrint: true })
+            ? carveStrokeRenderData(stroke, paperBase, 'rgba(0,0,0,0)', { forPrint: true })
             : [];
           items.forEach(item => {
             if (item.c === 'rgba(0,0,0,0)') return;
-            const sc = (strokePatternFill && item.c === '#f5f0e6') ? strokePatternFill : item.c;
+            const sc = (strokePatternFill && item.c === paperBase) ? strokePatternFill : item.c;
             if (item.fill) {
               svgContent += `<path d="${item.d}" fill="${sc}" fill-opacity="${(item.a * 0.95).toFixed(3)}" stroke="none"/>`;
             } else {
@@ -583,7 +606,7 @@ const PrintEngine = (() => {
       };
       const impOpacity = impressions === 1 ? 1.0 : (imp === 0 ? 0.85 : 0.5);
 
-      const svgStr = renderColoredSvg(elements, palette, paperW, paperH, scale, inkLoad, impOffset, atmosphere, bgStrokes);
+      const svgStr = renderColoredSvg(elements, palette, paperW, paperH, scale, inkLoad, impOffset, atmosphere, bgStrokes, paperType.base);
       const blob = new Blob([svgStr], { type: 'image/svg+xml' });
       const url = URL.createObjectURL(blob);
 
