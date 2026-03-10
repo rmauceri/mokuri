@@ -1353,31 +1353,48 @@ html, body {
 
 /* Paper texture is generated dynamically per paper type in pullPrint() */
 
-.print-roller {
+.print-baren {
   position: absolute;
-  width: 28px;
-  border-radius: 14px;
-  background: linear-gradient(90deg,
-    rgba(80,70,55,0.7) 0%,
-    rgba(140,125,100,0.5) 20%,
-    rgba(220,210,190,0.6) 45%,
-    rgba(255,250,240,0.7) 50%,
-    rgba(220,210,190,0.6) 55%,
-    rgba(140,125,100,0.5) 80%,
-    rgba(80,70,55,0.7) 100%
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 42% 38%,
+    rgba(225,210,180,0.9) 0%,
+    rgba(195,175,140,0.85) 35%,
+    rgba(165,145,110,0.8) 65%,
+    rgba(130,115,85,0.7) 100%
   );
   box-shadow:
-    2px 0 8px rgba(0,0,0,0.25),
-    inset 1px 0 0 rgba(255,255,255,0.3);
+    2px 3px 8px rgba(0,0,0,0.3),
+    inset -2px -2px 4px rgba(0,0,0,0.12),
+    inset 2px 2px 5px rgba(255,245,220,0.3);
   pointer-events: none;
   opacity: 0;
 }
-
-/* Pressure shadow that follows the roller */
-.print-roller-shadow {
+/* Coiled bamboo-sheath pattern */
+.print-baren::after {
+  content: '';
   position: absolute;
-  width: 8px;
-  background: linear-gradient(90deg, rgba(0,0,0,0.08) 0%, transparent 100%);
+  inset: 8px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg,
+    transparent 0deg, rgba(140,120,85,0.08) 30deg,
+    transparent 60deg, rgba(140,120,85,0.06) 90deg,
+    transparent 120deg, rgba(140,120,85,0.08) 150deg,
+    transparent 180deg, rgba(140,120,85,0.06) 210deg,
+    transparent 240deg, rgba(140,120,85,0.08) 270deg,
+    transparent 300deg, rgba(140,120,85,0.06) 330deg,
+    transparent 360deg
+  );
+  pointer-events: none;
+}
+
+.print-baren-shadow {
+  position: absolute;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,0,0,0.15) 30%, transparent 70%);
   pointer-events: none;
   opacity: 0;
 }
@@ -1528,8 +1545,8 @@ html, body {
       <div class="print-anim-layer" id="print-anim-layer" style="display:none;">
         <div class="print-ink-wash" id="print-ink-wash"></div>
         <div class="print-paper-sheet" id="print-paper-sheet"></div>
-        <div class="print-roller" id="print-roller"></div>
-        <div class="print-roller-shadow" id="print-roller-shadow"></div>
+        <div class="print-baren" id="print-baren"></div>
+        <div class="print-baren-shadow" id="print-baren-shadow"></div>
         <div class="print-peel-shadow" id="print-peel-shadow"></div>
         <div class="print-peel-highlight" id="print-peel-highlight"></div>
       </div>
@@ -1638,7 +1655,7 @@ html, body {
         </div>
 
         <div>
-          <div class="ps-section-label">Impressions</div>
+          <div class="ps-section-label">Baren Passes</div>
           <div class="ps-toggle-row" id="ps-impr-row"></div>
         </div>
 
@@ -5510,15 +5527,15 @@ async function pullPrint() {
   const animLayer = $('print-anim-layer');
   const inkWash = $('print-ink-wash');
   const sheet = $('print-paper-sheet');
-  const roller = $('print-roller');
-  const rollerShadow = $('print-roller-shadow');
+  const baren = $('print-baren');
+  const barenShadow = $('print-baren-shadow');
   const peelShadow = $('print-peel-shadow');
   const peelHighlight = $('print-peel-highlight');
 
   // Full reset
   animLayer.style.display = 'block';
   inkWash.classList.remove('visible');
-  [sheet, roller, rollerShadow, peelShadow, peelHighlight].forEach(el => {
+  [sheet, baren, barenShadow, peelShadow, peelHighlight].forEach(el => {
     el.style.cssText = el.className.includes('print-paper-sheet')
       ? '' : 'opacity:0';
   });
@@ -5530,20 +5547,22 @@ async function pullPrint() {
   sheet.style.opacity = '0';
 
   // ── Step 1: Lay the paper down ─────────────────────────────
-  $('status-hint').textContent = 'Laying paper on the inked blocks...';
+  $('status-hint').textContent = 'Laying paper on the block...';
   inkWash.classList.add('visible');
   await wait(300);
 
+  MokuriAudio.playPaperLay();
+
   // Paper lays down from top edge — hinges at top, front edge swings down
   await animate(1000, (e) => {
-    const tilt = (1 - e) * 45;      // starts rotateX(-45deg) flipped up, settles to 0
-    const shadowBlur = 24 - e * 18; // shadow tightens: 24px → 6px
-    const shadowY = 12 - e * 9;     // shadow offset: 12px → 3px
-    const shadowAlpha = 0.1 + e * 0.15; // shadow darkens as paper contacts
+    const tilt = (1 - e) * 45;
+    const shadowBlur = 24 - e * 18;
+    const shadowY = 12 - e * 9;
+    const shadowAlpha = 0.1 + e * 0.15;
     sheet.style.transform = `perspective(800px) rotateX(${-tilt}deg)`;
     sheet.style.transformOrigin = 'center top';
     sheet.style.boxShadow = `0 ${shadowY}px ${shadowBlur}px rgba(0,0,0,${shadowAlpha.toFixed(2)})`;
-    sheet.style.opacity = String(Math.min(1, e * 1.8)); // fade in quickly
+    sheet.style.opacity = String(Math.min(1, e * 1.8));
   });
 
   // Ensure fully settled
@@ -5552,24 +5571,15 @@ async function pullPrint() {
   sheet.style.opacity = '1';
   await wait(200);
 
-  // ── Step 2: Roller impressions ─────────────────────────────
-  const impressions = STATE.impressions;
-  $('status-hint').textContent = impressions > 1
-    ? `Rolling ${impressions} impressions...`
-    : 'Rolling the impression...';
+  // ── Step 2: Baren burnishing ───────────────────────────────
+  const passes = STATE.impressions;
+  $('status-hint').textContent = passes > 1
+    ? `Burnishing — pass 1 of ${passes}...`
+    : 'Burnishing with the baren...';
 
-  // Position roller (vertical bar, moves left-to-right)
-  const rollerW = 28;
-  roller.style.left = L + 'px';
-  roller.style.top = T + 'px';
-  roller.style.width = rollerW + 'px';
-  roller.style.height = H + 'px';
+  const barenSize = 60;
 
-  rollerShadow.style.top = T + 'px';
-  rollerShadow.style.width = '8px';
-  rollerShadow.style.height = H + 'px';
-
-  // Start rendering in parallel with roller animation
+  // Start rendering in parallel with baren animation
   const printPromise = PrintEngine.print(
     STATE.elements, STATE.paletteId, STATE.paperW, STATE.paperH, {
       paperType: PAPER_TYPES[STATE.paperType],
@@ -5586,34 +5596,49 @@ async function pullPrint() {
     }
   );
 
-  for (let pass = 0; pass < impressions; pass++) {
-    // Each pass goes left-to-right with slight horizontal variation
-    const duration = 1000 + pass * 80; // steady, slightly slower each pass
-    roller.style.opacity = '1';
-    rollerShadow.style.opacity = '1';
+  for (let pass = 0; pass < passes; pass++) {
+    const duration = 1500;
+    baren.style.opacity = '1';
+    barenShadow.style.opacity = '1';
+    MokuriAudio.playBarenPass();
+
+    if (passes > 1) {
+      $('status-hint').textContent = `Burnishing — pass ${pass + 1} of ${passes}...`;
+    }
 
     await animate(duration, (e) => {
-      // Roller moves from left edge to right edge
-      const rx = L + e * (W - rollerW);
-      const wobble = Math.sin(e * Math.PI * 3) * 2; // subtle vertical wobble
-      roller.style.left = rx + 'px';
-      roller.style.top = (T + wobble) + 'px';
+      // Main sweep: left-to-right with sinusoidal vertical oscillation
+      const nx = 0.08 + e * 0.84;
+      const vFreq = 2.5 + pass * 0.4;
+      const ny = 0.5 + Math.sin(e * Math.PI * vFreq + pass * 1.2) * 0.32;
 
-      // Pressure shadow follows just to the right of roller
-      rollerShadow.style.left = (rx + rollerW + 1) + 'px';
-      rollerShadow.style.top = (T + wobble) + 'px';
-      rollerShadow.style.opacity = String(0.6 + Math.sin(e * Math.PI) * 0.4);
-    }, t => t); // linear easing for steady roll
+      // Small circular burnishing sub-motion
+      const circT = e * Math.PI * 2 * (8 + pass);
+      const cr = 6 + Math.sin(e * Math.PI) * 4;
+      const bx = L + nx * W + Math.cos(circT) * cr - barenSize / 2;
+      const by = T + ny * H + Math.sin(circT) * cr - barenSize / 2;
+
+      baren.style.left = bx + 'px';
+      baren.style.top = by + 'px';
+
+      // Subtle rotation from circular motion
+      baren.style.transform = `rotate(${Math.sin(circT) * 8}deg)`;
+
+      // Shadow follows slightly offset
+      barenShadow.style.left = (bx + 3) + 'px';
+      barenShadow.style.top = (by + 4) + 'px';
+      barenShadow.style.opacity = String(0.4 + Math.sin(e * Math.PI) * 0.3);
+    });
 
     // Brief pause between passes
-    if (pass < impressions - 1) {
-      roller.style.opacity = '0.3';
-      await wait(200);
+    if (pass < passes - 1) {
+      baren.style.opacity = '0.5';
+      await wait(150);
     }
   }
 
-  roller.style.opacity = '0';
-  rollerShadow.style.opacity = '0';
+  baren.style.opacity = '0';
+  barenShadow.style.opacity = '0';
   await wait(200);
 
   // Wait for print render to complete
@@ -5633,7 +5658,8 @@ async function pullPrint() {
   positionPrintCanvas();
 
   // ── Step 3: Peel the print ─────────────────────────────────
-  $('status-hint').textContent = 'Pulling the print...';
+  $('status-hint').textContent = 'Peeling the print...';
+  MokuriAudio.playPrintPull();
 
   // Show print canvas underneath, fully clipped (hidden)
   workspaceEl.classList.add('print-preview-active');
@@ -5648,37 +5674,29 @@ async function pullPrint() {
   peelHighlight.style.height = H + 'px';
 
   await animate(1400, (e) => {
-    // Paper peels from right edge toward left
-    // Hinge on left edge — right side lifts
     const peelPct = e * 100;
     const remainPct = 100 - peelPct;
 
-    // Paper: clip away from right, rotateY increases as it lifts
     const maxAngle = 65;
-    // Angle ramps up then holds
     const angleT = Math.min(1, e * 1.8);
     const angle = angleT * maxAngle;
     sheet.style.transformOrigin = 'left center';
     sheet.style.transform = `perspective(800px) rotateY(-${angle}deg)`;
-    sheet.style.clipPath = `inset(0 0 0 0)`;  // full paper visible (it rotates away)
+    sheet.style.clipPath = `inset(0 0 0 0)`;
 
-    // Fade paper as it lifts past 45°
     sheet.style.opacity = String(Math.max(0, 1 - Math.max(0, (e - 0.5) * 2)));
 
-    // Print canvas: reveal from right to left
     c.style.clipPath = `inset(0 ${remainPct}% 0 0)`;
 
-    // Peel shadow: positioned at the reveal edge, moves right to left
     const edgeX = L + W * (1 - e);
     peelShadow.style.left = (edgeX - 25) + 'px';
     peelShadow.style.width = '30px';
     peelShadow.style.opacity = String(Math.sin(e * Math.PI) * 0.8);
 
-    // Highlight on the paper's curling edge
     peelHighlight.style.left = (edgeX - 4) + 'px';
     peelHighlight.style.width = '8px';
     peelHighlight.style.opacity = String(Math.sin(e * Math.PI) * 0.6);
-  }, t => t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2)/2); // ease-in-out
+  }, t => t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2)/2);
 
   // ── Settle ─────────────────────────────────────────────────
   c.style.clipPath = '';
@@ -5690,15 +5708,14 @@ async function pullPrint() {
   // Clean up
   animLayer.style.display = 'none';
   sheet.style.cssText = '';
-  roller.style.cssText = 'opacity:0';
-  rollerShadow.style.cssText = 'opacity:0';
+  baren.style.cssText = 'opacity:0';
+  barenShadow.style.cssText = 'opacity:0';
 
   // Show mirror label
   $('print-mirror-label').classList.add('visible');
 
   pullBtn.disabled = false;
   $('status-hint').textContent = 'Print complete — adjust settings and re-pull, or save PNG · Esc to exit';
-  MokuriAudio.playPrintPull();
 }
 
 // ============================================================

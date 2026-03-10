@@ -598,13 +598,13 @@ const PrintEngine = (() => {
     // Step 1 — Paper texture base layer (varies by paper type)
     drawPaperTexture(ctx, w, h, paperType);
 
-    // Step 2 — Render SVG with ink/impression settings
+    // Step 2 — Render SVG with ink/baren pass settings
     for (let imp = 0; imp < impressions; imp++) {
       const impOffset = imp === 0 ? { x: 0, y: 0 } : {
-        x: (Math.random() - 0.5) * 1.2,
-        y: (Math.random() - 0.5) * 1.2,
+        x: (Math.random() - 0.5) * 0.3,
+        y: (Math.random() - 0.5) * 0.3,
       };
-      const impOpacity = impressions === 1 ? 1.0 : (imp === 0 ? 0.85 : 0.5);
+      const impOpacity = impressions === 1 ? 1.0 : (imp === 0 ? 0.92 : 0.35);
 
       const svgStr = renderColoredSvg(elements, palette, paperW, paperH, scale, inkLoad, impOffset, atmosphere, bgStrokes, paperType.base);
       const blob = new Blob([svgStr], { type: 'image/svg+xml' });

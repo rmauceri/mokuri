@@ -501,7 +501,7 @@ const MokuriAudio = (() => {
 
   function playPrintPull() {
     playOneShot((c, dest) => {
-      // Slow noise sweep (press & peel)
+      // Paper peel — noise sweep rising as paper separates
       const buf = c.createBuffer(1, c.sampleRate * 0.6, c.sampleRate);
       const d = buf.getChannelData(0);
       for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
@@ -521,6 +521,71 @@ const MokuriAudio = (() => {
       src.connect(filt).connect(g).connect(dest);
       src.start(now);
       src.stop(now + 0.6);
+    });
+  }
+
+  function playPaperLay() {
+    playOneShot((c, dest) => {
+      const now = c.currentTime;
+      // Soft thud — paper touching wood
+      const osc = c.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = 65 + Math.random() * 10;
+      const g = c.createGain();
+      g.gain.setValueAtTime(0.2, now);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+      osc.connect(g).connect(dest);
+      osc.start(now);
+      osc.stop(now + 0.25);
+      // Paper settle rustle
+      const buf = c.createBuffer(1, c.sampleRate * 0.3, c.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      const src = c.createBufferSource();
+      src.buffer = buf;
+      const filt = c.createBiquadFilter();
+      filt.type = 'highpass';
+      filt.frequency.value = 2500;
+      const ng = c.createGain();
+      ng.gain.setValueAtTime(0, now);
+      ng.gain.linearRampToValueAtTime(0.08, now + 0.05);
+      ng.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+      src.connect(filt).connect(ng).connect(dest);
+      src.start(now);
+      src.stop(now + 0.3);
+    });
+  }
+
+  function playBarenPass() {
+    playOneShot((c, dest) => {
+      const now = c.currentTime;
+      const dur = 1.5;
+      // Sustained friction noise — baren rubbing across paper
+      const buf = c.createBuffer(1, c.sampleRate * dur, c.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      const src = c.createBufferSource();
+      src.buffer = buf;
+      const bp = c.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.setValueAtTime(600, now);
+      bp.frequency.linearRampToValueAtTime(900, now + dur * 0.5);
+      bp.frequency.linearRampToValueAtTime(500, now + dur);
+      bp.Q.value = 0.7;
+      const g = c.createGain();
+      g.gain.setValueAtTime(0, now);
+      g.gain.linearRampToValueAtTime(0.12, now + 0.15);
+      // Rhythmic pulsing matching baren circular motion
+      const pulseLen = (dur - 0.3) / 4;
+      for (let i = 0; i < 4; i++) {
+        const t = 0.15 + i * pulseLen;
+        g.gain.linearRampToValueAtTime(0.15, now + t);
+        g.gain.linearRampToValueAtTime(0.06, now + t + pulseLen * 0.5);
+      }
+      g.gain.linearRampToValueAtTime(0.001, now + dur - 0.05);
+      src.connect(bp).connect(g).connect(dest);
+      src.start(now);
+      src.stop(now + dur);
     });
   }
 
@@ -682,6 +747,8 @@ const MokuriAudio = (() => {
     playElementPlace,
     playElementDelete,
     playPrintPull,
+    playPaperLay,
+    playBarenPass,
     playColorChange,
     playCarveLevel,
     playUndoRedo,
