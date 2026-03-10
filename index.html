@@ -5523,6 +5523,23 @@ async function pullPrint() {
   const W = paperRect.width;
   const H = paperRect.height;
 
+  // Start rendering early — runs in parallel with paper lay + baren animation
+  const printPromise = PrintEngine.print(
+    STATE.elements, STATE.paletteId, STATE.paperW, STATE.paperH, {
+      paperType: PAPER_TYPES[STATE.paperType],
+      inkLoad: INK_LOADS[STATE.inkLoad],
+      impressions: STATE.impressions,
+      atmosphere: {
+        sky: SKY_TYPES[STATE.sky]?.stops ? SKY_TYPES[STATE.sky] : null,
+        ground: GROUND_TYPES[STATE.ground]?.stops ? GROUND_TYPES[STATE.ground] : null,
+        horizon: STATE.horizon,
+        mist: STATE.mist,
+        paperBase: PAPER_TYPES[STATE.paperType].base,
+      },
+      backgroundCarveStrokes: STATE.backgroundCarveStrokes,
+    }
+  );
+
   // Get all animation elements
   const animLayer = $('print-anim-layer');
   const inkWash = $('print-ink-wash');
@@ -5580,28 +5597,10 @@ async function pullPrint() {
 
   const barenSize = 120;
 
-  // Start rendering in parallel with baren animation
-  const printPromise = PrintEngine.print(
-    STATE.elements, STATE.paletteId, STATE.paperW, STATE.paperH, {
-      paperType: PAPER_TYPES[STATE.paperType],
-      inkLoad: INK_LOADS[STATE.inkLoad],
-      impressions: STATE.impressions,
-      atmosphere: {
-        sky: SKY_TYPES[STATE.sky]?.stops ? SKY_TYPES[STATE.sky] : null,
-        ground: GROUND_TYPES[STATE.ground]?.stops ? GROUND_TYPES[STATE.ground] : null,
-        horizon: STATE.horizon,
-        mist: STATE.mist,
-        paperBase: PAPER_TYPES[STATE.paperType].base,
-      },
-      backgroundCarveStrokes: STATE.backgroundCarveStrokes,
-    }
-  );
-
   for (let pass = 0; pass < passes; pass++) {
     const duration = 1500;
     baren.style.opacity = '1';
     barenShadow.style.opacity = '1';
-    MokuriAudio.playBarenPass();
 
     if (passes > 1) {
       $('status-hint').textContent = `Burnishing — pass ${pass + 1} of ${passes}...`;
@@ -5609,8 +5608,11 @@ async function pullPrint() {
 
     // Alternate direction: even passes L→R, odd passes R→L
     const reverse = pass % 2 === 1;
+    let soundFired = false;
 
     await animate(duration, (e) => {
+      // Fire sound on first visible frame so audio and visual are in sync
+      if (!soundFired) { MokuriAudio.playBarenPass(); soundFired = true; }
       // Main sweep with direction alternation
       const rawX = 0.08 + e * 0.84;
       const nx = reverse ? (0.92 - e * 0.84) : rawX;
