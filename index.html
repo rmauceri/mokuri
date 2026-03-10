@@ -5658,14 +5658,36 @@ function setupInteraction() {
             origRotation: el.rotation,
           };
         } else {
-          // Resize
+          // Resize — anchor-based for 1:1 handle tracking
           pushUndo();
+          const def = MOKURI_ELEMENTS.find(de => de.id === el.defId);
+          const vb = def.viewBox.split(' ').map(Number);
+          const hw = vb[2] / 2 * Math.abs(el.scaleX);
+          const hh = vb[3] / 2 * Math.abs(el.scaleY);
+          const rad = el.rotation * Math.PI / 180;
+          const cosR = Math.cos(rad);
+          const sinR = Math.sin(rad);
+          const dir = handleType.split('-')[0];
+          const sX = dir.includes('e') ? 1 : dir.includes('w') ? -1 : 0;
+          const sY = dir.includes('s') ? 1 : dir.includes('n') ? -1 : 0;
+          // Anchor point (opposite corner/edge) in world coords
+          const aLX = -sX * hw, aLY = -sY * hh;
+          const anchorWorldX = el.x + cosR * aLX - sinR * aLY;
+          const anchorWorldY = el.y + sinR * aLX + cosR * aLY;
+          // Grab offset: element edge position minus pointer (avoids initial jump)
+          const hLX = sX * hw, hLY = sY * hh;
+          const handleWorldX = el.x + cosR * hLX - sinR * hLY;
+          const handleWorldY = el.y + sinR * hLX + cosR * hLY;
           STATE.dragging = {
             type: 'resize', elementId: el.id, handle: handleType,
-            startX: pt.x, startY: pt.y,
             origScaleX: el.scaleX, origScaleY: el.scaleY,
-            origX: el.x, origY: el.y,
+            origRotation: el.rotation,
+            anchorWorldX, anchorWorldY,
+            grabOffsetX: handleWorldX - pt.x,
+            grabOffsetY: handleWorldY - pt.y,
+            sX, sY, hw, hh,
           };
+          ws.style.cursor = handleType;
         }
         ws.setPointerCapture(e.pointerId);
         return;
@@ -5797,28 +5819,43 @@ function setupInteraction() {
     if (d.type === 'resize') {
       const el = STATE.elements.find(el => el.id === d.elementId);
       if (el) {
-        const def = MOKURI_ELEMENTS.find(de => de.id === el.defId);
-        const vb = def.viewBox.split(' ').map(Number);
-        const dx = pt.x - d.startX;
-        const dy = pt.y - d.startY;
+        // Target = pointer + grab offset (keeps handle aligned with click point)
+        const targetX = pt.x + d.grabOffsetX;
+        const targetY = pt.y + d.grabOffsetY;
+        // Vector from anchor to target in world coords
+        const deltaWX = targetX - d.anchorWorldX;
+        const deltaWY = targetY - d.anchorWorldY;
+        // Rotate into element's local (unrotated) frame
+        const rad = d.origRotation * Math.PI / 180;
+        const cosR = Math.cos(rad);
+        const sinR = Math.sin(rad);
+        const deltaLX = cosR * deltaWX + sinR * deltaWY;
+        const deltaLY = -sinR * deltaWX + cosR * deltaWY;
 
-        // Edge handles: single-axis stretch
-        if (d.handle === 'n-resize' || d.handle === 's-resize') {
-          const sy = d.handle === 'n-resize' ? -1 : 1;
-          const factor = 1 + (dy * sy) / (vb[3] * Math.abs(d.origScaleY));
-          el.scaleY = d.origScaleY * Math.max(0.1, factor);
-        } else if (d.handle === 'e-resize' || d.handle === 'w-resize') {
-          const sx = d.handle === 'w-resize' ? -1 : 1;
-          const factor = 1 + (dx * sx) / (vb[2] * Math.abs(d.origScaleX));
-          el.scaleX = d.origScaleX * Math.max(0.1, factor);
+        const isCorner = d.sX !== 0 && d.sY !== 0;
+        if (isCorner) {
+          // Proportional: project onto anchor-to-handle diagonal
+          const diagX = 2 * d.sX * d.hw, diagY = 2 * d.sY * d.hh;
+          const f = Math.max(0.1, (deltaLX * diagX + deltaLY * diagY) / (diagX * diagX + diagY * diagY));
+          el.scaleX = d.origScaleX * f;
+          el.scaleY = d.origScaleY * f;
+          const cLX = d.sX * d.hw * f, cLY = d.sY * d.hh * f;
+          el.x = d.anchorWorldX + cosR * cLX - sinR * cLY;
+          el.y = d.anchorWorldY + sinR * cLX + cosR * cLY;
+        } else if (d.sX === 0) {
+          // N or S edge: only Y scale, anchor opposite edge center
+          const f = Math.max(0.1, deltaLY / (2 * d.sY * d.hh));
+          el.scaleY = d.origScaleY * f;
+          const cLY = d.sY * d.hh * f;
+          el.x = d.anchorWorldX - sinR * cLY;
+          el.y = d.anchorWorldY + cosR * cLY;
         } else {
-          // Corner handles: proportional resize
-          const sx = d.handle.includes('w') ? -1 : 1;
-          const sy = d.handle.includes('n') ? -1 : 1;
-          const diag = (dx * sx + dy * sy) / 2;
-          const scaleFactor = 1 + diag / ((vb[2] + vb[3]) / 2);
-          el.scaleX = d.origScaleX * Math.max(0.1, scaleFactor);
-          el.scaleY = d.origScaleY * Math.max(0.1, scaleFactor);
+          // E or W edge: only X scale, anchor opposite edge center
+          const f = Math.max(0.1, deltaLX / (2 * d.sX * d.hw));
+          el.scaleX = d.origScaleX * f;
+          const cLX = d.sX * d.hw * f;
+          el.x = d.anchorWorldX + cosR * cLX;
+          el.y = d.anchorWorldY + sinR * cLX;
         }
         rerenderAll();
       }
