@@ -1933,6 +1933,7 @@ function resolveOverride(override, paletteColors) {
 const WOOD_TONES = ['#5c4a3a', '#6b5a48', '#7a6955', '#8a7963', '#6f5c4b'];
 const PAPER_COLOR = '#f5f0e6';
 const CARVED_STROKE = '#3a3028'; // dark line for carved outlines
+const MOVE_DEAD_ZONE = 6; // px of screen travel before element move commits
 
 // Paper size presets
 const PAPER_PRESETS = [
@@ -5702,11 +5703,12 @@ function setupInteraction() {
       if (el) {
         selectElement(id);
         if (!el.locked) {
-          pushUndo();
           STATE.dragging = {
             type: 'move', elementId: id,
             startX: pt.x, startY: pt.y,
             origX: el.x, origY: el.y,
+            clientStartX: e.clientX, clientStartY: e.clientY,
+            committed: false,
           };
           ws.setPointerCapture(e.pointerId);
         }
@@ -5797,6 +5799,13 @@ function setupInteraction() {
     const pt = clientToSvg(e.clientX, e.clientY);
 
     if (d.type === 'move') {
+      if (!d.committed) {
+        const dx = e.clientX - d.clientStartX;
+        const dy = e.clientY - d.clientStartY;
+        if (dx * dx + dy * dy < MOVE_DEAD_ZONE * MOVE_DEAD_ZONE) return;
+        d.committed = true;
+        pushUndo();
+      }
       const el = STATE.elements.find(el => el.id === d.elementId);
       if (el) {
         el.x = d.origX + (pt.x - d.startX);
@@ -5900,10 +5909,12 @@ function setupInteraction() {
     }
 
     if (STATE.dragging && STATE.dragging.type === 'move') {
-      // Check if actually moved — if not, remove undo entry
-      const el = STATE.elements.find(e => e.id === STATE.dragging.elementId);
-      if (el && el.x === STATE.dragging.origX && el.y === STATE.dragging.origY) {
-        STATE.undoStack.pop(); // No change, remove undo snapshot
+      if (STATE.dragging.committed) {
+        // Check if actually moved — if not, remove undo entry
+        const el = STATE.elements.find(e => e.id === STATE.dragging.elementId);
+        if (el && el.x === STATE.dragging.origX && el.y === STATE.dragging.origY) {
+          STATE.undoStack.pop();
+        }
       }
     }
     STATE.dragging = null;
