@@ -50,6 +50,89 @@ Paper selector updated to 3-column grid. Print engine now uses actual paper base
 - **Move dead zone**: 6px screen-pixel threshold before element move commits, preventing accidental displacement during select/tap with pen and touch.
 - **Multi-selection**: Ctrl/Cmd+click for additive selection. Group operations: move, delete, flip, duplicate, lock/unlock, layer reorder all work on full selection set. Ctrl+A selects all. Per-element dashed bounding boxes in multi-select mode. Carve/ink workbenches show "N elements selected" message; carve focus requires single selection.
 
+### Phase 10.5 — UI Refinement & Authentic Print Process ✅
+- **Kanji toolbar icons**: Replaced colorful emoji with muted kanji characters — 景 Compose, 彫 Carve, 墨 Ink, 摺 Make Print, 帖 Gallery — each in a distinct earth-tone color for visual association (ochre, wood, indigo, brick, sage).
+- **About/Makimono refresh**: Inline kanji+label layout, colored step names, accurate feature descriptions reflecting full app capabilities (10 palettes, 6 papers, 3 gouges, carve patterns, hanko seals, atmosphere, scene presets).
+- **Baren burnishing animation**: Replaced Western roller with authentic circular baren (馬連) — bamboo-sheath radial gradient with conic coil pattern, sweeping arcs with circular sub-motions, alternating direction per pass. Three synchronized sound moments: paper lay (thud + rustle), baren friction (rhythmic bandpass noise), paper peel (noise sweep).
+- **Paper texture in animation**: Animation sheet generates canvas-based paper texture matching the print engine's `drawPaperTexture` — fiber bundles, fine fibers, warm patches, and Unryu's long dramatic fibers all visible during the paper lay-down.
+- **Baren passes** (renamed from "Impressions"): Multi-pass offset reduced from ±1.2px to ±0.3px, opacity retuned (0.92/0.35) — richer ink depth without blur. UI label updated to "Baren Passes."
+- **Print studio no light dismiss**: Requires explicit close (P key, Escape, Back to Edit, or switching workbench) — prevents accidental print loss.
+
+---
+
+## Phase 11 — The Woodblock (Planned)
+
+Two interconnected areas deepening the physical material metaphor and expanding carving as a creative tool.
+
+### 11A: Pattern Carving — From Decoration to Tone
+
+Current carve patterns (crosshatch, woodgrain, diagonal, stipple, wave) are all-or-nothing per element. In real mokuhanga, pattern carving is the primary tool for creating **tonal range** — the density of carved lines determines how much ink transfers, giving everything from solid black to barely-there whisper tones. This is the missing expressive dimension.
+
+#### Per-Zone Patterns
+Apply different patterns to different color zones within an element. A koi's body might get woodgrain while its fins get stipple. This leverages the existing zone system — each zone in `el.colorOverrides` would gain an optional `pattern` and `patternDensity` field. The Inking Workbench zone editor would add pattern controls alongside the existing color picker and bokashi direction.
+
+#### Pattern Density & Scale
+A density slider (sparse → dense) controls the tonal value. At 20% density, crosshatch lines are far apart — the area prints mostly as paper. At 80%, it's nearly solid ink. This is the single most important control — it turns pattern carving from a texture effect into a tonal tool. Scale controls the physical size of the pattern repeat. Rotation controls the angle of directional patterns.
+
+#### Pattern Library Expansion
+Expand beyond the current 6 patterns with traditional mokuhanga textures:
+- **Parallel lines** (single-direction hatch — the most basic tonal tool)
+- **Concentric arcs** (used for water, sky gradation)
+- **Cloud swirls** (traditional cloud/mist rendering)
+- **Rain dots** (scattered dot pattern for atmospheric effects)
+- **Grain following** (pattern lines that follow the element's form curves)
+
+Each pattern should be parameterized (density, scale, rotation) rather than fixed, making the library combinatorially rich.
+
+#### Freehand Pattern Regions (Future)
+A pattern brush tool that paints pattern fill into drawn regions, independent of element zones. This is the most expressive option — the artist draws where tone should be — but also the most complex to implement. Consider as a 11A+ stretch goal after per-zone patterns prove out.
+
+### 11B: The Wood Block Experience
+
+The workspace should feel like you're working with a physical block of wood, not arranging stickers on paper.
+
+#### Wood Block as Default Surface
+In compose and carve modes, the workspace surface is a **wood block** — visible grain texture, warm brown tone (extending WOOD_TONES to the full workspace background). The block should feel solid and substantial. Wood grain rendered as a subtle canvas texture or SVG pattern that tiles naturally.
+
+When elements are placed, they appear as **carved recesses** in the wood — lighter areas where material has been removed, revealing the forms beneath the surface. This is the existing carve-mode rendering, but the surrounding workspace needs to commit to the wood metaphor rather than showing a pale background.
+
+#### View Mode Visual Language
+- **Compose mode**: Clean wood block surface. Placed elements shown as carved outlines/forms in the wood. Focus is on spatial composition.
+- **Carve mode**: Full wood block with grain. Carved areas in relief. Freehand carve strokes cut visible grooves. The carve level pips control how much material is removed from each element.
+- **Ink mode**: The block is inked. Wood surface = ink color (palette). Carved recesses = paper color showing through. This is the "preview of what prints" view — the inverse of carve mode.
+
+#### Border & Corner Elements
+A new element category: **borders** (枠, waku). Traditional prints often have decorative frames that are themselves carved into the block.
+
+**Corner ornaments**: Cloud corners, wave corners, geometric corners, floral corners — placed at block corners, they define the print's frame. Each would be a standard element with color zones and carve levels.
+
+**Edge repeaters**: Pattern elements designed to tile along one axis — wave borders, geometric meanders, bamboo fence lines. Placed along an edge, they repeat to fill the side.
+
+**Frame presets**: Pre-composed combinations of corners + edges that create a complete decorative border in one action. The user could then customize individual pieces.
+
+These elements snap to block edges (top/bottom/left/right) and participate in the standard carve/ink/print pipeline. They're not a separate system — just a new element category with layout awareness.
+
+#### First-Run Experience
+The Makimono welcome screen would be updated to reflect the woodblock metaphor. Step One becomes "Prepare your block" rather than "Compose" — or the compose step explicitly mentions choosing your block and beginning to carve your design into it.
+
+### Implementation Sequence
+
+**11A-1**: Per-zone patterns + density slider (Inking Workbench zone editor)
+**11A-2**: Pattern scale and rotation controls
+**11A-3**: Expanded pattern library (parallel lines, arcs, cloud swirls, rain dots)
+**11B-1**: Wood block workspace surface (grain texture, wood tones for background)
+**11B-2**: Carved recess visual treatment for placed elements in compose/carve modes
+**11B-3**: Border & corner element category (4–6 corners, 3–4 edge repeaters)
+**11B-4**: Frame presets (2–3 curated corner+edge combinations)
+
+11A and 11B can proceed in parallel — patterns are about element rendering, woodblock is about workspace chrome and new elements.
+
+### Open Questions
+- Should the wood grain be a static texture or subtly randomized per session?
+- For borders, should they auto-size to the paper dimensions or be manually placed/scaled?
+- Should per-zone patterns be visible in compose mode, or only in carve/ink views?
+- How does pattern density interact with bokashi gradients? (Could pattern density fade along the bokashi direction for graduated tone.)
+
 ---
 
 ## Future Work
