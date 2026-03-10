@@ -26,6 +26,22 @@ Four features deepening the carving workflow:
 - **Background Carving**: Paper background is now carveable. Click empty space in carve mode to carve the paper itself. Strokes render between atmosphere and elements.
 - **Hanko Stamps**: 6 pre-made seal shapes (circle, square, gourd, oval, diamond, cloud) + custom initials generator (1–3 characters → procedural brush-stroke seal). Hanko elements get reduced misregistration in print.
 
+### Phase 7 — Carve Tool Naturalness ✅
+Three tiers of pen input and rendering improvements:
+- **Input smoothing**: EMA filter on position/pressure/tilt, coalesced pointer events for full digitizer resolution (~240Hz on Surface Pen).
+- **Catmull-Rom curves**: Replaced polyline rendering (M L L L) with smooth cubic Bezier curves through all stroke points.
+- **Variable-width pressure ribbons**: Per-point pressure maps to ribbon width via filled path outlines (not constant-width strokes). Entry/exit taper, organic noise.
+- **Tilt-based gouge asymmetry**: Pen tilt shifts ribbon half-widths for calligraphic variation (V-gouge: 0.5, U-gouge: 0.35).
+- **Pressure curve presets**: Soft/Medium/Firm configurable response curves in Carving Workbench.
+- **Print fidelity**: Fiber ghosts in shallow cuts, ink edge pooling on deep cuts, pressure-dependent edge noise, tilt feathering on shallow wall side.
+
+### Phase 8 — Paper Type Expansion ✅
+Three new papers added (total: 6):
+- **Gampi** (雁皮) — ultra-smooth, cool-toned, luminous. Cleanest prints.
+- **Unryu** (雲龍) — dramatic long sweeping fibers via quadratic curves.
+- **Kakishibu** (柿渋) — persimmon-tanned warm brown. Unique darker aesthetic.
+Paper selector updated to 3-column grid. Print engine now uses actual paper base color for carve grooves (not hardcoded).
+
 ---
 
 ## Future Work

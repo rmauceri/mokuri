@@ -206,9 +206,18 @@ Three freeform carve tools with graduated gouge profiles:
 - **V Gouge** (∨): 4px width, 3 layers with graduated opacity (shallow at edges)
 - **U Gouge** (∪): 8px width, 5 layers with smooth rounded cross-section
 
-Strokes are stored in element-local coordinates (`el.carveStrokes[]`) and move/scale/rotate with the element. Each stroke has entry/exit taper and per-segment organic variation (deterministic noise). Custom cursors show tool profile; pressure sensitivity adjusts stroke width.
+Strokes are stored in element-local coordinates (`el.carveStrokes[]`) and move/scale/rotate with the element. Each stroke has entry/exit taper and per-segment organic variation (deterministic noise). Stroke data model: `{ points: [{x, y, pressure, tilt, tiltX, tiltY}], tool: string }`.
 
-`carveStrokeRenderData(stroke, paperColor, grooveColor)` is the shared rendering helper used by the workspace, live preview, AND print engine.
+**Input pipeline**: Pointer events → EMA smoothing (alpha 0.45 pos, 0.5 pressure, 0.4 tilt) → coalesced events (`getCoalescedEvents()` for full ~240Hz digitizer resolution) → Ramer-Douglas-Peucker simplification → stored stroke.
+
+**Rendering pipeline**: `carveStrokeRenderData(stroke, paperColor, grooveColor, opts)` builds variable-width ribbon fills:
+- `pointsToD(pts)` — Catmull-Rom → cubic Bezier smooth curves
+- `computeRibbonD(pts, widths, tiltStrength)` — per-point perpendicular offset ribbon with tilt asymmetry
+- Pressure → width and opacity via configurable `PRESSURE_CURVES` presets (Soft/Medium/Firm)
+- Tilt asymmetry: V-gouge (0.5) and U-gouge (0.35) shift ribbon half-widths based on pen tilt vs stroke normal
+- Print mode (`opts.forPrint`): adds fiber ghosts (shallow cuts), ink edge pooling (deep cuts), tilt feathering
+
+**Pressure presets** (`PRESSURE_CURVES`): Soft (responsive, p^0.35), Medium (balanced, p^0.85), Firm (demanding, p^1.8). Selected in Carving Workbench, persisted in localStorage('mokuri-pressure').
 
 **Quick stroke undo**: Z key (no modifier) undoes last stroke in carve/erase mode; Shift+Z redoes. Uses `STATE.strokeRedoBuffer`.
 
