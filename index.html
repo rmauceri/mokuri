@@ -824,9 +824,15 @@ html, body {
 }
 
 /* Step panels */
+.maki-step-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
 .maki-step-icon {
-  font-size: 24px;
-  margin-bottom: 6px;
+  font-size: 26px;
+  line-height: 1;
 }
 .maki-step-num {
   font-size: 11px;
@@ -839,8 +845,6 @@ html, body {
 .maki-step-name {
   font-size: 20px;
   font-weight: 600;
-  color: #e8ddd0;
-  margin-bottom: 6px;
 }
 .maki-step-desc {
   font-size: 14px;
@@ -1701,59 +1705,68 @@ html, body {
         paper to reveal the print. Each impression is unique: the grain
         of the wood, the weight of the ink, the texture of the paper
         all leave their mark.<br><br>
-        <em>Mokuri</em> captures that spirit. Design your scene, carve the block,
-        choose your inks, and pull your print — embracing the beauty
-        of imperfection and the calm of making something
-        by hand.
+        <em>Mokuri Studio</em> captures that spirit. Compose your scene,
+        carve the block, choose your inks, and pull your print —
+        embracing the beauty of imperfection and the calm of
+        creating something with intention.
       </div>
     </div>
 
     <div class="makimono-panel">
-      <div class="maki-divider"></div>
-      <div class="maki-step-icon" style="color:#b8956a">景</div>
       <div class="maki-step-num">Step One</div>
-      <div class="maki-step-name">Compose</div>
+      <div class="maki-step-heading">
+        <span class="maki-step-icon" style="color:#b8956a">景</span>
+        <span class="maki-step-name" style="color:#b8956a">Compose</span>
+      </div>
       <div class="maki-step-desc">
-        Place elements from the library — mountains, waves, flora,
-        fauna — onto your paper. Set the atmosphere with sky and
-        ground. Arrange, resize, and layer to design your scene.
+        Place elements from the library — landscape, flora, fauna,
+        objects, and more — onto your paper. Set the atmosphere with
+        sky and ground, adjust the horizon, and add mist for depth.
+        Arrange, resize, and layer to design your scene. Start from
+        scratch or choose a curated scene preset.
       </div>
     </div>
 
     <div class="makimono-panel">
-      <div class="maki-divider"></div>
-      <div class="maki-step-icon" style="color:#8b6b4a">彫</div>
       <div class="maki-step-num">Step Two</div>
-      <div class="maki-step-name">Carve</div>
+      <div class="maki-step-heading">
+        <span class="maki-step-icon" style="color:#8b6b4a">彫</span>
+        <span class="maki-step-name" style="color:#8b6b4a">Carve</span>
+      </div>
       <div class="maki-step-desc">
-        Use fine, V, and U gouges to carve detail into the woodblock.
-        Set the carve level for each element, then draw freehand
-        strokes to add texture and character. Focus on an element
-        to carve up close.
+        Choose from three gouges — fine, V, and U — to carve detail
+        into the woodblock. Set the carve level for each element, then
+        draw pressure-sensitive freehand strokes with your pen or mouse.
+        Apply carve patterns like crosshatch or woodgrain. Focus in on
+        a single element to carve up close.
       </div>
     </div>
 
     <div class="makimono-panel">
-      <div class="maki-divider"></div>
-      <div class="maki-step-icon" style="color:#6a7b8b">墨</div>
       <div class="maki-step-num">Step Three</div>
-      <div class="maki-step-name">Ink</div>
+      <div class="maki-step-heading">
+        <span class="maki-step-icon" style="color:#6a7b8b">墨</span>
+        <span class="maki-step-name" style="color:#6a7b8b">Ink</span>
+      </div>
       <div class="maki-step-desc">
-        Choose from seven traditional palettes — Sumi, Edo, Hokusai,
-        and more. Customize each element's color zones and add
-        bokashi gradients for soft ink transitions.
+        Choose from ten traditional palettes — Sumi, Edo, Hokusai,
+        Hiroshige, and more. Customize each element's color zones
+        and add bokashi gradients for soft directional ink transitions.
+        Stamp your work with a custom hanko seal.
       </div>
     </div>
 
     <div class="makimono-panel">
-      <div class="maki-divider"></div>
-      <div class="maki-step-icon" style="color:#9b7065">摺</div>
       <div class="maki-step-num">Step Four</div>
-      <div class="maki-step-name">Make Print</div>
+      <div class="maki-step-heading">
+        <span class="maki-step-icon" style="color:#9b7065">摺</span>
+        <span class="maki-step-name" style="color:#9b7065">Make Print</span>
+      </div>
       <div class="maki-step-desc">
-        Select your paper — smooth Hosho, fibrous Kozo, or warm
-        Torinoko. Adjust ink weight and impressions, then pull
-        your print. Every pull is unique.
+        Select from six washi papers — smooth Hosho, fibrous Kozo,
+        silky Gampi, and more. Set the ink load and number of
+        impressions, then pull your print. Save as PNG to share.
+        Every pull is unique.
       </div>
     </div>
 
