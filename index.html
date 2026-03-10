@@ -6369,7 +6369,6 @@ function setupToolbar() {
     if (e.target.closest('.gallery-modal')) return;
     if (e.target.closest('.audio-controls')) return;
 
-    if (STATE.printStudioOpen) { closePrintStudio(); return; }
     if (STATE.inkStudioOpen) { closeInkStudio(); return; }
     if (STATE.carveStudioOpen) { closeCarveStudio(); return; }
   }
@@ -6378,13 +6377,6 @@ function setupToolbar() {
   document.querySelector('.toolbar').addEventListener('click', lightDismissRightPanel);
   // Status bar clicks → light dismiss
   document.querySelector('.status-bar').addEventListener('click', lightDismissRightPanel);
-  // Workspace clicks → light dismiss only for Printing Workbench (carve/ink need workspace interaction)
-  workspaceEl.addEventListener('click', (e) => {
-    if (STATE.printStudioOpen) {
-      closePrintStudio();
-    }
-  });
-
   // Composition Gallery
   $('btn-file').addEventListener('click', (e) => {
     e.stopPropagation();
