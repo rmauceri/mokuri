@@ -1355,8 +1355,8 @@ html, body {
 
 .print-baren {
   position: absolute;
-  width: 60px;
-  height: 60px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
   background: radial-gradient(circle at 42% 38%,
     rgba(225,210,180,0.9) 0%,
@@ -1375,7 +1375,7 @@ html, body {
 .print-baren::after {
   content: '';
   position: absolute;
-  inset: 8px;
+  inset: 16px;
   border-radius: 50%;
   background: conic-gradient(from 0deg,
     transparent 0deg, rgba(140,120,85,0.08) 30deg,
@@ -1391,8 +1391,8 @@ html, body {
 
 .print-baren-shadow {
   position: absolute;
-  width: 56px;
-  height: 56px;
+  width: 112px;
+  height: 112px;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(0,0,0,0.15) 30%, transparent 70%);
   pointer-events: none;
@@ -5551,8 +5551,6 @@ async function pullPrint() {
   inkWash.classList.add('visible');
   await wait(300);
 
-  MokuriAudio.playPaperLay();
-
   // Paper lays down from top edge — hinges at top, front edge swings down
   await animate(1000, (e) => {
     const tilt = (1 - e) * 45;
@@ -5564,6 +5562,9 @@ async function pullPrint() {
     sheet.style.boxShadow = `0 ${shadowY}px ${shadowBlur}px rgba(0,0,0,${shadowAlpha.toFixed(2)})`;
     sheet.style.opacity = String(Math.min(1, e * 1.8));
   });
+
+  // Thud when paper lands flat
+  MokuriAudio.playPaperLay();
 
   // Ensure fully settled
   sheet.style.transform = 'none';
@@ -5577,7 +5578,7 @@ async function pullPrint() {
     ? `Burnishing — pass 1 of ${passes}...`
     : 'Burnishing with the baren...';
 
-  const barenSize = 60;
+  const barenSize = 120;
 
   // Start rendering in parallel with baren animation
   const printPromise = PrintEngine.print(
@@ -5606,15 +5607,19 @@ async function pullPrint() {
       $('status-hint').textContent = `Burnishing — pass ${pass + 1} of ${passes}...`;
     }
 
+    // Alternate direction: even passes L→R, odd passes R→L
+    const reverse = pass % 2 === 1;
+
     await animate(duration, (e) => {
-      // Main sweep: left-to-right with sinusoidal vertical oscillation
-      const nx = 0.08 + e * 0.84;
+      // Main sweep with direction alternation
+      const rawX = 0.08 + e * 0.84;
+      const nx = reverse ? (0.92 - e * 0.84) : rawX;
       const vFreq = 2.5 + pass * 0.4;
       const ny = 0.5 + Math.sin(e * Math.PI * vFreq + pass * 1.2) * 0.32;
 
       // Small circular burnishing sub-motion
       const circT = e * Math.PI * 2 * (8 + pass);
-      const cr = 6 + Math.sin(e * Math.PI) * 4;
+      const cr = 8 + Math.sin(e * Math.PI) * 5;
       const bx = L + nx * W + Math.cos(circT) * cr - barenSize / 2;
       const by = T + ny * H + Math.sin(circT) * cr - barenSize / 2;
 

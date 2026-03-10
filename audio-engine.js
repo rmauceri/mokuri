@@ -574,11 +574,11 @@ const MokuriAudio = (() => {
       bp.Q.value = 0.7;
       const g = c.createGain();
       g.gain.setValueAtTime(0, now);
-      g.gain.linearRampToValueAtTime(0.12, now + 0.15);
+      g.gain.linearRampToValueAtTime(0.12, now + 0.05);
       // Rhythmic pulsing matching baren circular motion
-      const pulseLen = (dur - 0.3) / 4;
+      const pulseLen = (dur - 0.15) / 4;
       for (let i = 0; i < 4; i++) {
-        const t = 0.15 + i * pulseLen;
+        const t = 0.05 + i * pulseLen;
         g.gain.linearRampToValueAtTime(0.15, now + t);
         g.gain.linearRampToValueAtTime(0.06, now + t + pulseLen * 0.5);
       }
