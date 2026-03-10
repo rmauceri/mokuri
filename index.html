@@ -1823,7 +1823,7 @@ const STATE = {
   // Composition
   elements: [],       // placed elements: { id, defId, x, y, scaleX, scaleY, rotation, carveLevel, colorOverrides, carveStrokes }
   nextId: 1,
-  selectedId: null,
+  selectedIds: new Set(),  // multi-selection set; "primary" = most recently added
   activeZone: null,
 
   // Viewport
@@ -2846,24 +2846,63 @@ function renderBackgroundCarveStrokes() {
 // ============================================================
 //  SELECTION
 // ============================================================
+// Selection helpers — selectedIds is a Set; "primary" = last-added element
+function primarySelectedId() {
+  if (!STATE.selectedIds.size) return null;
+  let last = null;
+  for (const id of STATE.selectedIds) last = id;
+  return last;
+}
+
 function selectElement(id) {
-  STATE.selectedId = id;
-  // Set active zone to the first zone of the selected element
+  STATE.selectedIds.clear();
+  STATE.selectedIds.add(id);
   const el = STATE.elements.find(e => e.id === id);
   if (el) {
     const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
     STATE.activeZone = def && def.colorZones.length ? def.colorZones[0].id : null;
   }
-  updateSelection();
-  updateToolbarState();
-  buildPaletteUI();
-  if (STATE.carveStudioOpen) buildCarveStudioUI();
-  if (STATE.inkStudioOpen) buildInkStudioUI();
+  refreshSelectionUI();
+}
+
+function addToSelection(id) {
+  STATE.selectedIds.add(id);
+  const el = STATE.elements.find(e => e.id === id);
+  if (el) {
+    const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+    STATE.activeZone = def && def.colorZones.length ? def.colorZones[0].id : null;
+  }
+  refreshSelectionUI();
+}
+
+function removeFromSelection(id) {
+  STATE.selectedIds.delete(id);
+  // Reset active zone to primary element's first zone
+  const pid = primarySelectedId();
+  if (pid) {
+    const el = STATE.elements.find(e => e.id === pid);
+    if (el) {
+      const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+      STATE.activeZone = def && def.colorZones.length ? def.colorZones[0].id : null;
+    }
+  } else {
+    STATE.activeZone = null;
+  }
+  refreshSelectionUI();
+}
+
+function toggleSelection(id) {
+  if (STATE.selectedIds.has(id)) removeFromSelection(id);
+  else addToSelection(id);
 }
 
 function deselectAll() {
-  STATE.selectedId = null;
+  STATE.selectedIds.clear();
   STATE.activeZone = null;
+  refreshSelectionUI();
+}
+
+function refreshSelectionUI() {
   updateSelection();
   updateToolbarState();
   buildPaletteUI();
@@ -2873,130 +2912,171 @@ function deselectAll() {
 
 function updateSelection() {
   while (selectionLayer.firstChild) selectionLayer.removeChild(selectionLayer.firstChild);
-  if (!STATE.selectedId) return;
+  if (!STATE.selectedIds.size) return;
 
-  const el = STATE.elements.find(e => e.id === STATE.selectedId);
-  if (!el) return;
-
-  const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
-  if (!def) return;
-
-  const vb = def.viewBox.split(' ').map(Number);
-  const hw = (vb[2] / 2) * Math.abs(el.scaleX);
-  const hh = (vb[3] / 2) * Math.abs(el.scaleY);
+  const isSingle = STATE.selectedIds.size === 1;
   const pad = 6;
 
-  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-  g.setAttribute('transform', `translate(${el.x}, ${el.y}) rotate(${el.rotation})`);
+  if (isSingle) {
+    // --- Single selection: full handles (resize, rotate) ---
+    const el = STATE.elements.find(e => STATE.selectedIds.has(e.id));
+    if (!el) return;
+    const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+    if (!def) return;
 
-  const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-  rect.setAttribute('x', -hw - pad);
-  rect.setAttribute('y', -hh - pad);
-  rect.setAttribute('width', hw * 2 + pad * 2);
-  rect.setAttribute('height', hh * 2 + pad * 2);
-  rect.classList.add('selection-box');
-  g.appendChild(rect);
+    const vb = def.viewBox.split(' ').map(Number);
+    const hw = (vb[2] / 2) * Math.abs(el.scaleX);
+    const hh = (vb[3] / 2) * Math.abs(el.scaleY);
 
-  // Corner handles
-  const handleSize = 7;
-  const corners = [
-    { cx: -hw - pad, cy: -hh - pad, cursor: 'nw-resize' },
-    { cx: hw + pad, cy: -hh - pad, cursor: 'ne-resize' },
-    { cx: hw + pad, cy: hh + pad, cursor: 'se-resize' },
-    { cx: -hw - pad, cy: hh + pad, cursor: 'sw-resize' },
-  ];
-  corners.forEach(c => {
-    const h = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    h.setAttribute('x', c.cx - handleSize / 2);
-    h.setAttribute('y', c.cy - handleSize / 2);
-    h.setAttribute('width', handleSize);
-    h.setAttribute('height', handleSize);
-    h.setAttribute('rx', 2);
-    h.classList.add('handle');
-    h.style.cursor = c.cursor;
-    h.setAttribute('data-handle', c.cursor);
-    g.appendChild(h);
-  });
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('transform', `translate(${el.x}, ${el.y}) rotate(${el.rotation})`);
 
-  // Edge midpoint handles (stretch one axis)
-  const edgeW = 10, edgeH = 4;
-  const edges = [
-    { cx: 0, cy: -hh - pad, cursor: 'n-resize', horiz: true },
-    { cx: 0, cy: hh + pad, cursor: 's-resize', horiz: true },
-    { cx: -hw - pad, cy: 0, cursor: 'w-resize', horiz: false },
-    { cx: hw + pad, cy: 0, cursor: 'e-resize', horiz: false },
-  ];
-  edges.forEach(ed => {
-    const h = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    const w = ed.horiz ? edgeW : edgeH;
-    const ht = ed.horiz ? edgeH : edgeW;
-    h.setAttribute('x', ed.cx - w / 2);
-    h.setAttribute('y', ed.cy - ht / 2);
-    h.setAttribute('width', w);
-    h.setAttribute('height', ht);
-    h.setAttribute('rx', 2);
-    h.classList.add('handle-edge');
-    h.style.cursor = ed.cursor;
-    h.setAttribute('data-handle', ed.cursor);
-    g.appendChild(h);
-  });
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('x', -hw - pad);
+    rect.setAttribute('y', -hh - pad);
+    rect.setAttribute('width', hw * 2 + pad * 2);
+    rect.setAttribute('height', hh * 2 + pad * 2);
+    rect.classList.add('selection-box');
+    g.appendChild(rect);
 
-  // Rotation handle
-  const rotLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-  rotLine.setAttribute('x1', 0); rotLine.setAttribute('y1', -hh - pad);
-  rotLine.setAttribute('x2', 0); rotLine.setAttribute('y2', -hh - pad - 20);
-  rotLine.setAttribute('stroke', '#8b6b4a');
-  rotLine.setAttribute('stroke-width', 1.5);
-  g.appendChild(rotLine);
+    // Corner handles
+    const handleSize = 7;
+    const corners = [
+      { cx: -hw - pad, cy: -hh - pad, cursor: 'nw-resize' },
+      { cx: hw + pad, cy: -hh - pad, cursor: 'ne-resize' },
+      { cx: hw + pad, cy: hh + pad, cursor: 'se-resize' },
+      { cx: -hw - pad, cy: hh + pad, cursor: 'sw-resize' },
+    ];
+    corners.forEach(c => {
+      const h = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      h.setAttribute('x', c.cx - handleSize / 2);
+      h.setAttribute('y', c.cy - handleSize / 2);
+      h.setAttribute('width', handleSize);
+      h.setAttribute('height', handleSize);
+      h.setAttribute('rx', 2);
+      h.classList.add('handle');
+      h.style.cursor = c.cursor;
+      h.setAttribute('data-handle', c.cursor);
+      g.appendChild(h);
+    });
 
-  const rotHandle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-  rotHandle.setAttribute('cx', 0);
-  rotHandle.setAttribute('cy', -hh - pad - 20);
-  rotHandle.setAttribute('r', 5);
-  rotHandle.classList.add('handle', 'handle-rotate');
-  rotHandle.setAttribute('data-handle', 'rotate');
-  g.appendChild(rotHandle);
+    // Edge midpoint handles (stretch one axis)
+    const edgeW = 10, edgeH = 4;
+    const edges = [
+      { cx: 0, cy: -hh - pad, cursor: 'n-resize', horiz: true },
+      { cx: 0, cy: hh + pad, cursor: 's-resize', horiz: true },
+      { cx: -hw - pad, cy: 0, cursor: 'w-resize', horiz: false },
+      { cx: hw + pad, cy: 0, cursor: 'e-resize', horiz: false },
+    ];
+    edges.forEach(ed => {
+      const h = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      const w = ed.horiz ? edgeW : edgeH;
+      const ht = ed.horiz ? edgeH : edgeW;
+      h.setAttribute('x', ed.cx - w / 2);
+      h.setAttribute('y', ed.cy - ht / 2);
+      h.setAttribute('width', w);
+      h.setAttribute('height', ht);
+      h.setAttribute('rx', 2);
+      h.classList.add('handle-edge');
+      h.style.cursor = ed.cursor;
+      h.setAttribute('data-handle', ed.cursor);
+      g.appendChild(h);
+    });
 
-  // Dim handles and show lock icon for locked elements
-  if (el.locked) {
-    g.setAttribute('opacity', '0.4');
-    g.style.pointerEvents = 'none';
-    const lockIcon = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    lockIcon.setAttribute('x', hw + pad + 6);
-    lockIcon.setAttribute('y', -hh - pad + 4);
-    lockIcon.setAttribute('font-size', '14');
-    lockIcon.setAttribute('fill', '#8b6b4a');
-    lockIcon.textContent = '🔒';
-    g.appendChild(lockIcon);
-  }
+    // Rotation handle
+    const rotLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    rotLine.setAttribute('x1', 0); rotLine.setAttribute('y1', -hh - pad);
+    rotLine.setAttribute('x2', 0); rotLine.setAttribute('y2', -hh - pad - 20);
+    rotLine.setAttribute('stroke', '#8b6b4a');
+    rotLine.setAttribute('stroke-width', 1.5);
+    g.appendChild(rotLine);
 
-  selectionLayer.appendChild(g);
+    const rotHandle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    rotHandle.setAttribute('cx', 0);
+    rotHandle.setAttribute('cy', -hh - pad - 20);
+    rotHandle.setAttribute('r', 5);
+    rotHandle.classList.add('handle', 'handle-rotate');
+    rotHandle.setAttribute('data-handle', 'rotate');
+    g.appendChild(rotHandle);
 
-  // Zone highlight in ink mode — add dashed outline on active zone paths
-  if (STATE.viewMode === 'ink' && STATE.activeZone) {
-    const carve = def.carveLevels[Math.min(el.carveLevel, def.carveLevels.length - 1)];
-    const allPaths = [...def.carveLevels[0].paths, ...carve.paths];
-    const zonePaths = allPaths.filter(p => p.zone === STATE.activeZone && p.type === 'fill');
-    if (zonePaths.length) {
-      const offsetX = -vb[2] / 2;
-      const offsetY = -vb[3] / 2;
-      const zg = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      zg.setAttribute('transform', `translate(${el.x}, ${el.y}) rotate(${el.rotation}) scale(${el.scaleX}, ${el.scaleY})`);
-      const zi = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      zi.setAttribute('transform', `translate(${offsetX}, ${offsetY})`);
-      zonePaths.forEach(p => {
-        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', p.d);
-        path.setAttribute('fill', 'none');
-        path.setAttribute('stroke', '#f5c446');
-        path.setAttribute('stroke-width', 2.5);
-        path.setAttribute('stroke-dasharray', '4 3');
-        path.setAttribute('stroke-opacity', '0.8');
-        path.setAttribute('stroke-linejoin', 'round');
-        zi.appendChild(path);
-      });
-      zg.appendChild(zi);
-      selectionLayer.appendChild(zg);
+    // Dim handles and show lock icon for locked elements
+    if (el.locked) {
+      g.setAttribute('opacity', '0.4');
+      g.style.pointerEvents = 'none';
+      const lockIcon = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      lockIcon.setAttribute('x', hw + pad + 6);
+      lockIcon.setAttribute('y', -hh - pad + 4);
+      lockIcon.setAttribute('font-size', '14');
+      lockIcon.setAttribute('fill', '#8b6b4a');
+      lockIcon.textContent = '🔒';
+      g.appendChild(lockIcon);
+    }
+
+    selectionLayer.appendChild(g);
+
+    // Zone highlight in ink mode — add dashed outline on active zone paths
+    if (STATE.viewMode === 'ink' && STATE.activeZone) {
+      const carve = def.carveLevels[Math.min(el.carveLevel, def.carveLevels.length - 1)];
+      const allPaths = [...def.carveLevels[0].paths, ...carve.paths];
+      const zonePaths = allPaths.filter(p => p.zone === STATE.activeZone && p.type === 'fill');
+      if (zonePaths.length) {
+        const offsetX = -vb[2] / 2;
+        const offsetY = -vb[3] / 2;
+        const zg = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        zg.setAttribute('transform', `translate(${el.x}, ${el.y}) rotate(${el.rotation}) scale(${el.scaleX}, ${el.scaleY})`);
+        const zi = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        zi.setAttribute('transform', `translate(${offsetX}, ${offsetY})`);
+        zonePaths.forEach(p => {
+          const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          path.setAttribute('d', p.d);
+          path.setAttribute('fill', 'none');
+          path.setAttribute('stroke', '#f5c446');
+          path.setAttribute('stroke-width', 2.5);
+          path.setAttribute('stroke-dasharray', '4 3');
+          path.setAttribute('stroke-opacity', '0.8');
+          path.setAttribute('stroke-linejoin', 'round');
+          zi.appendChild(path);
+        });
+        zg.appendChild(zi);
+        selectionLayer.appendChild(zg);
+      }
+    }
+  } else {
+    // --- Multi-selection: per-element dashed boxes, no handles ---
+    for (const id of STATE.selectedIds) {
+      const el = STATE.elements.find(e => e.id === id);
+      if (!el) continue;
+      const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+      if (!def) continue;
+
+      const vb = def.viewBox.split(' ').map(Number);
+      const hw = (vb[2] / 2) * Math.abs(el.scaleX);
+      const hh = (vb[3] / 2) * Math.abs(el.scaleY);
+
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      g.setAttribute('transform', `translate(${el.x}, ${el.y}) rotate(${el.rotation})`);
+
+      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      rect.setAttribute('x', -hw - pad);
+      rect.setAttribute('y', -hh - pad);
+      rect.setAttribute('width', hw * 2 + pad * 2);
+      rect.setAttribute('height', hh * 2 + pad * 2);
+      rect.classList.add('selection-box');
+      rect.setAttribute('stroke-dasharray', '4 3');
+      g.appendChild(rect);
+
+      if (el.locked) {
+        g.setAttribute('opacity', '0.4');
+        const lockIcon = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        lockIcon.setAttribute('x', hw + pad + 6);
+        lockIcon.setAttribute('y', -hh - pad + 4);
+        lockIcon.setAttribute('font-size', '14');
+        lockIcon.setAttribute('fill', '#8b6b4a');
+        lockIcon.textContent = '🔒';
+        g.appendChild(lockIcon);
+      }
+
+      selectionLayer.appendChild(g);
     }
   }
 }
@@ -3030,19 +3110,20 @@ function addElement(defId, x, y) {
 }
 
 function deleteSelected() {
-  if (!STATE.selectedId) return;
-  const el = STATE.elements.find(e => e.id === STATE.selectedId);
-  if (el && el.locked) return;
+  if (!STATE.selectedIds.size) return;
+  const selected = STATE.elements.filter(e => STATE.selectedIds.has(e.id));
+  if (selected.every(e => e.locked)) return;
   pushUndo();
-  STATE.elements = STATE.elements.filter(e => e.id !== STATE.selectedId);
+  STATE.elements = STATE.elements.filter(e => !STATE.selectedIds.has(e.id) || e.locked);
   deselectAll();
   rerenderAll();
   MokuriAudio.playElementDelete();
 }
 
 function carveSelected() {
-  if (!STATE.selectedId) return;
-  const el = STATE.elements.find(e => e.id === STATE.selectedId);
+  const pid = primarySelectedId();
+  if (!pid) return;
+  const el = STATE.elements.find(e => e.id === pid);
   if (!el || el.locked) return;
   const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
   if (!def || def.carveLevels.length <= 1) return;
@@ -3057,45 +3138,52 @@ function carveSelected() {
 //  FLIP, DUPLICATE, LOCK
 // ============================================================
 function flipSelectedH() {
-  if (!STATE.selectedId) return;
-  const el = STATE.elements.find(e => e.id === STATE.selectedId);
-  if (!el || el.locked) return;
+  if (!STATE.selectedIds.size) return;
+  const targets = STATE.elements.filter(e => STATE.selectedIds.has(e.id) && !e.locked);
+  if (!targets.length) return;
   pushUndo();
-  el.scaleX *= -1;
+  targets.forEach(el => el.scaleX *= -1);
   rerenderAll();
 }
 
 function flipSelectedV() {
-  if (!STATE.selectedId) return;
-  const el = STATE.elements.find(e => e.id === STATE.selectedId);
-  if (!el || el.locked) return;
+  if (!STATE.selectedIds.size) return;
+  const targets = STATE.elements.filter(e => STATE.selectedIds.has(e.id) && !e.locked);
+  if (!targets.length) return;
   pushUndo();
-  el.scaleY *= -1;
+  targets.forEach(el => el.scaleY *= -1);
   rerenderAll();
 }
 
 function duplicateSelected() {
-  if (!STATE.selectedId) return;
-  const el = STATE.elements.find(e => e.id === STATE.selectedId);
-  if (!el) return;
+  if (!STATE.selectedIds.size) return;
+  const targets = STATE.elements.filter(e => STATE.selectedIds.has(e.id));
+  if (!targets.length) return;
   pushUndo();
-  const clone = JSON.parse(JSON.stringify(el));
-  clone.id = STATE.nextId++;
-  clone.x += 20;
-  clone.y += 20;
-  clone.variationSeed = Math.floor(Math.random() * 100000);
-  clone.locked = false;
-  STATE.elements.push(clone);
+  const newIds = new Set();
+  targets.forEach(el => {
+    const clone = JSON.parse(JSON.stringify(el));
+    clone.id = STATE.nextId++;
+    clone.x += 20;
+    clone.y += 20;
+    clone.variationSeed = Math.floor(Math.random() * 100000);
+    clone.locked = false;
+    STATE.elements.push(clone);
+    newIds.add(clone.id);
+  });
+  STATE.selectedIds = newIds;
   rerenderAll();
-  selectElement(clone.id);
+  refreshSelectionUI();
 }
 
 function toggleLockSelected() {
-  if (!STATE.selectedId) return;
-  const el = STATE.elements.find(e => e.id === STATE.selectedId);
-  if (!el) return;
+  if (!STATE.selectedIds.size) return;
+  const targets = STATE.elements.filter(e => STATE.selectedIds.has(e.id));
+  if (!targets.length) return;
   pushUndo();
-  el.locked = !el.locked;
+  // If any unlocked, lock all; otherwise unlock all
+  const anyUnlocked = targets.some(e => !e.locked);
+  targets.forEach(el => el.locked = anyUnlocked);
   rerenderAll();
   updateToolbarState();
 }
@@ -3104,17 +3192,21 @@ function toggleLockSelected() {
 //  LAYER ORDERING
 // ============================================================
 function moveLayer(dir) {
-  if (!STATE.selectedId) return;
-  const el = STATE.elements.find(e => e.id === STATE.selectedId);
-  if (!el || el.locked) return;
-  const idx = STATE.elements.indexOf(el);
-  if (idx < 0) return;
-  const newIdx = idx + dir;
-  if (newIdx < 0 || newIdx >= STATE.elements.length) return;
-  pushUndo();
-  const tmp = STATE.elements[idx];
-  STATE.elements[idx] = STATE.elements[newIdx];
-  STATE.elements[newIdx] = tmp;
+  if (!STATE.selectedIds.size) return;
+  const ids = STATE.selectedIds;
+  const selected = STATE.elements.filter(e => ids.has(e.id) && !e.locked);
+  if (!selected.length) return;
+  // Sort indices in the direction of movement to avoid collisions
+  const indices = selected.map(e => STATE.elements.indexOf(e)).sort((a, b) => dir > 0 ? b - a : a - b);
+  for (const idx of indices) {
+    const newIdx = idx + dir;
+    if (newIdx < 0 || newIdx >= STATE.elements.length) return;
+    if (ids.has(STATE.elements[newIdx].id)) continue; // skip past siblings
+    pushUndo();
+    const tmp = STATE.elements[idx];
+    STATE.elements[idx] = STATE.elements[newIdx];
+    STATE.elements[newIdx] = tmp;
+  }
   rerenderAll();
 }
 
@@ -3459,7 +3551,7 @@ function newComposition(paperW, paperH, presetId) {
   } else {
     STATE.elements = [];
     STATE.nextId = 1;
-    STATE.selectedId = null;
+    STATE.selectedIds.clear();
     if (paperW) STATE.paperW = paperW;
     if (paperH) STATE.paperH = paperH;
     STATE.sky = 'none';
@@ -3843,19 +3935,20 @@ function handleFirstRun() {
 function updateToolbarState() {
   $('btn-undo').disabled = !STATE.undoStack.length;
   $('btn-redo').disabled = !STATE.redoStack.length;
-  const hasSel = !!STATE.selectedId;
-  const selEl = hasSel ? STATE.elements.find(e => e.id === STATE.selectedId) : null;
-  const isLocked = selEl && selEl.locked;
-  $('btn-delete').disabled = !hasSel || isLocked;
-  $('btn-layer-up').disabled = !hasSel || isLocked;
-  $('btn-layer-down').disabled = !hasSel || isLocked;
-  $('btn-flip-h').disabled = !hasSel || isLocked;
-  $('btn-flip-v').disabled = !hasSel || isLocked;
+  const hasSel = STATE.selectedIds.size > 0;
+  const selEls = hasSel ? STATE.elements.filter(e => STATE.selectedIds.has(e.id)) : [];
+  const allLocked = hasSel && selEls.every(e => e.locked);
+  const anyLocked = hasSel && selEls.some(e => e.locked);
+  $('btn-delete').disabled = !hasSel || allLocked;
+  $('btn-layer-up').disabled = !hasSel || allLocked;
+  $('btn-layer-down').disabled = !hasSel || allLocked;
+  $('btn-flip-h').disabled = !hasSel || allLocked;
+  $('btn-flip-v').disabled = !hasSel || allLocked;
   $('btn-duplicate').disabled = !hasSel;
   $('btn-lock').disabled = !hasSel;
   if (hasSel) {
-    $('btn-lock').textContent = isLocked ? '🔓' : '🔒';
-    $('btn-lock').title = isLocked ? 'Unlock (L)' : 'Lock (L)';
+    $('btn-lock').textContent = anyLocked ? '🔓' : '🔒';
+    $('btn-lock').title = anyLocked ? 'Unlock (L)' : 'Lock (L)';
   }
   updatePhaseButtons();
 }
@@ -4229,8 +4322,8 @@ function buildPaletteUI() {
   const palette = PALETTES[STATE.paletteId];
 
   // Carve info for selected element
-  if (STATE.selectedId) {
-    const el = STATE.elements.find(e => e.id === STATE.selectedId);
+  if (STATE.selectedIds.size === 1) {
+    const el = STATE.elements.find(e => e.id === primarySelectedId());
     if (el) {
       const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
       if (def) {
@@ -4411,8 +4504,8 @@ function quickStrokeUndo() {
       STATE.strokeRedoBuffer.push({ type: 'element', elementId: el.id, stroke: el.carveStrokes.pop() });
       rerenderAll();
     }
-  } else if (STATE.selectedId) {
-    const el = STATE.elements.find(e => e.id === STATE.selectedId);
+  } else if (primarySelectedId()) {
+    const el = STATE.elements.find(e => e.id === primarySelectedId());
     if (el && el.carveStrokes && el.carveStrokes.length) {
       STATE.strokeRedoBuffer.push({ type: 'element', elementId: el.id, stroke: el.carveStrokes.pop() });
       rerenderAll();
@@ -4698,7 +4791,7 @@ function buildCarveStudioUI() {
       chip.className = 'cs-pattern-chip';
       chip.textContent = `${pat.icon} ${pat.name}`;
       // Determine active pattern: selected element's pattern or 'none'
-      const el = STATE.selectedId ? STATE.elements.find(e => e.id === STATE.selectedId) : null;
+      const el = (STATE.selectedIds.size === 1) ? STATE.elements.find(e => e.id === primarySelectedId()) : null;
       const activePat = el ? (el.carvePattern || 'none') : 'none';
       if (pid === activePat) chip.classList.add('active');
       chip.addEventListener('click', () => {
@@ -4736,11 +4829,13 @@ function buildCarveStudioUI() {
   const elContent = $('cs-element-content');
   if (elSection && elContent) {
     elContent.innerHTML = '';
-    const el = STATE.selectedId ? STATE.elements.find(e => e.id === STATE.selectedId) : null;
+    const el = (STATE.selectedIds.size === 1) ? STATE.elements.find(e => e.id === primarySelectedId()) : null;
     if (!el) {
       const hint = document.createElement('div');
       hint.className = 'cs-element-none';
-      hint.textContent = 'Select an element to see carve options';
+      hint.textContent = STATE.selectedIds.size > 1
+        ? `${STATE.selectedIds.size} elements selected — click one for carve options`
+        : 'Select an element to see carve options';
       elContent.appendChild(hint);
     } else {
       const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
@@ -4904,11 +4999,13 @@ function buildInkStudioUI() {
   const zoneContent = $('is-zone-content');
   if (zoneContent) {
     zoneContent.innerHTML = '';
-    const el = STATE.selectedId ? STATE.elements.find(e => e.id === STATE.selectedId) : null;
+    const el = (STATE.selectedIds.size === 1) ? STATE.elements.find(e => e.id === primarySelectedId()) : null;
     if (!el) {
       const hint = document.createElement('div');
       hint.className = 'is-zone-none';
-      hint.textContent = 'Select an element to edit its colors';
+      hint.textContent = STATE.selectedIds.size > 1
+        ? `${STATE.selectedIds.size} elements selected — click one for color editing`
+        : 'Select an element to edit its colors';
       zoneContent.appendChild(hint);
     } else {
     const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
@@ -5553,7 +5650,7 @@ function setupInteraction() {
         const el = STATE.elements.find(el => el.id === id);
         if (!el || el.locked) return;
         // Click on a different element: select it first (allows choosing what to carve)
-        if (STATE.selectedId !== id) {
+        if (!primarySelectedId() || primarySelectedId() !== id) {
           selectElement(id);
           return;
         }
@@ -5645,11 +5742,11 @@ function setupInteraction() {
     // ---- SELECT MODE (existing behavior) ----
     const pt = clientToSvg(e.clientX, e.clientY);
 
-    // Check if clicking a handle
+    // Check if clicking a handle (only in single-selection mode)
     const handleEl = e.target.closest('[data-handle]');
-    if (handleEl && STATE.selectedId) {
+    if (handleEl && STATE.selectedIds.size === 1) {
       const handleType = handleEl.getAttribute('data-handle');
-      const el = STATE.elements.find(el => el.id === STATE.selectedId);
+      const el = STATE.elements.find(el => el.id === primarySelectedId());
       if (el && !el.locked) {
         if (handleType === 'rotate') {
           STATE.dragging = {
@@ -5701,12 +5798,19 @@ function setupInteraction() {
       const id = parseInt(gEl.getAttribute('data-id'));
       const el = STATE.elements.find(el => el.id === id);
       if (el) {
-        selectElement(id);
-        if (!el.locked) {
+        // Ctrl/Cmd+click: toggle additive selection
+        if (e.ctrlKey || e.metaKey) {
+          toggleSelection(id);
+        } else if (!STATE.selectedIds.has(id)) {
+          selectElement(id);
+        }
+        // Set up drag for all selected unlocked elements
+        const draggable = STATE.elements.filter(de => STATE.selectedIds.has(de.id) && !de.locked);
+        if (draggable.length && !el.locked) {
           STATE.dragging = {
             type: 'move', elementId: id,
             startX: pt.x, startY: pt.y,
-            origX: el.x, origY: el.y,
+            origPositions: draggable.map(de => ({ id: de.id, x: de.x, y: de.y })),
             clientStartX: e.clientX, clientStartY: e.clientY,
             committed: false,
           };
@@ -5806,12 +5910,13 @@ function setupInteraction() {
         d.committed = true;
         pushUndo();
       }
-      const el = STATE.elements.find(el => el.id === d.elementId);
-      if (el) {
-        el.x = d.origX + (pt.x - d.startX);
-        el.y = d.origY + (pt.y - d.startY);
-        rerenderAll();
-      }
+      const deltaX = pt.x - d.startX;
+      const deltaY = pt.y - d.startY;
+      d.origPositions.forEach(op => {
+        const el = STATE.elements.find(el => el.id === op.id);
+        if (el) { el.x = op.x + deltaX; el.y = op.y + deltaY; }
+      });
+      rerenderAll();
       return;
     }
 
@@ -5911,10 +6016,12 @@ function setupInteraction() {
     if (STATE.dragging && STATE.dragging.type === 'move') {
       if (STATE.dragging.committed) {
         // Check if actually moved — if not, remove undo entry
-        const el = STATE.elements.find(e => e.id === STATE.dragging.elementId);
-        if (el && el.x === STATE.dragging.origX && el.y === STATE.dragging.origY) {
-          STATE.undoStack.pop();
-        }
+        const ops = STATE.dragging.origPositions;
+        const moved = ops.some(op => {
+          const el = STATE.elements.find(e => e.id === op.id);
+          return el && (el.x !== op.x || el.y !== op.y);
+        });
+        if (!moved) STATE.undoStack.pop();
       }
     }
     STATE.dragging = null;
@@ -5957,12 +6064,13 @@ function setupKeyboard() {
     if (e.key === 'Delete' || e.key === 'Backspace') { deleteSelected(); e.preventDefault(); }
     if (e.key === 'c' && !e.ctrlKey && !e.metaKey) {
       // C key: if an element is selected, carve it (cycle level) and open Carving Workbench
-      if (STATE.selectedId) {
+      if (STATE.selectedIds.size === 1) {
         carveSelected();
         if (!STATE.carveStudioOpen) openCarveStudio();
+      } else if (STATE.selectedIds.size > 1) {
+        if (!STATE.carveStudioOpen) openCarveStudio();
+        else closeCarveStudio();
       } else if (STATE.carveStudioOpen) {
-        closeCarveStudio();
-      } else {
         openCarveStudio();
       }
       e.preventDefault();
@@ -5979,9 +6087,9 @@ function setupKeyboard() {
     if (e.key === 'h' && !e.ctrlKey && !e.metaKey) { flipSelectedH(); e.preventDefault(); }
     if (e.key === 'f' && !e.ctrlKey && !e.metaKey) {
       // F enters carve focus when an element is selected, otherwise flips vertical
-      if (STATE.selectedId && !STATE.carveFocus) {
+      if (STATE.selectedIds.size === 1 && !STATE.carveFocus) {
         if (STATE.mode !== 'carve') setMode('carve');
-        enterCarveFocus(STATE.selectedId);
+        enterCarveFocus(primarySelectedId());
       } else if (!STATE.carveFocus) {
         flipSelectedV();
       }
@@ -6031,16 +6139,25 @@ function setupKeyboard() {
       e.preventDefault();
     }
 
-    // Arrow nudge
-    if (STATE.mode === 'select' && STATE.selectedId && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-      const el = STATE.elements.find(el => el.id === STATE.selectedId);
-      if (el && !el.locked) {
+    // Select all (Ctrl/Cmd+A)
+    if (e.key === 'a' && (e.ctrlKey || e.metaKey)) {
+      STATE.elements.forEach(el => STATE.selectedIds.add(el.id));
+      refreshSelectionUI();
+      e.preventDefault();
+    }
+
+    // Arrow nudge — move all selected elements
+    if (STATE.mode === 'select' && STATE.selectedIds.size && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+      const targets = STATE.elements.filter(el => STATE.selectedIds.has(el.id) && !el.locked);
+      if (targets.length) {
         const step = e.shiftKey ? 10 : 2;
         pushUndo();
-        if (e.key === 'ArrowUp') el.y -= step;
-        if (e.key === 'ArrowDown') el.y += step;
-        if (e.key === 'ArrowLeft') el.x -= step;
-        if (e.key === 'ArrowRight') el.x += step;
+        targets.forEach(el => {
+          if (e.key === 'ArrowUp') el.y -= step;
+          if (e.key === 'ArrowDown') el.y += step;
+          if (e.key === 'ArrowLeft') el.x -= step;
+          if (e.key === 'ArrowRight') el.x += step;
+        });
         rerenderAll();
       }
       e.preventDefault();
