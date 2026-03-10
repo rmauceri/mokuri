@@ -2262,7 +2262,8 @@ function applyStrokeItem(svgPath, item, colorOverride) {
 
 // Generate rendering instructions for a carve stroke — returns [{d, a, c, fill}]
 // Uses variable-width ribbon fills for smooth pressure-responsive rendering
-function carveStrokeRenderData(stroke, paperColor, grooveColor) {
+// opts.forPrint: add ink-density and tilt-feathering effects for print output
+function carveStrokeRenderData(stroke, paperColor, grooveColor, opts) {
   const tool = CARVE_TOOLS[stroke.tool || 'fine'];
   const baseW = stroke.width || tool.width;
   const pts = stroke.points;
@@ -2270,6 +2271,7 @@ function carveStrokeRenderData(stroke, paperColor, grooveColor) {
 
   const data = [];
   const seed = pts[0].x * 13.7 + pts[0].y * 7.3 + pts.length * 3.1;
+  const forPrint = opts && opts.forPrint;
 
   // Pressure curves from active preset
   const _pc = PRESSURE_CURVES[STATE.pressureCurve || 'medium'];
@@ -2285,11 +2287,13 @@ function carveStrokeRenderData(stroke, paperColor, grooveColor) {
   }
 
   // Compute per-point widths for a given layer width multiplier
+  // In print mode, edge noise scales inversely with pressure (shallow cuts → rougher edges)
   function computeWidths(layerW) {
     return pts.map((pt, i) => {
       const p = pt.pressure !== undefined ? pt.pressure : 0.5;
       const pw = pressureWidth(p);
-      const noise = Math.cos(seed + i * 7.3 + layerW * 13.1) * 0.1;
+      const noiseScale = forPrint ? 0.1 + 0.18 * (1 - p) : 0.1;
+      const noise = Math.cos(seed + i * 7.3 + layerW * 13.1) * noiseScale;
       return Math.max(0.15, baseW * layerW * taperAt(i) * pw * (1 + noise));
     });
   }
@@ -2306,10 +2310,11 @@ function carveStrokeRenderData(stroke, paperColor, grooveColor) {
     return Math.max(0, Math.min(1, sum / pts.length));
   }
 
+  const tiltS = tool.tiltStrength || 0;
+
   // Groove shadow ribbon (wider, behind everything)
   const grooveLayerW = tool.profile.length > 1 ? tool.profile[0].w + 0.3 : 1.3;
   const grooveWidths = computeWidths(grooveLayerW);
-  const tiltS = tool.tiltStrength || 0;
   const grooveD = computeRibbonD(pts, grooveWidths, tiltS);
   if (grooveD) {
     data.push({ d: grooveD, a: tool.profile.length > 1 ? 0.2 : 0.35, c: grooveColor, fill: true });
@@ -2323,6 +2328,76 @@ function carveStrokeRenderData(stroke, paperColor, grooveColor) {
       data.push({ d: ribbonD, a: layerOpacity(layer.opacity, li), c: paperColor, fill: true });
     }
   });
+
+  // === PRINT-SPECIFIC EFFECTS (3G: ink density, 3H: tilt feathering) ===
+  if (forPrint) {
+    const avgP = pts.reduce((s, pt) => s + (pt.pressure !== undefined ? pt.pressure : 0.5), 0) / pts.length;
+    const inkColor = '#3a3228';
+
+    // 3G — Fiber ghosts: residual ink in shallow cuts
+    // Dashed center-line in ink color; intensity inversely proportional to pressure
+    const fiberIntensity = Math.max(0, 1 - avgP / 0.65);
+    if (fiberIntensity > 0.05) {
+      const centerD = pointsToD(pts);
+      const fiberW = Math.max(0.3, baseW * 0.25 * fiberIntensity);
+      data.push({
+        d: centerD,
+        a: Math.min(0.28, fiberIntensity * 0.32),
+        c: inkColor,
+        fill: false,
+        w: fiberW,
+        dashArray: `${(fiberW * 1.5).toFixed(1)} ${(fiberW * 3).toFixed(1)}`,
+      });
+    }
+
+    // 3G — Ink edge pooling: dark outline at groove boundary on deep cuts
+    // Ink collects at the sharp edges of deep grooves before transfer
+    const poolIntensity = Math.max(0, (avgP - 0.35) / 0.65);
+    if (poolIntensity > 0.05) {
+      const outerW = (tool.profile[0] ? tool.profile[0].w : 1) + 0.15;
+      const edgeWidths = computeWidths(outerW);
+      const edgeD = computeRibbonD(pts, edgeWidths, tiltS);
+      if (edgeD) {
+        data.push({
+          d: edgeD,
+          a: Math.min(0.1, poolIntensity * 0.08),
+          c: inkColor,
+          fill: false,
+          w: 0.35 + poolIntensity * 0.3,
+        });
+      }
+    }
+
+    // 3H — Tilt feathering: soft edge on the shallow wall side
+    // Tilted gouge has one clean wall (steep side) and one rough wall (shallow side).
+    // Extend a low-opacity paper ribbon outward on the shallow side to feather the edge.
+    const hasTilt = tiltS > 0 && pts.some(pt =>
+      pt.tiltX !== undefined && (Math.abs(pt.tiltX || 0) > 5 || Math.abs(pt.tiltY || 0) > 5));
+    if (hasTilt) {
+      const featherLayerW = (tool.profile[0] ? tool.profile[0].w : 1) + 0.45;
+      const featherWidths = computeWidths(featherLayerW);
+      // Enhanced tilt shifts more width to the shallow side, extending paper color outward
+      const featherD = computeRibbonD(pts, featherWidths, tiltS * 1.6);
+      if (featherD) {
+        data.push({ d: featherD, a: 0.14, c: paperColor, fill: true });
+      }
+      // Thin dark fiber marks along the shallow edge (rough wall catches ink)
+      const shallowFiberW = (tool.profile[0] ? tool.profile[0].w : 1) + 0.3;
+      const sfWidths = computeWidths(shallowFiberW);
+      const sfD = computeRibbonD(pts, sfWidths, tiltS * 1.4);
+      if (sfD) {
+        const sfW = Math.max(0.2, baseW * 0.15);
+        data.push({
+          d: sfD,
+          a: 0.08,
+          c: inkColor,
+          fill: false,
+          w: sfW,
+          dashArray: `${(sfW * 0.8).toFixed(1)} ${(sfW * 4).toFixed(1)}`,
+        });
+      }
+    }
+  }
 
   return data;
 }

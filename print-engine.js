@@ -255,13 +255,13 @@ const PrintEngine = (() => {
     if (backgroundCarveStrokes && backgroundCarveStrokes.length && typeof carveStrokeRenderData === 'function') {
       backgroundCarveStrokes.forEach(stroke => {
         if (!stroke.points || stroke.points.length < 2) return;
-        const items = carveStrokeRenderData(stroke, '#f5f0e6', 'rgba(0,0,0,0)');
+        const items = carveStrokeRenderData(stroke, '#f5f0e6', 'rgba(0,0,0,0)', { forPrint: true });
         items.forEach(item => {
           if (item.c === 'rgba(0,0,0,0)') return;
           if (item.fill) {
             svgContent += `<path d="${item.d}" fill="${item.c}" fill-opacity="${(item.a * 0.95).toFixed(3)}" stroke="none"/>`;
           } else {
-            svgContent += `<path d="${item.d}" fill="none" stroke="${item.c}" stroke-width="${item.w}" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="${(item.a * 0.95).toFixed(3)}"/>`;
+            svgContent += `<path d="${item.d}" fill="none" stroke="${item.c}" stroke-width="${item.w}" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="${(item.a * 0.95).toFixed(3)}"${item.dashArray ? ` stroke-dasharray="${item.dashArray}"` : ''}/>`;
           }
         });
       });
@@ -391,7 +391,7 @@ const PrintEngine = (() => {
         el.carveStrokes.forEach(stroke => {
           if (stroke.points.length < 2) return;
           const items = (typeof carveStrokeRenderData === 'function')
-            ? carveStrokeRenderData(stroke, '#f5f0e6', 'rgba(0,0,0,0)')
+            ? carveStrokeRenderData(stroke, '#f5f0e6', 'rgba(0,0,0,0)', { forPrint: true })
             : [];
           items.forEach(item => {
             if (item.c === 'rgba(0,0,0,0)') return;
@@ -399,7 +399,7 @@ const PrintEngine = (() => {
             if (item.fill) {
               svgContent += `<path d="${item.d}" fill="${sc}" fill-opacity="${(item.a * 0.95).toFixed(3)}" stroke="none"/>`;
             } else {
-              svgContent += `<path d="${item.d}" fill="none" stroke="${sc}" stroke-width="${item.w}" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="${(item.a * 0.95).toFixed(3)}"/>`;
+              svgContent += `<path d="${item.d}" fill="none" stroke="${sc}" stroke-width="${item.w}" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="${(item.a * 0.95).toFixed(3)}"${item.dashArray ? ` stroke-dasharray="${item.dashArray}"` : ''}/>`;
             }
           });
         });
