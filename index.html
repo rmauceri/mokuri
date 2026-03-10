@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#d4c5a9">
-<title>Mokuri — Woodblock Print Studio</title>
+<title>Mokuri Studio</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='2' width='28' height='28' rx='3' fill='%23c23b22'/%3E%3Crect x='3' y='3' width='26' height='26' rx='2' fill='none' stroke='%23f5f0e6' stroke-width='0.8' opacity='0.5'/%3E%3Ctext x='16' y='23.5' text-anchor='middle' font-family='serif' font-size='20' font-weight='bold' fill='%23f5f0e6'%3E墨%3C/text%3E%3C/svg%3E">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -604,7 +604,12 @@ html, body {
   font-size: 11px;
   cursor: pointer;
   transition: all 0.15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.3;
 }
+.gallery-chip-dims { font-size: 9px; opacity: 0.7; }
 .gallery-paper-chip:hover { border-color: var(--accent); color: var(--text); }
 .gallery-paper-chip.active { border-color: var(--accent); background: var(--accent); color: #fff; }
 
@@ -1931,12 +1936,12 @@ const CARVED_STROKE = '#3a3028'; // dark line for carved outlines
 
 // Paper size presets
 const PAPER_PRESETS = [
-  { name: 'Landscape',      w: 600, h: 420, icon: '▬' },
-  { name: 'Portrait',       w: 420, h: 600, icon: '▮' },
-  { name: 'Square',         w: 500, h: 500, icon: '◻' },
-  { name: 'Wide Panoramic', w: 800, h: 320, icon: '━' },
-  { name: 'Tall Scroll',    w: 320, h: 800, icon: '┃' },
-  { name: 'Postcard',       w: 400, h: 280, icon: '▭' },
+  { name: 'Landscape',      w: 600, h: 420, icon: '▬', dims: '10 x 7' },
+  { name: 'Portrait',       w: 420, h: 600, icon: '▮', dims: '7 x 10' },
+  { name: 'Square',         w: 500, h: 500, icon: '◻', dims: '1 x 1' },
+  { name: 'Wide Panoramic', w: 800, h: 320, icon: '━', dims: '5 x 2' },
+  { name: 'Tall Scroll',    w: 320, h: 800, icon: '┃', dims: '2 x 5' },
+  { name: 'Postcard',       w: 420, h: 280, icon: '▭', dims: '4 × 6' },
 ];
 
 // Paper type definitions — each affects print texture, base color, ink behavior
@@ -2054,95 +2059,116 @@ const GROUND_TYPES = {
 // Scene presets — curated starting compositions
 const SCENE_PRESETS = {
   mountain: {
-    name: 'Mountain Dawn',
+    name: 'Mountain Shrine',
     palette: 'hokusai',
     paperType: 'kozo',
     sky: 'dawn', ground: 'earth', horizon: 0.55, mist: 1,
+    // Thirds: torii at left-lower power point, crane at upper-right, twisted pine at right-third
+    // Eye flow: crane (upper right) → mountains → torii gate (lower left) → pine (right) — Z pattern
     elements(W, H) {
       return [
-        { id: 1, defId: 'mountain-distant', x: W * 0.5, y: H * 0.38, scaleX: 1.8, scaleY: 1.6, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 41827 },
-        { id: 2, defId: 'mountain-near', x: W * 0.28, y: H * 0.48, scaleX: 1.3, scaleY: 1.2, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 73019 },
-        { id: 3, defId: 'cloud-bank', x: W * 0.65, y: H * 0.2, scaleX: 1.4, scaleY: 0.9, rotation: 0, carveLevel: 0, colorOverrides: {}, variationSeed: 55213 },
-        { id: 4, defId: 'pine-tree', x: W * 0.15, y: H * 0.65, scaleX: 1.1, scaleY: 1.1, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 29483 },
-        { id: 5, defId: 'pine-tree', x: W * 0.88, y: H * 0.7, scaleX: 0.8, scaleY: 0.8, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 61054 },
-        { id: 6, defId: 'crane-flying', x: W * 0.72, y: H * 0.15, scaleX: 0.6, scaleY: 0.6, rotation: -8, carveLevel: 1, colorOverrides: {}, variationSeed: 84321 },
+        { id: 1, defId: 'mountain-distant', x: W * 0.55, y: H * 0.30, scaleX: 1.8, scaleY: 1.6, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 41827 },
+        { id: 2, defId: 'cloud-bank', x: W * 0.6, y: H * 0.15, scaleX: 1.4, scaleY: 0.9, rotation: 0, carveLevel: 0, colorOverrides: {}, variationSeed: 55213 },
+        { id: 3, defId: 'crane-flying', x: W * 0.68, y: H * 0.22, scaleX: 0.6, scaleY: 0.6, rotation: -8, carveLevel: 1, colorOverrides: {}, variationSeed: 84321 },
+        { id: 4, defId: 'mountain-near', x: W * 0.22, y: H * 0.42, scaleX: 1.3, scaleY: 1.2, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 73019 },
+        { id: 5, defId: 'pine-tree', x: W * 0.88, y: H * 0.62, scaleX: 0.75, scaleY: 0.75, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 61054 },
+        { id: 6, defId: 'twisted-pine', x: W * 0.72, y: H * 0.55, scaleX: 1.1, scaleY: 1.1, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 29483 },
+        { id: 7, defId: 'torii-gate', x: W * 0.33, y: H * 0.65, scaleX: 1.0, scaleY: 1.0, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 66284 },
+        { id: 8, defId: 'hanko-mokuri', x: W * 0.92, y: H * 0.92, scaleX: 0.5, scaleY: 0.5, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 10001 },
       ];
     },
   },
   garden: {
-    name: 'Garden Pond',
-    palette: 'sakura',
+    name: 'Koi Pond',
+    palette: 'beni',
     paperType: 'hosho',
     sky: 'day', ground: 'water', horizon: 0.6, mist: 0,
     elements(W, H) {
       return [
-        { id: 1, defId: 'cherry-branch', x: W * 0.25, y: H * 0.18, scaleX: 1.4, scaleY: 1.3, rotation: 12, carveLevel: 2, colorOverrides: {}, variationSeed: 17382 },
-        { id: 2, defId: 'koi', x: W * 0.55, y: H * 0.78, scaleX: 1.0, scaleY: 1.0, rotation: -15, carveLevel: 2, colorOverrides: {}, variationSeed: 42918 },
-        { id: 3, defId: 'koi', x: W * 0.38, y: H * 0.85, scaleX: 0.75, scaleY: 0.75, rotation: 25, carveLevel: 1, colorOverrides: {}, variationSeed: 93017 },
-        { id: 4, defId: 'rock-formation', x: W * 0.82, y: H * 0.72, scaleX: 0.9, scaleY: 0.9, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 58234 },
-        { id: 5, defId: 'iris-cluster', x: W * 0.12, y: H * 0.75, scaleX: 1.0, scaleY: 1.0, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 70561 },
-        { id: 6, defId: 'dragonfly', x: W * 0.65, y: H * 0.35, scaleX: 0.7, scaleY: 0.7, rotation: -20, carveLevel: 1, colorOverrides: {}, variationSeed: 36729 },
+        { id: 1, defId: 'cherry-branch', x: W * 0.22, y: H * 0.15, scaleX: 1.4, scaleY: 1.3, rotation: 12, carveLevel: 2, colorOverrides: {}, variationSeed: 17382 },
+        { id: 2, defId: 'koi', x: W * 0.55, y: H * 0.76, scaleX: 1.0, scaleY: 1.0, rotation: -15, carveLevel: 2, colorOverrides: {}, variationSeed: 42918 },
+        { id: 3, defId: 'koi-leaping', x: W * 0.35, y: H * 0.6, scaleX: 0.8, scaleY: 0.8, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 93017 },
+        { id: 4, defId: 'rock-formation', x: W * 0.84, y: H * 0.72, scaleX: 0.9, scaleY: 0.9, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 58234 },
+        { id: 5, defId: 'iris-cluster', x: W * 0.1, y: H * 0.74, scaleX: 1.0, scaleY: 1.0, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 70561 },
+        { id: 6, defId: 'frog', x: W * 0.78, y: H * 0.82, scaleX: 0.6, scaleY: 0.6, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 48215 },
+        { id: 7, defId: 'dragonfly', x: W * 0.62, y: H * 0.32, scaleX: 0.7, scaleY: 0.7, rotation: -20, carveLevel: 1, colorOverrides: {}, variationSeed: 36729 },
+        { id: 8, defId: 'hanko-mokuri', x: W * 0.92, y: H * 0.92, scaleX: 0.5, scaleY: 0.5, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 10002 },
       ];
     },
   },
   ocean: {
-    name: 'Ocean Night',
+    name: 'Moonlit Shore',
     palette: 'yoru',
-    paperType: 'kozo',
-    sky: 'night', ground: 'water', horizon: 0.42, mist: 0,
+    paperType: 'gampi',
+    sky: 'night', ground: 'water', horizon: 0.48, mist: 0,
+    // Thirds: moon at upper-right power point, crane at left-third, rock at lower-right power point
+    // Eye flow: moon (upper right) → crane silhouette (left third) → water → turtle → rock — triangle
     elements(W, H) {
       return [
-        { id: 1, defId: 'great-wave', x: W * 0.45, y: H * 0.62, scaleX: 1.5, scaleY: 1.3, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 73641 },
-        { id: 2, defId: 'gentle-waves', x: W * 0.35, y: H * 0.84, scaleX: 1.3, scaleY: 1.0, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 61938 },
-        { id: 3, defId: 'full-moon', x: W * 0.78, y: H * 0.16, scaleX: 1.1, scaleY: 1.1, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 52407 },
-        { id: 4, defId: 'cloud-wisp', x: W * 0.6, y: H * 0.25, scaleX: 1.1, scaleY: 0.8, rotation: 0, carveLevel: 0, colorOverrides: {}, variationSeed: 83291 },
-        { id: 5, defId: 'cloud-wisp', x: W * 0.4, y: H * 0.12, scaleX: 0.8, scaleY: 0.6, rotation: 10, carveLevel: 0, colorOverrides: {}, variationSeed: 12847 },
+        { id: 1, defId: 'cloud-wisp', x: W * 0.28, y: H * 0.1, scaleX: 0.7, scaleY: 0.5, rotation: 0, carveLevel: 0, colorOverrides: {}, variationSeed: 12847 },
+        { id: 2, defId: 'cloud-wisp', x: W * 0.52, y: H * 0.18, scaleX: 1.0, scaleY: 0.7, rotation: 0, carveLevel: 0, colorOverrides: {}, variationSeed: 83291 },
+        { id: 3, defId: 'full-moon', x: W * 0.68, y: H * 0.25, scaleX: 1.1, scaleY: 1.1, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 52407 },
+        { id: 4, defId: 'gentle-waves', x: W * 0.5, y: H * 0.78, scaleX: 1.3, scaleY: 1.0, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 61938 },
+        { id: 5, defId: 'crane-standing', x: W * 0.30, y: H * 0.58, scaleX: 0.85, scaleY: 0.85, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 37492 },
+        { id: 6, defId: 'rock-formation', x: W * 0.72, y: H * 0.70, scaleX: 0.8, scaleY: 0.8, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 58234 },
+        { id: 7, defId: 'turtle', x: W * 0.42, y: H * 0.82, scaleX: 0.6, scaleY: 0.6, rotation: 15, carveLevel: 2, colorOverrides: {}, variationSeed: 73641 },
+        { id: 8, defId: 'hanko-mokuri', x: W * 0.92, y: H * 0.92, scaleX: 0.5, scaleY: 0.5, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 10003 },
       ];
     },
   },
   snow: {
-    name: 'Snow Village',
-    palette: 'sumi',
+    name: 'Snow Rabbit',
+    palette: 'fuyu',
     paperType: 'torinoko',
     sky: 'overcast', ground: 'snow', horizon: 0.48, mist: 2,
+    // Thirds: rabbit at right-lower power point, village along upper-third, pine/ume bracket the third-lines
+    // Eye flow: village (top) → pine (right third) → rabbit (lower right) → stone path → rock (lower left) — descending arc
     elements(W, H) {
       return [
-        { id: 1, defId: 'distant-village', x: W * 0.5, y: H * 0.46, scaleX: 1.3, scaleY: 1.2, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 39284 },
-        { id: 2, defId: 'temple-roof', x: W * 0.3, y: H * 0.55, scaleX: 1.1, scaleY: 1.1, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 67451 },
-        { id: 3, defId: 'pine-tree', x: W * 0.78, y: H * 0.6, scaleX: 1.0, scaleY: 1.0, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 51823 },
-        { id: 4, defId: 'stone-path', x: W * 0.45, y: H * 0.82, scaleX: 1.2, scaleY: 1.0, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 24619 },
-        { id: 5, defId: 'snow-fall', x: W * 0.5, y: H * 0.35, scaleX: 1.5, scaleY: 1.5, rotation: 0, carveLevel: 0, colorOverrides: {}, variationSeed: 78043 },
+        { id: 1, defId: 'distant-village', x: W * 0.5, y: H * 0.38, scaleX: 1.3, scaleY: 1.2, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 39284 },
+        { id: 2, defId: 'pine-tree', x: W * 0.70, y: H * 0.55, scaleX: 1.0, scaleY: 1.0, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 51823 },
+        { id: 3, defId: 'ume-blossom', x: W * 0.28, y: H * 0.55, scaleX: 0.9, scaleY: 0.9, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 85214 },
+        { id: 4, defId: 'rock-formation', x: W * 0.22, y: H * 0.75, scaleX: 0.7, scaleY: 0.7, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 24108 },
+        { id: 5, defId: 'rabbit', x: W * 0.65, y: H * 0.70, scaleX: 0.7, scaleY: 0.7, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 71039 },
+        { id: 6, defId: 'stone-path', x: W * 0.45, y: H * 0.83, scaleX: 1.2, scaleY: 1.0, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 24619 },
+        { id: 7, defId: 'snow-fall', x: W * 0.5, y: H * 0.35, scaleX: 1.5, scaleY: 1.5, rotation: 0, carveLevel: 0, colorOverrides: {}, variationSeed: 78043 },
+        { id: 8, defId: 'hanko-mokuri', x: W * 0.92, y: H * 0.92, scaleX: 0.5, scaleY: 0.5, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 10004 },
       ];
     },
   },
   bamboo: {
-    name: 'Bamboo Forest',
-    palette: 'edo',
+    name: 'Lantern Garden',
+    palette: 'matcha',
     paperType: 'kozo',
-    sky: 'day', ground: 'grass', horizon: 0.78, mist: 1,
+    sky: 'dusk', ground: 'grass', horizon: 0.75, mist: 1,
     elements(W, H) {
       return [
-        { id: 1, defId: 'bamboo-grove', x: W * 0.25, y: H * 0.45, scaleX: 1.4, scaleY: 1.5, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 43821 },
-        { id: 2, defId: 'bamboo-grove', x: W * 0.72, y: H * 0.42, scaleX: 1.1, scaleY: 1.3, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 91574 },
-        { id: 3, defId: 'rock-formation', x: W * 0.5, y: H * 0.82, scaleX: 0.9, scaleY: 0.8, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 35729 },
-        { id: 4, defId: 'sparrow', x: W * 0.58, y: H * 0.2, scaleX: 0.6, scaleY: 0.6, rotation: 10, carveLevel: 1, colorOverrides: {}, variationSeed: 62041 },
-        { id: 5, defId: 'sparrow', x: W * 0.42, y: H * 0.25, scaleX: 0.5, scaleY: 0.5, rotation: -15, carveLevel: 1, colorOverrides: {}, variationSeed: 18397 },
+        { id: 1, defId: 'bamboo-grove', x: W * 0.2, y: H * 0.42, scaleX: 1.4, scaleY: 1.5, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 43821 },
+        { id: 2, defId: 'bamboo-grove', x: W * 0.75, y: H * 0.4, scaleX: 1.1, scaleY: 1.3, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 91574 },
+        { id: 3, defId: 'paper-lantern', x: W * 0.48, y: H * 0.38, scaleX: 0.9, scaleY: 0.9, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 27583 },
+        { id: 4, defId: 'stone-path', x: W * 0.45, y: H * 0.85, scaleX: 1.1, scaleY: 1.0, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 35729 },
+        { id: 5, defId: 'sakura-blossom', x: W * 0.62, y: H * 0.22, scaleX: 0.7, scaleY: 0.7, rotation: 8, carveLevel: 2, colorOverrides: {}, variationSeed: 54128 },
+        { id: 6, defId: 'sparrow', x: W * 0.55, y: H * 0.15, scaleX: 0.55, scaleY: 0.55, rotation: 10, carveLevel: 1, colorOverrides: {}, variationSeed: 62041 },
+        { id: 7, defId: 'hanko-mokuri', x: W * 0.92, y: H * 0.92, scaleX: 0.5, scaleY: 0.5, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 10005 },
       ];
     },
   },
   autumn: {
-    name: 'Autumn Valley',
+    name: 'Autumn Crossing',
     palette: 'aki',
     paperType: 'kozo',
     sky: 'dusk', ground: 'earth', horizon: 0.52, mist: 1,
+    // Thirds: bridge spans lower-third line, crane at left-lower power point, willow at right-third
+    // Eye flow: maple frame (upper left) → butterfly (upper right) → willow (right) → bridge & crane (lower third) — circular
     elements(W, H) {
       return [
-        { id: 1, defId: 'maple-branch', x: W * 0.22, y: H * 0.15, scaleX: 1.5, scaleY: 1.4, rotation: 15, carveLevel: 2, colorOverrides: {}, variationSeed: 57213 },
-        { id: 2, defId: 'mountain-distant', x: W * 0.55, y: H * 0.35, scaleX: 1.5, scaleY: 1.3, rotation: 0, carveLevel: 0, colorOverrides: {}, variationSeed: 82946 },
-        { id: 3, defId: 'wooden-bridge', x: W * 0.45, y: H * 0.68, scaleX: 1.1, scaleY: 1.0, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 40138 },
-        { id: 4, defId: 'rock-formation', x: W * 0.78, y: H * 0.75, scaleX: 0.8, scaleY: 0.7, rotation: 0, carveLevel: 1, colorOverrides: {}, variationSeed: 69584 },
-        { id: 5, defId: 'cloud-wisp', x: W * 0.7, y: H * 0.12, scaleX: 1.0, scaleY: 0.7, rotation: 0, carveLevel: 0, colorOverrides: {}, variationSeed: 23751 },
-        { id: 6, defId: 'butterfly', x: W * 0.6, y: H * 0.45, scaleX: 0.5, scaleY: 0.5, rotation: -10, carveLevel: 1, colorOverrides: {}, variationSeed: 95312 },
+        { id: 1, defId: 'cloud-wisp', x: W * 0.62, y: H * 0.08, scaleX: 1.0, scaleY: 0.7, rotation: 0, carveLevel: 0, colorOverrides: {}, variationSeed: 23751 },
+        { id: 2, defId: 'weeping-willow', x: W * 0.75, y: H * 0.42, scaleX: 1.0, scaleY: 1.0, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 82946 },
+        { id: 3, defId: 'wooden-bridge', x: W * 0.48, y: H * 0.67, scaleX: 1.1, scaleY: 1.0, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 40138 },
+        { id: 4, defId: 'crane-standing', x: W * 0.30, y: H * 0.65, scaleX: 0.8, scaleY: 0.8, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 69584 },
+        { id: 5, defId: 'maple-branch', x: W * 0.22, y: H * 0.15, scaleX: 1.5, scaleY: 1.4, rotation: 15, carveLevel: 2, colorOverrides: {}, variationSeed: 57213 },
+        { id: 6, defId: 'butterfly', x: W * 0.62, y: H * 0.33, scaleX: 0.5, scaleY: 0.5, rotation: -10, carveLevel: 1, colorOverrides: {}, variationSeed: 95312 },
+        { id: 7, defId: 'hanko-mokuri', x: W * 0.92, y: H * 0.92, scaleX: 0.5, scaleY: 0.5, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 10006 },
       ];
     },
   },
@@ -3580,7 +3606,7 @@ function buildGalleryUI() {
   PAPER_PRESETS.forEach(p => {
     const chip = document.createElement('button');
     chip.className = 'gallery-paper-chip' + (galleryPaperW === p.w && galleryPaperH === p.h ? ' active' : '');
-    chip.textContent = p.name;
+    chip.innerHTML = `${p.name}<span class="gallery-chip-dims">${p.dims}</span>`;
     chip.addEventListener('click', () => {
       galleryPaperW = p.w;
       galleryPaperH = p.h;
