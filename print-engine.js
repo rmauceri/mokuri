@@ -684,7 +684,7 @@ const PrintEngine = (() => {
    *   matColor: string (hex)
    * @returns {HTMLCanvasElement}
    */
-  async function applyPresentation(printCanvas, opts) {
+  function applyPresentation(printCanvas, opts) {
     opts = opts || {};
     const margins = opts.margins;
     if (!margins || (margins.top === 0 && margins.sides === 0 && margins.bottom === 0)) {
@@ -737,14 +737,10 @@ const PrintEngine = (() => {
 
     ctx.restore();
 
-    // ── Organic edge erosion on print canvas ──
-    applyOrganicEdge(printCanvas);
-
     // ── Composite print onto paper at margin offset (multiply blend) ──
     const printX = deckleExtra + mSide;
     const printY = deckleExtra + mTop;
     ctx.save();
-    // Clip to paper area so print doesn't bleed onto mat
     if (opts.deckle) {
       drawDeckleClip(ctx, paperX, paperY, paperW, paperH);
     } else {
@@ -757,7 +753,10 @@ const PrintEngine = (() => {
     ctx.globalCompositeOperation = 'source-over';
     ctx.restore();
 
-    // ── Embossed title (karazuri) ──
+    // ── Organic edge — soft ink-to-paper transition at print boundary ──
+    applyOrganicEdge(ctx, printX, printY, pw, ph, paperType);
+
+    // ── Embossed title (karazuri) — pre-flipped for mirror correction ──
     if (opts.title) {
       drawEmbossedTitle(ctx, opts.title, printX, printY + ph, pw, mBottom, paperType);
     }
@@ -765,12 +764,6 @@ const PrintEngine = (() => {
     // ── Edition numbering ──
     if (opts.edition) {
       drawEditionNumber(ctx, opts.edition, printX, printY + ph, pw, mBottom);
-    }
-
-    // ── Hanko seal ──
-    if (opts.hankoSvg) {
-      await drawHankoSeal(ctx, opts.hankoSvg, opts.hankoPos || 'bottom-right',
-        printX, printY, pw, ph, mBottom, mSide);
     }
 
     // ── Light paper effects on full presentation ──
@@ -794,42 +787,46 @@ const PrintEngine = (() => {
     return canvas;
   }
 
-  // Organic edge erosion — softens the print boundary
-  function applyOrganicEdge(canvas) {
-    const w = canvas.width;
-    const h = canvas.height;
-    const ctx = canvas.getContext('2d');
-    const d = ctx.getImageData(0, 0, w, h);
-    const px = d.data;
-    const erosionDepth = Math.round(Math.min(w, h) * 0.015);
+  // Organic edge — soft ink-to-paper transition around the print boundary.
+  // Paints semi-transparent paper color OVER the composited print at the margins,
+  // so the effect is outside the artwork, not eating into it.
+  function applyOrganicEdge(ctx, printX, printY, pw, ph, paperType) {
+    const depth = Math.round(Math.min(pw, ph) * 0.008); // tighter than before
+    if (depth < 2) return;
     const rng = presRng(42);
+    const pb = paperBaseFromType(paperType);
 
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        // Distance from nearest edge
-        const distFromEdge = Math.min(x, y, w - 1 - x, h - 1 - y);
-        if (distFromEdge >= erosionDepth) continue;
-
-        const t = distFromEdge / erosionDepth; // 0 at edge, 1 at erosion boundary
-        const noise = rng() * 0.5 + 0.25;
-        // Probability of keeping pixel increases with distance from edge
-        const keepProb = t * t * (0.6 + noise * 0.4);
-        if (rng() > keepProb) {
-          const i = (y * w + x) * 4;
-          px[i + 3] = Math.round(px[i + 3] * t * noise); // fade alpha
-        }
+    ctx.save();
+    for (let pass = 0; pass < 2; pass++) {
+      // Two passes for naturalistic layered effect
+      const baseAlpha = pass === 0 ? 0.55 : 0.3;
+      for (let i = 0; i < depth; i++) {
+        const t = i / depth; // 0 = outermost (fully paper), 1 = innermost (fully transparent)
+        const alpha = baseAlpha * (1 - t * t);
+        const noise = 0.7 + rng() * 0.6;
+        const a = Math.min(1, alpha * noise);
+        ctx.fillStyle = `rgba(${pb.r},${pb.g},${pb.b},${a.toFixed(3)})`;
+        // Top edge
+        const yTop = printY + i * (rng() * 0.3 + 0.85);
+        ctx.fillRect(printX, printY - 1, pw, Math.max(1, depth - i) * (0.3 + rng() * 0.4));
+        // Bottom edge
+        ctx.fillRect(printX, printY + ph - (depth - i) * (0.3 + rng() * 0.4), pw, Math.max(1, depth - i) * (0.3 + rng() * 0.4));
+        // Left edge
+        ctx.fillRect(printX - 1, printY, Math.max(1, depth - i) * (0.3 + rng() * 0.4), ph);
+        // Right edge
+        ctx.fillRect(printX + pw - (depth - i) * (0.3 + rng() * 0.4), printY, Math.max(1, depth - i) * (0.3 + rng() * 0.4), ph);
       }
     }
-    ctx.putImageData(d, 0, 0);
+    ctx.restore();
   }
 
-  // Deckle edge — irregular paper boundary via clipping path
+  // Deckle edge — subtle irregular paper boundary via clipping path
   function drawDeckleClip(ctx, x, y, w, h) {
     const rng = presRng(137);
-    const step = 6; // vertex spacing
-    const amp = 3;  // noise amplitude
-    const tearChance = 0.04;
-    const tearAmp = 8;
+    const step = 8;   // wider vertex spacing for smoother edge
+    const amp = 1.5;  // gentler noise amplitude (was 3)
+    const tearChance = 0.015; // rarer tears (was 0.04)
+    const tearAmp = 4;  // smaller tears (was 8)
 
     ctx.beginPath();
     // Top edge (left to right)
@@ -860,7 +857,7 @@ const PrintEngine = (() => {
   // Fiber wisps at deckle edges — tiny strokes extending past the paper boundary
   function drawDeckleFibers(ctx, paperX, paperY, paperW, paperH, paperType) {
     const rng = presRng(291);
-    const fiberCount = Math.round((paperW + paperH) * 0.08);
+    const fiberCount = Math.round((paperW + paperH) * 0.04); // subtler (was 0.08)
     ctx.save();
     for (let i = 0; i < fiberCount; i++) {
       // Choose a random edge
@@ -891,98 +888,73 @@ const PrintEngine = (() => {
     ctx.restore();
   }
 
-  // Embossed title — karazuri (blind embossing) dual-pass text
+  // Embossed title — karazuri (blind embossing) dual-pass text.
+  // Text is drawn pre-flipped so it reads correctly after the mirror in pullPrint.
   function drawEmbossedTitle(ctx, title, printX, printBottom, printW, marginBottom, paperType) {
     const fontSize = Math.round(printW * 0.025);
     if (fontSize < 8) return;
     ctx.save();
-    ctx.font = `${fontSize}px Georgia, "Times New Roman", serif`;
+    ctx.font = `italic ${fontSize}px "Segoe UI", "Helvetica Neue", Arial, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
     const cx = printX + printW / 2;
     const ty = printBottom + marginBottom * 0.28;
 
+    // Pre-flip horizontally around the text center so it reads correctly after mirror
+    ctx.translate(cx, 0);
+    ctx.scale(-1, 1);
+    ctx.translate(-cx, 0);
+
     // Adjust contrast based on paper darkness
     const pb = paperBaseFromType(paperType);
     const lum = (pb.r * 0.299 + pb.g * 0.587 + pb.b * 0.114) / 255;
     const isDark = lum < 0.45;
-    const highlightAlpha = isDark ? 0.22 : 0.15;
-    const shadowAlpha = isDark ? 0.08 : 0.12;
+    const highlightAlpha = isDark ? 0.25 : 0.18;
+    const shadowAlpha = isDark ? 0.18 : 0.22;
 
     // Highlight pass (upper-left offset)
     ctx.fillStyle = `rgba(255,255,255,${highlightAlpha})`;
     ctx.fillText(title, cx - 0.8, ty - 0.8);
 
-    // Shadow pass (lower-right offset)
+    // Shadow pass (lower-right offset) — darker for stronger emboss
     ctx.fillStyle = `rgba(0,0,0,${shadowAlpha})`;
     ctx.fillText(title, cx + 0.8, ty + 0.8);
 
     ctx.restore();
   }
 
-  // Edition numbering — pencil style in bottom-left margin
+  // Edition numbering — pencil style in bottom-left margin.
+  // Pre-flipped for mirror correction.
   function drawEditionNumber(ctx, edition, printX, printBottom, printW, marginBottom) {
     const fontSize = Math.round(printW * 0.018);
     if (fontSize < 6) return;
     ctx.save();
-    ctx.font = `${fontSize}px Georgia, "Times New Roman", serif`;
+    ctx.font = `italic ${fontSize}px "Segoe UI", "Helvetica Neue", Arial, sans-serif`;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
-    const ex = printX + printW * 0.02;
+
+    // Edition goes bottom-left, but pre-flip around print center
+    const cx = printX + printW / 2;
+    ctx.translate(cx, 0);
+    ctx.scale(-1, 1);
+    ctx.translate(-cx, 0);
+
+    // After mirror flip, bottom-left becomes bottom-right, so place at right side
+    const ex = printX + printW - printW * 0.02;
     const ey = printBottom + marginBottom * 0.55;
+    ctx.textAlign = 'right';
 
     // Pencil effect: slight opacity variation per character
     const rng = presRng(edition.length * 7 + 13);
     for (let i = 0; i < edition.length; i++) {
       const alpha = 0.35 + rng() * 0.15;
       ctx.fillStyle = `rgba(138,133,128,${alpha.toFixed(3)})`;
-      ctx.fillText(edition[i], ex + ctx.measureText(edition.substring(0, i)).width, ey);
+      const prefix = edition.substring(0, i);
+      const fullW = ctx.measureText(edition).width;
+      const prefixW = ctx.measureText(prefix).width;
+      ctx.fillText(edition[i], ex - fullW + prefixW + ctx.measureText(edition[i]).width, ey);
     }
     ctx.restore();
-  }
-
-  // Hanko seal — render SVG into the margin
-  function drawHankoSeal(ctx, svgStr, position, printX, printY, printW, printH, marginBottom, marginSide) {
-    const size = Math.round(printH * 0.08);
-    if (size < 10) return Promise.resolve();
-
-    // Position calculation
-    let hx, hy;
-    if (position === 'bottom-left') {
-      hx = printX + printW * 0.05;
-      hy = printY + printH + marginBottom * 0.2;
-    } else if (position === 'right-edge') {
-      hx = printX + printW - size * 0.3;
-      hy = printY + printH - size * 1.5;
-    } else { // bottom-right (default)
-      hx = printX + printW - size - printW * 0.05;
-      hy = printY + printH + marginBottom * 0.2;
-    }
-
-    // Slight natural rotation
-    const rng = presRng(73);
-    const rotDeg = (rng() - 0.5) * 6; // -3° to +3°
-
-    // Render hanko SVG to temp canvas
-    const blob = new Blob([svgStr], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        ctx.save();
-        ctx.translate(hx + size / 2, hy + size / 2);
-        ctx.rotate(rotDeg * Math.PI / 180);
-        ctx.drawImage(img, -size / 2, -size / 2, size, size);
-        ctx.restore();
-        URL.revokeObjectURL(url);
-        resolve();
-      };
-      img.onerror = () => {
-        URL.revokeObjectURL(url);
-        resolve();
-      };
-      img.src = url;
-    });
   }
 
   return { print, exportPng, applyPresentation };

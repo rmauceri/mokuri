@@ -1,0 +1,422 @@
+
+                    MOKURI STRUCTURE ELEMENTS AUDIT REPORT
+
+
+【1】TORII-GATE (elements.js)
+
+ID: torii-gate  |  Name: Torii Gate  |  Category: objects & patterns
+ViewBox: 0 0 180 200  |  Color Zones: 2 [body, detail]
+
+PATH COUNTS BY CARVE LEVEL:
+ BLOCK: 1 path (1 fill)  Silhouette combining top beam, pillars, crossbeam
+ SHAPE: 5 paths (4 fills + 1 stroke)  Kasagi, Shimaki, Nuki, Hashira, outline
+ DETAIL: 8 paths (4 fills + 4 strokes)  All shape + wood grain + joint decorations
+
+BLOCK STROKE:  Shape level has outline stroke (should be detail-only)
+ACCUMULATION:  Shape redefines fills unnecessarily (not true subset)
+SVG QUALITY: GEOMETRIC curves + LINEAR paths | RECOGNITION: EXCELLENT 
+ Clear torii structure with traditional Japanese proportions
+ Named components correct (kasagi, shimaki, nuki, hashira)
+ Wood grain adds authenticity, pillar grain follows vertical
+ Would render as recognizable traditional torii gate
+
+ASSESSMENT: Good design despite redundant path redefinition. Would render well.
+
+
+【2】PAPER-LANTERN (extended-elements.js)
+
+ID: paper-lantern  |  Name: Paper Lantern  |  Category: objects & patterns
+ViewBox: 0 0 100 140  |  Color Zones: 3 [body, rib, detail]
+
+PATH COUNTS BY CARVE LEVEL:
+ BLOCK: 2 paths (2 fills)  Bulbous body + top cap
+ SHAPE: 3 paths (2 fills + 1 stroke)  Same + outline
+ DETAIL: 4 paths (2 fills + 2 strokes)  All shape + 5 horizontal rib strokes
+
+BLOCK STROKE:  CORRECT (no strokes in block)
+ACCUMULATION:  PROPER (Block  Shape  Detail)
+SVG QUALITY: ORGANIC CURVES (quadratic) | RECOGNITION: EXCELLENT 
+ Distinctive bulbous shape clearly reads as paper lantern
+ Curved ribs suggest paper segments, not rigid structure
+ 100x140 proportions (taller than wide) are typical lantern shape
+ Horizontal rib pattern creates visual rhythm
+ Would render as clear, recognizable lantern
+
+ASSESSMENT: Simple but highly effective design. Proper carve hierarchy. Excellent.
+
+
+【3】LANTERN-KASUGA-PREMIUM (extended-elements.js)
+
+ID: lantern-kasuga-premium  |  Name: Kasuga Grand Lantern  |  Category: objects & patterns
+ViewBox: 0 0 160 280  |  Color Zones: 3 [stone, shadow, light]
+
+PATH COUNTS BY CARVE LEVEL:
+ BLOCK: 3 paths (all fills)  Base/pillar, shadow band, roof (pyramid)
+ SHAPE: 5 paths (4 fills + 1 stroke)  Block fills + roof apex line
+ DETAIL: 8 paths (4 fills + 4 strokes)  All shape + pillar chiseling + roof ridges + window lattice + lotus carving
+
+BLOCK STROKE:  CORRECT
+ACCUMULATION:  PROPER (Block  Shape  Detail)
+SVG QUALITY: GEOMETRIC + STRUCTURAL | RECOGNITION: EXCELLENT 
+ Classic Kasuga form: pyramid roof + tall pillar + narrow window
+ 160x280 proportions (tall, narrow) authentic to Kasuga style
+ Architectural details: pillar chiseling, "warabite" roof corners, lotus petals
+ Window lattice shows craftsmanship
+ Rectangular geometry suggests stone material effectively
+ Would render as recognizable Japanese garden lantern
+
+ASSESSMENT: High-quality design with authentic Japanese cultural details. Very good.
+
+
+【4】LANTERN-YUKIMI-PREMIUM (extended-elements.js)
+
+ID: lantern-yukimi-premium  |  Name: Yukimi Lantern  |  Category: objects & patterns
+ViewBox: 0 0 240 200  |  Color Zones: 3 [stone, shadow, light]
+
+PATH COUNTS BY CARVE LEVEL:
+ BLOCK: 3 paths (all fills)  Roof (diamond), window box, legs/base
+ SHAPE: 5 paths (4 fills + 1 stroke, strokeWidth:10)  Block fills + window light + leg connectors
+ DETAIL: 8 paths (4 fills + 4 strokes)  All shape + roof grain + leg texture + window lattice
+
+BLOCK STROKE:  CORRECT
+ACCUMULATION:  PROPER
+SVG QUALITY: GEOMETRIC + ORGANIC curves | RECOGNITION: EXCELLENT 
+ Distinctive Yukimi form: broad roof platform + pillars + wide base (perfect for snow viewing)
+ 240x200 proportions (wide) authentic to Yukimi style
+ Roof grain pattern shows texture
+ Leg texture suggests carved stone
+ Window lattice adds visual interest
+ Would render as clear Yukimi lantern
+
+ ISSUE DETECTED: Leg connector stroke has strokeWidth: 10 (very thick)
+    May render as thick bands rather than fine leg supports
+    RECOMMENDATION: Reduce to 2-3 for proper proportions
+
+ASSESSMENT: Good design with minor rendering concern. Stocky leg stroke needs adjustment.
+
+
+【5】LANTERN-ORIBE-PREMIUM (extended-elements.js)
+
+ID: lantern-oribe-premium  |  Name: Oribe Lantern  |  Category: objects & patterns
+ViewBox: 0 0 140 240  |  Color Zones: 3 [stone, shadow, light]
+
+PATH COUNTS BY CARVE LEVEL:
+ BLOCK: 2 paths (all fills)  Pillar, roof/firebox
+ SHAPE: 4 paths (3 fills + 1 stroke, strokeWidth:6)  Block fills + window light + figure stroke
+ DETAIL: 7 paths (3 fills + 4 strokes)  All shape + roof-firebox edge + figure detail + chisel marks
+
+BLOCK STROKE:  CORRECT
+ACCUMULATION:  PROPER
+SVG QUALITY: GEOMETRIC + MINIMAL ORGANIC | RECOGNITION: GOOD 
+ Oribe-style lantern: vertical pillar + small roof + carved figure
+ 140x240 proportions (tall, narrow) authentic
+ "Hidden Christian" figure carving shows cultural/historical awareness
+ Horizontal chisel marks suggest stone carving technique
+ Minimalist geometry matches Zen aesthetic
+ Would render as recognizable Oribe lantern
+
+ ISSUE DETECTED: Figure stroke has strokeWidth: 6 (thick)
+    May render too prominently compared to rest of structure
+    RECOMMENDATION: Reduce to 3-4 for balance
+
+ASSESSMENT: Minimalist design with cultural significance. Stroke width may need adjustment.
+
+
+【6】TEMPLE-ROOF (scene-elements.js)   MAJOR PROBLEM ELEMENT
+
+ID: temple-roof  |  Name: Temple Roof  |  Category: landscape
+ViewBox: 0 0 260 140  |  Color Zones: 4 [roof, tile, eave, detail]
+
+PATH COUNTS BY CARVE LEVEL:
+ BLOCK: 2 paths (2 fills)  Main roof + eave
+ SHAPE: 13 paths (10 fills + 3 strokes)  Block (2) + 8 tiles + 3 roof/eave outlines
+ DETAIL: 22 paths (10 fills + 12 strokes)  All shape fills + 8 roof detail strokes + eave curves
+
+BLOCK STROKE:  Shape level contains strokes (should be detail-only)
+ACCUMULATION:  PARTIAL (strokes introduced at shape level)
+SVG QUALITY: GEOMETRIC curves | RECOGNITION:  POOR
+
+IDENTIFIED PROBLEMS:
+
+1. GEOMETRY IS DANGEROUSLY FLAT & COMPRESSED
+    Roof occupies only y:8-86 (78px of 140px total = 56% of viewBox)
+    Peak is at y:8 (extremely high, no breathing room)
+    Eave base at y:86-96 (only 10-48px deep at maximum)
+    Result: Looks like a flat curved band, NOT a temple roof
+
+2. MISSING TEMPLE ROOF CHARACTERISTICS
+    No upturned eaves (warizori or mukuri curves)
+    No pronounced upward peak
+    Eave curves exist but roof lacks characteristic upward curve
+    Result: Generic curved shape, not recognizable as temple architecture
+
+3. TILE COVERAGE INSUFFICIENT
+    Only 8 tile fills for entire roof span
+    Tiles asymmetrically placed (4 left, 4 right)
+    Tiles are small and scattered
+    No visual roof texture or shingled appearance
+    Result: Tiles don't read as roof covering, look like decorative marks
+
+4. PROPORTIONS FUNDAMENTALLY WRONG
+    ViewBox: 260x140 (aspect ratio 1.86:1 - very wide)
+    Temple roofs should be taller proportionally
+    Current: Too wide and squat
+    Expected: More vertical emphasis (maybe 1.2-1.5 ratio)
+    Result: Doesn't feel like a temple roof silhouette
+
+DETAILED PATH ANALYSIS:
+Block roof path: M130,8 Q90,32 40,62 Q24,72 10,78 Q6,82 8,86 L12,88 Q30,84 60,72 L130,38 L200,72 Q230,84 248,88 L252,86 Q254,82 250,78 Q236,72 220,62 Q170,32 130,8 Z
+ Starts at y:8 (too high)
+ Uses quadratic curves but they're too gradual
+ No sharp upward curve that characterizes temple roofs
+ Eave connection is abrupt and geometric
+
+Block eave path: M8,86 L12,88 Q30,92 60,100 L130,130 L200,100 Q230,92 248,88 L252,86 Q254,90 252,94 L248,96 Q230,100 200,108 L130,138 L60,108 Q30,100 12,96 L8,94 Q6,90 8,86 Z
+ Creates a band structure (acceptable for eave)
+ But eave-to-roof proportion is unbalanced
+ Extends to y:138 (98px), taking 70% of viewBox for eave section
+ Roof:eave ratio is inverted from expected (roof too small)
+
+Tile paths (Shape level - 8 paths):
+ Examples: M48,66 L56,70 L56,82 L48,78 Z (skewed parallelogram, 8x12px)
+ All tiles are similar small size
+ Positioned: 48-204 on x-axis, y:42-82
+ Coverage: ~156px span across 260px roof = 60% coverage
+ Arrangement: Scattered randomly, no grid pattern
+ Visual result: Token details, not convincing roof tiles
+
+WHAT WOULD RENDER:
+The SVG would display as a curved band at top of frame with a larger curved base below it, 
+resembling an ornamental border more than a temple roof structure. Tiles would be invisible 
+at small scale due to size and sparse distribution.
+
+
+COMPLETE TEMPLE-ROOF DEFINITION (FULL SOURCE)
+
+
+{
+    id: 'temple-roof',
+    name: 'Temple Roof',
+    category: 'landscape',
+    viewBox: '0 0 260 140',
+    suggestedLayer: 'midground',
+    colorZones: [
+      { id: 'roof', defaultPaletteSlot: 0 },
+      { id: 'tile', defaultPaletteSlot: 3 },
+      { id: 'eave', defaultPaletteSlot: 4 },
+      { id: 'detail', defaultPaletteSlot: 0 }
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          { d: 'M130,8 Q90,32 40,62 Q24,72 10,78 Q6,82 8,86 L12,88 Q30,84 60,72 L130,38 L200,72 Q230,84 248,88 L252,86 Q254,82 250,78 Q236,72 220,62 Q170,32 130,8 Z', type: 'fill', zone: 'roof' },
+          { d: 'M8,86 L12,88 Q30,92 60,100 L130,130 L200,100 Q230,92 248,88 L252,86 Q254,90 252,94 L248,96 Q230,100 200,108 L130,138 L60,108 Q30,100 12,96 L8,94 Q6,90 8,86 Z', type: 'fill', zone: 'eave' }
+        ]
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M130,8 Q90,32 40,62 Q24,72 10,78 Q6,82 8,86 L12,88 Q30,84 60,72 L130,38 L200,72 Q230,84 248,88 L252,86 Q254,82 250,78 Q236,72 220,62 Q170,32 130,8 Z', type: 'fill', zone: 'roof' },
+          { d: 'M8,86 L12,88 Q30,92 60,100 L130,130 L200,100 Q230,92 248,88 L252,86 Q254,90 252,94 L248,96 Q230,100 200,108 L130,138 L60,108 Q30,100 12,96 L8,94 Q6,90 8,86 Z', type: 'fill', zone: 'eave' },
+          { d: 'M48,66 L56,70 L56,82 L48,78 Z', type: 'fill', zone: 'tile' },
+          { d: 'M62,58 L70,62 L70,74 L62,70 Z', type: 'fill', zone: 'tile' },
+          { d: 'M76,50 L84,54 L84,66 L76,62 Z', type: 'fill', zone: 'tile' },
+          { d: 'M90,42 L98,46 L98,58 L90,54 Z', type: 'fill', zone: 'tile' },
+          { d: 'M162,42 L170,46 L170,58 L162,54 Z', type: 'fill', zone: 'tile' },
+          { d: 'M176,50 L184,54 L184,66 L176,62 Z', type: 'fill', zone: 'tile' },
+          { d: 'M190,58 L198,62 L198,74 L190,70 Z', type: 'fill', zone: 'tile' },
+          { d: 'M204,66 L212,70 L212,82 L204,78 Z', type: 'fill', zone: 'tile' },
+          { d: 'M130,8 Q90,32 40,62 Q24,72 10,78', type: 'stroke', zone: 'roof', strokeWidth: 1.2 },
+          { d: 'M130,8 Q170,32 220,62 Q236,72 250,78', type: 'stroke', zone: 'roof', strokeWidth: 1.2 },
+          { d: 'M6,82 Q8,86 12,88 Q30,92 60,100 L130,130 L200,100 Q230,92 248,88 Q252,86 254,82', type: 'stroke', zone: 'eave', strokeWidth: 1.4 }
+        ]
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M130,8 Q90,32 40,62 Q24,72 10,78 Q6,82 8,86 L12,88 Q30,84 60,72 L130,38 L200,72 Q230,84 248,88 L252,86 Q254,82 250,78 Q236,72 220,62 Q170,32 130,8 Z', type: 'fill', zone: 'roof' },
+          { d: 'M8,86 L12,88 Q30,92 60,100 L130,130 L200,100 Q230,92 248,88 L252,86 Q254,90 252,94 L248,96 Q230,100 200,108 L130,138 L60,108 Q30,100 12,96 L8,94 Q6,90 8,86 Z', type: 'fill', zone: 'eave' },
+          { d: 'M48,66 L56,70 L56,82 L48,78 Z', type: 'fill', zone: 'tile' },
+          { d: 'M62,58 L70,62 L70,74 L62,70 Z', type: 'fill', zone: 'tile' },
+          { d: 'M76,50 L84,54 L84,66 L76,62 Z', type: 'fill', zone: 'tile' },
+          { d: 'M90,42 L98,46 L98,58 L90,54 Z', type: 'fill', zone: 'tile' },
+          { d: 'M162,42 L170,46 L170,58 L162,54 Z', type: 'fill', zone: 'tile' },
+          { d: 'M176,50 L184,54 L184,66 L176,62 Z', type: 'fill', zone: 'tile' },
+          { d: 'M190,58 L198,62 L198,74 L190,70 Z', type: 'fill', zone: 'tile' },
+          { d: 'M204,66 L212,70 L212,82 L204,78 Z', type: 'fill', zone: 'tile' },
+          { d: 'M40,68 L60,78', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
+          { d: 'M54,60 L74,70', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
+          { d: 'M68,52 L88,62', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
+          { d: 'M82,44 L102,54', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
+          { d: 'M158,54 L178,44', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
+          { d: 'M172,62 L192,52', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
+          { d: 'M186,70 L206,60', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
+          { d: 'M200,78 L220,68', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
+          { d: 'M20,90 Q40,94 60,102', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
+          { d: 'M200,102 Q220,94 240,90', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
+          { d: 'M60,104 Q90,116 120,128', type: 'stroke', zone: 'detail', strokeWidth: 0.3 },
+          { d: 'M140,128 Q170,116 200,104', type: 'stroke', zone: 'detail', strokeWidth: 0.3 }
+        ]
+      }
+    ]
+  }
+
+
+
+REDESIGN RECOMMENDATIONS FOR TEMPLE-ROOF:
+
+OPTION A: Complete Redesign (Recommended)
+ Increase viewBox height: Try 0 0 260 200 or 0 0 260 220
+ Roof peak should be at y:20-30, not y:8
+ Add distinct sections:
+   Main curved roof body (y:30-80)
+   Tile coverage (40-60 tiles in grid pattern, not scattered)
+   Eave detail section (y:80-120 or so)
+   Possibly separate ridgepole element
+ Use more pronounced curves for upturned eave tips
+ Increase tile count to 40-60 and arrange in rows
+ Consider adding decorative roof ridge ornaments (finials)
+
+OPTION B: Proportional Adjustment (Quick Fix)
+ Keep current paths but adjust viewBox: 0 0 260 220
+ Add vertical space before roof (empty area at top)
+ Repositions entire element lower in frame
+ Doesn't fix fundamental geometry issues
+ Partial solution only
+
+OPTION C: Geometric Overhaul (Best Quality)
+ Redesign roof curve with pronounced upward arc
+ Add pronounced upturned eaves (characteristic temple feature)
+ Increase tile count to 50+ arranged in logical grid
+ Add roof ridge line (ridgepole effect)
+ Possibly add corner ornament suggestions
+ Would produce high-quality temple roof
+
+SUGGESTED APPROACH:
+Given the issues, recommend Option C. The current design doesn't convincingly represent
+a temple roof structure. A complete redesign with proper proportions and more extensive
+tile coverage would be much more effective for the "landscape" category.
+
+
+
+ASSESSMENT:  POOR - MAJOR REDESIGN NEEDED
+ Geometry is too flat and compressed
+ Insufficient tile coverage
+ Lacks traditional temple roof characteristics
+ Would not render recognizably as a temple roof
+ PRIORITY: HIGH
+
+
+【7】WOODEN-BRIDGE (scene-elements.js)  EXCELLENT
+
+ID: wooden-bridge  |  Name: Wooden Bridge  |  Category: landscape
+ViewBox: 0 0 280 120  |  Color Zones: 3 [deck, rail, shadow]
+
+PATH COUNTS BY CARVE LEVEL:
+ BLOCK: 4 paths (all fills)  Arched deck, handrail arc, 7 rail posts, shadow underside
+ SHAPE: 7 paths (4 fills + 3 strokes)  All block fills + plank gaps + edge outlines + post cap accents
+ DETAIL: 10 paths (4 fills + 6 strokes)  All shape + wood grain + handrail texture + weathering + nail heads
+
+BLOCK STROKE:  CORRECT (no strokes)
+ACCUMULATION:  PROPER (Block  Shape  Detail)
+SVG QUALITY: ORGANIC CURVES + GEOMETRIC | RECOGNITION: EXCELLENT 
+
+STRENGTHS:
+ Clear arched wooden bridge structure (properly curved arch)
+ Height variation (925234527292) suggests natural wood deflection
+ Handrail clearly separated above deck
+ 7 posts evenly distributed with slight irregularity (hand-carved aesthetic)
+ Excellent material representation:
+   Plank gaps (8 strokes) create realistic floor board visual
+   Wood grain (2 flowing curves) follows arch direction
+   Weathering marks (7 strokes) suggest age and exposure
+   Nailhead details (7 small arcs) at post-rail junctions
+   Shadow underside creates structural depth
+ Good proportions: 280x120 (2.3:1 ratio) appropriate for bridge
+ All details layer without overwhelming
+ Would render as clearly readable wooden arch bridge
+
+ASSESSMENT:  EXCELLENT
+ Recent redesign was successful
+ High-quality recognizable structure
+ Strong material authenticity
+ Proper detail progression
+ PRIORITY: Keep as-is, exemplary design
+
+
+【8】DISTANT-VILLAGE (scene-elements.js)  GOOD
+
+ID: distant-village  |  Name: Distant Village  |  Category: landscape
+ViewBox: 0 0 300 100  |  Color Zones: 4 [roof, wall, tree, detail]
+
+PATH COUNTS BY CARVE LEVEL:
+ BLOCK: 12 paths (all fills)  4 houses (roof+wall pairs) + 4 trees
+ SHAPE: 16 paths (12 fills + 4 strokes)  Block fills + 4 roof outline strokes
+ DETAIL: 27 paths (12 fills + 15 strokes)  All shape + 12 wall board strokes + 6 tree details + 1 horizon stroke
+
+BLOCK STROKE:  CORRECT
+ACCUMULATION:  PROPER (Block  Shape  Detail)
+SVG QUALITY: GEOMETRIC + STYLIZED ORGANIC | RECOGNITION: GOOD 
+
+COMPOSITION STRENGTHS:
+ Clear village composition (4 distinct houses arranged horizontally)
+ House heights vary: 20-32px (depth perspective effect)
+ Triangular roofs clearly indicate houses
+ Rectangular walls below roofs (ratio ~1:0.33)
+ 4 trees interspersed naturally (not conifers, soft organic curves)
+ Simple geometric forms maintain "distant" aesthetic
+ ViewBox: 300x100 (3:1 ratio) panoramic view for landscape
+ Material representation:
+   Wall boards (vertical strokes) suggest wood construction
+   Varied board count per house (natural variation)
+   Tree details (curved strokes) add organic feel
+   Horizon line grounds composition
+ All details maintain appropriate distance aesthetic (not overly detailed)
+
+ASSESSMENT:  GOOD
+ Clear and readable despite simplicity
+ Appropriate for "distant" designation
+ Good composition and layout
+ Logical detail progression
+ Suitable for background landscape layer
+
+
+
+                              FINAL SUMMARY TABLE
+
+
+ELEMENT                    | FILE              | QUALITY | CARVE HIERARCHY | RECOGNITION | ISSUE
+
+torii-gate                 | elements.js       | GOOD    |  Partial      | EXCELLENT   | Redundant redef
+paper-lantern              | extended-elem.js  | GOOD    |  Proper        | EXCELLENT   | None
+lantern-kasuga-premium     | extended-elem.js  | VERY GOOD |  Proper      | EXCELLENT   | None
+lantern-yukimi-premium     | extended-elem.js  | GOOD    |  Proper        | EXCELLENT   | Stroke width:10
+lantern-oribe-premium      | extended-elem.js  | GOOD    |  Proper        | GOOD        | Stroke width:6
+temple-roof                | scene-elements.js | POOR    |  Partial      | POOR        | Design flawed 
+wooden-bridge              | scene-elements.js | EXCELLENT |  Proper      | EXCELLENT   | None 
+distant-village            | scene-elements.js | GOOD    |  Proper        | GOOD        | None
+
+
+                              ACTION ITEMS (PRIORITY)
+
+
+ CRITICAL - Must Fix:
+    TEMPLE-ROOF: Complete redesign needed (too flat, insufficient tiles, wrong proportions)
+      Estimated effort: HIGH (complete rework of geometry and tile system)
+   
+ MEDIUM - Should Fix:
+    LANTERN-YUKIMI-PREMIUM: Reduce leg stroke width from 10 to 2-3
+      Estimated effort: LOW (one value change)
+    LANTERN-ORIBE-PREMIUM: Reduce figure stroke width from 6 to 3-4
+      Estimated effort: LOW (one value change)
+    TORII-GATE: Refactor shape level to avoid redundant path redefinition
+       Estimated effort: MEDIUM (path consolidation)
+
+ GOOD - Keep As-Is:
+    PAPER-LANTERN: Excellent simple design 
+    LANTERN-KASUGA-PREMIUM: Excellent detailed design 
+    WOODEN-BRIDGE: Excellent recent redesign 
+    DISTANT-VILLAGE: Good composition 
+
+

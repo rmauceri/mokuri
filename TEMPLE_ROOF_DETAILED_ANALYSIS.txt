@@ -1,0 +1,282 @@
+
+                     TEMPLE-ROOF COMPLETE PATH BREAKDOWN
+
+
+ELEMENT STRUCTURE:
+  id: 'temple-roof'
+  name: 'Temple Roof'
+  category: 'landscape'
+  viewBox: '0 0 260 140'
+  suggestedLayer: 'midground'
+  
+COLOR ZONES:
+   'roof' (paletteSlot: 0)  main roof surface
+   'tile' (paletteSlot: 3)  roof tiles
+   'eave' (paletteSlot: 4)  hanging eave section
+   'detail' (paletteSlot: 0)  detail strokes
+
+
+CARVE LEVEL: BLOCK (Foundation paths - 2 fills)
+
+
+PATH 1: Main Roof Shape
+  Type: fill
+  Zone: roof
+  Path: M130,8 Q90,32 40,62 Q24,72 10,78 Q6,82 8,86 L12,88 Q30,84 60,72 
+        L130,38 L200,72 Q230,84 248,88 L252,86 Q254,82 250,78 Q236,72 220,62 
+        Q170,32 130,8 Z
+  
+  Breakdown:
+    M130,8        - Move to center peak at (130, 8)
+    Q90,32 40,62  - Left side: quadratic curve from center to left, control pt (90,32)
+    Q24,72 10,78  - Continue left curve, control pt (24,72)
+    Q6,82 8,86    - Left edge connection, control pt (6,82)
+    L12,88        - Line to left eave connection point
+    Q30,84 60,72  - Right curve back up, control pt (30,84)
+    L130,38       - Line to center (creates vertical axis)
+    L200,72       - Line to right curve point
+    Q230,84 248,88 - Right eave connection, control pt (230,84)
+    L252,86       - Line to right edge
+    Q254,82 250,78 - Right top curve, control pt (254,82)
+    Q236,72 220,62 - Right side descend, control pt (236,72)
+    Q170,32 130,8 - Return to center peak, control pt (170,32)
+    Z             - Close path
+  
+  Analysis:
+     Starts at y:8 (very top of 140px viewBox) - no space above roof
+     Peak only 8px from top edge - feels cramped
+     Uses quadratic curves but they're too smooth/gradual
+     No sharp upward turn (characteristic of temple roofs)
+     Looks more like smooth bell curve than architectural roof
+
+
+PATH 2: Eave (Overhanging section)
+  Type: fill
+  Zone: eave
+  Path: M8,86 L12,88 Q30,92 60,100 L130,130 L200,100 Q230,92 248,88 L252,86 
+        Q254,90 252,94 L248,96 Q230,100 200,108 L130,138 L60,108 Q30,100 12,96 
+        L8,94 Q6,90 8,86 Z
+  
+  Breakdown:
+    M8,86         - Start at left eave connection
+    L12,88        - Line to eave inner left
+    Q30,92 60,100 - Curve to left eave center
+    L130,130      - Line to eave center point (below roof center)
+    L200,100      - Line to right eave center
+    Q230,92 248,88 - Curve to right eave
+    L252,86       - Line to right edge
+    Q254,90 252,94 - Curve down for outer eave
+    L248,96       - Line to outer eave
+    Q230,100 200,108 - Curve to right outer
+    L130,138      - Line to outer center
+    L60,108       - Line to left outer
+    Q30,100 12,96 - Curve to left outer edge
+    L8,94         - Line back to start
+    Q6,90 8,86    - Close curve
+    Z             - Close path
+  
+  Analysis:
+     Extends from y:86 to y:138 (52px depth)
+     Combined with roof (y:8-86 = 78px), eave is 40% of total height
+     Roof:eave ratio is backwards (should be more roof, less eave)
+     Creates a band-like appearance instead of architectural eave
+     No pronounced downward curl (upturned eaves should curve down sharply)
+
+
+CARVE LEVEL: SHAPE (Adds detailing - 13 total: 10 fills + 3 strokes)
+
+
+[Includes all BLOCK paths plus:]
+
+TILE PATHS (8 fills - roof tile representations):
+
+TILE 1: { d: 'M48,66 L56,70 L56,82 L48,78 Z', zone: 'tile' }
+   Skewed parallelogram, 8px wide  16px tall, at x:48-56, y:66-82
+   Location: Left side of roof
+
+TILE 2: { d: 'M62,58 L70,62 L70,74 L62,70 Z', zone: 'tile' }
+   Skewed parallelogram, 8px wide  16px tall, at x:62-70, y:58-74
+   Location: Left-center
+
+TILE 3: { d: 'M76,50 L84,54 L84,66 L76,62 Z', zone: 'tile' }
+   Skewed parallelogram, 8px wide  16px tall, at x:76-84, y:50-66
+   Location: Center-left
+
+TILE 4: { d: 'M90,42 L98,46 L98,58 L90,54 Z', zone: 'tile' }
+   Skewed parallelogram, 8px wide  16px tall, at x:90-98, y:42-58
+   Location: Left-center peak
+
+TILE 5: { d: 'M162,42 L170,46 L170,58 L162,54 Z', zone: 'tile' }
+   Skewed parallelogram, 8px wide  16px tall, at x:162-170, y:42-58
+   Location: Right-center peak (gap from TILE 4: x:98-162 = 64px gap!)
+
+TILE 6: { d: 'M176,50 L184,54 L184,66 L176,62 Z', zone: 'tile' }
+   Skewed parallelogram, 8px wide  16px tall, at x:176-184, y:50-66
+   Location: Center-right
+
+TILE 7: { d: 'M190,58 L198,62 L198,74 L190,70 Z', zone: 'tile' }
+   Skewed parallelogram, 8px wide  16px tall, at x:190-198, y:58-74
+   Location: Right-center
+
+TILE 8: { d: 'M204,66 L212,70 L212,82 L204,78 Z', zone: 'tile' }
+   Skewed parallelogram, 8px wide  16px tall, at x:204-212, y:66-82
+   Location: Right side
+
+TILE ANALYSIS:
+   Only 8 tiles for entire 260px roof width
+   Total tile span: x:48-212 = 164px of 260px width (63% coverage)
+   Large gap at center: x:98-162 (64px with NO tiles)
+   Gaps between tiles: 8-16px between each
+   No pattern or grid structure
+   Too small to read as roof tiles when rendered
+   Scattered placement suggests decorative marks, not roof covering
+  
+  What's needed:
+     40-60 tiles total (5-8 rows  5-8 columns)
+     Consistent grid spacing (no gaps)
+     Tiles should cover 80%+ of roof area
+     Regular pattern (not scattered)
+     Possibly slightly larger tiles (1212 or 1515)
+
+STROKE PATHS (3 in SHAPE level - should be in DETAIL):
+
+STROKE 1: { d: 'M130,8 Q90,32 40,62 Q24,72 10,78', zone: 'roof', strokeWidth: 1.2 }
+   Left roof outline stroke
+   Traces the left side of roof from peak down
+
+STROKE 2: { d: 'M130,8 Q170,32 220,62 Q236,72 250,78', zone: 'roof', strokeWidth: 1.2 }
+   Right roof outline stroke
+   Traces the right side of roof from peak down
+
+STROKE 3: { d: 'M6,82 Q8,86 12,88 Q30,92 60,100 L130,130 L200,100 Q230,92 248,88 Q252,86 254,82', 
+           zone: 'eave', strokeWidth: 1.4 }
+   Eave edge outline stroke
+   Traces top edge of eave section
+
+
+CARVE LEVEL: DETAIL (Adds fine details - 22 total: 10 fills + 12 strokes)
+
+
+[Includes all SHAPE paths plus:]
+
+DETAIL STROKE PATHS (12 strokes):
+
+ROOF OUTLINE STROKES (8 strokes - traced detail lines on roof):
+  1. M40,68 L60,78    (length: ~26px, left-lower roof area)
+  2. M54,60 L74,70    (length: ~26px, left-center roof area)
+  3. M68,52 L88,62    (length: ~26px, center-left roof area)
+  4. M82,44 L102,54   (length: ~26px, center roof area)
+  5. M158,54 L178,44  (length: ~26px, right-center roof area)
+  6. M172,62 L192,52  (length: ~26px, center-right roof area)
+  7. M186,70 L206,60  (length: ~26px, right-center area)
+  8. M200,78 L220,68  (length: ~26px, right-lower roof area)
+  
+  Analysis:
+     Strokes are scattered, not systematic
+     No visual pattern (not radial, not grid, not architectural)
+     Thin lines (strokeWidth not specified, default 1px)
+     Don't create convincing roof texture
+     Look like random decorative marks, not roof detail
+
+EAVE DETAIL STROKES (4 strokes - curved lines on eave):
+  1. M20,90 Q40,94 60,102    (curved line, left eave area, strokeWidth: 0.4)
+  2. M200,102 Q220,94 240,90 (curved line, right eave area, strokeWidth: 0.4)
+  3. M60,104 Q90,116 120,128  (curved line, lower left eave, strokeWidth: 0.3)
+  4. M140,128 Q170,116 200,104 (curved line, lower right eave, strokeWidth: 0.3)
+  
+  Analysis:
+     Curved lines add some organic flow
+     Very thin (strokeWidth: 0.3-0.4) - nearly invisible at scale
+     Don't suggest structural eave detail
+     Pattern doesn't relate to architectural eave design
+
+
+OVERALL SVG QUALITY ASSESSMENT
+
+
+PATH COMPLEXITY:    SIMPLE (basic geometric shapes)
+   Quadratic curves (Q commands) - smooth but basic
+   Linear paths (L commands) - straightforward
+   No arcs (A commands)
+   No complex fill rules
+  
+GEOMETRIC ACCURACY: SYNTACTICALLY CORRECT but PROPORTIONALLY WRONG
+   All path syntax is valid SVG
+   Coordinates follow logical progression
+   But overall proportions are fundamentally flawed
+
+RECOGNIZABILITY:     POOR
+   Would not render as recognizable temple roof
+   Looks more like a generic curved band
+   Missing all characteristic temple roof features:
+     No pronounced upward peak
+     No upturned eaves (warizori/mukuri)
+     No roof ridge ornaments
+     Insufficient tile coverage
+   Proportions too wide and squat
+   Eave dominates over roof structure
+
+TEXTURE/DETAIL:     INADEQUATE
+   Only 8 tiles (should be 40-60)
+   Scattered detail strokes don't create texture
+   No systematic pattern
+   Details look decorative rather than structural
+
+
+RENDERING PREDICTION
+
+
+When rendered at typical display sizes:
+   Small (100px): Would appear as a curved band (roof indistinguishable from eave)
+   Medium (200px): Slightly curved topped structure with scattered marks (not recognizable)
+   Large (400px): 8 small parallelograms visible as scattered decorative elements
+
+The SVG would likely be mistaken for:
+   An architectural molding or border
+   A decorative band
+   A stylized bridge or arch
+   Definitely NOT a temple roof
+
+
+COMPARISON TO SUCCESSFUL STRUCTURE ELEMENTS
+
+
+WOODEN-BRIDGE (Good reference for comparison):
+   ViewBox: 280120 (2.3:1 ratio - good proportions)
+   Clear arch structure that dominates the design
+   Posts distributed across span (7 visible features)
+   Plank gaps (8) create clear visual pattern
+   Wood grain flows consistently
+   Shadow underside creates depth
+   Result: Instantly recognizable as wooden bridge
+
+DISTANT-VILLAGE (Good reference for composition):
+   ViewBox: 300100 (3:1 ratio - wide but works for landscape)
+   4 distinct houses clearly readable
+   Trees interspersed naturally
+   Simple geometry but clear purpose
+   Details at appropriate scale
+   Result: Clearly reads as distant village scene
+
+TEMPLE-ROOF (Current problem):
+   ViewBox: 260140 (1.86:1 ratio - not ideal)
+   No dominant structural feature
+   8 scattered tile marks (insufficient, no pattern)
+   Geometry doesn't suggest temple architecture
+   Details are too scattered and thin
+   Result: Unrecognizable generic curved shape
+
+
+RECOMMENDATION: COMPLETE REDESIGN REQUIRED
+
+
+The temple-roof element requires substantial redesign addressing:
+  1. ViewBox proportions (increase height or decrease width)
+  2. Roof geometry (more pronounced upward curve)
+  3. Tile system (40-60 tiles in grid pattern instead of 8 scattered)
+  4. Eave detail (more pronounced curl/overhang characteristic of temples)
+  5. Possibly add ridge ornament or decorative detail at peak
+
+Estimated effort: 2-3 hours for quality redesign
+Priority: HIGH (impacts landscape visual quality)
+

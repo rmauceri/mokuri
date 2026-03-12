@@ -1083,31 +1083,6 @@ html, body {
   min-width: 48px;
 }
 .ps-inline-row .ps-text-input { flex: 1; }
-.ps-hanko-chips {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-}
-.ps-hanko-chip {
-  width: 32px;
-  height: 32px;
-  border: 1px solid var(--panel-border);
-  border-radius: var(--radius);
-  background: var(--bg);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  color: var(--text-muted);
-  transition: border-color 0.15s, background 0.15s;
-}
-.ps-hanko-chip:hover { border-color: var(--text); }
-.ps-hanko-chip.active {
-  border-color: var(--accent);
-  background: rgba(180, 80, 60, 0.08);
-  color: #c23b22;
-}
 .ps-position-row {
   display: flex;
   gap: 4px;
@@ -1754,12 +1729,6 @@ html, body {
         <div class="ps-presentation-section ps-inline-row">
           <div class="ps-section-label">Edition</div>
           <input type="text" class="ps-text-input" id="ps-edition-input" placeholder="e.g. 3/20 or AP" maxlength="12">
-        </div>
-
-        <div class="ps-presentation-section">
-          <div class="ps-section-label">Seal</div>
-          <div class="ps-hanko-chips" id="ps-hanko-row"></div>
-          <div class="ps-position-row ps-toggle-row" id="ps-hanko-pos-row" style="margin-top:6px"></div>
         </div>
 
         <div class="ps-actions">
@@ -5565,60 +5534,6 @@ function buildPrintStudioUI() {
     autoSave();
   };
 
-  // Hanko seal selector
-  const hankoRow = $('ps-hanko-row');
-  hankoRow.innerHTML = '';
-  const hankoElements = (typeof MOKURI_ELEMENTS !== 'undefined' ? MOKURI_ELEMENTS : [])
-    .filter(el => el.category === 'hanko');
-  // "None" chip
-  const noneChip = document.createElement('button');
-  noneChip.className = 'ps-hanko-chip' + (STATE.presentationHanko === null ? ' active' : '');
-  noneChip.textContent = '⊘';
-  noneChip.title = 'No seal';
-  noneChip.addEventListener('click', () => {
-    STATE.presentationHanko = null;
-    autoSave();
-    buildPrintStudioUI();
-  });
-  hankoRow.appendChild(noneChip);
-  hankoElements.forEach(hel => {
-    const chip = document.createElement('button');
-    chip.className = 'ps-hanko-chip' + (STATE.presentationHanko === hel.id ? ' active' : '');
-    chip.textContent = hel.name.replace('Hanko ', '').charAt(0) === '●' ? hel.name : hel.name.replace('Hanko ', '');
-    chip.title = hel.name;
-    chip.style.fontSize = '10px';
-    chip.addEventListener('click', () => {
-      STATE.presentationHanko = hel.id;
-      autoSave();
-      buildPrintStudioUI();
-    });
-    hankoRow.appendChild(chip);
-  });
-
-  // Hanko position chips (only visible when a hanko is selected)
-  const hankoPosRow = $('ps-hanko-pos-row');
-  hankoPosRow.innerHTML = '';
-  hankoPosRow.style.display = STATE.presentationHanko ? 'flex' : 'none';
-  if (STATE.presentationHanko) {
-    const posOpts = [
-      { id: 'bottom-right', label: '↘ Right' },
-      { id: 'bottom-left', label: '↙ Left' },
-      { id: 'right-edge', label: '→ Edge' },
-    ];
-    posOpts.forEach(po => {
-      const btn = document.createElement('button');
-      btn.className = 'ps-toggle-btn' + (STATE.presentationHankoPos === po.id ? ' active' : '');
-      btn.textContent = po.label;
-      btn.style.fontSize = '10px';
-      btn.addEventListener('click', () => {
-        STATE.presentationHankoPos = po.id;
-        autoSave();
-        buildPrintStudioUI();
-      });
-      hankoPosRow.appendChild(btn);
-    });
-  }
-
   // Show/hide presentation details based on margin selection
   const hasMargins = STATE.presentationMargin !== 'none';
   ['ps-title-input', 'ps-deckle-check', 'ps-edition-input'].forEach(id => {
@@ -5628,8 +5543,6 @@ function buildPrintStudioUI() {
       if (section) section.style.display = hasMargins ? '' : 'none';
     }
   });
-  const hankoSection = hankoRow.closest('.ps-presentation-section');
-  if (hankoSection) hankoSection.style.display = hasMargins ? '' : 'none';
 }
 
 function positionPrintCanvas() {
@@ -5763,24 +5676,6 @@ function buildAnimPaperTexture(typeId, w, h) {
 }
 
 // 3-step print animation
-
-// Build a simple SVG string for a hanko element (vermillion, all detail paths)
-function buildHankoSvgForPresentation(hankoId) {
-  const elDef = MOKURI_ELEMENTS.find(e => e.id === hankoId);
-  if (!elDef) return null;
-  const vb = elDef.viewBox || '0 0 100 100';
-  const maxLevel = elDef.carveLevels.length - 1;
-  const paths = elDef.carveLevels[maxLevel].paths;
-  let pathsStr = '';
-  for (const p of paths) {
-    if (p.type === 'fill') {
-      pathsStr += `<path d="${p.d}" fill="#c23b22" />`;
-    } else {
-      pathsStr += `<path d="${p.d}" fill="none" stroke="#c23b22" stroke-width="${p.strokeWidth || 1}" />`;
-    }
-  }
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}">${pathsStr}</svg>`;
-}
 
 async function pullPrint() {
   if (!STATE.elements.length) {
@@ -5940,15 +5835,12 @@ async function pullPrint() {
   let canvas;
   if (preset && (preset.top > 0 || preset.sides > 0 || preset.bottom > 0)) {
     const presTitle = STATE.presentationTitle || STATE.compositionName || '';
-    const hankoSvg = STATE.presentationHanko ? buildHankoSvgForPresentation(STATE.presentationHanko) : null;
     canvas = await PrintEngine.applyPresentation(rawCanvas, {
       margins: preset,
       paperType: PAPER_TYPES[STATE.paperType],
       title: presTitle,
       deckle: STATE.presentationDeckle,
       edition: STATE.presentationEdition || '',
-      hankoSvg: hankoSvg,
-      hankoPos: STATE.presentationHankoPos || 'bottom-right',
       matColor: MAT_COLOR,
     });
   } else {
