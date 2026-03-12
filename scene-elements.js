@@ -910,5 +910,273 @@ const MOKURI_SCENE_ELEMENTS = [
         ]
       }
     ]
+  },
+
+  // 12. pagoda
+  {
+    id: 'pagoda',
+    name: 'Pagoda',
+    category: 'landscape',
+    viewBox: '0 0 130 220',
+    suggestedLayer: 'midground',
+    colorZones: [
+      { id: 'roof', defaultPaletteSlot: 0 },
+      { id: 'wall', defaultPaletteSlot: 4 },
+      { id: 'finial', defaultPaletteSlot: 3 }
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          { d: 'M63,4 Q65,2 67,4 L66,33 Q65,36 64,33 Z', type: 'fill', zone: 'finial' },
+          { d: 'M65,34 Q48,44 32,53 Q24,57 18,55 L18,60 L112,60 L112,55 Q106,57 98,53 Q82,44 65,34 Z', type: 'fill', zone: 'roof' },
+          { d: 'M42,60 L88,60 L88,82 L42,82 Z', type: 'fill', zone: 'wall' },
+          { d: 'M65,80 Q44,92 26,103 Q16,108 10,105 L10,112 L120,112 L120,105 Q114,108 104,103 Q86,92 65,80 Z', type: 'fill', zone: 'roof' },
+          { d: 'M34,112 L96,112 L96,142 L34,142 Z', type: 'fill', zone: 'wall' },
+          { d: 'M65,140 Q40,154 20,166 Q10,172 4,168 L4,178 L126,178 L126,168 Q120,172 110,166 Q90,154 65,140 Z', type: 'fill', zone: 'roof' },
+          { d: 'M26,178 L104,178 L104,206 L26,206 Z', type: 'fill', zone: 'wall' },
+          { d: 'M22,206 L108,206 L108,216 L22,216 Z', type: 'fill', zone: 'wall' }
+        ]
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M63,4 Q65,2 67,4 L66,33 Q65,36 64,33 Z', type: 'fill', zone: 'finial' },
+          { d: 'M65,34 Q48,44 32,53 Q24,57 18,55 L18,60 L112,60 L112,55 Q106,57 98,53 Q82,44 65,34 Z', type: 'fill', zone: 'roof' },
+          { d: 'M42,60 L88,60 L88,82 L42,82 Z', type: 'fill', zone: 'wall' },
+          { d: 'M65,80 Q44,92 26,103 Q16,108 10,105 L10,112 L120,112 L120,105 Q114,108 104,103 Q86,92 65,80 Z', type: 'fill', zone: 'roof' },
+          { d: 'M34,112 L96,112 L96,142 L34,142 Z', type: 'fill', zone: 'wall' },
+          { d: 'M65,140 Q40,154 20,166 Q10,172 4,168 L4,178 L126,178 L126,168 Q120,172 110,166 Q90,154 65,140 Z', type: 'fill', zone: 'roof' },
+          { d: 'M26,178 L104,178 L104,206 L26,206 Z', type: 'fill', zone: 'wall' },
+          { d: 'M22,206 L108,206 L108,216 L22,216 Z', type: 'fill', zone: 'wall' },
+          { d: 'M18,55 Q24,57 32,53 Q48,44 65,34 Q82,44 98,53 Q106,57 112,55', type: 'stroke', zone: 'roof', strokeWidth: 1.0 },
+          { d: 'M10,105 Q16,108 26,103 Q44,92 65,80 Q86,92 104,103 Q114,108 120,105', type: 'stroke', zone: 'roof', strokeWidth: 1.0 },
+          { d: 'M4,168 Q10,172 20,166 Q40,154 65,140 Q90,154 110,166 Q120,172 126,168', type: 'stroke', zone: 'roof', strokeWidth: 1.0 },
+          { d: 'M42,60 L88,60 M34,112 L96,112 M26,178 L104,178 M22,206 L108,206', type: 'stroke', zone: 'wall', strokeWidth: 0.8 },
+          { d: 'M55,60 L55,82 M75,60 L75,82 M50,112 L50,142 M80,112 L80,142 M42,178 L42,206 M65,178 L65,206 M88,178 L88,206', type: 'stroke', zone: 'wall', strokeWidth: 0.8 }
+        ]
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M63,4 Q65,2 67,4 L66,33 Q65,36 64,33 Z', type: 'fill', zone: 'finial' },
+          { d: 'M65,34 Q48,44 32,53 Q24,57 18,55 L18,60 L112,60 L112,55 Q106,57 98,53 Q82,44 65,34 Z', type: 'fill', zone: 'roof' },
+          { d: 'M42,60 L88,60 L88,82 L42,82 Z', type: 'fill', zone: 'wall' },
+          { d: 'M65,80 Q44,92 26,103 Q16,108 10,105 L10,112 L120,112 L120,105 Q114,108 104,103 Q86,92 65,80 Z', type: 'fill', zone: 'roof' },
+          { d: 'M34,112 L96,112 L96,142 L34,142 Z', type: 'fill', zone: 'wall' },
+          { d: 'M65,140 Q40,154 20,166 Q10,172 4,168 L4,178 L126,178 L126,168 Q120,172 110,166 Q90,154 65,140 Z', type: 'fill', zone: 'roof' },
+          { d: 'M26,178 L104,178 L104,206 L26,206 Z', type: 'fill', zone: 'wall' },
+          { d: 'M22,206 L108,206 L108,216 L22,216 Z', type: 'fill', zone: 'wall' },
+          { d: 'M18,55 Q24,57 32,53 Q48,44 65,34 Q82,44 98,53 Q106,57 112,55', type: 'stroke', zone: 'roof', strokeWidth: 1.0 },
+          { d: 'M10,105 Q16,108 26,103 Q44,92 65,80 Q86,92 104,103 Q114,108 120,105', type: 'stroke', zone: 'roof', strokeWidth: 1.0 },
+          { d: 'M4,168 Q10,172 20,166 Q40,154 65,140 Q90,154 110,166 Q120,172 126,168', type: 'stroke', zone: 'roof', strokeWidth: 1.0 },
+          { d: 'M42,60 L88,60 M34,112 L96,112 M26,178 L104,178 M22,206 L108,206', type: 'stroke', zone: 'wall', strokeWidth: 0.8 },
+          { d: 'M55,60 L55,82 M75,60 L75,82 M50,112 L50,142 M80,112 L80,142 M42,178 L42,206 M65,178 L65,206 M88,178 L88,206', type: 'stroke', zone: 'wall', strokeWidth: 0.8 },
+          { d: 'M63,10 L67,10 M62,18 L68,18 M63,26 L67,26', type: 'stroke', zone: 'finial', strokeWidth: 0.5 },
+          { d: 'M35,50 Q48,44 65,36 Q82,44 95,50 M28,100 Q44,92 65,82 Q86,92 102,100 M22,162 Q40,152 65,142 Q90,152 108,162', type: 'stroke', zone: 'roof', strokeWidth: 0.4 },
+          { d: 'M44,57 L44,62 M56,56 L56,61 M74,56 L74,61 M86,57 L86,62 M36,108 L36,114 M50,107 L50,113 M80,107 L80,113 M94,108 L94,114', type: 'stroke', zone: 'roof', strokeWidth: 0.5 },
+          { d: 'M56,65 L74,65 L74,77 L56,77 Z', type: 'fill', zone: 'finial' },
+          { d: 'M46,118 L60,118 L60,134 L46,134 Z M70,118 L84,118 L84,134 L70,134 Z', type: 'fill', zone: 'finial' }
+        ]
+      }
+    ]
+  },
+
+  // 13. tea-house
+  {
+    id: 'tea-house',
+    name: 'Tea House',
+    category: 'landscape',
+    viewBox: '0 0 200 140',
+    suggestedLayer: 'midground',
+    colorZones: [
+      { id: 'thatch', defaultPaletteSlot: 4 },
+      { id: 'wall', defaultPaletteSlot: 0 },
+      { id: 'frame', defaultPaletteSlot: 3 }
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          { d: 'M8,82 Q10,55 35,35 Q60,14 100,8 Q145,12 170,32 Q192,52 196,82 L196,90 L8,90 Z', type: 'fill', zone: 'thatch' },
+          { d: 'M22,90 L88,90 L88,122 L22,122 Z', type: 'fill', zone: 'wall' },
+          { d: 'M112,90 L182,90 L182,122 L112,122 Z', type: 'fill', zone: 'wall' },
+          { d: 'M88,90 L112,90 L112,122 L88,122 Z', type: 'fill', zone: 'frame' },
+          { d: 'M92,90 L108,90 L108,100 L92,100 Z', type: 'fill', zone: 'thatch' },
+          { d: 'M16,122 L188,122 L190,136 L14,136 Z', type: 'fill', zone: 'frame' }
+        ]
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M8,82 Q10,55 35,35 Q60,14 100,8 Q145,12 170,32 Q192,52 196,82 L196,90 L8,90 Z', type: 'fill', zone: 'thatch' },
+          { d: 'M22,90 L88,90 L88,122 L22,122 Z', type: 'fill', zone: 'wall' },
+          { d: 'M112,90 L182,90 L182,122 L112,122 Z', type: 'fill', zone: 'wall' },
+          { d: 'M88,90 L112,90 L112,122 L88,122 Z', type: 'fill', zone: 'frame' },
+          { d: 'M92,90 L108,90 L108,100 L92,100 Z', type: 'fill', zone: 'thatch' },
+          { d: 'M16,122 L188,122 L190,136 L14,136 Z', type: 'fill', zone: 'frame' },
+          { d: 'M8,82 Q10,55 35,35 Q60,14 100,8 Q145,12 170,32 Q192,52 196,82', type: 'stroke', zone: 'thatch', strokeWidth: 1.2 },
+          { d: 'M22,90 L22,122 L88,122 L88,90 M112,90 L112,122 L182,122 L182,90', type: 'stroke', zone: 'wall', strokeWidth: 0.8 },
+          { d: 'M88,84 L88,122 M112,84 L112,122 M22,85 L22,122 M182,85 L182,122', type: 'stroke', zone: 'frame', strokeWidth: 1.0 },
+          { d: 'M16,122 L188,122 M16,128 L188,128', type: 'stroke', zone: 'frame', strokeWidth: 0.8 },
+          { d: 'M8,90 L196,90', type: 'stroke', zone: 'thatch', strokeWidth: 0.8 }
+        ]
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M8,82 Q10,55 35,35 Q60,14 100,8 Q145,12 170,32 Q192,52 196,82 L196,90 L8,90 Z', type: 'fill', zone: 'thatch' },
+          { d: 'M22,90 L88,90 L88,122 L22,122 Z', type: 'fill', zone: 'wall' },
+          { d: 'M112,90 L182,90 L182,122 L112,122 Z', type: 'fill', zone: 'wall' },
+          { d: 'M88,90 L112,90 L112,122 L88,122 Z', type: 'fill', zone: 'frame' },
+          { d: 'M92,90 L108,90 L108,100 L92,100 Z', type: 'fill', zone: 'thatch' },
+          { d: 'M16,122 L188,122 L190,136 L14,136 Z', type: 'fill', zone: 'frame' },
+          { d: 'M8,82 Q10,55 35,35 Q60,14 100,8 Q145,12 170,32 Q192,52 196,82', type: 'stroke', zone: 'thatch', strokeWidth: 1.2 },
+          { d: 'M22,90 L22,122 L88,122 L88,90 M112,90 L112,122 L182,122 L182,90', type: 'stroke', zone: 'wall', strokeWidth: 0.8 },
+          { d: 'M88,84 L88,122 M112,84 L112,122 M22,85 L22,122 M182,85 L182,122', type: 'stroke', zone: 'frame', strokeWidth: 1.0 },
+          { d: 'M16,122 L188,122 M16,128 L188,128', type: 'stroke', zone: 'frame', strokeWidth: 0.8 },
+          { d: 'M8,90 L196,90', type: 'stroke', zone: 'thatch', strokeWidth: 0.8 },
+          { d: 'M25,45 Q50,32 78,22 M30,55 Q58,40 88,30 M18,68 Q50,52 85,42 M108,18 Q138,28 165,45 M112,30 Q142,40 172,55 M118,44 Q150,56 180,70', type: 'stroke', zone: 'thatch', strokeWidth: 0.4 },
+          { d: 'M35,95 L35,118 M50,95 L50,118 M65,95 L65,118 M80,95 L80,118', type: 'stroke', zone: 'wall', strokeWidth: 0.4 },
+          { d: 'M125,95 L125,118 M140,95 L140,118 M155,95 L155,118 M170,95 L170,118', type: 'stroke', zone: 'wall', strokeWidth: 0.4 },
+          { d: 'M20,125 L186,125 M20,131 L186,131', type: 'stroke', zone: 'frame', strokeWidth: 0.3 },
+          { d: 'M96,124 Q100,122 104,124 Q100,126 96,124 Z', type: 'fill', zone: 'frame' }
+        ]
+      }
+    ]
+  },
+
+  // 14. bamboo-fence
+  {
+    id: 'bamboo-fence',
+    name: 'Bamboo Fence',
+    category: 'landscape',
+    viewBox: '0 0 220 100',
+    suggestedLayer: 'foreground',
+    colorZones: [
+      { id: 'bamboo', defaultPaletteSlot: 3 },
+      { id: 'binding', defaultPaletteSlot: 0 }
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          { d: 'M17,5 Q20,2 23,5 L22,98 Q20,100 18,98 Z', type: 'fill', zone: 'bamboo' },
+          { d: 'M57,8 Q60,5 63,8 L62,98 Q60,100 58,98 Z', type: 'fill', zone: 'bamboo' },
+          { d: 'M97,6 Q100,3 103,6 L102,98 Q100,100 98,98 Z', type: 'fill', zone: 'bamboo' },
+          { d: 'M137,7 Q140,4 143,7 L142,98 Q140,100 138,98 Z', type: 'fill', zone: 'bamboo' },
+          { d: 'M177,5 Q180,2 183,5 L182,98 Q180,100 178,98 Z', type: 'fill', zone: 'bamboo' },
+          { d: 'M10,28 L210,28 L210,34 L10,34 Z', type: 'fill', zone: 'bamboo' },
+          { d: 'M10,64 L210,64 L210,70 L10,70 Z', type: 'fill', zone: 'bamboo' }
+        ]
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M17,5 Q20,2 23,5 L22,98 Q20,100 18,98 Z', type: 'fill', zone: 'bamboo' },
+          { d: 'M57,8 Q60,5 63,8 L62,98 Q60,100 58,98 Z', type: 'fill', zone: 'bamboo' },
+          { d: 'M97,6 Q100,3 103,6 L102,98 Q100,100 98,98 Z', type: 'fill', zone: 'bamboo' },
+          { d: 'M137,7 Q140,4 143,7 L142,98 Q140,100 138,98 Z', type: 'fill', zone: 'bamboo' },
+          { d: 'M177,5 Q180,2 183,5 L182,98 Q180,100 178,98 Z', type: 'fill', zone: 'bamboo' },
+          { d: 'M10,28 L210,28 L210,34 L10,34 Z', type: 'fill', zone: 'bamboo' },
+          { d: 'M10,64 L210,64 L210,70 L10,70 Z', type: 'fill', zone: 'bamboo' },
+          { d: 'M20,2 L20,100 M60,5 L60,100 M100,3 L100,100 M140,4 L140,100 M180,2 L180,100', type: 'stroke', zone: 'bamboo', strokeWidth: 0.8 },
+          { d: 'M10,28 L210,28 M10,34 L210,34 M10,64 L210,64 M10,70 L210,70', type: 'stroke', zone: 'bamboo', strokeWidth: 0.8 },
+          { d: 'M17,25 Q20,23 23,25 M17,48 Q20,46 23,48 M17,78 Q20,76 23,78 M57,22 Q60,20 63,22 M57,50 Q60,48 63,50 M57,82 Q60,80 63,82 M97,24 Q100,22 103,24 M97,52 Q100,50 103,52 M97,84 Q100,82 103,84 M137,26 Q140,24 143,26 M137,50 Q140,48 143,50 M137,80 Q140,78 143,80 M177,22 Q180,20 183,22 M177,48 Q180,46 183,48 M177,76 Q180,74 183,76', type: 'stroke', zone: 'bamboo', strokeWidth: 0.6 },
+          { d: 'M16,26 L24,36 M24,26 L16,36 M56,26 L64,36 M64,26 L56,36 M96,26 L104,36 M104,26 L96,36 M136,26 L144,36 M144,26 L136,36 M176,26 L184,36 M184,26 L176,36', type: 'stroke', zone: 'binding', strokeWidth: 1.0 },
+          { d: 'M16,62 L24,72 M24,62 L16,72 M56,62 L64,72 M64,62 L56,72 M96,62 L104,72 M104,62 L96,72 M136,62 L144,72 M144,62 L136,72 M176,62 L184,72 M184,62 L176,72', type: 'stroke', zone: 'binding', strokeWidth: 1.0 }
+        ]
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M17,5 Q20,2 23,5 L22,98 Q20,100 18,98 Z', type: 'fill', zone: 'bamboo' },
+          { d: 'M57,8 Q60,5 63,8 L62,98 Q60,100 58,98 Z', type: 'fill', zone: 'bamboo' },
+          { d: 'M97,6 Q100,3 103,6 L102,98 Q100,100 98,98 Z', type: 'fill', zone: 'bamboo' },
+          { d: 'M137,7 Q140,4 143,7 L142,98 Q140,100 138,98 Z', type: 'fill', zone: 'bamboo' },
+          { d: 'M177,5 Q180,2 183,5 L182,98 Q180,100 178,98 Z', type: 'fill', zone: 'bamboo' },
+          { d: 'M10,28 L210,28 L210,34 L10,34 Z', type: 'fill', zone: 'bamboo' },
+          { d: 'M10,64 L210,64 L210,70 L10,70 Z', type: 'fill', zone: 'bamboo' },
+          { d: 'M20,2 L20,100 M60,5 L60,100 M100,3 L100,100 M140,4 L140,100 M180,2 L180,100', type: 'stroke', zone: 'bamboo', strokeWidth: 0.8 },
+          { d: 'M10,28 L210,28 M10,34 L210,34 M10,64 L210,64 M10,70 L210,70', type: 'stroke', zone: 'bamboo', strokeWidth: 0.8 },
+          { d: 'M17,25 Q20,23 23,25 M17,48 Q20,46 23,48 M17,78 Q20,76 23,78 M57,22 Q60,20 63,22 M57,50 Q60,48 63,50 M57,82 Q60,80 63,82 M97,24 Q100,22 103,24 M97,52 Q100,50 103,52 M97,84 Q100,82 103,84 M137,26 Q140,24 143,26 M137,50 Q140,48 143,50 M137,80 Q140,78 143,80 M177,22 Q180,20 183,22 M177,48 Q180,46 183,48 M177,76 Q180,74 183,76', type: 'stroke', zone: 'bamboo', strokeWidth: 0.6 },
+          { d: 'M16,26 L24,36 M24,26 L16,36 M56,26 L64,36 M64,26 L56,36 M96,26 L104,36 M104,26 L96,36 M136,26 L144,36 M144,26 L136,36 M176,26 L184,36 M184,26 L176,36', type: 'stroke', zone: 'binding', strokeWidth: 1.0 },
+          { d: 'M16,62 L24,72 M24,62 L16,72 M56,62 L64,72 M64,62 L56,72 M96,62 L104,72 M104,62 L96,72 M136,62 L144,72 M144,62 L136,72 M176,62 L184,72 M184,62 L176,72', type: 'stroke', zone: 'binding', strokeWidth: 1.0 },
+          { d: 'M19,8 L19,95 M21,8 L21,95 M59,10 L59,95 M61,10 L61,95 M99,8 L99,95 M101,8 L101,95 M139,10 L139,95 M141,10 L141,95 M179,8 L179,95 M181,8 L181,95', type: 'stroke', zone: 'bamboo', strokeWidth: 0.3 },
+          { d: 'M12,31 L208,31 M12,67 L208,67', type: 'stroke', zone: 'bamboo', strokeWidth: 0.3 },
+          { d: 'M18,29 L22,33 M22,29 L18,33 M58,29 L62,33 M62,29 L58,33 M98,29 L102,33 M102,29 L98,33 M138,29 L142,33 M142,29 L138,33 M178,29 L182,33 M182,29 L178,33', type: 'stroke', zone: 'binding', strokeWidth: 0.5 },
+          { d: 'M18,65 L22,69 M22,65 L18,69 M58,65 L62,69 M62,65 L58,69 M98,65 L102,69 M102,65 L98,69 M138,65 L142,69 M142,65 L138,69 M178,65 L182,69 M182,65 L178,69', type: 'stroke', zone: 'binding', strokeWidth: 0.5 },
+          { d: 'M20,42 A1,1 0 1,1 19,42 Z M100,44 A1,1 0 1,1 99,44 Z M180,40 A1,1 0 1,1 179,40 Z', type: 'fill', zone: 'bamboo' }
+        ]
+      }
+    ]
+  },
+
+  // 15. farmhouse
+  {
+    id: 'farmhouse',
+    name: 'Farmhouse',
+    category: 'landscape',
+    viewBox: '0 0 200 160',
+    suggestedLayer: 'midground',
+    colorZones: [
+      { id: 'thatch', defaultPaletteSlot: 4 },
+      { id: 'wall', defaultPaletteSlot: 0 },
+      { id: 'frame', defaultPaletteSlot: 3 }
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          { d: 'M92,8 Q100,4 108,8 L106,16 Q100,12 94,16 Z', type: 'fill', zone: 'frame' },
+          { d: 'M100,12 Q68,35 30,65 Q16,75 6,82 L6,92 L194,92 L194,82 Q184,75 170,65 Q132,35 100,12 Z', type: 'fill', zone: 'thatch' },
+          { d: 'M22,92 L92,92 L92,135 L22,135 Z', type: 'fill', zone: 'wall' },
+          { d: 'M108,92 L178,92 L178,135 L108,135 Z', type: 'fill', zone: 'wall' },
+          { d: 'M92,92 L108,92 L108,135 L92,135 Z', type: 'fill', zone: 'frame' },
+          { d: 'M86,48 L100,36 L114,48 L114,58 L86,58 Z', type: 'fill', zone: 'wall' },
+          { d: 'M16,135 L184,135 L186,150 L14,150 Z', type: 'fill', zone: 'frame' }
+        ]
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M92,8 Q100,4 108,8 L106,16 Q100,12 94,16 Z', type: 'fill', zone: 'frame' },
+          { d: 'M100,12 Q68,35 30,65 Q16,75 6,82 L6,92 L194,92 L194,82 Q184,75 170,65 Q132,35 100,12 Z', type: 'fill', zone: 'thatch' },
+          { d: 'M22,92 L92,92 L92,135 L22,135 Z', type: 'fill', zone: 'wall' },
+          { d: 'M108,92 L178,92 L178,135 L108,135 Z', type: 'fill', zone: 'wall' },
+          { d: 'M92,92 L108,92 L108,135 L92,135 Z', type: 'fill', zone: 'frame' },
+          { d: 'M86,48 L100,36 L114,48 L114,58 L86,58 Z', type: 'fill', zone: 'wall' },
+          { d: 'M16,135 L184,135 L186,150 L14,150 Z', type: 'fill', zone: 'frame' },
+          { d: 'M6,82 Q16,75 30,65 Q68,35 100,12 Q132,35 170,65 Q184,75 194,82', type: 'stroke', zone: 'thatch', strokeWidth: 1.2 },
+          { d: 'M22,92 L22,135 L178,135 L178,92', type: 'stroke', zone: 'wall', strokeWidth: 0.8 },
+          { d: 'M92,86 L92,135 M108,86 L108,135', type: 'stroke', zone: 'frame', strokeWidth: 1.0 },
+          { d: 'M86,48 L100,36 L114,48 M86,58 L114,58', type: 'stroke', zone: 'wall', strokeWidth: 0.8 },
+          { d: 'M16,135 L184,135', type: 'stroke', zone: 'frame', strokeWidth: 0.8 }
+        ]
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M92,8 Q100,4 108,8 L106,16 Q100,12 94,16 Z', type: 'fill', zone: 'frame' },
+          { d: 'M100,12 Q68,35 30,65 Q16,75 6,82 L6,92 L194,92 L194,82 Q184,75 170,65 Q132,35 100,12 Z', type: 'fill', zone: 'thatch' },
+          { d: 'M22,92 L92,92 L92,135 L22,135 Z', type: 'fill', zone: 'wall' },
+          { d: 'M108,92 L178,92 L178,135 L108,135 Z', type: 'fill', zone: 'wall' },
+          { d: 'M92,92 L108,92 L108,135 L92,135 Z', type: 'fill', zone: 'frame' },
+          { d: 'M86,48 L100,36 L114,48 L114,58 L86,58 Z', type: 'fill', zone: 'wall' },
+          { d: 'M16,135 L184,135 L186,150 L14,150 Z', type: 'fill', zone: 'frame' },
+          { d: 'M6,82 Q16,75 30,65 Q68,35 100,12 Q132,35 170,65 Q184,75 194,82', type: 'stroke', zone: 'thatch', strokeWidth: 1.2 },
+          { d: 'M22,92 L22,135 L178,135 L178,92', type: 'stroke', zone: 'wall', strokeWidth: 0.8 },
+          { d: 'M92,86 L92,135 M108,86 L108,135', type: 'stroke', zone: 'frame', strokeWidth: 1.0 },
+          { d: 'M86,48 L100,36 L114,48 M86,58 L114,58', type: 'stroke', zone: 'wall', strokeWidth: 0.8 },
+          { d: 'M16,135 L184,135', type: 'stroke', zone: 'frame', strokeWidth: 0.8 },
+          { d: 'M30,60 Q55,42 80,28 M25,70 Q50,52 78,38 M18,80 Q45,60 75,45 M120,28 Q145,42 170,60 M122,38 Q150,52 175,70 M125,45 Q155,60 182,80', type: 'stroke', zone: 'thatch', strokeWidth: 0.4 },
+          { d: 'M26,112 L88,112 M112,112 L174,112', type: 'stroke', zone: 'wall', strokeWidth: 0.5 },
+          { d: 'M38,98 L38,108 M52,98 L52,108 M68,98 L68,108 M82,98 L82,108', type: 'stroke', zone: 'wall', strokeWidth: 0.4 },
+          { d: 'M122,98 L122,108 M136,98 L136,108 M152,98 L152,108 M166,98 L166,108', type: 'stroke', zone: 'wall', strokeWidth: 0.4 },
+          { d: 'M92,42 L108,42 M100,38 L100,55', type: 'stroke', zone: 'wall', strokeWidth: 0.4 },
+          { d: 'M30,138 L50,138 M60,140 L80,140 M90,138 L110,138 M120,140 L140,140 M150,138 L170,138', type: 'stroke', zone: 'frame', strokeWidth: 0.3 }
+        ]
+      }
+    ]
   }
 ];
