@@ -12,81 +12,76 @@ const MOKURI_CORE_ELEMENTS = [
     id: 'sakura-blossom',
     name: 'Sakura Blossom',
     category: 'flora',
-    viewBox: '0 0 120 120',
+    viewBox: '0 0 160 140',
     suggestedLayer: 'foreground',
     colorZones: [
+      { id: 'branch', defaultPaletteSlot: 4 },
       { id: 'petal', defaultPaletteSlot: 1 },
-      { id: 'center', defaultPaletteSlot: 4 },
-      { id: 'detail', defaultPaletteSlot: 0 },
+      { id: 'center', defaultPaletteSlot: 0 },
     ],
     carveLevels: [
-      // Level 0: solid silhouette
       {
         name: 'block',
         paths: [
-          // 5-petal blossom
-          {
-            d: 'M60 15 Q55 25 50 30 Q40 35 35 40 Q25 45 25 55 Q25 65 32 70 Q28 75 27 82 Q26 90 30 95 Q35 100 42 100 Q48 100 52 97 Q55 103 60 108 Q65 103 68 97 Q72 100 78 100 Q85 100 90 95 Q94 90 93 82 Q92 75 88 70 Q95 65 95 55 Q95 45 85 40 Q80 35 70 30 Q65 25 60 15 Z',
-            type: 'fill',
-            zone: 'petal',
-          },
-          // Center
-          {
-            d: 'M60 55 A8 8 0 1 1 59.99 55 Z',
-            type: 'fill',
-            zone: 'center',
-          },
+          // Main branch — tapered fill arcing from lower-right
+          { d: 'M148,138 Q136,116 122,96 Q108,80 92,66 L88,63 Q104,76 118,93 Q133,114 144,138 Z', type: 'fill', zone: 'branch' },
+          // Sub-branch toward blossom 1
+          { d: 'M89,68 Q74,60 60,52 L57,55 Q72,62 87,70 Z', type: 'fill', zone: 'branch' },
+          // Twig toward blossom 2
+          { d: 'M94,66 Q102,50 112,36 L109,34 Q100,48 92,64 Z', type: 'fill', zone: 'branch' },
+          // Blossom 1 — 5-petal scalloped silhouette
+          { d: 'M52,28 Q48,30 45,34 Q41,33 38,36 Q40,41 43,44 Q40,48 38,52 Q40,56 45,55 Q48,59 52,62 Q56,59 59,55 Q64,56 66,52 Q64,48 61,44 Q64,41 66,36 Q64,33 59,34 Q56,30 52,28 Z', type: 'fill', zone: 'petal' },
+          // Blossom 2 — slightly smaller
+          { d: 'M115,18 Q112,20 110,23 Q107,22 104,24 Q106,28 108,31 Q106,34 104,38 Q106,40 110,39 Q112,42 115,44 Q118,42 120,39 Q124,40 126,38 Q124,34 122,31 Q124,28 126,24 Q123,22 120,23 Q118,20 115,18 Z', type: 'fill', zone: 'petal' },
+          // Flower centers
+          { d: 'M52,44 A4,4 0 1,1 51.99,44 Z', type: 'fill', zone: 'center' },
+          { d: 'M115,31 A3,3 0 1,1 114.99,31 Z', type: 'fill', zone: 'center' },
         ],
       },
-      // Level 1: outline
       {
         name: 'shape',
         paths: [
-          {
-            d: 'M60 15 Q55 25 50 30 Q40 35 35 40 Q25 45 25 55 Q25 65 32 70 Q28 75 27 82 Q26 90 30 95 Q35 100 42 100 Q48 100 52 97 Q55 103 60 108 Q65 103 68 97 Q72 100 78 100 Q85 100 90 95 Q94 90 93 82 Q92 75 88 70 Q95 65 95 55 Q95 45 85 40 Q80 35 70 30 Q65 25 60 15 Z',
-            type: 'fill',
-            zone: 'petal',
-          },
-          {
-            d: 'M60 55 A8 8 0 1 1 59.99 55 Z',
-            type: 'fill',
-            zone: 'center',
-          },
-          {
-            d: 'M60 15 Q55 25 50 30 Q40 35 35 40 Q25 45 25 55 Q25 65 32 70 Q28 75 27 82 Q26 90 30 95 Q35 100 42 100 Q48 100 52 97 Q55 103 60 108 Q65 103 68 97 Q72 100 78 100 Q85 100 90 95 Q94 90 93 82 Q92 75 88 70 Q95 65 95 55 Q95 45 85 40 Q80 35 70 30 Q65 25 60 15 Z',
-            type: 'stroke',
-            zone: 'detail',
-            strokeWidth: 2,
-          },
+          // All block fills
+          { d: 'M148,138 Q136,116 122,96 Q108,80 92,66 L88,63 Q104,76 118,93 Q133,114 144,138 Z', type: 'fill', zone: 'branch' },
+          { d: 'M89,68 Q74,60 60,52 L57,55 Q72,62 87,70 Z', type: 'fill', zone: 'branch' },
+          { d: 'M94,66 Q102,50 112,36 L109,34 Q100,48 92,64 Z', type: 'fill', zone: 'branch' },
+          { d: 'M52,28 Q48,30 45,34 Q41,33 38,36 Q40,41 43,44 Q40,48 38,52 Q40,56 45,55 Q48,59 52,62 Q56,59 59,55 Q64,56 66,52 Q64,48 61,44 Q64,41 66,36 Q64,33 59,34 Q56,30 52,28 Z', type: 'fill', zone: 'petal' },
+          { d: 'M115,18 Q112,20 110,23 Q107,22 104,24 Q106,28 108,31 Q106,34 104,38 Q106,40 110,39 Q112,42 115,44 Q118,42 120,39 Q124,40 126,38 Q124,34 122,31 Q124,28 126,24 Q123,22 120,23 Q118,20 115,18 Z', type: 'fill', zone: 'petal' },
+          { d: 'M52,44 A4,4 0 1,1 51.99,44 Z', type: 'fill', zone: 'center' },
+          { d: 'M115,31 A3,3 0 1,1 114.99,31 Z', type: 'fill', zone: 'center' },
+          // Petal divisions — blossom 1
+          { d: 'M52,44 Q51,38 52,30 M52,44 Q46,41 40,37 M52,44 Q46,51 40,54 M52,44 Q57,51 62,54 M52,44 Q57,40 64,36', type: 'stroke', zone: 'petal', strokeWidth: 1 },
+          // Petal divisions — blossom 2
+          { d: 'M115,31 Q114,26 115,20 M115,31 Q110,29 106,24 M115,31 Q110,35 106,38 M115,31 Q120,35 124,38 M115,31 Q120,28 124,24', type: 'stroke', zone: 'petal', strokeWidth: 0.8 },
+          // Calyx twig connections
+          { d: 'M56,54 Q62,58 68,63 M112,36 Q108,44 104,52', type: 'stroke', zone: 'branch', strokeWidth: 1.2 },
         ],
       },
-      // Level 2: petal veins
       {
         name: 'detail',
         paths: [
-          {
-            d: 'M60 15 Q55 25 50 30 Q40 35 35 40 Q25 45 25 55 Q25 65 32 70 Q28 75 27 82 Q26 90 30 95 Q35 100 42 100 Q48 100 52 97 Q55 103 60 108 Q65 103 68 97 Q72 100 78 100 Q85 100 90 95 Q94 90 93 82 Q92 75 88 70 Q95 65 95 55 Q95 45 85 40 Q80 35 70 30 Q65 25 60 15 Z',
-            type: 'fill',
-            zone: 'petal',
-          },
-          {
-            d: 'M60 55 A8 8 0 1 1 59.99 55 Z',
-            type: 'fill',
-            zone: 'center',
-          },
-          {
-            d: 'M60 15 Q55 25 50 30 Q40 35 35 40 Q25 45 25 55 Q25 65 32 70 Q28 75 27 82 Q26 90 30 95 Q35 100 42 100 Q48 100 52 97 Q55 103 60 108 Q65 103 68 97 Q72 100 78 100 Q85 100 90 95 Q94 90 93 82 Q92 75 88 70 Q95 65 95 55 Q95 45 85 40 Q80 35 70 30 Q65 25 60 15 Z',
-            type: 'stroke',
-            zone: 'detail',
-            strokeWidth: 2,
-          },
-          // Petal veins
-          {
-            d: 'M60 55 L60 30 M60 55 L45 40 M60 55 L75 40 M60 55 L40 70 M60 55 L80 70',
-            type: 'stroke',
-            zone: 'detail',
-            strokeWidth: 1,
-          },
+          // All shape fills
+          { d: 'M148,138 Q136,116 122,96 Q108,80 92,66 L88,63 Q104,76 118,93 Q133,114 144,138 Z', type: 'fill', zone: 'branch' },
+          { d: 'M89,68 Q74,60 60,52 L57,55 Q72,62 87,70 Z', type: 'fill', zone: 'branch' },
+          { d: 'M94,66 Q102,50 112,36 L109,34 Q100,48 92,64 Z', type: 'fill', zone: 'branch' },
+          { d: 'M52,28 Q48,30 45,34 Q41,33 38,36 Q40,41 43,44 Q40,48 38,52 Q40,56 45,55 Q48,59 52,62 Q56,59 59,55 Q64,56 66,52 Q64,48 61,44 Q64,41 66,36 Q64,33 59,34 Q56,30 52,28 Z', type: 'fill', zone: 'petal' },
+          { d: 'M115,18 Q112,20 110,23 Q107,22 104,24 Q106,28 108,31 Q106,34 104,38 Q106,40 110,39 Q112,42 115,44 Q118,42 120,39 Q124,40 126,38 Q124,34 122,31 Q124,28 126,24 Q123,22 120,23 Q118,20 115,18 Z', type: 'fill', zone: 'petal' },
+          { d: 'M52,44 A4,4 0 1,1 51.99,44 Z', type: 'fill', zone: 'center' },
+          { d: 'M115,31 A3,3 0 1,1 114.99,31 Z', type: 'fill', zone: 'center' },
+          // All shape strokes
+          { d: 'M52,44 Q51,38 52,30 M52,44 Q46,41 40,37 M52,44 Q46,51 40,54 M52,44 Q57,51 62,54 M52,44 Q57,40 64,36', type: 'stroke', zone: 'petal', strokeWidth: 1 },
+          { d: 'M115,31 Q114,26 115,20 M115,31 Q110,29 106,24 M115,31 Q110,35 106,38 M115,31 Q120,35 124,38 M115,31 Q120,28 124,24', type: 'stroke', zone: 'petal', strokeWidth: 0.8 },
+          { d: 'M56,54 Q62,58 68,63 M112,36 Q108,44 104,52', type: 'stroke', zone: 'branch', strokeWidth: 1.2 },
+          // Fine petal veins — blossom 1
+          { d: 'M50,38 Q48,34 49,30 M48,43 Q44,42 41,39 M49,50 Q46,52 43,54 M55,50 Q59,52 62,54 M57,41 Q61,40 64,37', type: 'stroke', zone: 'petal', strokeWidth: 0.5 },
+          // Fine petal veins — blossom 2
+          { d: 'M113,27 Q112,24 113,20 M112,30 Q108,29 106,26 M112,34 Q108,36 106,38 M118,34 Q121,36 124,37 M118,29 Q121,28 124,25', type: 'stroke', zone: 'petal', strokeWidth: 0.4 },
+          // Bark texture hatching
+          { d: 'M125,100 L128,98 M118,92 L121,90 M110,82 L113,80 M102,74 L105,72 M95,68 L98,66', type: 'stroke', zone: 'branch', strokeWidth: 0.6 },
+          // Stamen accents
+          { d: 'M50,42 L49,40 M54,42 L55,40 M52,47 L51,49 M52,47 L53,49', type: 'stroke', zone: 'center', strokeWidth: 0.5 },
+          // Buds at branch tip
+          { d: 'M84,58 Q83,54 84,51 Q85,54 84,58 Z M80,55 Q79,52 80,49 Q81,52 80,55 Z', type: 'fill', zone: 'petal' },
         ],
       },
     ],
@@ -825,67 +820,55 @@ const MOKURI_CORE_ELEMENTS = [
       {
         name: 'block',
         paths: [
-          // Main branch
-          {
-            d: 'M10 60 Q40 50 70 45 Q100 40 150 30 L150 40 Q100 50 70 55 Q40 60 10 70 Z',
-            type: 'fill',
-            zone: 'branch',
-          },
-          // Needle clusters (solid)
-          {
-            d: 'M40 40 L30 25 L35 25 L45 38 Z M70 35 L60 20 L65 20 L75 33 Z M100 30 L90 18 L95 18 L105 28 Z',
-            type: 'fill',
-            zone: 'needle',
-          },
+          // Main branch — graceful organic tapered arc
+          { d: 'M8,52 Q25,50 48,46 Q72,40 95,35 Q120,28 145,22 Q152,20 155,21 L155,26 Q152,25 145,27 Q120,33 95,40 Q72,46 48,52 Q25,56 8,58 Z', type: 'fill', zone: 'branch' },
+          // Needle cluster 1 — soft organic fan
+          { d: 'M32,48 Q25,38 20,28 Q22,24 28,22 Q34,20 38,24 Q44,30 42,42 Q38,48 32,48 Z', type: 'fill', zone: 'needle' },
+          // Needle cluster 2
+          { d: 'M65,40 Q58,30 52,20 Q54,16 60,14 Q66,12 72,16 Q78,22 78,34 Q74,40 65,40 Z', type: 'fill', zone: 'needle' },
+          // Needle cluster 3
+          { d: 'M100,32 Q94,22 88,14 Q90,10 96,8 Q102,6 108,10 Q114,16 116,26 Q112,32 100,32 Z', type: 'fill', zone: 'needle' },
+          // Needle cluster 4
+          { d: 'M135,24 Q130,18 126,12 Q128,10 132,8 Q136,6 140,10 Q144,14 144,22 Q140,26 135,24 Z', type: 'fill', zone: 'needle' },
         ],
       },
       {
         name: 'shape',
         paths: [
-          {
-            d: 'M10 60 Q40 50 70 45 Q100 40 150 30 L150 40 Q100 50 70 55 Q40 60 10 70 Z',
-            type: 'fill',
-            zone: 'branch',
-          },
-          {
-            d: 'M40 40 L30 25 L35 25 L45 38 Z M70 35 L60 20 L65 20 L75 33 Z M100 30 L90 18 L95 18 L105 28 Z',
-            type: 'fill',
-            zone: 'needle',
-          },
-          {
-            d: 'M10 60 Q40 50 70 45 Q100 40 150 30',
-            type: 'stroke',
-            zone: 'detail',
-            strokeWidth: 2,
-          },
+          // All block fills
+          { d: 'M8,52 Q25,50 48,46 Q72,40 95,35 Q120,28 145,22 Q152,20 155,21 L155,26 Q152,25 145,27 Q120,33 95,40 Q72,46 48,52 Q25,56 8,58 Z', type: 'fill', zone: 'branch' },
+          { d: 'M32,48 Q25,38 20,28 Q22,24 28,22 Q34,20 38,24 Q44,30 42,42 Q38,48 32,48 Z', type: 'fill', zone: 'needle' },
+          { d: 'M65,40 Q58,30 52,20 Q54,16 60,14 Q66,12 72,16 Q78,22 78,34 Q74,40 65,40 Z', type: 'fill', zone: 'needle' },
+          { d: 'M100,32 Q94,22 88,14 Q90,10 96,8 Q102,6 108,10 Q114,16 116,26 Q112,32 100,32 Z', type: 'fill', zone: 'needle' },
+          { d: 'M135,24 Q130,18 126,12 Q128,10 132,8 Q136,6 140,10 Q144,14 144,22 Q140,26 135,24 Z', type: 'fill', zone: 'needle' },
+          // Branch bark edge
+          { d: 'M8,52 Q25,50 48,46 Q72,40 95,35 Q120,28 145,22', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
+          // Twig stubs from branch to clusters
+          { d: 'M32,48 Q34,50 36,52 M65,40 Q67,42 69,44 M100,32 Q102,34 104,36 M135,24 Q137,26 139,28', type: 'stroke', zone: 'branch', strokeWidth: 1 },
         ],
       },
       {
         name: 'detail',
         paths: [
-          {
-            d: 'M10 60 Q40 50 70 45 Q100 40 150 30 L150 40 Q100 50 70 55 Q40 60 10 70 Z',
-            type: 'fill',
-            zone: 'branch',
-          },
-          {
-            d: 'M40 40 L30 25 L35 25 L45 38 Z M70 35 L60 20 L65 20 L75 33 Z M100 30 L90 18 L95 18 L105 28 Z',
-            type: 'fill',
-            zone: 'needle',
-          },
-          {
-            d: 'M10 60 Q40 50 70 45 Q100 40 150 30',
-            type: 'stroke',
-            zone: 'detail',
-            strokeWidth: 2,
-          },
-          // Needle lines
-          {
-            d: 'M40 40 L32 28 M42 38 L34 26 M70 35 L62 23 M72 33 L64 21 M100 30 L92 20 M102 28 L94 18',
-            type: 'stroke',
-            zone: 'needle',
-            strokeWidth: 1.2,
-          },
+          // All shape fills
+          { d: 'M8,52 Q25,50 48,46 Q72,40 95,35 Q120,28 145,22 Q152,20 155,21 L155,26 Q152,25 145,27 Q120,33 95,40 Q72,46 48,52 Q25,56 8,58 Z', type: 'fill', zone: 'branch' },
+          { d: 'M32,48 Q25,38 20,28 Q22,24 28,22 Q34,20 38,24 Q44,30 42,42 Q38,48 32,48 Z', type: 'fill', zone: 'needle' },
+          { d: 'M65,40 Q58,30 52,20 Q54,16 60,14 Q66,12 72,16 Q78,22 78,34 Q74,40 65,40 Z', type: 'fill', zone: 'needle' },
+          { d: 'M100,32 Q94,22 88,14 Q90,10 96,8 Q102,6 108,10 Q114,16 116,26 Q112,32 100,32 Z', type: 'fill', zone: 'needle' },
+          { d: 'M135,24 Q130,18 126,12 Q128,10 132,8 Q136,6 140,10 Q144,14 144,22 Q140,26 135,24 Z', type: 'fill', zone: 'needle' },
+          // All shape strokes
+          { d: 'M8,52 Q25,50 48,46 Q72,40 95,35 Q120,28 145,22', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
+          { d: 'M32,48 Q34,50 36,52 M65,40 Q67,42 69,44 M100,32 Q102,34 104,36 M135,24 Q137,26 139,28', type: 'stroke', zone: 'branch', strokeWidth: 1 },
+          // Needle lines — clusters 1 & 2
+          { d: 'M32,48 Q28,36 22,28 M32,48 Q30,34 26,24 M32,48 Q35,34 38,24 M32,48 Q38,36 42,30 M65,40 Q62,28 55,20 M65,40 Q64,26 62,16 M65,40 Q68,26 72,16 M65,40 Q72,30 76,22', type: 'stroke', zone: 'needle', strokeWidth: 0.8 },
+          // Needle lines — clusters 3 & 4
+          { d: 'M100,32 Q96,22 90,14 M100,32 Q100,18 98,10 M100,32 Q104,18 108,10 M100,32 Q108,22 114,16 M135,24 Q132,18 128,12 M135,24 Q136,14 134,10 M135,24 Q138,16 142,12', type: 'stroke', zone: 'needle', strokeWidth: 0.8 },
+          // Bark texture hatching
+          { d: 'M22,54 L25,53 M40,50 L43,49 M58,44 L61,43 M80,38 L83,37 M110,30 L113,29 M130,25 L133,24', type: 'stroke', zone: 'branch', strokeWidth: 0.5 },
+          // Fine needle tips
+          { d: 'M20,28 Q17,24 15,22 M26,22 Q23,18 22,15 M52,20 Q48,15 46,12 M72,16 Q74,11 76,8 M88,14 Q84,10 82,6 M108,10 Q110,5 112,3 M126,12 Q122,8 120,5 M142,10 Q144,6 146,4', type: 'stroke', zone: 'needle', strokeWidth: 0.4 },
+          // Pine cones at branch tip
+          { d: 'M153,20 Q155,16 157,18 Q155,22 153,20 Z M150,24 Q152,20 154,22 Q152,26 150,24 Z', type: 'fill', zone: 'needle' },
         ],
       },
     ],
