@@ -28,7 +28,7 @@ Every Mokuri element is a JavaScript object with this shape:
 }
 ```
 
-**Categories** (must match exactly): `'landscape'`, `'flora'`, `'fauna'`, `'objects & patterns'`, `'basic forms'`, `'hanko'`
+**Categories** (must match exactly): `'landscape'`, `'flora'`, `'fauna'`, `'figures'`, `'objects & patterns'`, `'basic forms'`, `'hanko'`
 
 **Path object:**
 ```javascript
@@ -202,6 +202,19 @@ Or teardrop shapes for buds:
 - **Shape**: + structural lines (frame edges, panel divisions, rope outlines)
 - **Detail**: + surface texture (wood grain, stone marks, rope twist), decorative patterns
 - Even man-made objects should have slight organic imperfection — hand-built, not factory-made
+
+### Figures (human staffage)
+
+- **2–3 zones**: `hat`/`garment`/`accessory` or `outer`/`inner`/`accent`
+- **Block**: recognizable activity silhouette — robes as tapered Q-curve fills, hat as separate fill, accessory (staff/umbrella/rod) as fill
+- **Shape**: + garment fold lines, hat brim edge, sleeve divisions, accessory outlines
+- **Detail**: + fabric texture marks, hat weave/straw hatching, sandal strokes, hem details
+- **No faces**: hat shadow, turned head, or brim obscures face — identity comes from posture and activity
+- Robes define the body — no separate anatomy underneath. Clothing folds imply the figure within
+- Walking figures: leading leg slightly forward, trailing robe suggests motion
+- Pairs/groups: overlap robes slightly for natural grouping, not side-by-side cutouts
+- Accessories (staff, umbrella, fishing rod) should be separate fill paths for independent color
+- Slightly elongated proportions (7–8 head-heights) following print tradition
 
 ---
 
