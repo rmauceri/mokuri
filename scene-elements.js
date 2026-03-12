@@ -400,7 +400,7 @@ const MOKURI_SCENE_ELEMENTS = [
     ]
   },
 
-  // 6. wooden-bridge
+  // 6. wooden-bridge — arched garden bridge (soribashi)
   {
     id: 'wooden-bridge',
     name: 'Wooden Bridge',
@@ -408,71 +408,62 @@ const MOKURI_SCENE_ELEMENTS = [
     viewBox: '0 0 280 120',
     suggestedLayer: 'midground',
     colorZones: [
-      { id: 'wood', defaultPaletteSlot: 4 },
+      { id: 'deck', defaultPaletteSlot: 4 },
       { id: 'rail', defaultPaletteSlot: 0 },
-      { id: 'shadow', defaultPaletteSlot: 0 },
-      { id: 'detail', defaultPaletteSlot: 0 }
+      { id: 'shadow', defaultPaletteSlot: 3 },
     ],
     carveLevels: [
       {
         name: 'block',
         paths: [
-          { d: 'M10,95 Q40,80 80,58 Q120,38 140,32 Q160,38 200,58 Q240,80 270,95 L270,105 Q240,90 200,68 Q160,48 140,42 Q120,48 80,68 Q40,90 10,105 Z', type: 'fill', zone: 'wood' },
-          { d: 'M10,90 Q40,75 80,52 Q120,32 140,26 Q160,32 200,52 Q240,75 270,90', type: 'stroke', zone: 'rail', strokeWidth: 3 },
-          { d: 'M40,80 L40,72', type: 'stroke', zone: 'rail', strokeWidth: 3 },
-          { d: 'M80,60 L80,48', type: 'stroke', zone: 'rail', strokeWidth: 3 },
-          { d: 'M120,40 L120,28', type: 'stroke', zone: 'rail', strokeWidth: 3 },
-          { d: 'M140,34 L140,22', type: 'stroke', zone: 'rail', strokeWidth: 3 },
-          { d: 'M160,40 L160,28', type: 'stroke', zone: 'rail', strokeWidth: 3 },
-          { d: 'M200,60 L200,48', type: 'stroke', zone: 'rail', strokeWidth: 3 },
-          { d: 'M240,80 L240,72', type: 'stroke', zone: 'rail', strokeWidth: 3 }
-        ]
+          // Arched deck — curved band, peak slightly left of center
+          { d: 'M5,92 Q38,72 82,52 Q112,38 138,34 Q168,36 208,52 Q242,72 275,90 L275,98 Q242,80 208,62 Q168,46 138,44 Q112,48 82,62 Q38,82 5,100 Z', type: 'fill', zone: 'deck' },
+          // Handrail — thin arc above deck
+          { d: 'M18,78 Q50,56 86,40 Q114,26 138,22 Q166,24 210,40 Q246,56 265,76 L265,80 Q246,62 210,46 Q166,30 138,28 Q114,32 86,46 Q50,62 18,82 Z', type: 'fill', zone: 'rail' },
+          // Rail posts — 7 slightly irregular fills (sub-paths)
+          { d: 'M33,73 L36,72 L37,81 L32,81 Z M63,58 L66,57 L67,66 L62,67 Z M98,44 L101,43 L102,51 L97,51 Z M136,28 L139,28 L140,35 L135,35 Z M173,36 L176,35 L177,43 L172,43 Z M208,46 L211,45 L212,55 L207,55 Z M243,64 L246,63 L247,74 L242,75 Z', type: 'fill', zone: 'rail' },
+          // Underside shadow
+          { d: 'M10,100 Q40,82 84,62 Q114,48 138,44 Q168,46 212,62 Q248,82 272,98 L272,110 Q248,94 212,74 Q168,58 138,56 Q114,60 84,74 Q40,94 10,112 Z', type: 'fill', zone: 'shadow' },
+        ],
       },
       {
         name: 'shape',
         paths: [
-          { d: 'M10,95 Q40,80 80,58 Q120,38 140,32 Q160,38 200,58 Q240,80 270,95 L270,105 Q240,90 200,68 Q160,48 140,42 Q120,48 80,68 Q40,90 10,105 Z', type: 'fill', zone: 'wood' },
-          { d: 'M10,105 Q40,92 80,72 Q120,52 140,46 Q160,52 200,72 Q240,92 270,105 L270,115 Q240,100 200,78 Q160,58 140,52 Q120,58 80,78 Q40,100 10,115 Z', type: 'fill', zone: 'shadow' },
-          { d: 'M10,90 Q40,75 80,52 Q120,32 140,26 Q160,32 200,52 Q240,75 270,90', type: 'stroke', zone: 'rail', strokeWidth: 3 },
-          { d: 'M40,80 L40,72', type: 'stroke', zone: 'rail', strokeWidth: 3 },
-          { d: 'M80,60 L80,48', type: 'stroke', zone: 'rail', strokeWidth: 3 },
-          { d: 'M120,40 L120,28', type: 'stroke', zone: 'rail', strokeWidth: 3 },
-          { d: 'M140,34 L140,22', type: 'stroke', zone: 'rail', strokeWidth: 3 },
-          { d: 'M160,40 L160,28', type: 'stroke', zone: 'rail', strokeWidth: 3 },
-          { d: 'M200,60 L200,48', type: 'stroke', zone: 'rail', strokeWidth: 3 },
-          { d: 'M240,80 L240,72', type: 'stroke', zone: 'rail', strokeWidth: 3 },
-          { d: 'M10,95 Q40,80 80,58 Q120,38 140,32 Q160,38 200,58 Q240,80 270,95', type: 'stroke', zone: 'wood', strokeWidth: 1 },
-          { d: 'M10,105 Q40,90 80,68 Q120,48 140,42 Q160,48 200,68 Q240,90 270,105', type: 'stroke', zone: 'wood', strokeWidth: 1 }
-        ]
+          // All block fills
+          { d: 'M5,92 Q38,72 82,52 Q112,38 138,34 Q168,36 208,52 Q242,72 275,90 L275,98 Q242,80 208,62 Q168,46 138,44 Q112,48 82,62 Q38,82 5,100 Z', type: 'fill', zone: 'deck' },
+          { d: 'M18,78 Q50,56 86,40 Q114,26 138,22 Q166,24 210,40 Q246,56 265,76 L265,80 Q246,62 210,46 Q166,30 138,28 Q114,32 86,46 Q50,62 18,82 Z', type: 'fill', zone: 'rail' },
+          { d: 'M33,73 L36,72 L37,81 L32,81 Z M63,58 L66,57 L67,66 L62,67 Z M98,44 L101,43 L102,51 L97,51 Z M136,28 L139,28 L140,35 L135,35 Z M173,36 L176,35 L177,43 L172,43 Z M208,46 L211,45 L212,55 L207,55 Z M243,64 L246,63 L247,74 L242,75 Z', type: 'fill', zone: 'rail' },
+          { d: 'M10,100 Q40,82 84,62 Q114,48 138,44 Q168,46 212,62 Q248,82 272,98 L272,110 Q248,94 212,74 Q168,58 138,56 Q114,60 84,74 Q40,94 10,112 Z', type: 'fill', zone: 'shadow' },
+          // Plank gaps across deck (M-move, 8 segments)
+          { d: 'M45,74 L45,83 M75,60 L75,68 M105,46 L105,54 M138,36 L138,44 M170,42 L170,50 M200,54 L200,62 M230,68 L230,76 M255,80 L255,88', type: 'stroke', zone: 'deck', strokeWidth: 1.2 },
+          // Handrail top and deck underside edge outlines
+          { d: 'M18,78 Q50,56 86,40 Q114,26 138,22 Q166,24 210,40 Q246,56 265,76 M5,100 Q38,82 82,62 Q112,48 138,44 Q168,46 208,62 Q242,80 275,98', type: 'stroke', zone: 'deck', strokeWidth: 0.8 },
+          // Post cap accents (M-move, 7 segments)
+          { d: 'M31,73 L38,72 M61,58 L68,57 M96,44 L103,43 M134,28 L141,28 M171,36 L178,35 M206,46 L213,45 M241,64 L248,63', type: 'stroke', zone: 'rail', strokeWidth: 1 },
+        ],
       },
       {
         name: 'detail',
         paths: [
-          { d: 'M10,95 Q40,80 80,58 Q120,38 140,32 Q160,38 200,58 Q240,80 270,95 L270,105 Q240,90 200,68 Q160,48 140,42 Q120,48 80,68 Q40,90 10,105 Z', type: 'fill', zone: 'wood' },
-          { d: 'M10,105 Q40,92 80,72 Q120,52 140,46 Q160,52 200,72 Q240,92 270,105 L270,115 Q240,100 200,78 Q160,58 140,52 Q120,58 80,78 Q40,100 10,115 Z', type: 'fill', zone: 'shadow' },
-          { d: 'M10,90 Q40,75 80,52 Q120,32 140,26 Q160,32 200,52 Q240,75 270,90', type: 'stroke', zone: 'rail', strokeWidth: 3 },
-          { d: 'M40,80 L40,72', type: 'stroke', zone: 'rail', strokeWidth: 3 },
-          { d: 'M80,60 L80,48', type: 'stroke', zone: 'rail', strokeWidth: 3 },
-          { d: 'M120,40 L120,28', type: 'stroke', zone: 'rail', strokeWidth: 3 },
-          { d: 'M140,34 L140,22', type: 'stroke', zone: 'rail', strokeWidth: 3 },
-          { d: 'M160,40 L160,28', type: 'stroke', zone: 'rail', strokeWidth: 3 },
-          { d: 'M200,60 L200,48', type: 'stroke', zone: 'rail', strokeWidth: 3 },
-          { d: 'M240,80 L240,72', type: 'stroke', zone: 'rail', strokeWidth: 3 },
-          { d: 'M20,98 Q30,92 40,96', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
-          { d: 'M50,88 Q60,82 70,86', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
-          { d: 'M90,68 Q100,62 110,66', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
-          { d: 'M125,48 Q132,42 140,46', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
-          { d: 'M140,46 Q148,42 155,48', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
-          { d: 'M170,66 Q180,62 190,68', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
-          { d: 'M210,86 Q220,82 230,88', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
-          { d: 'M240,96 Q250,92 260,98', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
-          { d: 'M60,72 Q64,68 68,72', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
-          { d: 'M100,56 Q104,52 108,56', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
-          { d: 'M172,56 Q176,52 180,56', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
-          { d: 'M212,72 Q216,68 220,72', type: 'stroke', zone: 'detail', strokeWidth: 0.4 }
-        ]
-      }
-    ]
+          // All shape paths
+          { d: 'M5,92 Q38,72 82,52 Q112,38 138,34 Q168,36 208,52 Q242,72 275,90 L275,98 Q242,80 208,62 Q168,46 138,44 Q112,48 82,62 Q38,82 5,100 Z', type: 'fill', zone: 'deck' },
+          { d: 'M18,78 Q50,56 86,40 Q114,26 138,22 Q166,24 210,40 Q246,56 265,76 L265,80 Q246,62 210,46 Q166,30 138,28 Q114,32 86,46 Q50,62 18,82 Z', type: 'fill', zone: 'rail' },
+          { d: 'M33,73 L36,72 L37,81 L32,81 Z M63,58 L66,57 L67,66 L62,67 Z M98,44 L101,43 L102,51 L97,51 Z M136,28 L139,28 L140,35 L135,35 Z M173,36 L176,35 L177,43 L172,43 Z M208,46 L211,45 L212,55 L207,55 Z M243,64 L246,63 L247,74 L242,75 Z', type: 'fill', zone: 'rail' },
+          { d: 'M10,100 Q40,82 84,62 Q114,48 138,44 Q168,46 212,62 Q248,82 272,98 L272,110 Q248,94 212,74 Q168,58 138,56 Q114,60 84,74 Q40,94 10,112 Z', type: 'fill', zone: 'shadow' },
+          { d: 'M45,74 L45,83 M75,60 L75,68 M105,46 L105,54 M138,36 L138,44 M170,42 L170,50 M200,54 L200,62 M230,68 L230,76 M255,80 L255,88', type: 'stroke', zone: 'deck', strokeWidth: 1.2 },
+          { d: 'M18,78 Q50,56 86,40 Q114,26 138,22 Q166,24 210,40 Q246,56 265,76 M5,100 Q38,82 82,62 Q112,48 138,44 Q168,46 208,62 Q242,80 275,98', type: 'stroke', zone: 'deck', strokeWidth: 0.8 },
+          { d: 'M31,73 L38,72 M61,58 L68,57 M96,44 L103,43 M134,28 L141,28 M171,36 L178,35 M206,46 L213,45 M241,64 L248,63', type: 'stroke', zone: 'rail', strokeWidth: 1 },
+          // Wood grain along deck (2 flowing lines, M-move)
+          { d: 'M15,95 Q50,77 90,57 Q120,43 138,39 Q160,41 200,55 Q240,75 270,93 M12,97 Q48,80 88,60 Q116,46 138,42 Q164,44 208,60 Q244,78 272,96', type: 'stroke', zone: 'deck', strokeWidth: 0.5 },
+          // Handrail texture marks (M-move)
+          { d: 'M30,79 L35,78 M60,63 L65,62 M95,48 L100,47 M130,30 L135,29 M165,32 L170,31 M200,44 L205,43 M235,60 L240,59', type: 'stroke', zone: 'rail', strokeWidth: 0.5 },
+          // Post weathering hatches (M-move)
+          { d: 'M34,76 L36,74 M64,60 L66,58 M99,46 L101,44 M137,30 L139,28 M174,38 L176,36 M209,48 L211,46 M244,67 L246,65', type: 'stroke', zone: 'rail', strokeWidth: 0.4 },
+          // Nail head fills at post-rail joints
+          { d: 'M35,72 A1.5,1.5 0 1,1 33.5,72 Z M65,57 A1.5,1.5 0 1,1 63.5,57 Z M100,43 A1.5,1.5 0 1,1 98.5,43 Z M138,28 A1.5,1.5 0 1,1 136.5,28 Z M175,35 A1.5,1.5 0 1,1 173.5,35 Z M210,45 A1.5,1.5 0 1,1 208.5,45 Z M245,63 A1.5,1.5 0 1,1 243.5,63 Z', type: 'fill', zone: 'rail' },
+        ],
+      },
+    ],
   },
 
   // 7. rain-curtain
