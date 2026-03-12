@@ -1040,6 +1040,80 @@ html, body {
 }
 .ps-back-link:hover { color: var(--text); }
 
+/* Presentation section */
+.ps-divider {
+  border: none;
+  border-top: 1px solid var(--panel-border);
+  margin: 12px 0 8px;
+}
+.ps-presentation-section { margin-top: 4px; }
+.ps-text-input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 12px;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+.ps-text-input::placeholder { color: var(--text-muted); opacity: 0.6; }
+.ps-text-input:focus { border-color: var(--accent); outline: none; }
+.ps-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text);
+  cursor: pointer;
+}
+.ps-checkbox-row input[type="checkbox"] {
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.ps-inline-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ps-inline-row .ps-section-label {
+  margin-bottom: 0;
+  white-space: nowrap;
+  min-width: 48px;
+}
+.ps-inline-row .ps-text-input { flex: 1; }
+.ps-hanko-chips {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.ps-hanko-chip {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--text-muted);
+  transition: border-color 0.15s, background 0.15s;
+}
+.ps-hanko-chip:hover { border-color: var(--text); }
+.ps-hanko-chip.active {
+  border-color: var(--accent);
+  background: rgba(180, 80, 60, 0.08);
+  color: #c23b22;
+}
+.ps-position-row {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+
 /* ============================================================
    CARVE STUDIO PANEL (right flyout)
    ============================================================ */
@@ -1659,6 +1733,35 @@ html, body {
           <div class="ps-toggle-row" id="ps-impr-row"></div>
         </div>
 
+        <hr class="ps-divider">
+
+        <div class="ps-presentation-section">
+          <div class="ps-section-label">Margins</div>
+          <div class="ps-toggle-row" id="ps-margin-row"></div>
+        </div>
+
+        <div class="ps-presentation-section">
+          <div class="ps-section-label">Title</div>
+          <input type="text" class="ps-text-input" id="ps-title-input" placeholder="Composition title" maxlength="60">
+        </div>
+
+        <div class="ps-presentation-section">
+          <label class="ps-checkbox-row">
+            <input type="checkbox" id="ps-deckle-check"> Deckle edge
+          </label>
+        </div>
+
+        <div class="ps-presentation-section ps-inline-row">
+          <div class="ps-section-label">Edition</div>
+          <input type="text" class="ps-text-input" id="ps-edition-input" placeholder="e.g. 3/20 or AP" maxlength="12">
+        </div>
+
+        <div class="ps-presentation-section">
+          <div class="ps-section-label">Seal</div>
+          <div class="ps-hanko-chips" id="ps-hanko-row"></div>
+          <div class="ps-position-row ps-toggle-row" id="ps-hanko-pos-row" style="margin-top:6px"></div>
+        </div>
+
         <div class="ps-actions">
           <button class="ps-pull-btn" id="ps-pull-print">Pull Print</button>
           <button class="ps-save-btn" id="ps-save-png">💾 Save PNG</button>
@@ -1906,6 +2009,14 @@ const STATE = {
   activeCompositionId: null,
   compositionName: 'Untitled Print',
 
+  // Print presentation
+  presentationMargin: 'standard',       // 'none' | 'narrow' | 'standard' | 'wide'
+  presentationTitle: '',                // '' = use compositionName; or custom override
+  presentationEdition: '',              // e.g. '3/20', '' = hidden
+  presentationHanko: null,              // hanko element id or null
+  presentationHankoPos: 'bottom-right', // 'bottom-right' | 'bottom-left' | 'right-edge'
+  presentationDeckle: true,             // deckle edge on/off
+
   // Undo
   undoStack: [],
   redoStack: [],
@@ -2020,6 +2131,17 @@ const INK_LOADS = {
   standard: { name: '中 Standard', opacityMul: 1.0, edgeMul: 1.0, turbScale: 3.5, misreg: 3 },
   heavy:    { name: '濃 Heavy',    opacityMul: 1.08, edgeMul: 1.5, turbScale: 4.5, misreg: 2 },
 };
+
+// Margin presets — asymmetric: bottom is always larger for title/edition/hanko
+// Values are fractions of print dimension (horizontal uses width, vertical uses height)
+const MARGIN_PRESETS = {
+  none:     { name: 'None',     top: 0,    sides: 0,    bottom: 0    },
+  narrow:   { name: 'Narrow',   top: 0.05, sides: 0.05, bottom: 0.10 },
+  standard: { name: 'Standard', top: 0.08, sides: 0.10, bottom: 0.16 },
+  wide:     { name: 'Wide',     top: 0.12, sides: 0.15, bottom: 0.22 },
+};
+
+const MAT_COLOR = '#d8d3cb';
 
 // ============================================================
 //  ATMOSPHERE — Sky & Ground types for scene backgrounds
@@ -3440,6 +3562,12 @@ function getCompositionData() {
     horizon: STATE.horizon,
     mist: STATE.mist,
     backgroundCarveStrokes: STATE.backgroundCarveStrokes,
+    presentationMargin: STATE.presentationMargin,
+    presentationTitle: STATE.presentationTitle,
+    presentationEdition: STATE.presentationEdition,
+    presentationHanko: STATE.presentationHanko,
+    presentationHankoPos: STATE.presentationHankoPos,
+    presentationDeckle: STATE.presentationDeckle,
     savedAt: Date.now(),
   };
 }
@@ -3458,6 +3586,12 @@ function applyCompositionData(data) {
   STATE.horizon = data.horizon ?? 0.62;
   STATE.mist = data.mist || 0;
   STATE.backgroundCarveStrokes = data.backgroundCarveStrokes || [];
+  STATE.presentationMargin = data.presentationMargin || 'standard';
+  STATE.presentationTitle = data.presentationTitle || '';
+  STATE.presentationEdition = data.presentationEdition || '';
+  STATE.presentationHanko = data.presentationHanko || null;
+  STATE.presentationHankoPos = data.presentationHankoPos || 'bottom-right';
+  STATE.presentationDeckle = data.presentationDeckle ?? true;
   const pt = PAPER_TYPES[STATE.paperType];
   if (pt) paperEl.setAttribute('fill', pt.base);
   STATE.undoStack = [];
@@ -5389,16 +5523,142 @@ function buildPrintStudioUI() {
     });
     imprRow.appendChild(btn);
   });
+
+  // ── Presentation controls ──────────────────────────────────
+
+  // Margin preset chips
+  const marginRow = $('ps-margin-row');
+  marginRow.innerHTML = '';
+  Object.entries(MARGIN_PRESETS).forEach(([id, mp]) => {
+    const btn = document.createElement('button');
+    btn.className = 'ps-toggle-btn' + (STATE.presentationMargin === id ? ' active' : '');
+    btn.textContent = mp.name;
+    btn.addEventListener('click', () => {
+      STATE.presentationMargin = id;
+      autoSave();
+      buildPrintStudioUI();
+    });
+    marginRow.appendChild(btn);
+  });
+
+  // Title input
+  const titleInput = $('ps-title-input');
+  titleInput.value = STATE.presentationTitle || STATE.compositionName || '';
+  titleInput.onchange = () => {
+    STATE.presentationTitle = titleInput.value.trim();
+    autoSave();
+  };
+
+  // Deckle edge checkbox
+  const deckleCheck = $('ps-deckle-check');
+  deckleCheck.checked = STATE.presentationDeckle;
+  deckleCheck.onchange = () => {
+    STATE.presentationDeckle = deckleCheck.checked;
+    autoSave();
+  };
+
+  // Edition input
+  const editionInput = $('ps-edition-input');
+  editionInput.value = STATE.presentationEdition || '';
+  editionInput.onchange = () => {
+    STATE.presentationEdition = editionInput.value.trim();
+    autoSave();
+  };
+
+  // Hanko seal selector
+  const hankoRow = $('ps-hanko-row');
+  hankoRow.innerHTML = '';
+  const hankoElements = (typeof MOKURI_ELEMENTS !== 'undefined' ? MOKURI_ELEMENTS : [])
+    .filter(el => el.category === 'hanko');
+  // "None" chip
+  const noneChip = document.createElement('button');
+  noneChip.className = 'ps-hanko-chip' + (STATE.presentationHanko === null ? ' active' : '');
+  noneChip.textContent = '⊘';
+  noneChip.title = 'No seal';
+  noneChip.addEventListener('click', () => {
+    STATE.presentationHanko = null;
+    autoSave();
+    buildPrintStudioUI();
+  });
+  hankoRow.appendChild(noneChip);
+  hankoElements.forEach(hel => {
+    const chip = document.createElement('button');
+    chip.className = 'ps-hanko-chip' + (STATE.presentationHanko === hel.id ? ' active' : '');
+    chip.textContent = hel.name.replace('Hanko ', '').charAt(0) === '●' ? hel.name : hel.name.replace('Hanko ', '');
+    chip.title = hel.name;
+    chip.style.fontSize = '10px';
+    chip.addEventListener('click', () => {
+      STATE.presentationHanko = hel.id;
+      autoSave();
+      buildPrintStudioUI();
+    });
+    hankoRow.appendChild(chip);
+  });
+
+  // Hanko position chips (only visible when a hanko is selected)
+  const hankoPosRow = $('ps-hanko-pos-row');
+  hankoPosRow.innerHTML = '';
+  hankoPosRow.style.display = STATE.presentationHanko ? 'flex' : 'none';
+  if (STATE.presentationHanko) {
+    const posOpts = [
+      { id: 'bottom-right', label: '↘ Right' },
+      { id: 'bottom-left', label: '↙ Left' },
+      { id: 'right-edge', label: '→ Edge' },
+    ];
+    posOpts.forEach(po => {
+      const btn = document.createElement('button');
+      btn.className = 'ps-toggle-btn' + (STATE.presentationHankoPos === po.id ? ' active' : '');
+      btn.textContent = po.label;
+      btn.style.fontSize = '10px';
+      btn.addEventListener('click', () => {
+        STATE.presentationHankoPos = po.id;
+        autoSave();
+        buildPrintStudioUI();
+      });
+      hankoPosRow.appendChild(btn);
+    });
+  }
+
+  // Show/hide presentation details based on margin selection
+  const hasMargins = STATE.presentationMargin !== 'none';
+  ['ps-title-input', 'ps-deckle-check', 'ps-edition-input'].forEach(id => {
+    const el = $(id);
+    if (el) {
+      const section = el.closest('.ps-presentation-section');
+      if (section) section.style.display = hasMargins ? '' : 'none';
+    }
+  });
+  const hankoSection = hankoRow.closest('.ps-presentation-section');
+  if (hankoSection) hankoSection.style.display = hasMargins ? '' : 'none';
 }
 
 function positionPrintCanvas() {
   const paperRect = paperEl.getBoundingClientRect();
   const wsRect = workspaceEl.getBoundingClientRect();
   const c = $('inline-print-canvas');
-  c.style.left = (paperRect.left - wsRect.left) + 'px';
-  c.style.top = (paperRect.top - wsRect.top) + 'px';
-  c.style.width = paperRect.width + 'px';
-  c.style.height = paperRect.height + 'px';
+  const presetKey = STATE.presentationMargin || 'none';
+  const preset = MARGIN_PRESETS[presetKey];
+  const hasMargins = preset && (preset.top > 0 || preset.sides > 0 || preset.bottom > 0);
+  if (hasMargins) {
+    // Canvas is larger than paper — calculate how much bigger
+    const deckleExtra = STATE.presentationDeckle ? 0.02 : 0;
+    const scaleW = 1 + preset.sides * 2 + deckleExtra * 2;
+    const scaleH = 1 + preset.top + preset.bottom + deckleExtra * 2;
+    const dispW = paperRect.width * scaleW;
+    const dispH = paperRect.height * scaleH;
+    // Offset so the print content aligns with the paper
+    const offsetX = paperRect.width * (preset.sides + deckleExtra);
+    const offsetY = paperRect.height * (preset.top + deckleExtra);
+    c.style.left = (paperRect.left - wsRect.left - offsetX) + 'px';
+    c.style.top = (paperRect.top - wsRect.top - offsetY) + 'px';
+    c.style.width = dispW + 'px';
+    c.style.height = dispH + 'px';
+  } else {
+    c.style.left = (paperRect.left - wsRect.left) + 'px';
+    c.style.top = (paperRect.top - wsRect.top) + 'px';
+    c.style.width = paperRect.width + 'px';
+    c.style.height = paperRect.height + 'px';
+  }
 }
 
 // Utility: wait ms
@@ -5503,6 +5763,25 @@ function buildAnimPaperTexture(typeId, w, h) {
 }
 
 // 3-step print animation
+
+// Build a simple SVG string for a hanko element (vermillion, all detail paths)
+function buildHankoSvgForPresentation(hankoId) {
+  const elDef = MOKURI_ELEMENTS.find(e => e.id === hankoId);
+  if (!elDef) return null;
+  const vb = elDef.viewBox || '0 0 100 100';
+  const maxLevel = elDef.carveLevels.length - 1;
+  const paths = elDef.carveLevels[maxLevel].paths;
+  let pathsStr = '';
+  for (const p of paths) {
+    if (p.type === 'fill') {
+      pathsStr += `<path d="${p.d}" fill="#c23b22" />`;
+    } else {
+      pathsStr += `<path d="${p.d}" fill="none" stroke="#c23b22" stroke-width="${p.strokeWidth || 1}" />`;
+    }
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}">${pathsStr}</svg>`;
+}
+
 async function pullPrint() {
   if (!STATE.elements.length) {
     $('status-hint').textContent = 'Add some elements first!';
@@ -5653,7 +5932,28 @@ async function pullPrint() {
   await wait(200);
 
   // Wait for print render to complete
-  const canvas = await printPromise;
+  const rawCanvas = await printPromise;
+
+  // ── Apply presentation wrapper (margins, edges, title, etc.) ──
+  const presetKey = STATE.presentationMargin || 'none';
+  const preset = MARGIN_PRESETS[presetKey];
+  let canvas;
+  if (preset && (preset.top > 0 || preset.sides > 0 || preset.bottom > 0)) {
+    const presTitle = STATE.presentationTitle || STATE.compositionName || '';
+    const hankoSvg = STATE.presentationHanko ? buildHankoSvgForPresentation(STATE.presentationHanko) : null;
+    canvas = await PrintEngine.applyPresentation(rawCanvas, {
+      margins: preset,
+      paperType: PAPER_TYPES[STATE.paperType],
+      title: presTitle,
+      deckle: STATE.presentationDeckle,
+      edition: STATE.presentationEdition || '',
+      hankoSvg: hankoSvg,
+      hankoPos: STATE.presentationHankoPos || 'bottom-right',
+      matColor: MAT_COLOR,
+    });
+  } else {
+    canvas = rawCanvas;
+  }
 
   // Draw mirrored result to inline canvas
   c.width = canvas.width;
@@ -6345,7 +6645,9 @@ function setupToolbar() {
       mirrorCanvas.height = c.height;
       const mctx = mirrorCanvas.getContext('2d');
       mctx.drawImage(c, 0, 0);
-      PrintEngine.exportPng(mirrorCanvas, 'mokuri-print.png');
+      const title = STATE.presentationTitle || STATE.compositionName || 'mokuri-print';
+      const filename = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-print.png';
+      PrintEngine.exportPng(mirrorCanvas, filename);
     }
   });
   $('ps-back-edit').addEventListener('click', () => closePrintStudio());
