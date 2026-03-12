@@ -172,6 +172,112 @@ const MOKURI_CORE_ELEMENTS = [
     ],
   },
 
+  {
+    id: 'chrysanthemum',
+    name: 'Chrysanthemum',
+    category: 'flora',
+    viewBox: '0 0 120 130',
+    suggestedLayer: 'foreground',
+    colorZones: [
+      { id: 'petal', defaultPaletteSlot: 1 },
+      { id: 'center', defaultPaletteSlot: 4 },
+      { id: 'leaf', defaultPaletteSlot: 2 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          // Bloom mass
+          { d: 'M60,5 Q90,5 108,25 Q120,50 115,75 Q105,98 80,108 Q60,115 40,108 Q15,98 5,75 Q0,50 12,25 Q30,5 60,5 Z', type: 'fill', zone: 'petal' },
+          // Center
+          { d: 'M60,48 Q70,45 75,55 Q78,65 70,73 Q62,78 52,73 Q45,65 48,55 Q52,45 60,48 Z', type: 'fill', zone: 'center' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M60,5 Q90,5 108,25 Q120,50 115,75 Q105,98 80,108 Q60,115 40,108 Q15,98 5,75 Q0,50 12,25 Q30,5 60,5 Z', type: 'fill', zone: 'petal' },
+          { d: 'M60,48 Q70,45 75,55 Q78,65 70,73 Q62,78 52,73 Q45,65 48,55 Q52,45 60,48 Z', type: 'fill', zone: 'center' },
+          // Major petal divisions
+          { d: 'M60,48 L60,5 M60,75 L58,115 M48,55 L5,50 M72,55 L115,50 M50,68 L15,100 M70,68 L105,100 M52,48 L22,12 M68,48 L98,12', type: 'stroke', zone: 'petal', strokeWidth: 1.2 },
+          // Stem
+          { d: 'M60,115 V130', type: 'stroke', zone: 'leaf', strokeWidth: 2 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M60,5 Q90,5 108,25 Q120,50 115,75 Q105,98 80,108 Q60,115 40,108 Q15,98 5,75 Q0,50 12,25 Q30,5 60,5 Z', type: 'fill', zone: 'petal' },
+          { d: 'M60,48 Q70,45 75,55 Q78,65 70,73 Q62,78 52,73 Q45,65 48,55 Q52,45 60,48 Z', type: 'fill', zone: 'center' },
+          { d: 'M60,48 L60,5 M60,75 L58,115 M48,55 L5,50 M72,55 L115,50 M50,68 L15,100 M70,68 L105,100 M52,48 L22,12 M68,48 L98,12', type: 'stroke', zone: 'petal', strokeWidth: 1.2 },
+          { d: 'M60,115 V130', type: 'stroke', zone: 'leaf', strokeWidth: 2 },
+          // Secondary petal veins
+          { d: 'M55,48 L32,8 M65,48 L88,8 M48,60 L5,68 M72,60 L115,68 M55,75 L35,112 M65,75 L85,112', type: 'stroke', zone: 'petal', strokeWidth: 0.6 },
+          // Center texture
+          { d: 'M56,55 L52,50 M64,55 L68,50 M56,68 L52,72 M64,68 L68,72', type: 'stroke', zone: 'center', strokeWidth: 0.7 },
+          // Leaves
+          { d: 'M55,120 Q40,116 32,124 Q42,120 55,120 Z', type: 'fill', zone: 'leaf' },
+          { d: 'M65,120 Q80,116 88,124 Q78,120 65,120 Z', type: 'fill', zone: 'leaf' },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'susuki-grass',
+    name: 'Susuki Grass',
+    category: 'flora',
+    viewBox: '0 0 100 160',
+    suggestedLayer: 'foreground',
+    colorZones: [
+      { id: 'plume', defaultPaletteSlot: 4 },
+      { id: 'stalk', defaultPaletteSlot: 0 },
+      { id: 'blade', defaultPaletteSlot: 3 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          // Plume heads
+          { d: 'M25,5 Q35,0 42,10 Q48,30 38,40 Q28,30 22,15 Q20,8 25,5 Z', type: 'fill', zone: 'plume' },
+          { d: 'M52,0 Q62,0 68,10 Q74,28 64,38 Q54,28 48,12 Q48,3 52,0 Z', type: 'fill', zone: 'plume' },
+          { d: 'M78,8 Q88,3 94,15 Q100,32 90,42 Q80,32 74,18 Q74,10 78,8 Z', type: 'fill', zone: 'plume' },
+          // Grass blade mass at base
+          { d: 'M10,160 Q18,120 28,85 Q32,65 38,48 L62,48 Q68,65 72,85 Q82,120 90,160 Z', type: 'fill', zone: 'blade' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M25,5 Q35,0 42,10 Q48,30 38,40 Q28,30 22,15 Q20,8 25,5 Z', type: 'fill', zone: 'plume' },
+          { d: 'M52,0 Q62,0 68,10 Q74,28 64,38 Q54,28 48,12 Q48,3 52,0 Z', type: 'fill', zone: 'plume' },
+          { d: 'M78,8 Q88,3 94,15 Q100,32 90,42 Q80,32 74,18 Q74,10 78,8 Z', type: 'fill', zone: 'plume' },
+          { d: 'M10,160 Q18,120 28,85 Q32,65 38,48 L62,48 Q68,65 72,85 Q82,120 90,160 Z', type: 'fill', zone: 'blade' },
+          // Stalks
+          { d: 'M35,42 Q33,60 30,85 Q25,120 20,155', type: 'stroke', zone: 'stalk', strokeWidth: 1.5 },
+          { d: 'M58,38 Q56,60 53,90 Q50,120 48,155', type: 'stroke', zone: 'stalk', strokeWidth: 1.5 },
+          { d: 'M85,42 Q82,60 78,85 Q75,120 72,155', type: 'stroke', zone: 'stalk', strokeWidth: 1.5 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M25,5 Q35,0 42,10 Q48,30 38,40 Q28,30 22,15 Q20,8 25,5 Z', type: 'fill', zone: 'plume' },
+          { d: 'M52,0 Q62,0 68,10 Q74,28 64,38 Q54,28 48,12 Q48,3 52,0 Z', type: 'fill', zone: 'plume' },
+          { d: 'M78,8 Q88,3 94,15 Q100,32 90,42 Q80,32 74,18 Q74,10 78,8 Z', type: 'fill', zone: 'plume' },
+          { d: 'M10,160 Q18,120 28,85 Q32,65 38,48 L62,48 Q68,65 72,85 Q82,120 90,160 Z', type: 'fill', zone: 'blade' },
+          { d: 'M35,42 Q33,60 30,85 Q25,120 20,155', type: 'stroke', zone: 'stalk', strokeWidth: 1.5 },
+          { d: 'M58,38 Q56,60 53,90 Q50,120 48,155', type: 'stroke', zone: 'stalk', strokeWidth: 1.5 },
+          { d: 'M85,42 Q82,60 78,85 Q75,120 72,155', type: 'stroke', zone: 'stalk', strokeWidth: 1.5 },
+          // Plume feathering
+          { d: 'M30,10 L36,30 M34,8 L40,25 M55,5 L60,25 M58,3 L63,20 M82,12 L88,30 M86,10 L90,28', type: 'stroke', zone: 'plume', strokeWidth: 0.5 },
+          // Arching blade detail
+          { d: 'M38,55 Q22,90 8,135 M62,55 Q78,90 92,135 M45,60 Q32,100 22,148 M55,60 Q68,100 78,148', type: 'stroke', zone: 'blade', strokeWidth: 0.7 },
+        ],
+      },
+    ],
+  },
+
   // ============================================================
   //  PATTERNS — ASANOHA & SEIGAIHA
   // ============================================================
@@ -647,6 +753,60 @@ const MOKURI_CORE_ELEMENTS = [
     ],
   },
 
+  {
+    id: 'fishing-boat',
+    name: 'Fishing Boat',
+    category: 'objects & patterns',
+    viewBox: '0 0 180 100',
+    suggestedLayer: 'midground',
+    colorZones: [
+      { id: 'hull', defaultPaletteSlot: 0 },
+      { id: 'sail', defaultPaletteSlot: 4 },
+      { id: 'trim', defaultPaletteSlot: 3 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          // Hull
+          { d: 'M10,60 Q30,40 90,35 Q150,40 170,60 L165,68 Q130,72 90,74 Q50,72 15,68 Z', type: 'fill', zone: 'hull' },
+          // Sail
+          { d: 'M90,35 L85,5 L135,30 Z', type: 'fill', zone: 'sail' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M10,60 Q30,40 90,35 Q150,40 170,60 L165,68 Q130,72 90,74 Q50,72 15,68 Z', type: 'fill', zone: 'hull' },
+          { d: 'M90,35 L85,5 L135,30 Z', type: 'fill', zone: 'sail' },
+          // Hull outline
+          { d: 'M10,60 Q30,40 90,35 Q150,40 170,60 L165,68 Q130,72 90,74 Q50,72 15,68 Z', type: 'stroke', zone: 'hull', strokeWidth: 2 },
+          // Mast
+          { d: 'M90,35 L85,5', type: 'stroke', zone: 'trim', strokeWidth: 2.5 },
+          // Gunwale
+          { d: 'M18,58 Q50,43 90,38 Q130,43 165,58', type: 'stroke', zone: 'trim', strokeWidth: 1.5 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M10,60 Q30,40 90,35 Q150,40 170,60 L165,68 Q130,72 90,74 Q50,72 15,68 Z', type: 'fill', zone: 'hull' },
+          { d: 'M90,35 L85,5 L135,30 Z', type: 'fill', zone: 'sail' },
+          { d: 'M10,60 Q30,40 90,35 Q150,40 170,60 L165,68 Q130,72 90,74 Q50,72 15,68 Z', type: 'stroke', zone: 'hull', strokeWidth: 2 },
+          { d: 'M90,35 L85,5', type: 'stroke', zone: 'trim', strokeWidth: 2.5 },
+          { d: 'M18,58 Q50,43 90,38 Q130,43 165,58', type: 'stroke', zone: 'trim', strokeWidth: 1.5 },
+          // Hull planking
+          { d: 'M25,52 Q60,44 90,42 Q130,44 160,52 M22,62 Q50,56 90,54 Q130,56 158,62', type: 'stroke', zone: 'hull', strokeWidth: 0.7 },
+          // Sail furls
+          { d: 'M88,30 L90,10 M98,28 L102,14 M108,26 L114,18', type: 'stroke', zone: 'sail', strokeWidth: 0.7 },
+          // Stern and bow ornament
+          { d: 'M14,57 Q8,50 15,45', type: 'stroke', zone: 'trim', strokeWidth: 1 },
+          { d: 'M168,57 Q175,52 172,48', type: 'stroke', zone: 'trim', strokeWidth: 1 },
+        ],
+      },
+    ],
+  },
+
   // ============================================================
   //  TREES & TEXTURE — PINE BOUGH, WOODGRAIN, GOUGE
   // ============================================================
@@ -888,6 +1048,57 @@ const MOKURI_CORE_ELEMENTS = [
             zone: 'detail',
             strokeWidth: 1,
           },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'bare-branch',
+    name: 'Bare Winter Branch',
+    category: 'flora',
+    viewBox: '0 0 160 140',
+    suggestedLayer: 'foreground',
+    colorZones: [
+      { id: 'branch', defaultPaletteSlot: 0 },
+      { id: 'twig', defaultPaletteSlot: 3 },
+      { id: 'bud', defaultPaletteSlot: 4 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          // Main trunk
+          { d: 'M75,140 Q70,110 60,85 Q50,60 45,35 L50,30 Q55,55 65,80 Q75,105 80,140 Z', type: 'fill', zone: 'branch' },
+          // Right branch
+          { d: 'M62,82 Q75,55 95,35 Q110,20 120,10 L124,14 Q112,24 98,40 Q78,60 66,82 Z', type: 'fill', zone: 'branch' },
+          // Left branch
+          { d: 'M48,48 Q35,30 25,18 Q20,12 15,10 L18,6 Q24,10 30,15 Q40,28 52,45 Z', type: 'fill', zone: 'branch' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M75,140 Q70,110 60,85 Q50,60 45,35 L50,30 Q55,55 65,80 Q75,105 80,140 Z', type: 'fill', zone: 'branch' },
+          { d: 'M62,82 Q75,55 95,35 Q110,20 120,10 L124,14 Q112,24 98,40 Q78,60 66,82 Z', type: 'fill', zone: 'branch' },
+          { d: 'M48,48 Q35,30 25,18 Q20,12 15,10 L18,6 Q24,10 30,15 Q40,28 52,45 Z', type: 'fill', zone: 'branch' },
+          // Secondary twigs
+          { d: 'M120,12 Q130,8 140,12 M120,12 Q128,18 138,28 M16,8 Q8,12 5,22 M16,8 Q10,4 5,8 M50,58 Q40,52 30,56', type: 'stroke', zone: 'twig', strokeWidth: 1.5 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M75,140 Q70,110 60,85 Q50,60 45,35 L50,30 Q55,55 65,80 Q75,105 80,140 Z', type: 'fill', zone: 'branch' },
+          { d: 'M62,82 Q75,55 95,35 Q110,20 120,10 L124,14 Q112,24 98,40 Q78,60 66,82 Z', type: 'fill', zone: 'branch' },
+          { d: 'M48,48 Q35,30 25,18 Q20,12 15,10 L18,6 Q24,10 30,15 Q40,28 52,45 Z', type: 'fill', zone: 'branch' },
+          { d: 'M120,12 Q130,8 140,12 M120,12 Q128,18 138,28 M16,8 Q8,12 5,22 M16,8 Q10,4 5,8 M50,58 Q40,52 30,56', type: 'stroke', zone: 'twig', strokeWidth: 1.5 },
+          // Fine twig ends
+          { d: 'M140,12 Q148,8 155,12 M138,28 Q142,35 148,32 M5,22 Q2,30 8,35 M5,8 Q0,5 2,0 M30,56 Q22,52 18,58', type: 'stroke', zone: 'twig', strokeWidth: 0.7 },
+          // Bark texture
+          { d: 'M58,90 L62,88 M56,100 L60,98 M54,110 L58,108 M52,70 L56,68 M50,50 L54,48', type: 'stroke', zone: 'branch', strokeWidth: 0.7 },
+          // Early buds at twig tips
+          { d: 'M155,11 A2,2 0 1,1 153,11 Z M148,31 A2,2 0 1,1 146,31 Z M8,34 A2,2 0 1,1 6,34 Z M18,57 A2,2 0 1,1 16,57 Z', type: 'fill', zone: 'bud' },
         ],
       },
     ],

@@ -382,6 +382,62 @@ const MOKURI_ELEMENTS = [
     ],
   },
 
+  {
+    id: 'waterfall',
+    name: 'Waterfall',
+    category: 'landscape',
+    viewBox: '0 0 140 200',
+    suggestedLayer: 'midground',
+    colorZones: [
+      { id: 'rock', defaultPaletteSlot: 0 },
+      { id: 'water', defaultPaletteSlot: 4 },
+      { id: 'spray', defaultPaletteSlot: 2 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          // Left cliff
+          { d: 'M0,0 L52,0 Q46,50 52,100 Q45,150 50,200 L0,200 Z', type: 'fill', zone: 'rock' },
+          // Right cliff
+          { d: 'M88,0 L140,0 L140,200 L90,200 Q95,150 88,100 Q94,50 88,0 Z', type: 'fill', zone: 'rock' },
+          // Water column
+          { d: 'M52,0 L88,0 Q94,50 88,100 Q95,150 90,200 L50,200 Q45,150 52,100 Q46,50 52,0 Z', type: 'fill', zone: 'water' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M0,0 L52,0 Q46,50 52,100 Q45,150 50,200 L0,200 Z', type: 'fill', zone: 'rock' },
+          { d: 'M88,0 L140,0 L140,200 L90,200 Q95,150 88,100 Q94,50 88,0 Z', type: 'fill', zone: 'rock' },
+          { d: 'M52,0 L88,0 Q94,50 88,100 Q95,150 90,200 L50,200 Q45,150 52,100 Q46,50 52,0 Z', type: 'fill', zone: 'water' },
+          // Cliff edges along water
+          { d: 'M52,0 Q46,50 52,100 Q45,150 50,200', type: 'stroke', zone: 'rock', strokeWidth: 2 },
+          { d: 'M88,0 Q94,50 88,100 Q95,150 90,200', type: 'stroke', zone: 'rock', strokeWidth: 2 },
+          // Splash pool at base
+          { d: 'M30,185 Q70,172 110,185 Q70,198 30,198 Z', type: 'fill', zone: 'spray' },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M0,0 L52,0 Q46,50 52,100 Q45,150 50,200 L0,200 Z', type: 'fill', zone: 'rock' },
+          { d: 'M88,0 L140,0 L140,200 L90,200 Q95,150 88,100 Q94,50 88,0 Z', type: 'fill', zone: 'rock' },
+          { d: 'M52,0 L88,0 Q94,50 88,100 Q95,150 90,200 L50,200 Q45,150 52,100 Q46,50 52,0 Z', type: 'fill', zone: 'water' },
+          { d: 'M52,0 Q46,50 52,100 Q45,150 50,200', type: 'stroke', zone: 'rock', strokeWidth: 2 },
+          { d: 'M88,0 Q94,50 88,100 Q95,150 90,200', type: 'stroke', zone: 'rock', strokeWidth: 2 },
+          { d: 'M30,185 Q70,172 110,185 Q70,198 30,198 Z', type: 'fill', zone: 'spray' },
+          // Rock face texture
+          { d: 'M10,30 L25,25 M15,70 L30,65 M8,110 L22,105 M12,150 L28,145 M120,35 L130,30 M115,75 L128,70 M122,115 L132,110 M118,155 L130,150', type: 'stroke', zone: 'rock', strokeWidth: 0.7 },
+          // Water flow lines
+          { d: 'M62,15 V55 M72,10 V60 M66,65 V115 M76,60 V110 M64,120 V165 M74,115 V160', type: 'stroke', zone: 'water', strokeWidth: 0.6 },
+          // Spray droplets
+          { d: 'M38,178 Q42,172 46,178 M58,175 Q62,170 66,175 M74,175 Q78,170 82,175 M94,178 Q98,172 102,178', type: 'stroke', zone: 'spray', strokeWidth: 0.8 },
+        ],
+      },
+    ],
+  },
+
   // ============================================================
   //  SKY & ATMOSPHERE
   // ============================================================
