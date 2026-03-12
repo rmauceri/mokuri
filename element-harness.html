@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mokuri Element Harness</title>
+<style>
+* { box-sizing: border-box; }
+
+:root {
+  --bg: #e7dcc9;
+  --bg-deep: #d5c6ab;
+  --panel: rgba(245, 239, 228, 0.94);
+  --panel-strong: #f7f1e6;
+  --border: #c4b89b;
+  --text: #3d3128;
+  --muted: #776c5d;
+  --accent: #8b6b4a;
+  --accent-strong: #6b4f34;
+  --good: #4f6b44;
+  --warn: #a16d2c;
+  --bad: #9a3f30;
+  --paper: #f5efe4;
+  --shadow: 0 10px 30px rgba(58, 48, 40, 0.12);
+  --radius: 14px;
+}
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top left, rgba(255,255,255,0.35), transparent 36%),
+    linear-gradient(180deg, #ece3d1 0%, #dfd1bb 100%);
+  color: var(--text);
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+body {
+  padding: 18px;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: minmax(290px, 360px) minmax(0, 1fr) minmax(280px, 360px);
+  gap: 18px;
+  align-items: start;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.panel-head {
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid rgba(196, 184, 155, 0.8);
+  background: linear-gradient(180deg, rgba(255,255,255,0.3), transparent);
+}
+
+.panel-head h1,
+.panel-head h2 {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: 0.02em;
+}
+
+.panel-head p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.panel-body {
+  padding: 16px 18px 18px;
+}
+
+.stack {
+  display: grid;
+  gap: 14px;
+}
+
+.subtle-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.button-row,
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+button,
+.button-like {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: var(--panel-strong);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 9px 13px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+button:hover,
+.button-like:hover {
+  background: #fffaf2;
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+button.primary:hover {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+}
+
+button.active-chip {
+  background: rgba(139, 107, 74, 0.16);
+  border-color: var(--accent);
+}
+
+textarea {
+  width: 100%;
+  min-height: 240px;
+  resize: vertical;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.65);
+  color: var(--text);
+  font: 12px/1.45 Consolas, "SFMono-Regular", Menlo, monospace;
+}
+
+input[type="file"] {
+  display: none;
+}
+
+.status {
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  border: 1px solid transparent;
+}
+
+.status.info {
+  background: rgba(106, 123, 139, 0.1);
+  border-color: rgba(106, 123, 139, 0.2);
+}
+
+.status.success {
+  background: rgba(79, 107, 68, 0.12);
+  border-color: rgba(79, 107, 68, 0.22);
+}
+
+.status.warn {
+  background: rgba(161, 109, 44, 0.12);
+  border-color: rgba(161, 109, 44, 0.24);
+}
+
+.status.error {
+  background: rgba(154, 63, 48, 0.12);
+  border-color: rgba(154, 63, 48, 0.24);
+}
+
+.summary-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.summary-card {
+  background: rgba(255,255,255,0.55);
+  border: 1px solid rgba(196, 184, 155, 0.8);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.summary-card .kicker {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.summary-card .value {
+  margin-top: 6px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.summary-card .detail {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+.element-card {
+  border: 1px solid rgba(196, 184, 155, 0.85);
+  border-radius: 14px;
+  background: rgba(255,255,255,0.5);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.element-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(58, 48, 40, 0.09);
+}
+
+.element-card.selected {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px rgba(139, 107, 74, 0.25);
+}
+
+.element-card header {
+  padding: 14px 14px 10px;
+  border-bottom: 1px solid rgba(196, 184, 155, 0.75);
+}
+
+.element-card h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+}
+
+.element-card .meta {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.level-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 12px;
+}
+
+.level-tile {
+  border: 1px solid rgba(196, 184, 155, 0.8);
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(245, 239, 228, 0.8);
+}
+
+.level-tile button {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  padding: 0;
+}
+
+.level-name {
+  padding: 8px 10px 0;
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.preview-frame {
+  aspect-ratio: 1 / 1;
+  padding: 8px;
+}
+
+.preview-frame.large {
+  aspect-ratio: 1 / 1;
+  padding: 14px;
+}
+
+.preview-paper {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(196, 184, 155, 0.8);
+  background:
+    radial-gradient(circle at top left, rgba(255,255,255,0.45), transparent 36%),
+    repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.015) 3px, rgba(0,0,0,0.015) 5px),
+    linear-gradient(180deg, #f8f2e9 0%, #efe6d8 100%);
+}
+
+.preview-paper svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.card-footer {
+  display: grid;
+  gap: 10px;
+  padding: 0 12px 12px;
+}
+
+.zone-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.zone-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.72);
+  border: 1px solid rgba(196, 184, 155, 0.7);
+  font-size: 11px;
+}
+
+.swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.12);
+}
+
+.issue-line {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.issue-line.good { color: var(--good); }
+.issue-line.warn { color: var(--warn); }
+.issue-line.bad { color: var(--bad); }
+
+.inspector-empty,
+.gallery-empty {
+  padding: 26px 22px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.inspector-title {
+  margin-bottom: 14px;
+}
+
+.inspector-title h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.inspector-title .meta {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.detail-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.fact-list {
+  display: grid;
+  gap: 8px;
+}
+
+.fact {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.fact .label {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.issue-block {
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(255,255,255,0.58);
+  border: 1px solid rgba(196, 184, 155, 0.75);
+}
+
+.issue-block h3 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.issue-block ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.issue-block li + li {
+  margin-top: 6px;
+}
+
+.issue-block.errors li { color: var(--bad); }
+.issue-block.warnings li { color: var(--warn); }
+
+.helper-note {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@media (max-width: 1200px) {
+  .app {
+    grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+  }
+
+  .panel.inspector {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 860px) {
+  body { padding: 12px; }
+
+  .app {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .gallery {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="app">
+    <section class="panel">
+      <div class="panel-head">
+        <h1>Mokuri Element Harness</h1>
+        <p>Load generated element JavaScript, inspect carve levels, and compare against built-in Mokuri packs.</p>
+      </div>
+      <div class="panel-body stack">
+        <div>
+          <div class="subtle-label">Built-in reference packs</div>
+          <div class="chip-row" id="builtin-buttons"></div>
+        </div>
+
+        <div class="status info" id="status">
+          Ready. Load a built-in pack, paste generated JS, or upload a `.js` file.
+        </div>
+
+        <div>
+          <div class="subtle-label">Generated element input</div>
+          <div class="button-row" style="margin-top:8px;">
+            <label class="button-like" for="code-file">Upload JS file</label>
+            <input id="code-file" type="file" accept=".js,.txt,.md,text/javascript,text/plain">
+            <button class="primary" id="load-paste">Load pasted code</button>
+            <button id="clear-input">Clear</button>
+          </div>
+        </div>
+
+        <textarea id="code-input" spellcheck="false" placeholder="Paste a Mokuri element object or pack here. The harness accepts:
+
+const MOKURI_FAUNA_ELEMENTS = [ ... ];
+
+or a single object:
+
+{
+  id: 'example-id',
+  ...
+}"></textarea>
+
+        <div class="helper-note">
+          The pasted code is evaluated locally in your browser so the harness can read the element definitions. This is intended for trusted generated code in Mokuri's element schema.
+        </div>
+      </div>
+    </section>
+
+    <main class="panel">
+      <div class="panel-head">
+        <h2>Loaded Elements</h2>
+        <p id="summary-text">No elements loaded yet.</p>
+      </div>
+      <div class="panel-body">
+        <div class="summary-strip" id="summary-strip"></div>
+        <div class="gallery" id="gallery"></div>
+      </div>
+    </main>
+
+    <aside class="panel inspector">
+      <div class="panel-head">
+        <h2>Inspector</h2>
+        <p>Click any preview tile to focus an element and a carve level.</p>
+      </div>
+      <div class="panel-body" id="inspector"></div>
+    </aside>
+  </div>
+
+  <script src="elements.js"></script>
+  <script src="extended-elements.js"></script>
+  <script src="fauna-elements.js"></script>
+  <script src="scene-elements.js"></script>
+  <script src="hanko-elements.js"></script>
+  <script src="forms-elements.js"></script>
+  <script src="element-harness.js"></script>
+</body>
+</html>

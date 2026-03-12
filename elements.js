@@ -94,6 +94,201 @@ const MOKURI_ELEMENTS = [
       },
     ],
   },
+{
+    id: 'mountain-fuji-peak',
+    name: 'Great Peak (Fuji style)',
+    category: 'landscape',
+    viewBox: '0 0 320 180',
+    suggestedLayer: 'background',
+    colorZones: [
+      { id: 'mountain', defaultPaletteSlot: 3 },
+      { id: 'snow', defaultPaletteSlot: 4 },
+      { id: 'texture', defaultPaletteSlot: 0 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          { d: 'M20,170 L160,30 L300,170 Z', type: 'fill', zone: 'mountain' }
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M20,170 L160,30 L300,170 Z', type: 'fill', zone: 'mountain' },
+          { d: 'M160,30 L120,70 Q140,85 160,70 Q180,85 200,70 L160,30 Z', type: 'fill', zone: 'snow' },
+          { d: 'M110,170 L130,120 M210,170 L190,120', type: 'stroke', zone: 'texture', strokeWidth: 3 }
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M20,170 L160,30 L300,170 Z', type: 'fill', zone: 'mountain' },
+          { d: 'M160,30 L120,70 Q140,85 160,70 Q180,85 200,70 L160,30 Z', type: 'fill', zone: 'snow' },
+          { d: 'M110,170 L130,120 M210,170 L190,120', type: 'stroke', zone: 'texture', strokeWidth: 3 },
+          // Raked "chisel" textures for mountain ridges
+          { d: 'M130,70 L110,100 M190,70 L210,100 M160,95 V140', type: 'stroke', zone: 'texture', strokeWidth: 1.2 },
+          { d: 'M80,170 L100,140 M240,170 L220,140 M140,170 L150,150 M180,170 L170,150', type: 'stroke', zone: 'texture', strokeWidth: 0.8 },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'rolling-hills',
+    name: 'Rolling Hills',
+    category: 'landscape',
+    viewBox: '0 0 300 140',
+    suggestedLayer: 'background',
+    colorZones: [
+      { id: 'far', defaultPaletteSlot: 0 },
+      { id: 'mid', defaultPaletteSlot: 3 },
+      { id: 'near', defaultPaletteSlot: 2 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          { d: 'M0,70 Q50,45 100,55 Q150,35 200,50 Q250,40 300,55 L300,140 L0,140 Z', type: 'fill', zone: 'far' },
+          { d: 'M0,90 Q60,65 130,75 Q190,60 250,72 L300,80 L300,140 L0,140 Z', type: 'fill', zone: 'mid' },
+          { d: 'M0,115 Q80,90 160,98 Q230,85 300,100 L300,140 L0,140 Z', type: 'fill', zone: 'near' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M0,70 Q50,45 100,55 Q150,35 200,50 Q250,40 300,55 L300,140 L0,140 Z', type: 'fill', zone: 'far' },
+          { d: 'M0,90 Q60,65 130,75 Q190,60 250,72 L300,80 L300,140 L0,140 Z', type: 'fill', zone: 'mid' },
+          { d: 'M0,115 Q80,90 160,98 Q230,85 300,100 L300,140 L0,140 Z', type: 'fill', zone: 'near' },
+          { d: 'M0,70 Q50,45 100,55 Q150,35 200,50 Q250,40 300,55', type: 'stroke', zone: 'far', strokeWidth: 1.5 },
+          { d: 'M0,90 Q60,65 130,75 Q190,60 250,72 L300,80', type: 'stroke', zone: 'mid', strokeWidth: 1.5 },
+          { d: 'M0,115 Q80,90 160,98 Q230,85 300,100', type: 'stroke', zone: 'near', strokeWidth: 2 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M0,70 Q50,45 100,55 Q150,35 200,50 Q250,40 300,55 L300,140 L0,140 Z', type: 'fill', zone: 'far' },
+          { d: 'M0,90 Q60,65 130,75 Q190,60 250,72 L300,80 L300,140 L0,140 Z', type: 'fill', zone: 'mid' },
+          { d: 'M0,115 Q80,90 160,98 Q230,85 300,100 L300,140 L0,140 Z', type: 'fill', zone: 'near' },
+          { d: 'M0,70 Q50,45 100,55 Q150,35 200,50 Q250,40 300,55', type: 'stroke', zone: 'far', strokeWidth: 1.5 },
+          { d: 'M0,90 Q60,65 130,75 Q190,60 250,72 L300,80', type: 'stroke', zone: 'mid', strokeWidth: 1.5 },
+          { d: 'M0,115 Q80,90 160,98 Q230,85 300,100', type: 'stroke', zone: 'near', strokeWidth: 2 },
+          // Tree suggestions on far hills
+          { d: 'M65,55 Q70,48 75,55 M120,52 Q125,45 130,52 M175,45 Q180,38 185,45 M230,48 Q235,41 240,48', type: 'stroke', zone: 'far', strokeWidth: 1 },
+          // Grass texture on mid hill
+          { d: 'M30,82 L35,75 M70,74 L75,67 M110,76 L115,69 M160,70 L165,63 M210,68 L215,61 M260,74 L265,67', type: 'stroke', zone: 'mid', strokeWidth: 0.7 },
+          // Grass texture on near hill
+          { d: 'M40,108 L46,102 M100,98 L106,92 M170,97 L176,91 M230,92 L236,86 M280,98 L286,92', type: 'stroke', zone: 'near', strokeWidth: 0.8 },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'farmland',
+    name: 'Farmland',
+    category: 'landscape',
+    viewBox: '0 0 280 160',
+    suggestedLayer: 'background',
+    colorZones: [
+      { id: 'field', defaultPaletteSlot: 2 },
+      { id: 'bund', defaultPaletteSlot: 0 },
+      { id: 'water', defaultPaletteSlot: 4 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          { d: 'M0,30 Q140,15 280,35 L280,65 Q140,50 0,68 Z', type: 'fill', zone: 'field' },
+          { d: 'M0,68 Q140,50 280,65 L280,100 Q140,88 0,105 Z', type: 'fill', zone: 'water' },
+          { d: 'M0,105 Q140,88 280,100 L280,135 Q140,125 0,140 Z', type: 'fill', zone: 'field' },
+          { d: 'M0,140 Q140,125 280,135 L280,160 L0,160 Z', type: 'fill', zone: 'bund' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M0,30 Q140,15 280,35 L280,65 Q140,50 0,68 Z', type: 'fill', zone: 'field' },
+          { d: 'M0,68 Q140,50 280,65 L280,100 Q140,88 0,105 Z', type: 'fill', zone: 'water' },
+          { d: 'M0,105 Q140,88 280,100 L280,135 Q140,125 0,140 Z', type: 'fill', zone: 'field' },
+          { d: 'M0,140 Q140,125 280,135 L280,160 L0,160 Z', type: 'fill', zone: 'bund' },
+          // Bund dividers between paddies
+          { d: 'M0,30 Q140,15 280,35', type: 'stroke', zone: 'bund', strokeWidth: 2 },
+          { d: 'M0,68 Q140,50 280,65', type: 'stroke', zone: 'bund', strokeWidth: 2.5 },
+          { d: 'M0,105 Q140,88 280,100', type: 'stroke', zone: 'bund', strokeWidth: 2.5 },
+          { d: 'M0,140 Q140,125 280,135', type: 'stroke', zone: 'bund', strokeWidth: 2 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M0,30 Q140,15 280,35 L280,65 Q140,50 0,68 Z', type: 'fill', zone: 'field' },
+          { d: 'M0,68 Q140,50 280,65 L280,100 Q140,88 0,105 Z', type: 'fill', zone: 'water' },
+          { d: 'M0,105 Q140,88 280,100 L280,135 Q140,125 0,140 Z', type: 'fill', zone: 'field' },
+          { d: 'M0,140 Q140,125 280,135 L280,160 L0,160 Z', type: 'fill', zone: 'bund' },
+          { d: 'M0,30 Q140,15 280,35', type: 'stroke', zone: 'bund', strokeWidth: 2 },
+          { d: 'M0,68 Q140,50 280,65', type: 'stroke', zone: 'bund', strokeWidth: 2.5 },
+          { d: 'M0,105 Q140,88 280,100', type: 'stroke', zone: 'bund', strokeWidth: 2.5 },
+          { d: 'M0,140 Q140,125 280,135', type: 'stroke', zone: 'bund', strokeWidth: 2 },
+          // Rice plant marks in top paddy
+          { d: 'M30,42 V36 M60,38 V32 M90,34 V28 M120,32 V26 M150,30 V24 M180,32 V26 M210,35 V29 M240,38 V32', type: 'stroke', zone: 'field', strokeWidth: 0.8 },
+          // Water ripples in flooded paddy
+          { d: 'M30,80 Q70,76 110,80 M140,76 Q180,72 220,76 M40,90 Q80,86 120,90 M160,86 Q200,82 240,86', type: 'stroke', zone: 'water', strokeWidth: 0.6 },
+          // Rice plant marks in lower paddy
+          { d: 'M30,115 V109 M70,112 V106 M110,108 V102 M150,106 V100 M190,108 V102 M230,112 V106', type: 'stroke', zone: 'field', strokeWidth: 0.8 },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'tranquil-pond',
+    name: 'Tranquil Pond',
+    category: 'landscape',
+    viewBox: '0 0 240 140',
+    suggestedLayer: 'midground',
+    colorZones: [
+      { id: 'water', defaultPaletteSlot: 0 },
+      { id: 'shore', defaultPaletteSlot: 3 },
+      { id: 'reflection', defaultPaletteSlot: 4 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          { d: 'M15,70 Q50,10 130,5 Q210,10 240,70 Q210,130 130,135 Q50,130 15,70 Z', type: 'fill', zone: 'shore' },
+          { d: 'M35,70 Q60,25 130,20 Q200,25 215,70 Q200,115 130,120 Q60,115 35,70 Z', type: 'fill', zone: 'water' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M15,70 Q50,10 130,5 Q210,10 240,70 Q210,130 130,135 Q50,130 15,70 Z', type: 'fill', zone: 'shore' },
+          { d: 'M35,70 Q60,25 130,20 Q200,25 215,70 Q200,115 130,120 Q60,115 35,70 Z', type: 'fill', zone: 'water' },
+          // Shoreline
+          { d: 'M35,70 Q60,25 130,20 Q200,25 215,70 Q200,115 130,120 Q60,115 35,70 Z', type: 'stroke', zone: 'shore', strokeWidth: 2 },
+          // Surface reflection highlight
+          { d: 'M80,55 Q120,42 170,55 Q155,48 120,50 Q90,48 80,55 Z', type: 'fill', zone: 'reflection' },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M15,70 Q50,10 130,5 Q210,10 240,70 Q210,130 130,135 Q50,130 15,70 Z', type: 'fill', zone: 'shore' },
+          { d: 'M35,70 Q60,25 130,20 Q200,25 215,70 Q200,115 130,120 Q60,115 35,70 Z', type: 'fill', zone: 'water' },
+          { d: 'M35,70 Q60,25 130,20 Q200,25 215,70 Q200,115 130,120 Q60,115 35,70 Z', type: 'stroke', zone: 'shore', strokeWidth: 2 },
+          { d: 'M80,55 Q120,42 170,55 Q155,48 120,50 Q90,48 80,55 Z', type: 'fill', zone: 'reflection' },
+          // Gentle ripple lines
+          { d: 'M55,65 Q90,60 130,65 Q170,60 200,65', type: 'stroke', zone: 'reflection', strokeWidth: 0.6 },
+          { d: 'M65,80 Q100,75 140,80 Q180,75 195,80', type: 'stroke', zone: 'reflection', strokeWidth: 0.5 },
+          { d: 'M60,95 Q100,90 140,95 Q175,90 190,95', type: 'stroke', zone: 'reflection', strokeWidth: 0.6 },
+          // Reed suggestions at edges
+          { d: 'M40,85 L38,72 M45,90 L42,76 M48,88 L46,78 M195,80 L198,68 M200,85 L203,72 M205,82 L207,73', type: 'stroke', zone: 'shore', strokeWidth: 0.8 },
+        ],
+      },
+    ],
+  },
 
   // ============================================================
   //  WATER

@@ -502,6 +502,150 @@ const MOKURI_CORE_ELEMENTS = [
       },
     ],
   },
+  {
+    id: 'lantern-kasuga-premium',
+    name: 'Kasuga Grand Lantern',
+    category: 'objects & patterns',
+    viewBox: '0 0 160 280',
+    suggestedLayer: 'midground',
+    colorZones: [
+      { id: 'stone', defaultPaletteSlot: 0 },
+      { id: 'shadow', defaultPaletteSlot: 3 },
+      { id: 'light', defaultPaletteSlot: 4 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          { d: 'M40,270 H120 L115,250 H45 Z M70,250 V170 H90 V250 Z', type: 'fill', zone: 'stone' },
+          { d: 'M35,170 H125 L115,140 H45 Z', type: 'fill', zone: 'shadow' },
+          { d: 'M30,140 L80,80 L130,140 Z', type: 'fill', zone: 'stone' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M40,270 H120 L115,250 H45 Z M70,250 V170 H90 V250 Z', type: 'fill', zone: 'stone' },
+          { d: 'M35,170 H125 L115,140 H45 Z', type: 'fill', zone: 'shadow' },
+          { d: 'M30,140 L80,80 L130,140 Z', type: 'fill', zone: 'stone' },
+          { d: 'M65,135 H95 V110 H65 Z', type: 'fill', zone: 'light' },
+          { d: 'M80,80 V55', type: 'stroke', zone: 'stone', strokeWidth: 4 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M40,270 H120 L115,250 H45 Z M70,250 V170 H90 V250 Z', type: 'fill', zone: 'stone' },
+          { d: 'M35,170 H125 L115,140 H45 Z', type: 'fill', zone: 'shadow' },
+          { d: 'M30,140 L80,80 L130,140 Z', type: 'fill', zone: 'stone' },
+          { d: 'M65,135 H95 V110 H65 Z', type: 'fill', zone: 'light' },
+          { d: 'M80,80 V55', type: 'stroke', zone: 'stone', strokeWidth: 4 },
+          // Pillar chiseling
+          { d: 'M76,180 V240 M84,180 V240', type: 'stroke', zone: 'shadow', strokeWidth: 1 },
+          // Roof ridges and curling "warabite" corners
+          { d: 'M80,80 L40,125 Q30,130 25,120 M80,80 L120,125 Q130,130 135,120', type: 'stroke', zone: 'shadow', strokeWidth: 1.5 },
+          // Window lattice
+          { d: 'M65,122 H95 M80,110 V135', type: 'stroke', zone: 'stone', strokeWidth: 1.2 },
+          // Lotus petal carving on base
+          { d: 'M55,260 Q80,250 105,260', type: 'stroke', zone: 'shadow', strokeWidth: 1 },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'lantern-yukimi-premium',
+    name: 'Yukimi Lantern',
+    category: 'objects & patterns',
+    viewBox: '0 0 240 200',
+    suggestedLayer: 'foreground',
+    colorZones: [
+      { id: 'stone', defaultPaletteSlot: 0 },
+      { id: 'shadow', defaultPaletteSlot: 3 },
+      { id: 'light', defaultPaletteSlot: 4 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          { d: 'M20,115 L120,55 L220,115 L120,135 Z', type: 'fill', zone: 'stone' },
+          { d: 'M85,135 H155 V100 H85 Z', type: 'fill', zone: 'shadow' },
+          { d: 'M70,180 L90,135 H150 L170,180 Z', type: 'fill', zone: 'stone' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M20,115 L120,55 L220,115 L120,135 Z', type: 'fill', zone: 'stone' },
+          { d: 'M85,135 H155 V100 H85 Z', type: 'fill', zone: 'shadow' },
+          { d: 'M70,180 L90,135 H150 L170,180 Z', type: 'fill', zone: 'stone' },
+          { d: 'M100,130 H140 V105 H100 Z', type: 'fill', zone: 'light' },
+          { d: 'M85,180 Q105,160 105,135 M155,180 Q135,160 135,135', type: 'stroke', zone: 'stone', strokeWidth: 10 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M20,115 L120,55 L220,115 L120,135 Z', type: 'fill', zone: 'stone' },
+          { d: 'M85,135 H155 V100 H85 Z', type: 'fill', zone: 'shadow' },
+          { d: 'M70,180 L90,135 H150 L170,180 Z', type: 'fill', zone: 'stone' },
+          { d: 'M100,130 H140 V105 H100 Z', type: 'fill', zone: 'light' },
+          { d: 'M85,180 Q105,160 105,135 M155,180 Q135,160 135,135', type: 'stroke', zone: 'stone', strokeWidth: 10 },
+          // Woodblock raking on the broad roof
+          { d: 'M120,55 L50,100 M120,55 L190,100 M120,55 V120', type: 'stroke', zone: 'shadow', strokeWidth: 1.2 },
+          // Texture on legs
+          { d: 'M95,160 A2,2 0 1,1 94,160 Z M145,160 A2,2 0 1,1 144,160 Z', type: 'fill', zone: 'shadow' },
+          // Window lattice details
+          { d: 'M112,105 V130 M128,105 V130', type: 'stroke', zone: 'stone', strokeWidth: 1.5 },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'lantern-oribe-premium',
+    name: 'Oribe Lantern',
+    category: 'objects & patterns',
+    viewBox: '0 0 140 240',
+    suggestedLayer: 'midground',
+    colorZones: [
+      { id: 'stone', defaultPaletteSlot: 0 },
+      { id: 'shadow', defaultPaletteSlot: 3 },
+      { id: 'light', defaultPaletteSlot: 1 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          { d: 'M55,230 V140 H85 V230 Z', type: 'fill', zone: 'stone' },
+          { d: 'M30,145 H110 L70,95 Z', type: 'fill', zone: 'stone' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M55,230 V140 H85 V230 Z', type: 'fill', zone: 'stone' },
+          { d: 'M30,145 H110 L70,95 Z', type: 'fill', zone: 'stone' },
+          { d: 'M60,135 H80 V115 H60 Z', type: 'fill', zone: 'light' },
+          // The "Hidden Christian" or Buddhist figure carving on the pillar
+          { d: 'M70,190 Q70,170 70,165', type: 'stroke', zone: 'shadow', strokeWidth: 6 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M55,230 V140 H85 V230 Z', type: 'fill', zone: 'stone' },
+          { d: 'M30,145 H110 L70,95 Z', type: 'fill', zone: 'stone' },
+          { d: 'M60,135 H80 V115 H60 Z', type: 'fill', zone: 'light' },
+          { d: 'M70,190 Q70,170 70,165', type: 'stroke', zone: 'shadow', strokeWidth: 6 },
+          // Roof-to-firebox edge
+          { d: 'M30,145 L110,145', type: 'stroke', zone: 'shadow', strokeWidth: 2 },
+          // Figure detail
+          { d: 'M70,175 A3.5,3.5 0 1,1 69,175 Z', type: 'fill', zone: 'shadow' },
+          // Horizontal chisel marks on the pillar
+          { d: 'M60,210 H80 M62,220 H78', type: 'stroke', zone: 'shadow', strokeWidth: 1 },
+        ],
+      },
+    ],
+  },
 
   // ============================================================
   //  TREES & TEXTURE — PINE BOUGH, WOODGRAIN, GOUGE
