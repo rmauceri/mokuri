@@ -10,19 +10,32 @@ Open `index.html` directly in a browser, or serve the directory (e.g. via GitHub
 
 ```
 mokuri/
-  index.html              — App shell, CSS, HTML, all UI + interaction JS (~5400 lines)
-  elements.js             — Core element library (landscape, flora, fauna, objects)
-  extended-elements.js    — Extended elements (flora, patterns, objects)
-  fauna-elements.js       — Fauna elements (koi, dragonfly, turtle, crane, rabbit, frog, butterfly, sparrow + variant poses)
-  scene-elements.js       — Scene elements (bamboo, rocks, temple, village, bridge, rain, snow, clouds, maple, iris)
-  forms-elements.js       — Basic Forms (12 geometric/organic shapes for hand carving)
-  hanko-elements.js       — Hanko seal stamps (6 shapes: circle, square, gourd, oval, diamond, cloud)
+  index.html              — App shell, CSS, HTML, all UI + interaction JS
   print-engine.js         — Canvas-based print renderer (paper texture, ink effects, post-processing)
   audio-engine.js         — Procedural audio (ambient soundscape + activity sounds, Web Audio API)
-  concept.md              — Full vision document — READ THIS for design intent
-  plan.md                 — Original implementation plan (6 phases)
+  manifest.json           — PWA manifest
   ROADMAP.md              — Completed work and future plans
   README.md               — Project link
+  assets/
+    elements.js           — Core element library (landscape, flora, fauna, objects)
+    extended-elements.js  — Extended elements (flora, patterns, objects)
+    fauna-elements.js     — Fauna elements (koi, dragonfly, turtle, crane, rabbit, frog, butterfly, sparrow + variant poses)
+    scene-elements.js     — Scene elements (bamboo, rocks, temple, village, bridge, rain, snow, clouds, maple, iris)
+    forms-elements.js     — Basic Forms (12 geometric/organic shapes for hand carving)
+    figures-elements.js   — Human figures (8 staffage figures)
+    hanko-elements.js     — Hanko seal stamps (6 shapes: circle, square, gourd, oval, diamond, cloud)
+    gallery.js            — Curated gallery presets (hand-designed compositions)
+    icon-192.png          — App icon 192px
+    icon-512.png          — App icon 512px
+  docs/
+    concept.md            — Full vision document — READ THIS for design intent
+    plan.md               — Original implementation plan (6 phases)
+    ELEMENT-GUIDE.md      — Element design guide
+  dev/
+    element-harness.html  — Element preview dev tool
+    element-harness.js    — Element harness logic
+    check_elements.js     — Element validation script
+    extract_elements.js   — Element extraction utility
 ```
 
 ## Architecture
@@ -187,15 +200,16 @@ Scroll-style welcome screen with Japanese woodblock print philosophy and 4-step 
 - Level 2 (detail): + hatching, texture, fine detail lines
 - Every path must have a `zone` that exists in `colorZones`
 - `type` is either `'fill'` or `'stroke'`
-- Adding new elements: create a new JS file declaring an array, add `<script>` tag to index.html, merge into `MOKURI_ELEMENTS` at runtime (see fauna-elements.js pattern)
+- Adding new elements: create a new JS file declaring an array in `assets/`, add `<script>` tag to index.html, merge into `MOKURI_ELEMENTS` at runtime (see fauna-elements.js pattern)
 
-**Element files and script load order:**
+**Element files and script load order (all in `assets/`):**
 1. `elements.js` → `MOKURI_CORE_ELEMENTS`
 2. `extended-elements.js` → merged into core
 3. `fauna-elements.js` → `MOKURI_FAUNA_ELEMENTS`
 4. `scene-elements.js` → `MOKURI_SCENE_ELEMENTS`
 5. `hanko-elements.js` → `MOKURI_HANKO_ELEMENTS`
 6. `forms-elements.js` → `MOKURI_FORMS_ELEMENTS`
+7. `figures-elements.js` → `MOKURI_FIGURES_ELEMENTS`
 
 All merged into `MOKURI_ELEMENTS` array at startup.
 

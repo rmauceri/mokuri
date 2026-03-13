@@ -222,6 +222,112 @@ const MOKURI_GALLERY_PRESETS = [
   "compositionName": "Crane and Rabbit"
 },
 
+  // Winter Branches (400×280)
+  {
+  "elements": [
+    {
+      "id": 4,
+      "defId": "rolling-hills",
+      "x": 200.06660583941607,
+      "y": 186.9917883211679,
+      "scaleX": 1.3429744525547445,
+      "scaleY": 1.3429744525547445,
+      "rotation": 0,
+      "carveLevel": 0,
+      "colorOverrides": {
+        "far": 1
+      },
+      "variationSeed": 65552,
+      "zoneBokashi": {
+        "near": "up",
+        "mid": "down",
+        "far": "down"
+      }
+    },
+    {
+      "id": 1,
+      "defId": "bare-branch",
+      "x": 200,
+      "y": 114.25,
+      "scaleX": 1,
+      "scaleY": 1.3678571428571429,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "bud": "#f5f0e1"
+      },
+      "variationSeed": 296
+    },
+    {
+      "id": 2,
+      "defId": "bare-branch",
+      "x": 286.0929203539823,
+      "y": 178.60619469026548,
+      "scaleX": -0.7386615044247791,
+      "scaleY": 0.8199115044247789,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "bud": "#f5f0e1"
+      },
+      "variationSeed": 57086,
+      "locked": false
+    },
+    {
+      "id": 3,
+      "defId": "bare-branch",
+      "x": 94.12389380530976,
+      "y": 193.141592920354,
+      "scaleX": 0.8265486725663717,
+      "scaleY": 0.8265486725663717,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "bud": "#f5f0e1"
+      },
+      "variationSeed": 22650,
+      "locked": false
+    },
+    {
+      "id": 5,
+      "defId": "paper-lantern",
+      "x": 266.929054054054,
+      "y": 83.30067567567568,
+      "scaleX": 0.3185810810810811,
+      "scaleY": 0.3185810810810811,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "rib": 1,
+        "detail": "#f5f0e1"
+      },
+      "variationSeed": 31733,
+      "zoneBokashi": {
+        "body": "right"
+      }
+    }
+  ],
+  "nextId": 6,
+  "paletteId": "fuyu",
+  "paperW": 400,
+  "paperH": 280,
+  "paperType": "gampi",
+  "inkLoad": "standard",
+  "impressions": 1,
+  "sky": "overcast",
+  "ground": "none",
+  "horizon": 0.85,
+  "mist": 0,
+  "backgroundCarveStrokes": [],
+  "presentationMargin": "standard",
+  "presentationTitle": "Winter Branches",
+  "presentationEdition": "",
+  "presentationHanko": null,
+  "presentationHankoPos": "bottom-right",
+  "presentationDeckle": true,
+  "compositionName": "Wintery Branches"
+},
+
   // Sparrow and Blossums (800×320)
   {
   "elements": [
