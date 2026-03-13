@@ -757,13 +757,14 @@ const PrintEngine = (() => {
     applyOrganicEdge(ctx, printX, printY, pw, ph, paperType);
 
     // ── Embossed title (karazuri) — pre-flipped for mirror correction ──
+    let titleFontSize = 0;
     if (opts.title) {
-      drawEmbossedTitle(ctx, opts.title, printX, printY + ph, pw, mBottom, paperType);
+      titleFontSize = drawEmbossedTitle(ctx, opts.title, printX, printY + ph, pw, mBottom, paperType);
     }
 
-    // ── Edition numbering ──
+    // ── Edition numbering (below title) ──
     if (opts.edition) {
-      drawEditionNumber(ctx, opts.edition, printX, printY + ph, pw, mBottom);
+      drawEditionNumber(ctx, opts.edition, printX, printY + ph, pw, mBottom, titleFontSize);
     }
 
     // ── Light paper effects on full presentation ──
@@ -889,21 +890,27 @@ const PrintEngine = (() => {
   }
 
   // Embossed title — karazuri (blind embossing) dual-pass text.
-  // Text is drawn pre-flipped so it reads correctly after the mirror in pullPrint.
+  // Right-justified under the print, close to the right edge.
+  // Text is pre-flipped so it reads correctly after the mirror in pullPrint.
   function drawEmbossedTitle(ctx, title, printX, printBottom, printW, marginBottom, paperType) {
-    const fontSize = Math.round(printW * 0.025);
-    if (fontSize < 8) return;
+    // Scale font relative to print area but cap for very large prints
+    const fontSize = Math.max(8, Math.min(Math.round(printW * 0.018), 36));
     ctx.save();
     ctx.font = `italic ${fontSize}px "Segoe UI", "Helvetica Neue", Arial, sans-serif`;
-    ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
-    const cx = printX + printW / 2;
-    const ty = printBottom + marginBottom * 0.28;
 
-    // Pre-flip horizontally around the text center so it reads correctly after mirror
+    // Right-aligned, near the print's right edge
+    const rx = printX + printW - printW * 0.02;
+    const ty = printBottom + marginBottom * 0.18;
+
+    // Pre-flip around print center so text reads correctly after global mirror
+    const cx = printX + printW / 2;
     ctx.translate(cx, 0);
     ctx.scale(-1, 1);
     ctx.translate(-cx, 0);
+    // After flip, right-align from the left edge (mirrored right)
+    ctx.textAlign = 'left';
+    const flippedX = printX + printW * 0.02;
 
     // Adjust contrast based on paper darkness
     const pb = paperBaseFromType(paperType);
@@ -914,45 +921,44 @@ const PrintEngine = (() => {
 
     // Highlight pass (upper-left offset)
     ctx.fillStyle = `rgba(255,255,255,${highlightAlpha})`;
-    ctx.fillText(title, cx - 0.8, ty - 0.8);
+    ctx.fillText(title, flippedX - 0.8, ty - 0.8);
 
     // Shadow pass (lower-right offset) — darker for stronger emboss
     ctx.fillStyle = `rgba(0,0,0,${shadowAlpha})`;
-    ctx.fillText(title, cx + 0.8, ty + 0.8);
+    ctx.fillText(title, flippedX + 0.8, ty + 0.8);
 
     ctx.restore();
+    return fontSize; // return so edition can position below
   }
 
-  // Edition numbering — pencil style in bottom-left margin.
-  // Pre-flipped for mirror correction.
-  function drawEditionNumber(ctx, edition, printX, printBottom, printW, marginBottom) {
-    const fontSize = Math.round(printW * 0.018);
-    if (fontSize < 6) return;
+  // Edition numbering — pencil style, right-justified below the title.
+  // Pre-flipped for mirror correction. titleFontSize used for vertical positioning.
+  function drawEditionNumber(ctx, edition, printX, printBottom, printW, marginBottom, titleFontSize) {
+    const fontSize = Math.max(6, Math.min(Math.round(printW * 0.013), 28));
     ctx.save();
     ctx.font = `italic ${fontSize}px "Segoe UI", "Helvetica Neue", Arial, sans-serif`;
-    ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
 
-    // Edition goes bottom-left, but pre-flip around print center
+    // Position below title: title starts at 18% of margin, edition follows
+    const titleY = printBottom + marginBottom * 0.18;
+    const gap = (titleFontSize || fontSize) * 1.3;
+    const ey = titleY + gap;
+
+    // Pre-flip around print center
     const cx = printX + printW / 2;
     ctx.translate(cx, 0);
     ctx.scale(-1, 1);
     ctx.translate(-cx, 0);
-
-    // After mirror flip, bottom-left becomes bottom-right, so place at right side
-    const ex = printX + printW - printW * 0.02;
-    const ey = printBottom + marginBottom * 0.55;
-    ctx.textAlign = 'right';
+    ctx.textAlign = 'left';
+    const flippedX = printX + printW * 0.02;
 
     // Pencil effect: slight opacity variation per character
     const rng = presRng(edition.length * 7 + 13);
     for (let i = 0; i < edition.length; i++) {
       const alpha = 0.35 + rng() * 0.15;
       ctx.fillStyle = `rgba(138,133,128,${alpha.toFixed(3)})`;
-      const prefix = edition.substring(0, i);
-      const fullW = ctx.measureText(edition).width;
-      const prefixW = ctx.measureText(prefix).width;
-      ctx.fillText(edition[i], ex - fullW + prefixW + ctx.measureText(edition[i]).width, ey);
+      const prefixW = ctx.measureText(edition.substring(0, i)).width;
+      ctx.fillText(edition[i], flippedX + prefixW, ey);
     }
     ctx.restore();
   }
