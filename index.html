@@ -5541,7 +5541,16 @@ function buildPrintStudioUI() {
   const titleInput = $('ps-title-input');
   titleInput.value = STATE.presentationTitle || STATE.compositionName || '';
   titleInput.onchange = () => {
-    STATE.presentationTitle = titleInput.value.trim();
+    const t = titleInput.value.trim();
+    STATE.presentationTitle = t;
+    if (t) {
+      STATE.compositionName = t;
+      // Mark as user-named so autoSave won't overwrite it
+      const gallery = getGallery();
+      const entry = gallery.find(e => e.id === STATE.activeCompositionId);
+      if (entry) { entry.name = t; entry.userNamed = true; saveGallery(gallery); }
+      $('status-hint').textContent = t;
+    }
     autoSave();
   };
 
