@@ -3663,8 +3663,34 @@ function autoLoad() {
   return false;
 }
 
+function resetToCompose() {
+  if (STATE.printStudioOpen) {
+    const c = $('inline-print-canvas');
+    c.style.display = 'none';
+    workspaceEl.classList.remove('print-preview-active');
+    $('print-mirror-label').classList.remove('visible');
+    STATE.printPreview = false;
+    $('print-studio').classList.remove('open');
+    STATE.printStudioOpen = false;
+    STATE._prePrintPanel = null;
+  }
+  if (STATE.carveStudioOpen) {
+    STATE.carveStudioOpen = false;
+    $('carve-studio').classList.remove('open');
+    if (STATE.carveFocus) exitCarveFocus();
+  }
+  if (STATE.inkStudioOpen) {
+    STATE.inkStudioOpen = false;
+    $('ink-studio').classList.remove('open');
+  }
+  setViewMode('carve');
+  setMode('select');
+  updatePhaseButtons();
+}
+
 function newComposition(paperW, paperH, presetId) {
   autoSave();
+  resetToCompose();
 
   const id = generateCompositionId();
   STATE.activeCompositionId = id;
@@ -3717,6 +3743,7 @@ function newComposition(paperW, paperH, presetId) {
 
 function switchToComposition(compositionId) {
   autoSave();
+  resetToCompose();
   const gallery = getGallery();
   const entry = gallery.find(e => e.id === compositionId);
   if (!entry || !entry.data) return;
