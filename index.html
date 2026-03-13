@@ -1899,6 +1899,7 @@ html, body {
 <script src="hanko-elements.js"></script>
 <script src="forms-elements.js"></script>
 <script src="figures-elements.js"></script>
+<script src="gallery.js"></script>
 <script src="print-engine.js"></script>
 <script src="audio-engine.js"></script>
 <script>
@@ -3893,6 +3894,34 @@ function buildGalleryUI() {
     newComposition(galleryPaperW, galleryPaperH);
   });
   starters.appendChild(blankCard);
+
+  // Curated presets from gallery.js (hand-designed compositions)
+  if (typeof MOKURI_GALLERY_PRESETS !== 'undefined' && MOKURI_GALLERY_PRESETS.length) {
+    MOKURI_GALLERY_PRESETS.forEach((preset, idx) => {
+      const card = document.createElement('div');
+      card.className = 'gallery-starter';
+      const thumb = document.createElement('div');
+      thumb.className = 'gallery-starter-thumb';
+      thumb.innerHTML = generateThumbnailSvg(preset);
+      const name = document.createElement('div');
+      name.className = 'gallery-starter-name';
+      name.textContent = preset.presentationTitle || preset.compositionName || `Curated ${idx + 1}`;
+      card.appendChild(thumb);
+      card.appendChild(name);
+      card.addEventListener('click', () => {
+        closeGallery();
+        const id = generateCompositionId();
+        STATE.activeCompositionId = id;
+        setActiveCompositionId(id);
+        resetToCompose();
+        applyCompositionData(preset);
+        STATE.compositionName = preset.presentationTitle || preset.compositionName || `Curated ${idx + 1}`;
+        autoSave();
+        $('status-hint').textContent = STATE.compositionName;
+      });
+      starters.appendChild(card);
+    });
+  }
 
   // Preset cards
   Object.entries(SCENE_PRESETS).forEach(([pid, preset]) => {
@@ -6472,6 +6501,22 @@ function setupKeyboard() {
       if (STATE.printStudioOpen) closePrintStudio();
       else openPrintStudio();
       e.preventDefault();
+    }
+
+    // Dev: Ctrl+Shift+G — export current composition as gallery.js preset to clipboard
+    if (e.key === 'G' && (e.ctrlKey || e.metaKey) && e.shiftKey) {
+      e.preventDefault();
+      const data = getCompositionData();
+      delete data.savedAt;
+      const name = STATE.compositionName || 'Untitled';
+      data.compositionName = name;
+      const json = JSON.stringify(data, null, 2);
+      const js = `  // ${name} (${data.paperW}×${data.paperH})\n  ${json},`;
+      navigator.clipboard.writeText(js).then(() => {
+        $('status-hint').textContent = `✓ Preset "${name}" copied to clipboard — paste into gallery.js`;
+      }).catch(() => {
+        $('status-hint').textContent = 'Clipboard write failed — check permissions';
+      });
     }
     if (e.key === 'Escape') {
       if ($('makimono').classList.contains('visible')) { hideMakimono(); }
