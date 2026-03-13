@@ -759,12 +759,12 @@ const PrintEngine = (() => {
     // ── Embossed title (karazuri) — pre-flipped for mirror correction ──
     let titleFontSize = 0;
     if (opts.title) {
-      titleFontSize = drawEmbossedTitle(ctx, opts.title, printX, printY + ph, pw, ph, mBottom, paperType);
+      titleFontSize = drawEmbossedTitle(ctx, opts.title, printX, printY + ph, pw, mBottom, paperType);
     }
 
     // ── Edition numbering (below title) ──
     if (opts.edition) {
-      drawEditionNumber(ctx, opts.edition, printX, printY + ph, pw, ph, mBottom, titleFontSize);
+      drawEditionNumber(ctx, opts.edition, printX, printY + ph, pw, mBottom, titleFontSize);
     }
 
     // ── Light paper effects on full presentation ──
@@ -892,10 +892,9 @@ const PrintEngine = (() => {
   // Embossed title — karazuri (blind embossing) effect.
   // Uses canvas shadow API to create realistic pressed-into-paper appearance.
   // Right-justified under the print. Pre-flipped for mirror correction.
-  function drawEmbossedTitle(ctx, title, printX, printBottom, printW, printH, marginBottom, paperType) {
-    // Scale by geometric mean of print dims — consistent across aspect ratios
-    const ref = Math.sqrt(printW * printH);
-    const fontSize = Math.max(10, Math.min(Math.round(ref * 0.018), 36));
+  // Font size scales with bottom margin so it's consistent across all paper sizes.
+  function drawEmbossedTitle(ctx, title, printX, printBottom, printW, marginBottom, paperType) {
+    const fontSize = Math.max(10, Math.min(Math.round(marginBottom * 0.11), 40));
     ctx.save();
     ctx.font = `italic ${fontSize}px "Segoe UI", "Helvetica Neue", Arial, sans-serif`;
     ctx.textBaseline = 'top';
@@ -910,17 +909,17 @@ const PrintEngine = (() => {
     ctx.textAlign = 'left';
     const flippedX = printX + printW * 0.02;
 
-    // Paper base color — text drawn in this color is nearly invisible against paper
+    // Paper base color — text drawn in this blends into paper background
     const pb = paperBaseFromType(paperType);
     const lum = (pb.r * 0.299 + pb.g * 0.587 + pb.b * 0.114) / 255;
     const isDark = lum < 0.45;
     const paperFill = `rgb(${pb.r},${pb.g},${pb.b})`;
 
-    const blur = fontSize * 0.12;
-    const offset = Math.max(1, fontSize * 0.06);
+    const blur = fontSize * 0.15;
+    const offset = Math.max(1, fontSize * 0.08);
 
-    // Shadow pass — depression shadow (lower-right)
-    ctx.shadowColor = isDark ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.28)';
+    // Shadow pass — depression shadow (lower-right), stronger for readability
+    ctx.shadowColor = isDark ? 'rgba(0,0,0,0.55)' : 'rgba(0,0,0,0.45)';
     ctx.shadowBlur = blur;
     ctx.shadowOffsetX = offset;
     ctx.shadowOffsetY = offset;
@@ -928,7 +927,7 @@ const PrintEngine = (() => {
     ctx.fillText(title, flippedX, ty);
 
     // Highlight pass — light catching raised edge (upper-left)
-    ctx.shadowColor = isDark ? 'rgba(255,255,255,0.30)' : 'rgba(255,255,255,0.22)';
+    ctx.shadowColor = isDark ? 'rgba(255,255,255,0.40)' : 'rgba(255,255,255,0.30)';
     ctx.shadowBlur = blur;
     ctx.shadowOffsetX = -offset;
     ctx.shadowOffsetY = -offset;
@@ -940,11 +939,10 @@ const PrintEngine = (() => {
     return fontSize;
   }
 
-  // Edition numbering — pencil-style emboss, right-justified below the title.
-  // Pre-flipped for mirror correction.
-  function drawEditionNumber(ctx, edition, printX, printBottom, printW, printH, marginBottom, titleFontSize) {
-    const ref = Math.sqrt(printW * printH);
-    const fontSize = Math.max(7, Math.min(Math.round(ref * 0.013), 28));
+  // Edition numbering — pencil-style with subtle emboss, below the title.
+  // Font size scales with bottom margin. Pre-flipped for mirror correction.
+  function drawEditionNumber(ctx, edition, printX, printBottom, printW, marginBottom, titleFontSize) {
+    const fontSize = Math.max(7, Math.min(Math.round(marginBottom * 0.08), 30));
     ctx.save();
     ctx.font = `italic ${fontSize}px "Segoe UI", "Helvetica Neue", Arial, sans-serif`;
     ctx.textBaseline = 'top';
