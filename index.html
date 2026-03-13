@@ -91,7 +91,7 @@ html, body {
   border-bottom: 1px solid var(--panel-border);
   z-index: 10;
   flex-shrink: 0;
-  overflow-x: auto;
+  overflow: hidden;
 }
 
 .toolbar-title {
@@ -1486,15 +1486,29 @@ html, body {
 }
 .print-mirror-label.visible { opacity: 1; }
 
-/* --- Responsive: tablets and smaller windows --- */
+/* --- Responsive: progressive toolbar compaction & panel sizing --- */
+
+/* Tablets and small laptops: compact labels, shrink panels */
 @media (max-width: 1024px) {
   :root {
     --panel-w: 180px;
     --studio-w: 220px;
   }
   .toolbar { gap: 4px; padding: 0 8px; }
+  .mode-btn .mode-label { display: none; }
+  .mode-btn { padding: 4px 10px; }
+  .toolbar-title span { display: none; }
 }
 
+/* Narrow windows: hide low-priority toolbar items */
+@media (max-width: 850px) {
+  .toolbar-title { display: none; }
+  .toolbar > .toolbar-separator { display: none; }
+  .toolbar-edit-group .toolbar-separator { display: none; }
+  .tool-btn { width: 30px; height: 30px; font-size: 14px; }
+}
+
+/* Short windows: compact vertical chrome */
 @media (max-height: 700px) {
   :root { --toolbar-h: 40px; }
   .toolbar { gap: 4px; padding: 0 8px; }
