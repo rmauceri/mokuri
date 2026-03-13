@@ -759,12 +759,12 @@ const PrintEngine = (() => {
     // ── Embossed title (karazuri) — pre-flipped for mirror correction ──
     let titleFontSize = 0;
     if (opts.title) {
-      titleFontSize = drawEmbossedTitle(ctx, opts.title, printX, printY + ph, pw, mBottom, paperType);
+      titleFontSize = drawEmbossedTitle(ctx, opts.title, printX, printY + ph, pw, ph, mBottom, paperType);
     }
 
     // ── Edition numbering (below title) ──
     if (opts.edition) {
-      drawEditionNumber(ctx, opts.edition, printX, printY + ph, pw, mBottom, titleFontSize);
+      drawEditionNumber(ctx, opts.edition, printX, printY + ph, pw, ph, mBottom, titleFontSize);
     }
 
     // ── Light paper effects on full presentation ──
@@ -889,57 +889,66 @@ const PrintEngine = (() => {
     ctx.restore();
   }
 
-  // Embossed title — karazuri (blind embossing) dual-pass text.
-  // Right-justified under the print, close to the right edge.
-  // Text is pre-flipped so it reads correctly after the mirror in pullPrint.
-  function drawEmbossedTitle(ctx, title, printX, printBottom, printW, marginBottom, paperType) {
-    // Scale font relative to print area but cap for very large prints
-    const fontSize = Math.max(8, Math.min(Math.round(printW * 0.018), 36));
+  // Embossed title — karazuri (blind embossing) effect.
+  // Uses canvas shadow API to create realistic pressed-into-paper appearance.
+  // Right-justified under the print. Pre-flipped for mirror correction.
+  function drawEmbossedTitle(ctx, title, printX, printBottom, printW, printH, marginBottom, paperType) {
+    // Scale by geometric mean of print dims — consistent across aspect ratios
+    const ref = Math.sqrt(printW * printH);
+    const fontSize = Math.max(10, Math.min(Math.round(ref * 0.018), 36));
     ctx.save();
     ctx.font = `italic ${fontSize}px "Segoe UI", "Helvetica Neue", Arial, sans-serif`;
     ctx.textBaseline = 'top';
 
-    // Right-aligned, near the print's right edge
-    const rx = printX + printW - printW * 0.02;
     const ty = printBottom + marginBottom * 0.18;
 
-    // Pre-flip around print center so text reads correctly after global mirror
+    // Pre-flip around print center for mirror correction
     const cx = printX + printW / 2;
     ctx.translate(cx, 0);
     ctx.scale(-1, 1);
     ctx.translate(-cx, 0);
-    // After flip, right-align from the left edge (mirrored right)
     ctx.textAlign = 'left';
     const flippedX = printX + printW * 0.02;
 
-    // Adjust contrast based on paper darkness
+    // Paper base color — text drawn in this color is nearly invisible against paper
     const pb = paperBaseFromType(paperType);
     const lum = (pb.r * 0.299 + pb.g * 0.587 + pb.b * 0.114) / 255;
     const isDark = lum < 0.45;
-    const highlightAlpha = isDark ? 0.25 : 0.18;
-    const shadowAlpha = isDark ? 0.18 : 0.22;
+    const paperFill = `rgb(${pb.r},${pb.g},${pb.b})`;
 
-    // Highlight pass (upper-left offset)
-    ctx.fillStyle = `rgba(255,255,255,${highlightAlpha})`;
-    ctx.fillText(title, flippedX - 0.8, ty - 0.8);
+    const blur = fontSize * 0.12;
+    const offset = Math.max(1, fontSize * 0.06);
 
-    // Shadow pass (lower-right offset) — darker for stronger emboss
-    ctx.fillStyle = `rgba(0,0,0,${shadowAlpha})`;
-    ctx.fillText(title, flippedX + 0.8, ty + 0.8);
+    // Shadow pass — depression shadow (lower-right)
+    ctx.shadowColor = isDark ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.28)';
+    ctx.shadowBlur = blur;
+    ctx.shadowOffsetX = offset;
+    ctx.shadowOffsetY = offset;
+    ctx.fillStyle = paperFill;
+    ctx.fillText(title, flippedX, ty);
 
+    // Highlight pass — light catching raised edge (upper-left)
+    ctx.shadowColor = isDark ? 'rgba(255,255,255,0.30)' : 'rgba(255,255,255,0.22)';
+    ctx.shadowBlur = blur;
+    ctx.shadowOffsetX = -offset;
+    ctx.shadowOffsetY = -offset;
+    ctx.fillStyle = paperFill;
+    ctx.fillText(title, flippedX, ty);
+
+    ctx.shadowColor = 'transparent';
     ctx.restore();
-    return fontSize; // return so edition can position below
+    return fontSize;
   }
 
-  // Edition numbering — pencil style, right-justified below the title.
-  // Pre-flipped for mirror correction. titleFontSize used for vertical positioning.
-  function drawEditionNumber(ctx, edition, printX, printBottom, printW, marginBottom, titleFontSize) {
-    const fontSize = Math.max(6, Math.min(Math.round(printW * 0.013), 28));
+  // Edition numbering — pencil-style emboss, right-justified below the title.
+  // Pre-flipped for mirror correction.
+  function drawEditionNumber(ctx, edition, printX, printBottom, printW, printH, marginBottom, titleFontSize) {
+    const ref = Math.sqrt(printW * printH);
+    const fontSize = Math.max(7, Math.min(Math.round(ref * 0.013), 28));
     ctx.save();
     ctx.font = `italic ${fontSize}px "Segoe UI", "Helvetica Neue", Arial, sans-serif`;
     ctx.textBaseline = 'top';
 
-    // Position below title: title starts at 18% of margin, edition follows
     const titleY = printBottom + marginBottom * 0.18;
     const gap = (titleFontSize || fontSize) * 1.3;
     const ey = titleY + gap;
@@ -952,14 +961,26 @@ const PrintEngine = (() => {
     ctx.textAlign = 'left';
     const flippedX = printX + printW * 0.02;
 
-    // Pencil effect: slight opacity variation per character
+    // Pencil graphite color — subtle grey with emboss shadow
+    const blur = fontSize * 0.1;
+    const offset = Math.max(0.8, fontSize * 0.05);
     const rng = presRng(edition.length * 7 + 13);
+
     for (let i = 0; i < edition.length; i++) {
       const alpha = 0.35 + rng() * 0.15;
-      ctx.fillStyle = `rgba(138,133,128,${alpha.toFixed(3)})`;
       const prefixW = ctx.measureText(edition.substring(0, i)).width;
-      ctx.fillText(edition[i], flippedX + prefixW, ey);
+      const charX = flippedX + prefixW;
+
+      // Shadow pass
+      ctx.shadowColor = `rgba(0,0,0,0.18)`;
+      ctx.shadowBlur = blur;
+      ctx.shadowOffsetX = offset;
+      ctx.shadowOffsetY = offset;
+      ctx.fillStyle = `rgba(138,133,128,${alpha.toFixed(3)})`;
+      ctx.fillText(edition[i], charX, ey);
     }
+
+    ctx.shadowColor = 'transparent';
     ctx.restore();
   }
 
