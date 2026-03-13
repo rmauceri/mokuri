@@ -896,7 +896,7 @@ const PrintEngine = (() => {
   // Right-justified under the print. Pre-flipped for mirror correction.
   // Font size scales with bottom margin so it's consistent across all paper sizes.
   function drawEmbossedTitle(ctx, title, printX, printBottom, printW, marginBottom, paperType) {
-    const fontSize = Math.max(14, Math.min(Math.round(marginBottom * 0.22), 36));
+    const fontSize = Math.max(14, Math.min(Math.round(marginBottom * 0.20), 32));
     ctx.save();
     ctx.font = `italic ${fontSize}px "Segoe UI", "Helvetica Neue", Arial, sans-serif`;
     ctx.textBaseline = 'top';
