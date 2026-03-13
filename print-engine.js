@@ -696,10 +696,12 @@ const PrintEngine = (() => {
     const pw = printCanvas.width;
     const ph = printCanvas.height;
 
-    // Margin pixel sizes (based on print dimensions)
-    const mTop = Math.round(ph * margins.top);
-    const mBottom = Math.round(ph * margins.bottom);
-    const mSide = Math.round(pw * margins.sides);
+    // Margin pixel sizes — use geometric mean so margins look balanced
+    // regardless of aspect ratio (panoramic, tall scroll, etc.)
+    const ref = Math.sqrt(pw * ph);
+    const mTop = Math.round(ref * margins.top);
+    const mBottom = Math.round(ref * margins.bottom);
+    const mSide = Math.round(ref * margins.sides);
 
     // Deckle margin adds extra space for torn paper edge + mat visibility
     const deckleExtra = opts.deckle ? Math.round(Math.min(pw, ph) * 0.02) : 0;
@@ -894,7 +896,7 @@ const PrintEngine = (() => {
   // Right-justified under the print. Pre-flipped for mirror correction.
   // Font size scales with bottom margin so it's consistent across all paper sizes.
   function drawEmbossedTitle(ctx, title, printX, printBottom, printW, marginBottom, paperType) {
-    const fontSize = Math.max(12, Math.min(Math.round(marginBottom * 0.16), 40));
+    const fontSize = Math.max(14, Math.min(Math.round(marginBottom * 0.28), 40));
     ctx.save();
     ctx.font = `italic ${fontSize}px "Segoe UI", "Helvetica Neue", Arial, sans-serif`;
     ctx.textBaseline = 'top';
@@ -942,7 +944,7 @@ const PrintEngine = (() => {
   // Edition numbering — pencil-style with subtle emboss, below the title.
   // Font size scales with bottom margin. Pre-flipped for mirror correction.
   function drawEditionNumber(ctx, edition, printX, printBottom, printW, marginBottom, titleFontSize) {
-    const fontSize = Math.max(9, Math.min(Math.round(marginBottom * 0.11), 28));
+    const fontSize = Math.max(10, Math.min(Math.round(marginBottom * 0.19), 28));
     ctx.save();
     ctx.font = `italic ${fontSize}px "Segoe UI", "Helvetica Neue", Arial, sans-serif`;
     ctx.textBaseline = 'top';
