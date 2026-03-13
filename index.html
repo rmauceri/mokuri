@@ -263,7 +263,7 @@ html, body {
   border: 1px solid var(--panel-border);
   border-radius: var(--radius);
   background: var(--bg);
-  cursor: pointer;
+  cursor: grab;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -288,6 +288,18 @@ html, body {
   font-size: 9px;
   color: var(--text-muted);
   pointer-events: none;
+}
+
+/* Drag ghost — floating element preview during drag-to-place */
+.drag-ghost {
+  position: fixed;
+  width: 64px;
+  height: 48px;
+  opacity: 0.75;
+  pointer-events: none;
+  z-index: 500;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+  transform: translate(-50%, -50%);
 }
 
 /* --- Palette bar (bottom of panel) --- */
@@ -4279,18 +4291,64 @@ function buildElementPicker() {
       lbl.textContent = def.name;
       thumb.appendChild(lbl);
 
+      // Drag-to-place: drag element from panel onto workspace
       thumb.addEventListener('pointerdown', (e) => {
+        if (e.button !== 0) return;
         e.preventDefault();
-        // Place at center of visible paper area
+        const startX = e.clientX, startY = e.clientY;
+        const DRAG_THRESHOLD = 4;
+        let ghost = null;
+        let dragging = false;
+
+        function onMove(me) {
+          const dx = me.clientX - startX, dy = me.clientY - startY;
+          if (!dragging && dx * dx + dy * dy >= DRAG_THRESHOLD * DRAG_THRESHOLD) {
+            dragging = true;
+            ghost = document.createElement('div');
+            ghost.className = 'drag-ghost';
+            ghost.appendChild(thumb.querySelector('svg').cloneNode(true));
+            document.body.appendChild(ghost);
+          }
+          if (ghost) {
+            ghost.style.left = me.clientX + 'px';
+            ghost.style.top = me.clientY + 'px';
+          }
+        }
+
+        function onUp(ue) {
+          document.removeEventListener('pointermove', onMove);
+          document.removeEventListener('pointerup', onUp);
+          thumb.releasePointerCapture(ue.pointerId);
+          if (ghost) { ghost.remove(); ghost = null; }
+          if (!dragging) return; // no drag — let dblclick handle quick-add
+
+          // Check if dropped over the workspace
+          const wsRect = workspaceEl.getBoundingClientRect();
+          if (ue.clientX >= wsRect.left && ue.clientX <= wsRect.right &&
+              ue.clientY >= wsRect.top && ue.clientY <= wsRect.bottom) {
+            const svgPt = clientToSvg(ue.clientX, ue.clientY);
+            const px = Math.max(0, Math.min(STATE.paperW, svgPt.x));
+            const py = Math.max(0, Math.min(STATE.paperH, svgPt.y));
+            addElement(def.id, px, py);
+            if (STATE.mode !== 'select') setMode('select');
+          }
+        }
+
+        thumb.setPointerCapture(e.pointerId);
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup', onUp);
+      });
+
+      // Double-click quick-add: place at viewport center (mouse/pen convenience)
+      thumb.addEventListener('dblclick', (e) => {
+        e.preventDefault();
         const svgPt = clientToSvg(
           workspaceEl.getBoundingClientRect().left + workspaceEl.clientWidth / 2,
           workspaceEl.getBoundingClientRect().top + workspaceEl.clientHeight / 2
         );
-        // Clamp to paper bounds
         const px = Math.max(0, Math.min(STATE.paperW, svgPt.x));
         const py = Math.max(0, Math.min(STATE.paperH, svgPt.y));
         addElement(def.id, px, py);
-        // Switch to select mode so the new element can be positioned/sized
         if (STATE.mode !== 'select') setMode('select');
       });
 
