@@ -3895,8 +3895,10 @@ function buildGalleryUI() {
   });
   starters.appendChild(blankCard);
 
-  // Curated presets from gallery.js (hand-designed compositions)
-  if (typeof MOKURI_GALLERY_PRESETS !== 'undefined' && MOKURI_GALLERY_PRESETS.length) {
+  // Curated presets from gallery.js replace generated scene presets
+  const hasCurated = typeof MOKURI_GALLERY_PRESETS !== 'undefined' && MOKURI_GALLERY_PRESETS.length;
+
+  if (hasCurated) {
     MOKURI_GALLERY_PRESETS.forEach((preset, idx) => {
       const card = document.createElement('div');
       card.className = 'gallery-starter';
@@ -3921,35 +3923,34 @@ function buildGalleryUI() {
       });
       starters.appendChild(card);
     });
-  }
-
-  // Preset cards
-  Object.entries(SCENE_PRESETS).forEach(([pid, preset]) => {
-    const card = document.createElement('div');
-    card.className = 'gallery-starter';
-    const thumb = document.createElement('div');
-    thumb.className = 'gallery-starter-thumb';
-    // Generate a preview thumbnail for this preset
-    const previewData = {
-      paperW: galleryPaperW, paperH: galleryPaperH,
-      paperType: preset.paperType || 'kozo',
-      paletteId: preset.palette,
-      sky: preset.sky, ground: preset.ground,
-      horizon: preset.horizon, mist: preset.mist || 0,
-      elements: preset.elements(galleryPaperW, galleryPaperH),
-    };
-    thumb.innerHTML = generateThumbnailSvg(previewData);
-    const name = document.createElement('div');
-    name.className = 'gallery-starter-name';
-    name.textContent = preset.name;
-    card.appendChild(thumb);
-    card.appendChild(name);
-    card.addEventListener('click', () => {
-      closeGallery();
-      newComposition(galleryPaperW, galleryPaperH, pid);
+  } else {
+    // Fallback: generated scene presets (used until curated presets are added)
+    Object.entries(SCENE_PRESETS).forEach(([pid, preset]) => {
+      const card = document.createElement('div');
+      card.className = 'gallery-starter';
+      const thumb = document.createElement('div');
+      thumb.className = 'gallery-starter-thumb';
+      const previewData = {
+        paperW: galleryPaperW, paperH: galleryPaperH,
+        paperType: preset.paperType || 'kozo',
+        paletteId: preset.palette,
+        sky: preset.sky, ground: preset.ground,
+        horizon: preset.horizon, mist: preset.mist || 0,
+        elements: preset.elements(galleryPaperW, galleryPaperH),
+      };
+      thumb.innerHTML = generateThumbnailSvg(previewData);
+      const name = document.createElement('div');
+      name.className = 'gallery-starter-name';
+      name.textContent = preset.name;
+      card.appendChild(thumb);
+      card.appendChild(name);
+      card.addEventListener('click', () => {
+        closeGallery();
+        newComposition(galleryPaperW, galleryPaperH, pid);
+      });
+      starters.appendChild(card);
     });
-    starters.appendChild(card);
-  });
+  }
 
   // Recent prints
   const recents = $('gallery-recents');
