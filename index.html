@@ -27,6 +27,7 @@
   --selection: rgba(139, 107, 74, 0.2);
   --toolbar-h: 48px;
   --panel-w: 220px;
+  --studio-w: 260px;
   --radius: 6px;
   --shadow: 0 1px 4px rgba(0,0,0,0.12);
 }
@@ -76,6 +77,7 @@ html, body {
   display: flex;
   flex-direction: column;
   width: 100%; height: 100%;
+  min-width: 640px;
 }
 
 /* --- Toolbar --- */
@@ -89,6 +91,7 @@ html, body {
   border-bottom: 1px solid var(--panel-border);
   z-index: 10;
   flex-shrink: 0;
+  overflow-x: auto;
 }
 
 .toolbar-title {
@@ -912,10 +915,10 @@ html, body {
   overflow: hidden;
   transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.print-studio.open { width: 260px; }
+.print-studio.open { width: var(--studio-w); }
 
 .print-studio-inner {
-  width: 260px;
+  width: var(--studio-w);
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -1104,9 +1107,9 @@ html, body {
   overflow: hidden;
   transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.carve-studio.open { width: 260px; }
+.carve-studio.open { width: var(--studio-w); }
 .carve-studio-inner {
-  width: 260px;
+  width: var(--studio-w);
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -1207,9 +1210,9 @@ html, body {
   overflow: hidden;
   transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.ink-studio.open { width: 260px; }
+.ink-studio.open { width: var(--studio-w); }
 .ink-studio-inner {
-  width: 260px;
+  width: var(--studio-w);
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -1482,6 +1485,21 @@ html, body {
   transition: opacity 0.3s ease;
 }
 .print-mirror-label.visible { opacity: 1; }
+
+/* --- Responsive: tablets and smaller windows --- */
+@media (max-width: 1024px) {
+  :root {
+    --panel-w: 180px;
+    --studio-w: 220px;
+  }
+  .toolbar { gap: 4px; padding: 0 8px; }
+}
+
+@media (max-height: 700px) {
+  :root { --toolbar-h: 40px; }
+  .toolbar { gap: 4px; padding: 0 8px; }
+  .status-bar { height: 20px; font-size: 10px; }
+}
 </style>
 </head>
 <body>
