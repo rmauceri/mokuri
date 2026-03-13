@@ -894,7 +894,7 @@ const PrintEngine = (() => {
   // Right-justified under the print. Pre-flipped for mirror correction.
   // Font size scales with bottom margin so it's consistent across all paper sizes.
   function drawEmbossedTitle(ctx, title, printX, printBottom, printW, marginBottom, paperType) {
-    const fontSize = Math.max(10, Math.min(Math.round(marginBottom * 0.11), 40));
+    const fontSize = Math.max(12, Math.min(Math.round(marginBottom * 0.16), 48));
     ctx.save();
     ctx.font = `italic ${fontSize}px "Segoe UI", "Helvetica Neue", Arial, sans-serif`;
     ctx.textBaseline = 'top';
@@ -942,7 +942,7 @@ const PrintEngine = (() => {
   // Edition numbering — pencil-style with subtle emboss, below the title.
   // Font size scales with bottom margin. Pre-flipped for mirror correction.
   function drawEditionNumber(ctx, edition, printX, printBottom, printW, marginBottom, titleFontSize) {
-    const fontSize = Math.max(7, Math.min(Math.round(marginBottom * 0.08), 30));
+    const fontSize = Math.max(9, Math.min(Math.round(marginBottom * 0.11), 36));
     ctx.save();
     ctx.font = `italic ${fontSize}px "Segoe UI", "Helvetica Neue", Arial, sans-serif`;
     ctx.textBaseline = 'top';
