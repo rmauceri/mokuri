@@ -296,8 +296,9 @@ const PrintEngine = (() => {
         const spFill = getStrokePatternFill(stroke, 'bg');
         const items = carveStrokeRenderData(stroke, paperBase, 'rgba(0,0,0,0)', { forPrint: true });
         items.forEach(item => {
-          if (item.c === 'rgba(0,0,0,0)') return;
-          const fc = (spFill && item.c === paperBase && item.fill) ? spFill : item.c;
+          if (item.c === 'rgba(0,0,0,0)' && !spFill) return;
+          const fc = (spFill && item.fill) ? spFill : item.c;
+          if (fc === 'rgba(0,0,0,0)') return;
           if (item.fill) {
             svgContent += `<path d="${item.d}" fill="${fc}" fill-opacity="${(item.a * 0.95).toFixed(3)}" stroke="none"/>`;
           } else {
@@ -435,13 +436,14 @@ const PrintEngine = (() => {
             ? carveStrokeRenderData(stroke, paperBase, 'rgba(0,0,0,0)', { forPrint: true })
             : [];
           items.forEach(item => {
-            if (item.c === 'rgba(0,0,0,0)') return;
+            if (item.c === 'rgba(0,0,0,0)' && !spFill) return;
             let sc = item.c;
-            if (spFill && item.c === paperBase && item.fill) {
+            if (spFill && item.fill) {
               sc = spFill;
             } else if (strokePatternFill && item.c === paperBase) {
               sc = strokePatternFill;
             }
+            if (sc === 'rgba(0,0,0,0)') return;
             if (item.fill) {
               svgContent += `<path d="${item.d}" fill="${sc}" fill-opacity="${(item.a * 0.95).toFixed(3)}" stroke="none"/>`;
             } else {

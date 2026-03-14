@@ -2518,7 +2518,8 @@ function patternStrokeRenderData(stroke, paperColor, grooveColor, opts) {
   const ribbonD = computeRibbonD(pts, widths, tiltS);
   if (!ribbonD) return [];
 
-  return [{ d: ribbonD, a: 1.0, c: paperColor, fill: true }];
+  // Semi-transparent groove-colored ribbon — visible in preview and as base for pattern fill
+  return [{ d: ribbonD, a: 0.2, c: grooveColor || CARVED_STROKE, fill: true }];
 }
 
 // Generate rendering instructions for a carve stroke — returns [{d, a, c, fill}]
@@ -3015,7 +3016,7 @@ function renderElementSvg(el, layerIndex) {
       }
       carveStrokeRenderData(stroke, PAPER_COLOR, CARVED_STROKE).forEach(item => {
         let color = item.c;
-        if (stroke.tool === 'pattern' && strokePatFill && item.c === PAPER_COLOR && item.fill) {
+        if (stroke.tool === 'pattern' && strokePatFill && item.fill) {
           color = strokePatFill;
         } else if (!inkMode && item.c === PAPER_COLOR && carvePatternFill !== PAPER_COLOR) {
           color = carvePatternFill;
@@ -3081,7 +3082,7 @@ function renderBackgroundCarveStrokes() {
     items.forEach(item => {
       if (inkMode && item.c === 'rgba(0,0,0,0)') return;
       let color;
-      if (stroke.tool === 'pattern' && strokePatFill && item.c === paperColor && item.fill) {
+      if (stroke.tool === 'pattern' && strokePatFill && item.fill) {
         color = strokePatFill;
       }
       const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -5010,7 +5011,8 @@ function createStrokePatternDef(stroke, elementId, defsEl, paperColor, strokeCol
   const pid = `sp-${elementId}-${patId}-${dKey}`;
   // Reuse if already created in this render cycle
   if (defsEl.querySelector(`#${pid}`)) return `url(#${pid})`;
-  const svgMarkup = generateCarvePatternSvg(patId, pid, paperColor, paperColor, { density, bg: 'none', opacity: '0.85' });
+  // Workspace: dark marks (CARVED_STROKE) on transparent bg — visible in carve mode
+  const svgMarkup = generateCarvePatternSvg(patId, pid, null, strokeColor, { density, bg: 'none', opacity: '0.55' });
   if (!svgMarkup) return null;
   const temp = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   temp.innerHTML = svgMarkup;
