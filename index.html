@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#d4c5a9">
 <title>Mokuri Studio</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='2' width='28' height='28' rx='3' fill='%23c23b22'/%3E%3Crect x='3' y='3' width='26' height='26' rx='2' fill='none' stroke='%23f5f0e6' stroke-width='0.8' opacity='0.5'/%3E%3Ctext x='16' y='23.5' text-anchor='middle' font-family='serif' font-size='20' font-weight='bold' fill='%23f5f0e6'%3E墨%3C/text%3E%3C/svg%3E">
 <link rel="manifest" href="manifest.json">
@@ -1960,6 +1959,20 @@ html, body {
 <script src="print-engine.js"></script>
 <script src="audio-engine.js"></script>
 <script>
+// ============================================================
+//  GLOBAL ERROR HANDLERS — catch unhandled errors & rejections
+// ============================================================
+window.onerror = (msg, src, line, col, err) => {
+  console.error('Mokuri error:', msg, src, line, err);
+  const hint = document.getElementById('status-hint');
+  if (hint) hint.textContent = 'Something went wrong — your work is saved';
+};
+window.onunhandledrejection = (e) => {
+  console.error('Mokuri unhandled rejection:', e.reason);
+  const hint = document.getElementById('status-hint');
+  if (hint) hint.textContent = 'Something went wrong — your work is saved';
+};
+
 // Merge extended and fauna elements into main array
 if (typeof MOKURI_CORE_ELEMENTS !== 'undefined') {
   MOKURI_ELEMENTS.push(...MOKURI_CORE_ELEMENTS);
@@ -3538,7 +3551,11 @@ function getGallery() {
 
 function saveGallery(gallery) {
   try { localStorage.setItem(GALLERY_KEY, JSON.stringify(gallery)); }
-  catch (e) { /* quota exceeded */ }
+  catch (e) {
+    if (e.name === 'QuotaExceededError' || e.code === 22) {
+      $('status-hint').textContent = '⚠ Storage full — delete a composition to save';
+    }
+  }
 }
 
 function getActiveCompositionId() {
@@ -6128,6 +6145,8 @@ async function pullPrint() {
   const pullBtn = $('ps-pull-print');
   pullBtn.disabled = true;
 
+  try {
+
   // Hide any existing print
   const c = $('inline-print-canvas');
   c.style.display = 'none';
@@ -6361,6 +6380,18 @@ async function pullPrint() {
 
   pullBtn.disabled = false;
   $('status-hint').textContent = 'Print complete — adjust settings and re-pull, or save PNG · Esc to exit';
+
+  } catch (err) {
+    console.error('Print failed:', err);
+    // Clean up animation state so UI isn't stuck
+    const animLayer = $('print-anim-layer');
+    if (animLayer) animLayer.style.display = 'none';
+    const inkWash = $('print-ink-wash');
+    if (inkWash) inkWash.classList.remove('visible');
+    workspaceEl.classList.remove('print-preview-active');
+    pullBtn.disabled = false;
+    $('status-hint').textContent = 'Print failed — try again or check console for details';
+  }
 }
 
 // ============================================================
@@ -7179,6 +7210,17 @@ function init() {
 }
 
 init();
+
+// Register service worker for offline support
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+window.addEventListener('online', () => {
+  $('status-hint').textContent = 'Back online';
+});
+window.addEventListener('offline', () => {
+  $('status-hint').textContent = 'Offline — your work is saved locally';
+});
 </script>
 </body>
 </html>

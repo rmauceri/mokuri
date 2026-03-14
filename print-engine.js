@@ -615,6 +615,7 @@ const PrintEngine = (() => {
     canvas.width = w;
     canvas.height = h;
     const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Canvas 2D context unavailable');
 
     // Step 1 — Paper texture base layer (varies by paper type)
     drawPaperTexture(ctx, w, h, paperType);

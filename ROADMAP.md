@@ -134,7 +134,6 @@ The workspace should feel like working with a physical block of cherry wood, not
 - **More scene presets** — Seasonal themes, time-of-day variations, genre-specific starters (seascape, garden, urban, spiritual).
 
 ### Platform & Polish
-- **PWA** — manifest.json and service worker for installability and offline use.
 - **Touch gestures** — Pinch-to-zoom, two-finger pan for tablet use.
 - **Responsive layout** — Panels adapt for desktop (side panel) vs tablet (bottom sheet) vs phone (modal panels).
 - **Keyboard shortcuts expansion** — More shortcuts for power users.
@@ -142,3 +141,85 @@ The workspace should feel like working with a physical block of cherry wood, not
 ### Print Engine
 - **Advanced bokashi** — Multi-directional gradients, radial fades, more nuanced ink distribution.
 - **Registration marks** — Visual guides showing block alignment for multi-color printing authenticity.
+
+---
+
+## Phase 12 — PWA Quality & Reliability (Planned)
+
+Architecture assessment identified gaps in offline support, error handling, and data safety. Organized by priority.
+
+### 12-P0: Reliability Foundations
+
+#### Service Worker & Offline Support
+No service worker exists — the app is installable (manifest valid, icons present) but not offline-capable. Every load fetches from the network; a cache-first SW would enable true offline use and dramatically improve cold starts.
+
+- **Cache-first service worker** (`sw.js`): Cache app shell (index.html, print-engine.js, audio-engine.js, all element/gallery JS, manifest, icons) on install. Serve from cache, update in background. Version-stamped cache name for clean upgrades.
+- **Register SW from index.html**: `navigator.serviceWorker.register('./sw.js')` with feature detection.
+- **Offline indicator**: Subtle status bar hint when network is unavailable.
+
+#### Error Handling & Data Safety
+13 try/catch blocks exist but critical paths are unprotected. localStorage quota overflow silently loses data. Print pipeline rejects uncaught.
+
+- **Global error handler**: `window.onerror` + `window.onunhandledrejection` → log to console + show non-intrusive status bar message ("Something went wrong — your work is saved").
+- **Quota error UI**: Replace silent catch in `saveGallery()` with user-visible warning ("Storage full — delete a composition to save"). Same for other localStorage writes.
+- **Print pipeline protection**: Wrap `pullPrint()` async chain in try/catch. On failure, dismiss animation cleanly, show error in status bar, don't leave UI in broken state.
+- **Canvas context guard**: Check `getContext('2d')` return value before proceeding in print engine.
+
+### 12-P1: Data & Interaction
+
+#### Export/Import Compositions
+Gallery is localStorage-only (max 10, ~5MB ceiling). No way to back up, share, or transfer between devices.
+
+- **Export**: Download composition as `.mokuri` file (JSON with metadata). Button in gallery panel.
+- **Import**: File picker or drag-drop to load `.mokuri` files. Validate schema, merge into gallery.
+- **Bulk export**: Download all compositions as a single `.mokuri` archive (JSON array).
+
+#### Pinch-to-Zoom
+Wheel zoom works but no multi-touch gesture. `touch-action: none` prevents browser zoom but doesn't replace it.
+
+- **Two-finger pinch**: Track touch distance delta → map to zoom level change.
+- **Two-finger pan**: Track touch midpoint delta → map to viewBox translation.
+- **Gesture discrimination**: Distinguish pinch/pan from single-finger carve/move.
+
+#### Memory Bounds
+Carve stroke arrays are unbounded. Heavy sessions could grow to MB, bloating undo snapshots and localStorage.
+
+- **Cap background carve strokes**: Warn user when approaching limit (e.g., 500 strokes). Oldest strokes merged or flattened.
+- **Cap per-element strokes**: Similar limit with visual feedback.
+- **Undo snapshot size awareness**: Track approximate undo stack memory; shed oldest entries if exceeding threshold.
+
+#### Event Listener Hygiene
+`setupInteraction()` registers listeners but never removes them. Modal/panel rebuilds may accumulate handlers.
+
+- **Audit listener registration**: Ensure `setupInteraction()` is called exactly once.
+- **Named handler references**: Store handler references for cleanup if needed.
+- **Panel rebuild guards**: Ensure `buildCarveStudioUI()` etc. don't accumulate click handlers.
+
+### 12-P2: Accessibility & Performance
+
+#### Basic Accessibility
+Zero ARIA attributes, no focus management, no `:focus-visible` styles. Icon buttons unlabeled.
+
+- **ARIA labels**: Add `aria-label` to all icon buttons, `role` to interactive divs.
+- **Focus management**: Tab order through toolbar → panels → workspace. `:focus-visible` styles.
+- **Live regions**: Status bar as `aria-live="polite"` for screen reader announcements.
+
+#### Targeted SVG Updates
+`rerenderAll()` rebuilds the entire SVG tree on every change. Expensive for large compositions.
+
+- **Dirty-element tracking**: Only re-render changed elements instead of full clear+rebuild.
+- **Attribute-only updates**: For color/opacity changes, update attributes in place rather than recreating DOM nodes.
+
+#### Print Engine Threading
+All print work runs on main thread, blocking UI during the 500–2000ms render.
+
+- **OffscreenCanvas + Worker**: Move post-processing (color muting, ink absorption, baren, wood grain, noise) to a Web Worker. SVG rasterization stays on main thread (requires DOM).
+
+### 12-P3: Build & Optimization
+
+#### Code Optimization
+410KB total unminified JavaScript+HTML served directly. No code splitting.
+
+- **Minification**: HTML/CSS/JS minification for production deploy (GitHub Actions workflow).
+- **Lazy-load print engine**: Only load print-engine.js when user enters Print phase.
+- **IndexedDB migration**: Move gallery storage from localStorage (~5MB limit) to IndexedDB (~unlimited) for compositions with heavy carving.
