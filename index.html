@@ -505,6 +505,7 @@ html, body {
 /* Inline print preview */
 .workspace.print-preview-active .workspace-svg { opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
 .workspace.print-preview-active .washi-bg { opacity: 0.3; transition: opacity 0.4s ease; }
+.workspace.print-preview-active { cursor: zoom-in; }
 
 /* Paper selector modal */
 .paper-modal {
@@ -6414,7 +6415,7 @@ async function pullPrint() {
   $('print-mirror-label').classList.add('visible');
 
   pullBtn.disabled = false;
-  $('status-hint').textContent = 'Print complete — adjust settings and re-pull, or save PNG · Esc to exit';
+  $('status-hint').textContent = 'Print complete — scroll to zoom, alt+drag to pan · Save PNG or Esc to exit';
 
   } catch (err) {
     console.error('Print failed:', err);
