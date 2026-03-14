@@ -2500,10 +2500,34 @@ function applyStrokeItem(svgPath, item, colorOverride) {
   }
 }
 
+// Pattern stroke renderer — clean flat ribbon (no taper, no groove, minimal pressure variation)
+// Returns same format as carveStrokeRenderData: [{d, a, c, fill}]
+function patternStrokeRenderData(stroke, paperColor, grooveColor, opts) {
+  const baseW = stroke.width || CARVE_TOOLS.pattern.width;
+  const pts = stroke.points;
+  if (pts.length < 2) return [];
+
+  // Gentle pressure: ±20% around base width, no taper
+  const widths = pts.map(pt => {
+    const p = pt.pressure !== undefined ? pt.pressure : 0.5;
+    const pw = 0.8 + 0.4 * p; // 0.8 at p=0, 1.2 at p=1
+    return Math.max(2, baseW * pw);
+  });
+
+  const tiltS = CARVE_TOOLS.pattern.tiltStrength || 0;
+  const ribbonD = computeRibbonD(pts, widths, tiltS);
+  if (!ribbonD) return [];
+
+  return [{ d: ribbonD, a: 1.0, c: paperColor, fill: true }];
+}
+
 // Generate rendering instructions for a carve stroke — returns [{d, a, c, fill}]
 // Uses variable-width ribbon fills for smooth pressure-responsive rendering
 // opts.forPrint: add ink-density and tilt-feathering effects for print output
 function carveStrokeRenderData(stroke, paperColor, grooveColor, opts) {
+  // Pattern tool uses its own flat-ribbon renderer
+  if (stroke.tool === 'pattern') return patternStrokeRenderData(stroke, paperColor, grooveColor, opts);
+
   const tool = CARVE_TOOLS[stroke.tool || 'fine'];
   const baseW = stroke.width || tool.width;
   const pts = stroke.points;
