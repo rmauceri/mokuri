@@ -51,6 +51,13 @@ const PrintEngine = (() => {
   // the same offset — keeps concentric/overlapping paths aligned
   function perturbPath(d, amount, seed) {
     if (!amount || amount < 0.1) return d;
+    // Arc paths (circles/ellipses): skip all perturbation.
+    // The M start point and A endpoint together define the arc center.
+    // Perturbing either shifts the computed center, causing visible offset
+    // for concentric arcs (e.g., moon glow vs body circle).
+    // The wobble filter (feTurbulence + feDisplacementMap) already provides
+    // sufficient organic edge distortion to arc shapes.
+    if (/[Aa]/.test(d)) return d;
     // Deterministic hash: same value + same seed + same axis = same offset
     function noise(val, axis) {
       let h = (Math.round(val * 100) ^ (axis * 0x55555555) ^ seed) | 0;
@@ -68,19 +75,6 @@ const PrintEngine = (() => {
         paramIdx = 0;
         isX = true;
         return match;
-      }
-      // For arc commands (A/a), params are: rx ry rotation flag flag x y
-      // Only perturb endpoint coordinates (x,y) — NOT radii or flags.
-      // Perturbing radii shifts the computed arc center, causing visible
-      // misalignment between concentric arcs of different sizes (e.g., moon).
-      if (cmd === 'A') {
-        const idx = paramIdx % 7;
-        paramIdx++;
-        if (idx < 5) return match; // rx, ry, rotation, flags — keep exact
-        // x(5), y(6) — perturb endpoint coordinates
-        const axis = idx === 5 ? 0 : 1;
-        const val = parseFloat(match);
-        return (val + noise(val, axis)).toFixed(1);
       }
       paramIdx++;
       const axis = isX ? 0 : 1;
