@@ -5010,7 +5010,7 @@ function createStrokePatternDef(stroke, elementId, defsEl, paperColor, strokeCol
   const pid = `sp-${elementId}-${patId}-${dKey}`;
   // Reuse if already created in this render cycle
   if (defsEl.querySelector(`#${pid}`)) return `url(#${pid})`;
-  const svgMarkup = generateCarvePatternSvg(patId, pid, paperColor, strokeColor, { density });
+  const svgMarkup = generateCarvePatternSvg(patId, pid, paperColor, paperColor, { density, bg: 'none', opacity: '0.85' });
   if (!svgMarkup) return null;
   const temp = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   temp.innerHTML = svgMarkup;
