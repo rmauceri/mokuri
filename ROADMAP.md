@@ -89,49 +89,38 @@ A pattern brush tool that paints pattern fill into drawn regions, independent of
 
 ### 11B: The Wood Block Experience
 
-The workspace should feel like you're working with a physical block of wood, not arranging stickers on paper.
+The workspace should feel like working with a physical block of cherry wood, not arranging shapes on paper. In compose and carve modes, the surface is a warm wood block with subtle grain texture. In ink mode, it reverts to paper (the "proof pull" preview). The transition is instant.
 
-#### Wood Block as Default Surface
-In compose and carve modes, the workspace surface is a **wood block** — visible grain texture, warm brown tone (extending WOOD_TONES to the full workspace background). The block should feel solid and substantial. Wood grain rendered as a subtle canvas texture or SVG pattern that tiles naturally.
+#### 11B-1: Wood Block Surface
+- **Wood surface color** (`WOOD_SURFACE`): Mid wood tone (~`#7a6955`) as base fill for the workspace in compose/carve modes, replacing the paper-type base color.
+- **SVG wood grain pattern**: `<pattern id="wood-grain-surface">` in workspace defs — large tile (~80×80), 3–4 gentle horizontal curves, low opacity (0.08–0.12). Subtle and organic — barely visible grain, emphasis on warm brown color rather than pronounced lines.
+- **Wood texture filter**: `<filter id="wood-texture">` alongside existing `paper-texture` — elongated feTurbulence (horizontal bias for grain direction), warm brown feDiffuseLighting, multiply composite.
+- **Surface mode switcher**: `updateWorkspaceSurface()` function called from `setViewMode()` and `rerenderAll()`. In non-ink mode: paper rect fill → `WOOD_SURFACE`, filter → `wood-texture`, grain overlay on. In ink mode: restore paper-type base color + `paper-texture` filter.
+- **Atmosphere gating**: `renderAtmosphere()` only renders in ink mode. In compose/carve mode, the atmo layer is cleared — you're looking at the wood block, not the scene. Sky/ground/mist appear in ink mode as part of the proof preview.
 
-When elements are placed, they appear as **carved recesses** in the wood — lighter areas where material has been removed, revealing the forms beneath the surface. This is the existing carve-mode rendering, but the surrounding workspace needs to commit to the wood metaphor rather than showing a pale background.
+#### 11B-2: Carved Recess Treatment
+- **Recess tones** (`WOOD_RECESS_TONES`): 5 tones 8–12% lighter than `WOOD_SURFACE` — the appearance of fresh-cut wood below the surface patina. Used in `renderElementSvg()` carve-mode branch instead of `WOOD_TONES`, creating subtle depth differentiation between block surface and element recesses.
+- **Carved detail**: Existing behavior (PAPER_COLOR fills for carved areas, CARVED_STROKE outlines) reads well against the lighter recess tones — no changes needed.
+- **Freehand carve strokes**: Already render as PAPER_COLOR / CARVED_STROKE — naturally read as cuts through wood into paper beneath.
 
 #### View Mode Visual Language
-- **Compose mode**: Clean wood block surface. Placed elements shown as carved outlines/forms in the wood. Focus is on spatial composition.
-- **Carve mode**: Full wood block with grain. Carved areas in relief. Freehand carve strokes cut visible grooves. The carve level pips control how much material is removed from each element.
-- **Ink mode**: The block is inked. Wood surface = ink color (palette). Carved recesses = paper color showing through. This is the "preview of what prints" view — the inverse of carve mode.
+- **Compose mode**: Warm wood block surface with subtle grain. Placed elements appear as lighter recesses in the wood. No atmosphere.
+- **Carve mode**: Same wood surface. Carved areas within elements reveal paper color. Freehand carve strokes cut visible grooves. The carve level pips control material removal.
+- **Ink mode**: Paper surface (paper-type base color). Atmosphere renders (sky/ground/mist). Elements show palette colors. Carved recesses show paper through ink. This is the "proof pull" preview — what the print will look like.
 
-#### Border & Corner Elements
-A new element category: **borders** (枠, waku). Traditional prints often have decorative frames that are themselves carved into the block.
-
-**Corner ornaments**: Cloud corners, wave corners, geometric corners, floral corners — placed at block corners, they define the print's frame. Each would be a standard element with color zones and carve levels.
-
-**Edge repeaters**: Pattern elements designed to tile along one axis — wave borders, geometric meanders, bamboo fence lines. Placed along an edge, they repeat to fill the side.
-
-**Frame presets**: Pre-composed combinations of corners + edges that create a complete decorative border in one action. The user could then customize individual pieces.
-
-These elements snap to block edges (top/bottom/left/right) and participate in the standard carve/ink/print pipeline. They're not a separate system — just a new element category with layout awareness.
-
-#### First-Run Experience
-The Makimono welcome screen would be updated to reflect the woodblock metaphor. Step One becomes "Prepare your block" rather than "Compose" — or the compose step explicitly mentions choosing your block and beginning to carve your design into it.
+#### Future (Deferred)
+- **Border & corner elements** (11B-3): Corner ornaments, edge repeaters as a new element category with edge-snapping behavior.
+- **Frame presets** (11B-4): Pre-composed corner+edge combinations for one-click decorative borders.
 
 ### Implementation Sequence
 
-**11A-1**: Per-zone patterns + density slider (Inking Workbench zone editor)
-**11A-2**: Pattern scale and rotation controls
-**11A-3**: Expanded pattern library (parallel lines, arcs, cloud swirls, rain dots)
+**11A-1**: Per-zone patterns + density slider (Inking Workbench zone editor) ✅
+**11A-2**: Pattern scale and rotation controls ✅
+**11A-3**: Expanded pattern library (parallel lines, arcs, cloud swirls, rain dots) — deferred
 **11B-1**: Wood block workspace surface (grain texture, wood tones for background)
 **11B-2**: Carved recess visual treatment for placed elements in compose/carve modes
-**11B-3**: Border & corner element category (4–6 corners, 3–4 edge repeaters)
-**11B-4**: Frame presets (2–3 curated corner+edge combinations)
 
-11A and 11B can proceed in parallel — patterns are about element rendering, woodblock is about workspace chrome and new elements.
-
-### Open Questions
-- Should the wood grain be a static texture or subtly randomized per session?
-- For borders, should they auto-size to the paper dimensions or be manually placed/scaled?
-- Should per-zone patterns be visible in compose mode, or only in carve/ink views?
-- How does pattern density interact with bokashi gradients? (Could pattern density fade along the bokashi direction for graduated tone.)
+11A and 11B can proceed in parallel — patterns are about element rendering, woodblock is about workspace chrome.
 
 ---
 
