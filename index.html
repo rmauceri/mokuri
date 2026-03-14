@@ -5295,10 +5295,14 @@ function closeCarveStudio() {
 }
 
 // Lightweight refresh of pattern swatch SVGs (called during slider drag)
+// viewBox is smaller than CSS size so pattern tiles appear at workspace scale
+// (element transforms + viewBox mapping make 1 SVG unit ≈ 1.5 CSS px)
+const SWATCH_CSS = 52;
+const SWATCH_VB = Math.round(SWATCH_CSS / 1.5); // ~35 SVG units in 52px
+
 function refreshPatternSwatches() {
   const patRow = $('cs-pattern-row');
   if (!patRow) return;
-  const swatchSize = 52;
   const woodBg = WOOD_TONES[2];
   patRow.querySelectorAll('.cs-pattern-chip').forEach(chip => {
     const pid = chip.dataset.patternId;
@@ -5356,7 +5360,6 @@ function buildCarveStudioUI() {
       const chip = document.createElement('button');
       chip.className = 'cs-pattern-chip';
       chip.dataset.patternId = pid;
-      const swatchSize = 52;
       const swatchId = `swatch-${pid}`;
       const woodBg = WOOD_TONES[2]; // mid wood tone for swatch background
       const patSvg = generateCarvePatternSvg(pid, swatchId, woodBg, '#f5f0e6', {
@@ -5366,16 +5369,16 @@ function buildCarveStudioUI() {
       });
       if (patSvg) {
         const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('width', swatchSize);
-        svg.setAttribute('height', swatchSize);
-        svg.setAttribute('viewBox', `0 0 ${swatchSize} ${swatchSize}`);
+        svg.setAttribute('width', SWATCH_CSS);
+        svg.setAttribute('height', SWATCH_CSS);
+        svg.setAttribute('viewBox', `0 0 ${SWATCH_VB} ${SWATCH_VB}`);
         svg.style.borderRadius = '3px';
         const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
         defs.innerHTML = patSvg;
         svg.appendChild(defs);
         const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        rect.setAttribute('width', swatchSize);
-        rect.setAttribute('height', swatchSize);
+        rect.setAttribute('width', SWATCH_VB);
+        rect.setAttribute('height', SWATCH_VB);
         rect.setAttribute('fill', `url(#${swatchId})`);
         svg.appendChild(rect);
         chip.appendChild(svg);
