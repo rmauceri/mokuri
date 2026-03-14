@@ -196,6 +196,21 @@ const PrintEngine = (() => {
     let bokashiDefs = '';
     let bokashiCount = 0;
 
+    // Helper: generate SVG pattern def for freehand pattern strokes in print output
+    const _printPatDefs = new Set();
+    function getStrokePatternFill(stroke, elKey) {
+      if (stroke.tool !== 'pattern' || !stroke.pattern) return null;
+      const patId = stroke.pattern;
+      const density = stroke.density || 0.5;
+      const dKey = Math.round(density * 100);
+      const pid = `pe-sp-${elKey}-${patId}-${dKey}`;
+      if (!_printPatDefs.has(pid) && typeof generateCarvePatternSvg === 'function') {
+        const svg = generateCarvePatternSvg(patId, pid, paperBase, 'rgba(60,50,40,0.4)', { density });
+        if (svg) { bokashiDefs += svg; _printPatDefs.add(pid); }
+      }
+      return _printPatDefs.has(pid) ? `url(#${pid})` : null;
+    }
+
     // Atmosphere layer (sky, ground, mist) — rendered first, behind elements
     if (atmosphere.sky || atmosphere.ground || atmosphere.mist) {
       const horizonY = paperH * (atmosphere.horizon || 0.62);
@@ -278,11 +293,13 @@ const PrintEngine = (() => {
     if (backgroundCarveStrokes && backgroundCarveStrokes.length && typeof carveStrokeRenderData === 'function') {
       backgroundCarveStrokes.forEach(stroke => {
         if (!stroke.points || stroke.points.length < 2) return;
+        const spFill = getStrokePatternFill(stroke, 'bg');
         const items = carveStrokeRenderData(stroke, paperBase, 'rgba(0,0,0,0)', { forPrint: true });
         items.forEach(item => {
           if (item.c === 'rgba(0,0,0,0)') return;
+          const fc = (spFill && item.c === paperBase && item.fill) ? spFill : item.c;
           if (item.fill) {
-            svgContent += `<path d="${item.d}" fill="${item.c}" fill-opacity="${(item.a * 0.95).toFixed(3)}" stroke="none"/>`;
+            svgContent += `<path d="${item.d}" fill="${fc}" fill-opacity="${(item.a * 0.95).toFixed(3)}" stroke="none"/>`;
           } else {
             svgContent += `<path d="${item.d}" fill="none" stroke="${item.c}" stroke-width="${item.w}" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="${(item.a * 0.95).toFixed(3)}"${item.dashArray ? ` stroke-dasharray="${item.dashArray}"` : ''}/>`;
           }
@@ -413,12 +430,18 @@ const PrintEngine = (() => {
       if (el.carveStrokes && el.carveStrokes.length) {
         el.carveStrokes.forEach(stroke => {
           if (stroke.points.length < 2) return;
+          const spFill = getStrokePatternFill(stroke, el.id);
           const items = (typeof carveStrokeRenderData === 'function')
             ? carveStrokeRenderData(stroke, paperBase, 'rgba(0,0,0,0)', { forPrint: true })
             : [];
           items.forEach(item => {
             if (item.c === 'rgba(0,0,0,0)') return;
-            const sc = (strokePatternFill && item.c === paperBase) ? strokePatternFill : item.c;
+            let sc = item.c;
+            if (spFill && item.c === paperBase && item.fill) {
+              sc = spFill;
+            } else if (strokePatternFill && item.c === paperBase) {
+              sc = strokePatternFill;
+            }
             if (item.fill) {
               svgContent += `<path d="${item.d}" fill="${sc}" fill-opacity="${(item.a * 0.95).toFixed(3)}" stroke="none"/>`;
             } else {

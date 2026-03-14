@@ -143,6 +143,7 @@ html, body {
 .workspace.carve-mode.tool-fine { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cline x1='7' y1='17' x2='17' y2='7' stroke='%23000' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='7' y1='17' x2='17' y2='7' stroke='%23f5f0e6' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") 12 12, crosshair; }
 .workspace.carve-mode.tool-vgouge { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath d='M6 7L12 18L18 7' fill='none' stroke='%23000' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M6 7L12 18L18 7' fill='none' stroke='%23f5f0e6' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") 12 12, crosshair; }
 .workspace.carve-mode.tool-ugouge { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath d='M5 7Q5 19 12 19Q19 19 19 7' fill='none' stroke='%23000' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M5 7Q5 19 12 19Q19 19 19 7' fill='none' stroke='%23f5f0e6' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") 12 12, crosshair; }
+.workspace.carve-mode.tool-pattern { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Crect x='4' y='4' width='16' height='16' rx='2' fill='none' stroke='%23000' stroke-width='2'/%3E%3Crect x='4' y='4' width='16' height='16' rx='2' fill='none' stroke='%23f5f0e6' stroke-width='1'/%3E%3Cline x1='4' y1='12' x2='20' y2='12' stroke='%23f5f0e6' stroke-width='1'/%3E%3Cline x1='12' y1='4' x2='12' y2='20' stroke='%23f5f0e6' stroke-width='1'/%3E%3C/svg%3E") 12 12, crosshair; }
 .workspace.erase-mode { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='7' fill='none' stroke='%23000' stroke-width='2'/%3E%3Ccircle cx='12' cy='12' r='7' fill='none' stroke='%23f5f0e6' stroke-width='1'/%3E%3Cline x1='8' y1='8' x2='16' y2='16' stroke='%23f5f0e6' stroke-width='1.5' stroke-linecap='round'/%3E%3Cline x1='16' y1='8' x2='8' y2='16' stroke='%23f5f0e6' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") 12 12, pointer; }
 .workspace.erase-mode [data-id],
 .workspace.erase-mode .handle,
@@ -1673,12 +1674,26 @@ html, body {
               <button class="cs-tool-btn" data-tool="ugouge" title="U Gouge (3)">∪</button>
               <div class="cs-tool-name">U Gouge</div>
             </div>
+            <div class="cs-tool-cell">
+              <button class="cs-tool-btn" data-tool="pattern" title="Pattern tool (P/4)">⊞</button>
+              <div class="cs-tool-name">Pattern</div>
+            </div>
           </div>
         </div>
 
         <div>
           <div class="ps-section-label">Pattern</div>
           <div class="cs-pattern-row" id="cs-pattern-row"></div>
+        </div>
+
+        <div id="cs-tone-section" style="display:none">
+          <div class="ps-section-label">Tone</div>
+          <div style="display:flex; align-items:center; gap:8px; padding:0 2px;">
+            <span style="font-size:11px; color:var(--text-muted)">■</span>
+            <input type="range" id="cs-tone-slider" min="0.15" max="1.0" step="0.05" value="0.5"
+              style="flex:1; accent-color:#8b6b4a;">
+            <span style="font-size:11px; color:var(--text-muted)">□</span>
+          </div>
         </div>
 
         <div>
@@ -1997,6 +2012,8 @@ const STATE = {
   // Carve tool
   mode: 'select',     // 'select' | 'carve' | 'erase'
   carveTool: 'vgouge', // active tool id
+  activePattern: localStorage.getItem('mokuri-activePattern') || 'crosshatch',
+  patternDensity: parseFloat(localStorage.getItem('mokuri-patternDensity')) || 0.5,
   pressureCurve: localStorage.getItem('mokuri-pressure') || 'medium',
   carving: null,       // active carve stroke: { elementId, points: [{x,y},...] } or { background: true, points }
   carveFocus: null,    // element id when in carve focus mode, null otherwise
@@ -2375,6 +2392,11 @@ const CARVE_TOOLS = {
       { w: 0.3, opacity: 0.78 },
       { w: 0.1, opacity: 0.95 },
     ],
+  },
+  pattern: {
+    name: 'Pattern', icon: '⊞', width: 20,
+    tiltStrength: 0.2,
+    profile: [{ w: 1.0, opacity: 1.0 }],
   },
 };
 
@@ -2961,9 +2983,19 @@ function renderElementSvg(el, layerIndex) {
   // Render custom carve strokes via shared helper
   if (el.carveStrokes && el.carveStrokes.length) {
     el.carveStrokes.forEach(stroke => {
+      // Per-stroke pattern fill for freehand pattern tool strokes
+      let strokePatFill = null;
+      if (stroke.tool === 'pattern' && stroke.pattern) {
+        strokePatFill = createStrokePatternDef(stroke, el.id, gradDefs, PAPER_COLOR, CARVED_STROKE);
+        if (strokePatFill) hasGrads = true;
+      }
       carveStrokeRenderData(stroke, PAPER_COLOR, CARVED_STROKE).forEach(item => {
-        const color = (!inkMode && item.c === PAPER_COLOR && carvePatternFill !== PAPER_COLOR)
-          ? carvePatternFill : item.c;
+        let color = item.c;
+        if (stroke.tool === 'pattern' && strokePatFill && item.c === PAPER_COLOR && item.fill) {
+          color = strokePatFill;
+        } else if (!inkMode && item.c === PAPER_COLOR && carvePatternFill !== PAPER_COLOR) {
+          color = carvePatternFill;
+        }
         const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         applyStrokeItem(p, item, color);
         inner.appendChild(p);
@@ -3005,13 +3037,31 @@ function renderBackgroundCarveStrokes() {
   const paperColor = inkMode ? PAPER_COLOR : PAPER_COLOR;
   const grooveColor = inkMode ? 'rgba(0,0,0,0)' : CARVED_STROKE;
 
+  // Defs for background pattern strokes
+  let bgDefs = null;
+
   STATE.backgroundCarveStrokes.forEach(stroke => {
     if (!stroke.points || stroke.points.length < 2) return;
+
+    // Per-stroke pattern fill for freehand pattern tool
+    let strokePatFill = null;
+    if (stroke.tool === 'pattern' && stroke.pattern) {
+      if (!bgDefs) {
+        bgDefs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        layer.appendChild(bgDefs);
+      }
+      strokePatFill = createStrokePatternDef(stroke, 'bg', bgDefs, paperColor, grooveColor !== 'rgba(0,0,0,0)' ? grooveColor : CARVED_STROKE);
+    }
+
     const items = carveStrokeRenderData(stroke, paperColor, grooveColor);
     items.forEach(item => {
       if (inkMode && item.c === 'rgba(0,0,0,0)') return;
+      let color;
+      if (stroke.tool === 'pattern' && strokePatFill && item.c === paperColor && item.fill) {
+        color = strokePatFill;
+      }
       const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      applyStrokeItem(p, item);
+      applyStrokeItem(p, item, color);
       layer.appendChild(p);
     });
   });
@@ -4778,7 +4828,7 @@ function setMode(mode) {
 
 // Update workspace cursor class to match active carve tool
 function updateToolCursorClass() {
-  workspaceEl.classList.remove('tool-fine', 'tool-vgouge', 'tool-ugouge');
+  workspaceEl.classList.remove('tool-fine', 'tool-vgouge', 'tool-ugouge', 'tool-pattern');
   if (STATE.mode === 'carve') {
     workspaceEl.classList.add('tool-' + STATE.carveTool);
   }
@@ -4847,53 +4897,66 @@ const CARVE_PATTERNS = {
 // Generate SVG <pattern> markup for carve patterns (used in both workspace and print)
 // opts.opacity overrides the default stroke opacity (0.35)
 // opts.bg overrides the background fill (default: paperColor)
+// opts.density scales pattern tile size (0.15–1.0): low=sparse/dark, high=dense/light
 function generateCarvePatternSvg(patternId, uniqueId, paperColor, strokeColor, opts) {
   const pc = (opts && opts.bg !== undefined) ? opts.bg : (paperColor || PAPER_COLOR);
   const sc = strokeColor || CARVED_STROKE;
   const opacity = (opts && opts.opacity) || '0.35';
+  const density = (opts && opts.density) || 1.0;
+  const dScale = 1 / Math.max(0.15, density); // tile size multiplier: low density → bigger tiles
   const bgRect = (pc && pc !== 'none') ? `<rect width="W" height="W" fill="${pc}"/>` : '';
   switch (patternId) {
     case 'crosshatch': {
-      const s = 6;
+      const s = +(6 * dScale).toFixed(1);
+      const sw = +(0.6 * Math.min(1.4, dScale)).toFixed(2);
       return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}">
         ${bgRect.replace(/W/g, s)}
-        <line x1="0" y1="0" x2="${s}" y2="${s}" stroke="${sc}" stroke-width="0.6" stroke-opacity="${opacity}"/>
-        <line x1="${s}" y1="0" x2="0" y2="${s}" stroke="${sc}" stroke-width="0.6" stroke-opacity="${opacity}"/>
+        <line x1="0" y1="0" x2="${s}" y2="${s}" stroke="${sc}" stroke-width="${sw}" stroke-opacity="${opacity}"/>
+        <line x1="${s}" y1="0" x2="0" y2="${s}" stroke="${sc}" stroke-width="${sw}" stroke-opacity="${opacity}"/>
       </pattern>`;
     }
     case 'woodgrain': {
-      const s = 10;
+      const s = +(10 * dScale).toFixed(1);
+      const sw = +(0.5 * Math.min(1.4, dScale)).toFixed(2);
+      const q = s / 4, h = s / 2, y1 = +(s * 0.3).toFixed(1), y2 = +(s * 0.7).toFixed(1);
       return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}">
         ${bgRect.replace(/W/g, s)}
-        <path d="M0,3 Q${s/4},2 ${s/2},3 T${s},3" fill="none" stroke="${sc}" stroke-width="0.5" stroke-opacity="${opacity}"/>
-        <path d="M0,7 Q${s/4},6 ${s/2},7 T${s},7" fill="none" stroke="${sc}" stroke-width="0.5" stroke-opacity="${opacity}"/>
+        <path d="M0,${y1} Q${q.toFixed(1)},${(y1-1).toFixed(1)} ${h.toFixed(1)},${y1} T${s},${y1}" fill="none" stroke="${sc}" stroke-width="${sw}" stroke-opacity="${opacity}"/>
+        <path d="M0,${y2} Q${q.toFixed(1)},${(y2-1).toFixed(1)} ${h.toFixed(1)},${y2} T${s},${y2}" fill="none" stroke="${sc}" stroke-width="${sw}" stroke-opacity="${opacity}"/>
       </pattern>`;
     }
     case 'diagonal': {
-      const s = 5;
+      const s = +(5 * dScale).toFixed(1);
+      const sw = +(0.6 * Math.min(1.4, dScale)).toFixed(2);
       return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}">
         ${bgRect.replace(/W/g, s)}
-        <line x1="0" y1="${s}" x2="${s}" y2="0" stroke="${sc}" stroke-width="0.6" stroke-opacity="${opacity}"/>
+        <line x1="0" y1="${s}" x2="${s}" y2="0" stroke="${sc}" stroke-width="${sw}" stroke-opacity="${opacity}"/>
       </pattern>`;
     }
     case 'stipple': {
-      const s = 8;
+      const s = +(8 * dScale).toFixed(1);
+      const r1 = +(0.6 * Math.min(1.5, dScale)).toFixed(2);
+      const r2 = +(0.5 * Math.min(1.5, dScale)).toFixed(2);
+      const r3 = +(0.7 * Math.min(1.5, dScale)).toFixed(2);
       return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}">
         ${bgRect.replace(/W/g, s)}
-        <circle cx="2" cy="2" r="0.6" fill="${sc}" fill-opacity="${opacity}"/>
-        <circle cx="6" cy="5" r="0.5" fill="${sc}" fill-opacity="${opacity}"/>
-        <circle cx="4" cy="7" r="0.7" fill="${sc}" fill-opacity="${opacity}"/>
-        <circle cx="7" cy="1" r="0.5" fill="${sc}" fill-opacity="${opacity}"/>
+        <circle cx="${(s*0.25).toFixed(1)}" cy="${(s*0.25).toFixed(1)}" r="${r1}" fill="${sc}" fill-opacity="${opacity}"/>
+        <circle cx="${(s*0.75).toFixed(1)}" cy="${(s*0.625).toFixed(1)}" r="${r2}" fill="${sc}" fill-opacity="${opacity}"/>
+        <circle cx="${(s*0.5).toFixed(1)}" cy="${(s*0.875).toFixed(1)}" r="${r3}" fill="${sc}" fill-opacity="${opacity}"/>
+        <circle cx="${(s*0.875).toFixed(1)}" cy="${(s*0.125).toFixed(1)}" r="${r2}" fill="${sc}" fill-opacity="${opacity}"/>
       </pattern>`;
     }
     case 'wave': {
-      const s = 12;
+      const s = +(12 * dScale).toFixed(1);
+      const sw = +(0.5 * Math.min(1.4, dScale)).toFixed(2);
       const minorOp = Math.max(0.1, parseFloat(opacity) * 0.6).toFixed(2);
+      const y1 = +(s*0.33).toFixed(1), y2 = +(s*0.67).toFixed(1);
+      const q = +(s*0.25).toFixed(1), h = +(s*0.5).toFixed(1);
       return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}">
         ${bgRect.replace(/W/g, s)}
-        <path d="M0,4 Q3,2 6,4 T12,4" fill="none" stroke="${sc}" stroke-width="0.5" stroke-opacity="${opacity}"/>
-        <path d="M0,8 Q3,6 6,8 T12,8" fill="none" stroke="${sc}" stroke-width="0.5" stroke-opacity="${opacity}"/>
-        <path d="M-2,12 Q1,10 4,12" fill="none" stroke="${sc}" stroke-width="0.4" stroke-opacity="${minorOp}"/>
+        <path d="M0,${y1} Q${q},${+(y1-s*0.15).toFixed(1)} ${h},${y1} T${s},${y1}" fill="none" stroke="${sc}" stroke-width="${sw}" stroke-opacity="${opacity}"/>
+        <path d="M0,${y2} Q${q},${+(y2-s*0.15).toFixed(1)} ${h},${y2} T${s},${y2}" fill="none" stroke="${sc}" stroke-width="${sw}" stroke-opacity="${opacity}"/>
+        <path d="M${+(-s*0.15).toFixed(1)},${s} Q${+(s*0.08).toFixed(1)},${+(s*0.85).toFixed(1)} ${+(s*0.33).toFixed(1)},${s}" fill="none" stroke="${sc}" stroke-width="${+(sw*0.8).toFixed(2)}" stroke-opacity="${minorOp}"/>
       </pattern>`;
     }
     default:
@@ -4908,6 +4971,23 @@ function createCarvePatternDef(patternId, elementId, defsEl) {
   const svgMarkup = generateCarvePatternSvg(patternId, pid, PAPER_COLOR, CARVED_STROKE);
   if (!svgMarkup) return null;
   // Parse via innerHTML on the defs element
+  const temp = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  temp.innerHTML = svgMarkup;
+  const pat = temp.firstElementChild;
+  if (pat) defsEl.appendChild(pat);
+  return `url(#${pid})`;
+}
+
+// Create pattern def for a freehand pattern stroke (per-stroke pattern + density)
+function createStrokePatternDef(stroke, elementId, defsEl, paperColor, strokeColor) {
+  const patId = stroke.pattern || 'crosshatch';
+  const density = stroke.density || 0.5;
+  const dKey = Math.round(density * 100);
+  const pid = `sp-${elementId}-${patId}-${dKey}`;
+  // Reuse if already created in this render cycle
+  if (defsEl.querySelector(`#${pid}`)) return `url(#${pid})`;
+  const svgMarkup = generateCarvePatternSvg(patId, pid, paperColor, strokeColor, { density });
+  if (!svgMarkup) return null;
   const temp = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   temp.innerHTML = svgMarkup;
   const pat = temp.firstElementChild;
@@ -5070,28 +5150,59 @@ function buildCarveStudioUI() {
     });
   }
 
-  // Pattern chips
+  // Pattern chips — context-sensitive: brush pattern when pattern tool, element pattern otherwise
+  const isPatternTool = STATE.carveTool === 'pattern';
   const patRow = $('cs-pattern-row');
   if (patRow) {
     patRow.innerHTML = '';
-    Object.entries(CARVE_PATTERNS).forEach(([pid, pat]) => {
+    // Skip 'none' when pattern tool is active — brush always needs a pattern
+    const entries = Object.entries(CARVE_PATTERNS).filter(([pid]) => isPatternTool ? pid !== 'none' : true);
+    entries.forEach(([pid, pat]) => {
       const chip = document.createElement('button');
       chip.className = 'cs-pattern-chip';
       chip.textContent = `${pat.icon} ${pat.name}`;
-      // Determine active pattern: selected element's pattern or 'none'
-      const el = (STATE.selectedIds.size === 1) ? STATE.elements.find(e => e.id === primarySelectedId()) : null;
-      const activePat = el ? (el.carvePattern || 'none') : 'none';
-      if (pid === activePat) chip.classList.add('active');
-      chip.addEventListener('click', () => {
-        if (!el) return;
-        pushUndo();
-        el.carvePattern = pid === 'none' ? undefined : pid;
-        rerenderAll();
-        buildCarveStudioUI();
-        autoSave();
-      });
+      if (isPatternTool) {
+        if (pid === STATE.activePattern) chip.classList.add('active');
+        chip.addEventListener('click', () => {
+          STATE.activePattern = pid;
+          localStorage.setItem('mokuri-activePattern', pid);
+          buildCarveStudioUI();
+        });
+      } else {
+        const el = (STATE.selectedIds.size === 1) ? STATE.elements.find(e => e.id === primarySelectedId()) : null;
+        const activePat = el ? (el.carvePattern || 'none') : 'none';
+        if (pid === activePat) chip.classList.add('active');
+        chip.addEventListener('click', () => {
+          if (!el) return;
+          pushUndo();
+          el.carvePattern = pid === 'none' ? undefined : pid;
+          rerenderAll();
+          buildCarveStudioUI();
+          autoSave();
+        });
+      }
       patRow.appendChild(chip);
     });
+  }
+
+  // Tone slider — visible only when pattern tool active
+  const toneSec = $('cs-tone-section');
+  if (toneSec) {
+    toneSec.style.display = isPatternTool ? '' : 'none';
+    const slider = $('cs-tone-slider');
+    if (slider) {
+      slider.value = STATE.patternDensity;
+      slider.oninput = () => {
+        STATE.patternDensity = parseFloat(slider.value);
+        localStorage.setItem('mokuri-patternDensity', STATE.patternDensity);
+      };
+    }
+  }
+
+  // Pattern section label updates based on context
+  const patLabel = patRow ? patRow.previousElementSibling : null;
+  if (patLabel && patLabel.classList.contains('ps-section-label')) {
+    patLabel.textContent = isPatternTool ? 'Brush Pattern' : 'Pattern';
   }
 
   // Pressure curve chips
@@ -6470,7 +6581,9 @@ function setupInteraction() {
         // Background carve stroke
         if (STATE.carving.points.length >= 2) {
           const simplified = simplifyStroke(STATE.carving.points, 0.8);
-          STATE.backgroundCarveStrokes.push({ points: simplified, tool: STATE.carveTool });
+          const strokeData = { points: simplified, tool: STATE.carveTool };
+          if (STATE.carveTool === 'pattern') { strokeData.pattern = STATE.activePattern; strokeData.density = STATE.patternDensity; }
+          STATE.backgroundCarveStrokes.push(strokeData);
           rerenderAll();
           autoSave();
           MokuriAudio.playCarveEnd();
@@ -6486,7 +6599,9 @@ function setupInteraction() {
         // Simplify the stroke (reduce point count for storage)
         const simplified = simplifyStroke(STATE.carving.points, 0.8);
         if (!el.carveStrokes) el.carveStrokes = [];
-        el.carveStrokes.push({ points: simplified, tool: STATE.carveTool });
+        const strokeData = { points: simplified, tool: STATE.carveTool };
+        if (STATE.carveTool === 'pattern') { strokeData.pattern = STATE.activePattern; strokeData.density = STATE.patternDensity; }
+        el.carveStrokes.push(strokeData);
         rerenderAll();
         autoSave();
         MokuriAudio.playCarveEnd();
@@ -6593,8 +6708,14 @@ function setupKeyboard() {
       e.preventDefault();
     }
     if (e.key === 'p' && !e.ctrlKey && !e.metaKey) {
-      if (STATE.printStudioOpen) closePrintStudio();
-      else openPrintStudio();
+      if (STATE.mode === 'carve') {
+        // In carve mode, P selects pattern tool
+        STATE.carveTool = 'pattern'; updateToolButtons(); updateToolCursorClass();
+        if (STATE.carveStudioOpen) buildCarveStudioUI();
+      } else {
+        if (STATE.printStudioOpen) closePrintStudio();
+        else openPrintStudio();
+      }
       e.preventDefault();
     }
 
@@ -6629,6 +6750,7 @@ function setupKeyboard() {
       if (e.key === '1') { STATE.carveTool = 'fine'; updateToolButtons(); updateToolCursorClass(); if (STATE.carveStudioOpen) buildCarveStudioUI(); }
       if (e.key === '2') { STATE.carveTool = 'vgouge'; updateToolButtons(); updateToolCursorClass(); if (STATE.carveStudioOpen) buildCarveStudioUI(); }
       if (e.key === '3') { STATE.carveTool = 'ugouge'; updateToolButtons(); updateToolCursorClass(); if (STATE.carveStudioOpen) buildCarveStudioUI(); }
+      if (e.key === '4') { STATE.carveTool = 'pattern'; updateToolButtons(); updateToolCursorClass(); if (STATE.carveStudioOpen) buildCarveStudioUI(); }
     }
 
     // Quick stroke undo/redo (Z / Shift+Z in carve mode, without Ctrl)
