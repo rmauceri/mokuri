@@ -137,11 +137,12 @@ Centered phase-based layout with grouped controls:
 - **Right**: Zoom controls, paper selector
 
 ### Carving Workbench (right-side flyout, 260px)
-Opens via 🪵 Carve button or V key. Contains:
-- **Tool selector**: Fine (╱), V Gouge (∨), U Gouge (∪) — keys 1/2/3
-- **Carve pattern selector**: None, Crosshatch, Woodgrain, Diagonal, Stipple, Wave — stored in `el.carvePattern`
-- **Element section** (when element selected): carve level pips, Focus button, Clear strokes button
-- **Background toggle**: carve on paper background vs. elements
+Opens via 🪵 Carve button or V key. Sections (top to bottom):
+- **Carve Level** (when element selected): carve level pips, Focus button, Clear strokes button
+- **Tool selector**: Fine (╱), V Gouge (∨), U Gouge (∪), Pattern (⊞) — keys 1/2/3/4
+- **Pressure slider** (shown for Fine/V/U): continuous 0–100 slider, Soft↔Firm, interpolates curve params
+- **Carve Pattern** (shown for Pattern tool): 9 pattern swatches in 3×3 grid + Pattern Density slider + Pattern Rotation slider (0–180°)
+- Clicking empty space in carve mode deselects element and starts background carving
 
 ### Inking Workbench (right-side flyout, 260px)
 Opens via 🎨 Ink button or I key. Contains:
@@ -227,11 +228,11 @@ Strokes are stored in element-local coordinates (`el.carveStrokes[]`) and move/s
 **Rendering pipeline**: `carveStrokeRenderData(stroke, paperColor, grooveColor, opts)` builds variable-width ribbon fills:
 - `pointsToD(pts)` — Catmull-Rom → cubic Bezier smooth curves
 - `computeRibbonD(pts, widths, tiltStrength)` — per-point perpendicular offset ribbon with tilt asymmetry
-- Pressure → width and opacity via configurable `PRESSURE_CURVES` presets (Soft/Medium/Firm)
+- Pressure → width and opacity via `getPressureCurve()` — continuous slider (0–100) interpolating between Soft/Medium/Firm anchor presets
 - Tilt asymmetry: V-gouge (0.5) and U-gouge (0.35) shift ribbon half-widths based on pen tilt vs stroke normal
 - Print mode (`opts.forPrint`): adds fiber ghosts (shallow cuts), ink edge pooling (deep cuts), tilt feathering
 
-**Pressure presets** (`PRESSURE_CURVES`): Soft (responsive, p^0.35), Medium (balanced, p^0.85), Firm (demanding, p^1.8). Selected in Carving Workbench, persisted in localStorage('mokuri-pressure').
+**Pressure curve** (`PRESSURE_CURVES` + `getPressureCurve()`): Three anchor presets — Soft (p^0.35), Medium (p^0.85), Firm (p^1.8) — with continuous interpolation via slider (0–100). All 6 params (wBase, wPow, wMul, oBase, oPow, oMul) lerp piecewise between anchors. Persisted as numeric value in localStorage('mokuri-pressure').
 
 **Quick stroke undo**: Z key (no modifier) undoes last stroke in carve/erase mode; Shift+Z redoes. Uses `STATE.strokeRedoBuffer`.
 

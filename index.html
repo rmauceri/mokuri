@@ -303,6 +303,11 @@ html, body {
   filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
   transform: translate(-50%, -50%);
 }
+.drag-ghost-touch {
+  width: 80px;
+  height: 60px;
+  opacity: 0.85;
+}
 
 /* --- Palette bar (bottom of panel) --- */
 .palette-bar {
@@ -938,7 +943,7 @@ html, body {
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 10px;
   height: 100%;
   overflow-y: auto;
   opacity: 0;
@@ -967,15 +972,14 @@ html, body {
   margin-bottom: 6px;
 }
 
-/* Paper type cards */
+/* Paper type cards (compact) */
 .ps-paper-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
+  gap: 5px;
 }
-.ps-paper-card {
-  flex: 1;
-  padding: 8px 4px;
+.ps-paper-chip {
+  padding: 6px 4px 5px;
   border: 2px solid var(--panel-border);
   border-radius: var(--radius);
   cursor: pointer;
@@ -983,17 +987,16 @@ html, body {
   background: var(--bg);
   text-align: center;
 }
-.ps-paper-card:hover { border-color: var(--accent); }
-.ps-paper-card.active { border-color: var(--accent); background: var(--selection); }
+.ps-paper-chip:hover { border-color: var(--accent); }
+.ps-paper-chip.active { border-color: var(--accent); background: var(--selection); }
 .ps-paper-swatch {
   width: 100%;
   height: 20px;
   border-radius: 3px;
   border: 1px solid var(--panel-border);
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 }
-.ps-paper-name { font-size: 10px; font-weight: 600; color: var(--text); }
-.ps-paper-desc { font-size: 8px; color: var(--text-muted); }
+.ps-paper-chip-label { font-size: 9px; font-weight: 600; color: var(--text); line-height: 1.1; }
 
 /* Toggle button rows (ink, impressions) */
 .ps-toggle-row {
@@ -1002,12 +1005,12 @@ html, body {
 }
 .ps-toggle-btn {
   flex: 1;
-  padding: 8px 4px;
+  padding: 5px 3px;
   border: 2px solid var(--panel-border);
   border-radius: var(--radius);
   background: var(--bg);
   color: var(--text);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   cursor: pointer;
   text-align: center;
@@ -1025,12 +1028,12 @@ html, body {
 }
 .ps-pull-btn {
   width: 100%;
-  padding: 12px;
+  padding: 10px;
   border: none;
   border-radius: var(--radius);
   background: var(--accent);
   color: #fff;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s;
@@ -1040,12 +1043,12 @@ html, body {
 .ps-pull-btn:disabled { opacity: 0.5; cursor: default; }
 .ps-save-btn {
   width: 100%;
-  padding: 8px;
+  padding: 6px;
   border: 1px solid var(--panel-border);
   border-radius: var(--radius);
   background: var(--bg);
   color: var(--text);
-  font-size: 12px;
+  font-size: 11px;
   cursor: pointer;
   transition: border-color 0.15s;
 }
@@ -1176,7 +1179,7 @@ html, body {
 .cs-pattern-chip.active { border-color: var(--accent); background: rgba(139,107,74,0.15); color: var(--text); }
 
 /* Element-specific section */
-.cs-element-section { border-top: 1px solid var(--panel-border); padding-top: 12px; }
+.cs-element-section { padding-top: 0; }
 .cs-element-none {
   font-size: 11px; color: var(--text-muted);
   font-style: italic; padding: 8px 0;
@@ -1198,22 +1201,6 @@ html, body {
 .cs-action-btn:hover { border-color: var(--accent); }
 
 /* Background carving toggle */
-.cs-bg-toggle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px;
-  border: 1px solid var(--panel-border);
-  border-radius: var(--radius);
-  background: var(--bg);
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
-  font-size: 11px;
-  color: var(--text);
-}
-.cs-bg-toggle:hover { border-color: var(--accent); }
-.cs-bg-toggle.active { border-color: var(--accent); background: var(--selection); }
-
 /* ============================================================
    INK STUDIO PANEL (right flyout)
    ============================================================ */
@@ -1662,6 +1649,11 @@ html, body {
           <div class="ps-title" style="color:#8b6b4a">彫 Carving Workbench</div>
         </div>
 
+        <div class="cs-element-section" id="cs-element-section">
+          <div class="ps-section-label">Carve Level</div>
+          <div id="cs-element-content"></div>
+        </div>
+
         <div>
           <div class="ps-section-label">Tools</div>
           <div class="cs-tool-row" id="cs-tool-row">
@@ -1684,36 +1676,35 @@ html, body {
           </div>
         </div>
 
-        <div>
-          <div class="ps-section-label">Pattern</div>
+        <div id="cs-pressure-section">
+          <div class="ps-section-label">Pressure</div>
+          <div style="display:flex; align-items:center; gap:6px; padding:0 2px;">
+            <span style="font-size:9px; color:var(--text-muted); white-space:nowrap">Soft</span>
+            <input type="range" id="cs-pressure-slider" min="0" max="100" step="1" value="50"
+              style="flex:1; accent-color:#8b6b4a;">
+            <span style="font-size:9px; color:var(--text-muted); white-space:nowrap">Firm</span>
+          </div>
+        </div>
+
+        <div id="cs-pattern-section">
+          <div class="ps-section-label">Carve Pattern</div>
           <div class="cs-pattern-row" id="cs-pattern-row"></div>
         </div>
 
         <div id="cs-tone-section" style="display:none">
           <div class="ps-section-label">Pattern Density</div>
           <div style="display:flex; align-items:center; gap:8px; padding:0 2px;">
-            <span style="font-size:11px; color:var(--text-muted)">■</span>
+            <span style="font-size:11px; color:var(--text-muted)">□</span>
             <input type="range" id="cs-tone-slider" min="0.15" max="1.0" step="0.05" value="0.5"
               style="flex:1; accent-color:#8b6b4a;">
-            <span style="font-size:11px; color:var(--text-muted)">□</span>
+            <span style="font-size:11px; color:var(--text-muted)">■</span>
           </div>
-        </div>
-
-        <div>
-          <div class="ps-section-label">Pressure</div>
-          <div class="cs-pattern-row" id="cs-pressure-row"></div>
-        </div>
-
-        <div class="cs-element-section" id="cs-element-section">
-          <div class="ps-section-label">Carve Level</div>
-          <div id="cs-element-content"></div>
-        </div>
-
-        <div>
-          <div class="ps-section-label">Background</div>
-          <div class="cs-bg-toggle" id="cs-bg-toggle">
-            <span>彫</span>
-            <span>Carve on paper background</span>
+          <div class="ps-section-label" style="margin-top:12px">Pattern Rotation</div>
+          <div style="display:flex; align-items:center; gap:6px; padding:0 2px;">
+            <span style="font-size:9px; color:var(--text-muted); white-space:nowrap">0°</span>
+            <input type="range" id="cs-rotation-slider" min="0" max="180" step="5" value="0"
+              style="flex:1; accent-color:#8b6b4a;">
+            <span id="cs-rotation-label" style="font-size:9px; color:var(--text-muted); min-width:24px; text-align:right; white-space:nowrap">0°</span>
           </div>
         </div>
 
@@ -1731,7 +1722,10 @@ html, body {
         </div>
 
         <div>
-          <div class="ps-section-label">Palette</div>
+          <div class="ps-section-label is-palette-header" id="is-palette-header" style="cursor:pointer; display:flex; align-items:center;">
+            <span style="flex:1">Palette</span>
+            <span id="is-palette-chevron" style="font-size:9px; transition:transform 0.2s">▼</span>
+          </div>
           <div class="is-palette-chips" id="is-palette-chips"></div>
           <div class="is-swatch-row" id="is-swatch-row"></div>
         </div>
@@ -1779,10 +1773,7 @@ html, body {
         <div class="ps-presentation-section">
           <div class="ps-section-label">Margins</div>
           <div class="ps-toggle-row" id="ps-margin-row"></div>
-        </div>
-
-        <div class="ps-presentation-section">
-          <label class="ps-checkbox-row">
+          <label class="ps-checkbox-row" style="margin-top:6px">
             <input type="checkbox" id="ps-deckle-check"> Deckle edge
           </label>
         </div>
@@ -2017,7 +2008,8 @@ const STATE = {
   carveTool: 'vgouge', // active tool id
   activePattern: localStorage.getItem('mokuri-activePattern') || 'crosshatch',
   patternDensity: parseFloat(localStorage.getItem('mokuri-patternDensity')) || 0.5,
-  pressureCurve: localStorage.getItem('mokuri-pressure') || 'medium',
+  patternRotation: parseInt(localStorage.getItem('mokuri-patternRotation')) || 0,
+  pressureCurve: (() => { const v = localStorage.getItem('mokuri-pressure'); if (v === 'soft') return 0; if (v === 'firm') return 100; if (v != null && !isNaN(+v)) return +v; return 50; })(),
   carving: null,       // active carve stroke: { elementId, points: [{x,y},...] } or { background: true, points }
   carveFocus: null,    // element id when in carve focus mode, null otherwise
   preFocusViewBox: null, // saved viewBox before entering focus
@@ -2131,33 +2123,33 @@ const PAPER_PRESETS = [
 // Paper type definitions — each affects print texture, base color, ink behavior
 const PAPER_TYPES = {
   hosho: {
-    name: 'Hosho 奉書', desc: 'Smooth, bright, precise',
+    name: 'Hosho', desc: 'Smooth, bright, precise',
     base: '#faf6ee', fiberDensity: 0.3, fiberOpacity: 0.04,
     warmPatches: 6, inkOpacity: 0.93, barenIntensity: 0.7, noiseAmt: 5,
   },
   kozo: {
-    name: 'Kozo 楮', desc: 'Fibrous, warm, organic',
+    name: 'Kozo', desc: 'Fibrous, warm, organic',
     base: '#f5f0e6', fiberDensity: 1.0, fiberOpacity: 0.08,
     warmPatches: 15, inkOpacity: 0.92, barenIntensity: 1.0, noiseAmt: 7,
   },
   torinoko: {
-    name: 'Torinoko 鳥の子', desc: 'Warm cream, elegant',
+    name: 'Torinoko', desc: 'Warm cream, elegant',
     base: '#f0e6d0', fiberDensity: 0.2, fiberOpacity: 0.03,
     warmPatches: 20, inkOpacity: 0.95, barenIntensity: 0.5, noiseAmt: 4,
   },
   gampi: {
-    name: 'Gampi 雁皮', desc: 'Silky, luminous, cool',
+    name: 'Gampi', desc: 'Silky, luminous, cool',
     base: '#f2f0ec', fiberDensity: 0.1, fiberOpacity: 0.02,
     warmPatches: 4, inkOpacity: 0.96, barenIntensity: 0.35, noiseAmt: 3,
   },
   unryu: {
-    name: 'Unryu 雲龍', desc: 'Cloud dragon, dramatic fibers',
+    name: 'Unryu', desc: 'Cloud dragon, dramatic fibers',
     base: '#f3ede1', fiberDensity: 1.8, fiberOpacity: 0.12,
     warmPatches: 10, inkOpacity: 0.89, barenIntensity: 1.15, noiseAmt: 8,
     longFibers: 40, longFiberLen: 250,
   },
   kakishibu: {
-    name: 'Kakishibu 柿渋', desc: 'Persimmon-tanned, warm brown',
+    name: 'Kakishibu', desc: 'Persimmon-tanned, warm brown',
     base: '#b8916a', fiberDensity: 0.5, fiberOpacity: 0.07,
     warmPatches: 12, inkOpacity: 0.90, barenIntensity: 0.8, noiseAmt: 6,
   },
@@ -2166,7 +2158,7 @@ const PAPER_TYPES = {
 // Ink load definitions — affects opacity, edge weight, turbulence
 const INK_LOADS = {
   light:    { name: '淡 Light',    opacityMul: 0.7, edgeMul: 0.5, turbScale: 3.0, misreg: 4 },
-  standard: { name: '中 Standard', opacityMul: 1.0, edgeMul: 1.0, turbScale: 3.5, misreg: 3 },
+  standard: { name: '中 Medium',   opacityMul: 1.0, edgeMul: 1.0, turbScale: 3.5, misreg: 3 },
   heavy:    { name: '濃 Heavy',    opacityMul: 1.08, edgeMul: 1.5, turbScale: 4.5, misreg: 2 },
 };
 
@@ -2409,6 +2401,19 @@ const PRESSURE_CURVES = {
   firm:   { name: 'Firm',   icon: '━', wBase: 0.25, wPow: 1.8, wMul: 1.35, oBase: 0.3,  oPow: 1.5,  oMul: 0.85 },
 };
 
+// Interpolate pressure curve params from slider value (0–100).
+// 0 = Soft, 50 = Medium, 100 = Firm; piecewise-linear between anchors.
+function getPressureCurve(val) {
+  const s = PRESSURE_CURVES.soft, m = PRESSURE_CURVES.medium, f = PRESSURE_CURVES.firm;
+  const t = Math.max(0, Math.min(100, val ?? 50));
+  let a, b, frac;
+  if (t <= 50) { a = s; b = m; frac = t / 50; }
+  else         { a = m; b = f; frac = (t - 50) / 50; }
+  const lerp = (k) => a[k] + (b[k] - a[k]) * frac;
+  return { wBase: lerp('wBase'), wPow: lerp('wPow'), wMul: lerp('wMul'),
+           oBase: lerp('oBase'), oPow: lerp('oPow'), oMul: lerp('oMul') };
+}
+
 // Stroke path helpers — Catmull-Rom spline curves + variable-width ribbons
 
 // Convert points to smooth cubic Bezier path via Catmull-Rom interpolation
@@ -2542,7 +2547,7 @@ function carveStrokeRenderData(stroke, paperColor, grooveColor, opts) {
   const forPrint = opts && opts.forPrint;
 
   // Pressure curves from active preset
-  const _pc = PRESSURE_CURVES[STATE.pressureCurve || 'medium'];
+  const _pc = getPressureCurve(STATE.pressureCurve);
   function pressureWidth(p) { return _pc.wBase + Math.pow(Math.max(0, p), _pc.wPow) * _pc.wMul; }
   function pressureOpacity(p) { return _pc.oBase + Math.pow(Math.max(0, p), _pc.oPow) * _pc.oMul; }
 
@@ -3158,6 +3163,8 @@ function refreshSelectionUI() {
   updateSelection();
   updateToolbarState();
   buildPaletteUI();
+  // Reset palette auto-collapse so it follows selection state
+  delete STATE._paletteManualToggle;
   if (STATE.carveStudioOpen) buildCarveStudioUI();
   if (STATE.inkStudioOpen) buildInkStudioUI();
 }
@@ -4370,15 +4377,16 @@ function buildElementPicker() {
       thumb.appendChild(lbl);
 
       // Drag-to-place: drag element from panel onto workspace
-      // Touch: vertical movement scrolls the panel (touch-action: pan-y handles this);
-      //        horizontal/outward drag places the element.
-      // Mouse: any drag past threshold starts placement.
+      // Touch: ghost offset above finger so user can see it; drop point matches ghost.
+      //        Vertical movement scrolls the panel (touch-action: pan-y handles this).
+      // Mouse: ghost centered on cursor, any drag past threshold starts placement.
       thumb.addEventListener('pointerdown', (e) => {
         if (e.button !== 0) return;
         const startX = e.clientX, startY = e.clientY;
         const pointerId = e.pointerId;
         const isTouch = e.pointerType === 'touch';
         const DRAG_THRESHOLD = isTouch ? 12 : 4;
+        const TOUCH_OFFSET_Y = isTouch ? -72 : 0;
         let ghost = null;
         let dragging = false;
         let done = false;
@@ -4387,26 +4395,24 @@ function buildElementPicker() {
           if (done || me.pointerId !== pointerId) return;
           const dx = me.clientX - startX, dy = me.clientY - startY;
           if (!dragging) {
-            // Not yet dragging — check if this is a scroll or a drag
             if (isTouch && Math.abs(dy) > Math.abs(dx) + 6) {
-              // Primarily vertical — it's a scroll, bail out
               cleanup();
               return;
             }
             if (dx * dx + dy * dy < DRAG_THRESHOLD * DRAG_THRESHOLD) return;
-            // Crossed threshold with horizontal intent — start drag
             dragging = true;
             me.preventDefault();
             try { thumb.setPointerCapture(pointerId); } catch (ex) {}
             ghost = document.createElement('div');
             ghost.className = 'drag-ghost';
+            if (isTouch) ghost.classList.add('drag-ghost-touch');
             ghost.appendChild(thumb.querySelector('svg').cloneNode(true));
             document.body.appendChild(ghost);
           }
           if (dragging) me.preventDefault();
           if (ghost) {
             ghost.style.left = me.clientX + 'px';
-            ghost.style.top = me.clientY + 'px';
+            ghost.style.top = (me.clientY + TOUCH_OFFSET_Y) + 'px';
           }
         }
 
@@ -4416,11 +4422,13 @@ function buildElementPicker() {
           cleanup();
           if (!wasDragging) return;
 
-          // Check if dropped over the workspace
+          // Drop point matches ghost position (offset for touch)
+          const dropX = ue.clientX;
+          const dropY = ue.clientY + TOUCH_OFFSET_Y;
           const wsRect = workspaceEl.getBoundingClientRect();
-          if (ue.clientX >= wsRect.left && ue.clientX <= wsRect.right &&
-              ue.clientY >= wsRect.top && ue.clientY <= wsRect.bottom) {
-            const svgPt = clientToSvg(ue.clientX, ue.clientY);
+          if (dropX >= wsRect.left && dropX <= wsRect.right &&
+              dropY >= wsRect.top && dropY <= wsRect.bottom) {
+            const svgPt = clientToSvg(dropX, dropY);
             const px = Math.max(0, Math.min(STATE.paperW, svgPt.x));
             const py = Math.max(0, Math.min(STATE.paperH, svgPt.y));
             addElement(def.id, px, py);
@@ -4966,13 +4974,15 @@ function generateCarvePatternSvg(patternId, uniqueId, paperColor, strokeColor, o
   const sc = strokeColor || CARVED_STROKE;
   const opacity = (opts && opts.opacity) || '0.35';
   const density = (opts && opts.density) || 1.0;
+  const rotation = (opts && opts.rotation) || 0;
   const dScale = 1 / Math.max(0.15, density); // tile size multiplier: low density → bigger tiles
   const bgRect = (pc && pc !== 'none') ? `<rect width="W" height="W" fill="${pc}"/>` : '';
+  const rotAttr = rotation ? ` patternTransform="rotate(${rotation})"` : '';
   switch (patternId) {
     case 'crosshatch': {
       const s = +(6 * dScale).toFixed(1);
       const sw = +(0.6 * Math.min(1.4, dScale)).toFixed(2);
-      return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}">
+      return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}"${rotAttr}>
         ${bgRect.replace(/W/g, s)}
         <line x1="0" y1="0" x2="${s}" y2="${s}" stroke="${sc}" stroke-width="${sw}" stroke-opacity="${opacity}"/>
         <line x1="${s}" y1="0" x2="0" y2="${s}" stroke="${sc}" stroke-width="${sw}" stroke-opacity="${opacity}"/>
@@ -4982,7 +4992,7 @@ function generateCarvePatternSvg(patternId, uniqueId, paperColor, strokeColor, o
       const s = +(10 * dScale).toFixed(1);
       const sw = +(0.5 * Math.min(1.4, dScale)).toFixed(2);
       const q = s / 4, h = s / 2, y1 = +(s * 0.3).toFixed(1), y2 = +(s * 0.7).toFixed(1);
-      return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}">
+      return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}"${rotAttr}>
         ${bgRect.replace(/W/g, s)}
         <path d="M0,${y1} Q${q.toFixed(1)},${(y1-1).toFixed(1)} ${h.toFixed(1)},${y1} T${s},${y1}" fill="none" stroke="${sc}" stroke-width="${sw}" stroke-opacity="${opacity}"/>
         <path d="M0,${y2} Q${q.toFixed(1)},${(y2-1).toFixed(1)} ${h.toFixed(1)},${y2} T${s},${y2}" fill="none" stroke="${sc}" stroke-width="${sw}" stroke-opacity="${opacity}"/>
@@ -4991,7 +5001,7 @@ function generateCarvePatternSvg(patternId, uniqueId, paperColor, strokeColor, o
     case 'diagonal': {
       const s = +(5 * dScale).toFixed(1);
       const sw = +(0.6 * Math.min(1.4, dScale)).toFixed(2);
-      return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}">
+      return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}"${rotAttr}>
         ${bgRect.replace(/W/g, s)}
         <line x1="0" y1="${s}" x2="${s}" y2="0" stroke="${sc}" stroke-width="${sw}" stroke-opacity="${opacity}"/>
       </pattern>`;
@@ -5001,7 +5011,7 @@ function generateCarvePatternSvg(patternId, uniqueId, paperColor, strokeColor, o
       const r1 = +(0.6 * Math.min(1.5, dScale)).toFixed(2);
       const r2 = +(0.5 * Math.min(1.5, dScale)).toFixed(2);
       const r3 = +(0.7 * Math.min(1.5, dScale)).toFixed(2);
-      return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}">
+      return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}"${rotAttr}>
         ${bgRect.replace(/W/g, s)}
         <circle cx="${(s*0.25).toFixed(1)}" cy="${(s*0.25).toFixed(1)}" r="${r1}" fill="${sc}" fill-opacity="${opacity}"/>
         <circle cx="${(s*0.75).toFixed(1)}" cy="${(s*0.625).toFixed(1)}" r="${r2}" fill="${sc}" fill-opacity="${opacity}"/>
@@ -5015,7 +5025,7 @@ function generateCarvePatternSvg(patternId, uniqueId, paperColor, strokeColor, o
       const minorOp = Math.max(0.1, parseFloat(opacity) * 0.6).toFixed(2);
       const y1 = +(s*0.33).toFixed(1), y2 = +(s*0.67).toFixed(1);
       const q = +(s*0.25).toFixed(1), h = +(s*0.5).toFixed(1);
-      return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}">
+      return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}"${rotAttr}>
         ${bgRect.replace(/W/g, s)}
         <path d="M0,${y1} Q${q},${+(y1-s*0.15).toFixed(1)} ${h},${y1} T${s},${y1}" fill="none" stroke="${sc}" stroke-width="${sw}" stroke-opacity="${opacity}"/>
         <path d="M0,${y2} Q${q},${+(y2-s*0.15).toFixed(1)} ${h},${y2} T${s},${y2}" fill="none" stroke="${sc}" stroke-width="${sw}" stroke-opacity="${opacity}"/>
@@ -5025,7 +5035,7 @@ function generateCarvePatternSvg(patternId, uniqueId, paperColor, strokeColor, o
     case 'lines': {
       const s = +(5 * dScale).toFixed(1);
       const sw = +(0.6 * Math.min(1.4, dScale)).toFixed(2);
-      return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}">
+      return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}"${rotAttr}>
         ${bgRect.replace(/W/g, s)}
         <line x1="0" y1="${(s*0.5).toFixed(1)}" x2="${s}" y2="${(s*0.5).toFixed(1)}" stroke="${sc}" stroke-width="${sw}" stroke-opacity="${opacity}"/>
       </pattern>`;
@@ -5035,7 +5045,7 @@ function generateCarvePatternSvg(patternId, uniqueId, paperColor, strokeColor, o
       const sw = +(0.5 * Math.min(1.4, dScale)).toFixed(2);
       const r1 = +(s * 0.4).toFixed(1), r2 = +(s * 0.8).toFixed(1);
       const cx = +(s * 0.5).toFixed(1), cy = +(s * 0.95).toFixed(1);
-      return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}">
+      return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}"${rotAttr}>
         ${bgRect.replace(/W/g, s)}
         <circle cx="${cx}" cy="${cy}" r="${r1}" fill="none" stroke="${sc}" stroke-width="${sw}" stroke-opacity="${opacity}"/>
         <circle cx="${cx}" cy="${cy}" r="${r2}" fill="none" stroke="${sc}" stroke-width="${sw}" stroke-opacity="${opacity}"/>
@@ -5045,7 +5055,7 @@ function generateCarvePatternSvg(patternId, uniqueId, paperColor, strokeColor, o
       const s = +(12 * dScale).toFixed(1);
       const sw = +(0.45 * Math.min(1.4, dScale)).toFixed(2);
       const h = +(s/2).toFixed(1), q = +(s/4).toFixed(1), tq = +(s*3/4).toFixed(1);
-      return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}">
+      return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}"${rotAttr}>
         ${bgRect.replace(/W/g, s)}
         <line x1="0" y1="${h}" x2="${h}" y2="0" stroke="${sc}" stroke-width="${sw}" stroke-opacity="${opacity}"/>
         <line x1="${h}" y1="0" x2="${s}" y2="${h}" stroke="${sc}" stroke-width="${sw}" stroke-opacity="${opacity}"/>
@@ -5077,7 +5087,7 @@ function generateCarvePatternSvg(patternId, uniqueId, paperColor, strokeColor, o
         const large = (m.a2 - m.a1 > 180) ? 1 : 0;
         paths += `<path d="M${x1},${y1} A${m.r.toFixed(1)},${m.r.toFixed(1)} 0 ${large} 1 ${x2},${y2}" fill="none" stroke="${sc}" stroke-width="${sw}" stroke-linecap="round" stroke-opacity="${opacity}"/>`;
       });
-      return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}">
+      return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}"${rotAttr}>
         ${bgRect.replace(/W/g, s)}
         ${paths}
       </pattern>`;
@@ -5105,12 +5115,14 @@ function createCarvePatternDef(patternId, elementId, defsEl) {
 function createStrokePatternDef(stroke, elementId, defsEl, paperColor, strokeColor) {
   const patId = stroke.pattern || 'crosshatch';
   const density = stroke.density || 0.5;
+  const rotation = stroke.rotation || 0;
   const dKey = Math.round(density * 100);
-  const pid = `sp-${elementId}-${patId}-${dKey}`;
+  const rKey = Math.round(rotation);
+  const pid = `sp-${elementId}-${patId}-${dKey}-r${rKey}`;
   // Reuse if already created in this render cycle
   if (defsEl.querySelector(`#${pid}`)) return `url(#${pid})`;
   // Workspace: dark marks (CARVED_STROKE) on transparent bg — visible in carve mode
-  const svgMarkup = generateCarvePatternSvg(patId, pid, null, strokeColor, { density, bg: 'none', opacity: '0.55' });
+  const svgMarkup = generateCarvePatternSvg(patId, pid, null, strokeColor, { density, rotation, bg: 'none', opacity: '0.55' });
   if (!svgMarkup) return null;
   const temp = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   temp.innerHTML = svgMarkup;
@@ -5274,71 +5286,68 @@ function buildCarveStudioUI() {
     });
   }
 
-  // Pattern chips — context-sensitive: brush pattern when pattern tool, element pattern otherwise
   const isPatternTool = STATE.carveTool === 'pattern';
+
+  // Context-sensitive sections: Pressure for gouge tools, Pattern+Density for pattern tool
+  const pressSec = $('cs-pressure-section');
+  const patSec = $('cs-pattern-section');
+  const toneSec = $('cs-tone-section');
+  if (pressSec) pressSec.style.display = isPatternTool ? 'none' : '';
+  if (patSec)   patSec.style.display   = isPatternTool ? '' : 'none';
+  if (toneSec)  toneSec.style.display   = isPatternTool ? '' : 'none';
+
+  // Pressure slider
+  const pressSlider = $('cs-pressure-slider');
+  if (pressSlider) {
+    pressSlider.value = STATE.pressureCurve ?? 50;
+    pressSlider.oninput = () => {
+      STATE.pressureCurve = parseInt(pressSlider.value, 10);
+      localStorage.setItem('mokuri-pressure', STATE.pressureCurve);
+    };
+  }
+
+  // Pattern chips — brush pattern selection (only shown when pattern tool active)
   const patRow = $('cs-pattern-row');
   if (patRow) {
     patRow.innerHTML = '';
-    // Skip 'none' when pattern tool is active — brush always needs a pattern
-    const entries = Object.entries(CARVE_PATTERNS).filter(([pid]) => isPatternTool ? pid !== 'none' : true);
+    const entries = Object.entries(CARVE_PATTERNS).filter(([pid]) => pid !== 'none');
     entries.forEach(([pid, pat]) => {
       const chip = document.createElement('button');
       chip.className = 'cs-pattern-chip';
-      // SVG swatch preview or "None" text
-      if (pid === 'none') {
-        chip.textContent = '◻ None';
-      } else {
-        const swatchSize = 28;
-        const swatchId = `swatch-${pid}`;
-        const patSvg = generateCarvePatternSvg(pid, swatchId, '#3a3228', '#f5f0e6', { bg: '#3a3228', opacity: '0.6' });
-        if (patSvg) {
-          const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-          svg.setAttribute('width', swatchSize);
-          svg.setAttribute('height', swatchSize);
-          svg.setAttribute('viewBox', `0 0 ${swatchSize} ${swatchSize}`);
-          svg.style.borderRadius = '3px';
-          const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-          defs.innerHTML = patSvg;
-          svg.appendChild(defs);
-          const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-          rect.setAttribute('width', swatchSize);
-          rect.setAttribute('height', swatchSize);
-          rect.setAttribute('fill', `url(#${swatchId})`);
-          svg.appendChild(rect);
-          chip.appendChild(svg);
-        }
-        const lbl = document.createElement('span');
-        lbl.textContent = pat.name;
-        chip.appendChild(lbl);
+      const swatchSize = 28;
+      const swatchId = `swatch-${pid}`;
+      const patSvg = generateCarvePatternSvg(pid, swatchId, '#3a3228', '#f5f0e6', { bg: '#3a3228', opacity: '0.6' });
+      if (patSvg) {
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('width', swatchSize);
+        svg.setAttribute('height', swatchSize);
+        svg.setAttribute('viewBox', `0 0 ${swatchSize} ${swatchSize}`);
+        svg.style.borderRadius = '3px';
+        const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        defs.innerHTML = patSvg;
+        svg.appendChild(defs);
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('width', swatchSize);
+        rect.setAttribute('height', swatchSize);
+        rect.setAttribute('fill', `url(#${swatchId})`);
+        svg.appendChild(rect);
+        chip.appendChild(svg);
       }
-      if (isPatternTool) {
-        if (pid === STATE.activePattern) chip.classList.add('active');
-        chip.addEventListener('click', () => {
-          STATE.activePattern = pid;
-          localStorage.setItem('mokuri-activePattern', pid);
-          buildCarveStudioUI();
-        });
-      } else {
-        const el = (STATE.selectedIds.size === 1) ? STATE.elements.find(e => e.id === primarySelectedId()) : null;
-        const activePat = el ? (el.carvePattern || 'none') : 'none';
-        if (pid === activePat) chip.classList.add('active');
-        chip.addEventListener('click', () => {
-          if (!el) return;
-          pushUndo();
-          el.carvePattern = pid === 'none' ? undefined : pid;
-          rerenderAll();
-          buildCarveStudioUI();
-          autoSave();
-        });
-      }
+      const lbl = document.createElement('span');
+      lbl.textContent = pat.name;
+      chip.appendChild(lbl);
+      if (pid === STATE.activePattern) chip.classList.add('active');
+      chip.addEventListener('click', () => {
+        STATE.activePattern = pid;
+        localStorage.setItem('mokuri-activePattern', pid);
+        buildCarveStudioUI();
+      });
       patRow.appendChild(chip);
     });
   }
 
-  // Tone slider — visible only when pattern tool active
-  const toneSec = $('cs-tone-section');
+  // Pattern density slider
   if (toneSec) {
-    toneSec.style.display = isPatternTool ? '' : 'none';
     const slider = $('cs-tone-slider');
     if (slider) {
       slider.value = STATE.patternDensity;
@@ -5347,33 +5356,21 @@ function buildCarveStudioUI() {
         localStorage.setItem('mokuri-patternDensity', STATE.patternDensity);
       };
     }
+    // Rotation slider
+    const rotSlider = $('cs-rotation-slider');
+    const rotLabel = $('cs-rotation-label');
+    if (rotSlider) {
+      rotSlider.value = STATE.patternRotation;
+      if (rotLabel) rotLabel.textContent = STATE.patternRotation + '°';
+      rotSlider.oninput = () => {
+        STATE.patternRotation = parseInt(rotSlider.value, 10);
+        localStorage.setItem('mokuri-patternRotation', STATE.patternRotation);
+        if (rotLabel) rotLabel.textContent = STATE.patternRotation + '°';
+      };
+    }
   }
 
-  // Pattern section label updates based on context
-  const patLabel = patRow ? patRow.previousElementSibling : null;
-  if (patLabel && patLabel.classList.contains('ps-section-label')) {
-    patLabel.textContent = isPatternTool ? 'Brush Pattern' : 'Pattern';
-  }
-
-  // Pressure curve chips
-  const pressRow = $('cs-pressure-row');
-  if (pressRow) {
-    pressRow.innerHTML = '';
-    Object.entries(PRESSURE_CURVES).forEach(([pid, curve]) => {
-      const chip = document.createElement('button');
-      chip.className = 'cs-pattern-chip';
-      chip.textContent = `${curve.icon} ${curve.name}`;
-      if (pid === (STATE.pressureCurve || 'medium')) chip.classList.add('active');
-      chip.addEventListener('click', () => {
-        STATE.pressureCurve = pid;
-        localStorage.setItem('mokuri-pressure', pid);
-        buildCarveStudioUI();
-      });
-      pressRow.appendChild(chip);
-    });
-  }
-
-  // Element-specific section
+  // Element-specific section (Carve Level)
   const elSection = $('cs-element-section');
   const elContent = $('cs-element-content');
   if (elSection && elContent) {
@@ -5445,18 +5442,6 @@ function buildCarveStudioUI() {
       }
     }
   }
-
-  // Background toggle
-  const bgToggle = $('cs-bg-toggle');
-  if (bgToggle) {
-    bgToggle.classList.toggle('active', STATE.mode === 'carve');
-    bgToggle.onclick = () => {
-      // Deselect element so clicks go to background
-      deselectAll();
-      if (STATE.mode !== 'carve') setMode('carve');
-      buildCarveStudioUI();
-    };
-  }
 }
 
 // ============================================================
@@ -5495,41 +5480,63 @@ function closeInkStudio() {
 
 function buildInkStudioUI() {
   const palette = PALETTES[STATE.paletteId];
+  const hasSelection = STATE.selectedIds.size === 1 && STATE.elements.find(e => e.id === primarySelectedId());
 
-  // Palette chips
+  // Auto-collapse palette grid when element selected, auto-expand when nothing selected
+  if (STATE._paletteManualToggle === undefined) {
+    STATE._paletteExpanded = !hasSelection;
+  }
+  const expanded = STATE._paletteExpanded;
+
+  // Palette header chevron + click toggle
+  const chevron = $('is-palette-chevron');
+  const header = $('is-palette-header');
+  if (chevron) chevron.textContent = expanded ? '▼' : '▶';
+  if (header) {
+    header.onclick = () => {
+      STATE._paletteExpanded = !STATE._paletteExpanded;
+      STATE._paletteManualToggle = true;
+      buildInkStudioUI();
+    };
+  }
+
+  // Palette chips — show/hide
   const chipContainer = $('is-palette-chips');
   if (chipContainer) {
+    chipContainer.style.display = expanded ? '' : 'none';
     chipContainer.innerHTML = '';
-    Object.entries(PALETTES).forEach(([pid, pal]) => {
-      const chip = document.createElement('div');
-      chip.className = 'is-palette-chip' + (pid === STATE.paletteId ? ' active' : '');
-      chip.title = pal.name;
+    if (expanded) {
+      Object.entries(PALETTES).forEach(([pid, pal]) => {
+        const chip = document.createElement('div');
+        chip.className = 'is-palette-chip' + (pid === STATE.paletteId ? ' active' : '');
+        chip.title = pal.name;
 
-      const dots = document.createElement('span');
-      dots.className = 'is-palette-chip-colors';
-      pal.colors.forEach(c => {
-        const dot = document.createElement('span');
-        dot.className = 'is-palette-chip-dot';
-        dot.style.background = c;
-        dots.appendChild(dot);
+        const dots = document.createElement('span');
+        dots.className = 'is-palette-chip-colors';
+        pal.colors.forEach(c => {
+          const dot = document.createElement('span');
+          dot.className = 'is-palette-chip-dot';
+          dot.style.background = c;
+          dots.appendChild(dot);
+        });
+        chip.appendChild(dots);
+
+        const name = document.createElement('span');
+        name.className = 'is-palette-name';
+        name.textContent = pal.name;
+        chip.appendChild(name);
+
+        chip.addEventListener('click', () => {
+          STATE.paletteId = pid;
+          rerenderAll();
+          buildInkStudioUI();
+          buildPaletteUI();
+          autoSave();
+          MokuriAudio.playColorChange();
+        });
+        chipContainer.appendChild(chip);
       });
-      chip.appendChild(dots);
-
-      const name = document.createElement('span');
-      name.className = 'is-palette-name';
-      name.textContent = pal.name;
-      chip.appendChild(name);
-
-      chip.addEventListener('click', () => {
-        STATE.paletteId = pid;
-        rerenderAll();
-        buildInkStudioUI();
-        buildPaletteUI();
-        autoSave();
-        MokuriAudio.playColorChange();
-      });
-      chipContainer.appendChild(chip);
-    });
+    }
   }
 
   // Palette swatches (large preview)
@@ -5763,8 +5770,8 @@ function buildInkStudioUI() {
     const horizSlider = document.createElement('input');
     horizSlider.type = 'range';
     horizSlider.className = 'is-atmo-slider';
-    horizSlider.min = '20';
-    horizSlider.max = '85';
+    horizSlider.min = '0';
+    horizSlider.max = '100';
     horizSlider.value = Math.round(STATE.horizon * 100);
     horizSlider.addEventListener('input', () => {
       STATE.horizon = parseInt(horizSlider.value) / 100;
@@ -5857,22 +5864,22 @@ function closePrintStudio() {
 }
 
 function buildPrintStudioUI() {
-  // Paper type cards
+  // Paper type cards (swatch + name, hover for description)
   const paperRow = $('ps-paper-row');
   paperRow.innerHTML = '';
   Object.entries(PAPER_TYPES).forEach(([id, pt]) => {
-    const card = document.createElement('div');
-    card.className = 'ps-paper-card' + (STATE.paperType === id ? ' active' : '');
-    card.innerHTML = `<div class="ps-paper-swatch" style="background:${pt.base}"></div>
-      <div class="ps-paper-name">${pt.name}</div>
-      <div class="ps-paper-desc">${pt.desc}</div>`;
-    card.addEventListener('click', () => {
+    const chip = document.createElement('div');
+    chip.className = 'ps-paper-chip' + (STATE.paperType === id ? ' active' : '');
+    chip.title = pt.desc;
+    chip.innerHTML = `<div class="ps-paper-swatch" style="background:${pt.base}"></div>
+      <div class="ps-paper-chip-label">${pt.name}</div>`;
+    chip.addEventListener('click', () => {
       STATE.paperType = id;
       paperEl.setAttribute('fill', pt.base);
       autoSave();
       buildPrintStudioUI();
     });
-    paperRow.appendChild(card);
+    paperRow.appendChild(chip);
   });
 
   // Ink load toggles
@@ -5957,7 +5964,11 @@ function buildPrintStudioUI() {
 
   // Show/hide presentation details based on margin selection
   const hasMargins = STATE.presentationMargin !== 'none';
-  ['ps-title-input', 'ps-deckle-check', 'ps-edition-input'].forEach(id => {
+  // Deckle checkbox row is inside the margins section — show/hide it inline
+  const deckleRow = deckleCheck.closest('.ps-checkbox-row');
+  if (deckleRow) deckleRow.style.display = hasMargins ? '' : 'none';
+  // Title and edition are separate sections
+  ['ps-title-input', 'ps-edition-input'].forEach(id => {
     const el = $(id);
     if (el) {
       const section = el.closest('.ps-presentation-section');
@@ -6415,7 +6426,8 @@ function setupInteraction() {
         ws.setPointerCapture(e.pointerId);
         return;
       }
-      // No element hit — carve the background
+      // No element hit — deselect and carve the background
+      deselectAll();
       const svgPt = clientToSvg(e.clientX, e.clientY);
       // Only carve within paper bounds
       if (svgPt.x >= 0 && svgPt.x <= STATE.paperW && svgPt.y >= 0 && svgPt.y <= STATE.paperH) {
@@ -6469,6 +6481,7 @@ function setupInteraction() {
         return;
       }
       // No element hit — erase background strokes
+      deselectAll();
       if (STATE.backgroundCarveStrokes.length) {
         const svgPt = clientToSvg(e.clientX, e.clientY);
         let bestIdx = STATE.backgroundCarveStrokes.length - 1;
@@ -6625,7 +6638,7 @@ function setupInteraction() {
         const svgPt = clientToSvg(e.clientX, e.clientY);
         const tool = CARVE_TOOLS[STATE.carveTool];
         const livePressure = e.pressure || 0.5;
-        const _pc = PRESSURE_CURVES[STATE.pressureCurve || 'medium'];
+        const _pc = getPressureCurve(STATE.pressureCurve);
         const pw = _pc.wBase + Math.pow(Math.max(0, livePressure), _pc.wPow) * _pc.wMul;
         ring.setAttribute('cx', svgPt.x);
         ring.setAttribute('cy', svgPt.y);
@@ -6732,7 +6745,7 @@ function setupInteraction() {
         if (STATE.carving.points.length >= 2) {
           const simplified = simplifyStroke(STATE.carving.points, 0.8);
           const strokeData = { points: simplified, tool: STATE.carveTool };
-          if (STATE.carveTool === 'pattern') { strokeData.pattern = STATE.activePattern; strokeData.density = STATE.patternDensity; }
+          if (STATE.carveTool === 'pattern') { strokeData.pattern = STATE.activePattern; strokeData.density = STATE.patternDensity; strokeData.rotation = STATE.patternRotation; }
           STATE.backgroundCarveStrokes.push(strokeData);
           rerenderAll();
           autoSave();
@@ -6750,7 +6763,7 @@ function setupInteraction() {
         const simplified = simplifyStroke(STATE.carving.points, 0.8);
         if (!el.carveStrokes) el.carveStrokes = [];
         const strokeData = { points: simplified, tool: STATE.carveTool };
-        if (STATE.carveTool === 'pattern') { strokeData.pattern = STATE.activePattern; strokeData.density = STATE.patternDensity; }
+        if (STATE.carveTool === 'pattern') { strokeData.pattern = STATE.activePattern; strokeData.density = STATE.patternDensity; strokeData.rotation = STATE.patternRotation; }
         el.carveStrokes.push(strokeData);
         rerenderAll();
         autoSave();
@@ -7012,7 +7025,6 @@ function setupToolbar() {
     updateToolCursorClass();
   });
   $('cs-back-compose').addEventListener('click', () => closeCarveStudio());
-  $('cs-bg-toggle').addEventListener('click', () => {});  // handled in buildCarveStudioUI
 
   // Inking Workbench — back link
   $('is-back-compose').addEventListener('click', () => closeInkStudio());

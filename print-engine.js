@@ -202,10 +202,12 @@ const PrintEngine = (() => {
       if (stroke.tool !== 'pattern' || !stroke.pattern) return null;
       const patId = stroke.pattern;
       const density = stroke.density || 0.5;
+      const rotation = stroke.rotation || 0;
       const dKey = Math.round(density * 100);
-      const pid = `pe-sp-${elKey}-${patId}-${dKey}`;
+      const rKey = Math.round(rotation);
+      const pid = `pe-sp-${elKey}-${patId}-${dKey}-r${rKey}`;
       if (!_printPatDefs.has(pid) && typeof generateCarvePatternSvg === 'function') {
-        const svg = generateCarvePatternSvg(patId, pid, paperBase, paperBase, { density, bg: 'none', opacity: '0.85' });
+        const svg = generateCarvePatternSvg(patId, pid, paperBase, paperBase, { density, rotation, bg: 'none', opacity: '0.85' });
         if (svg) { bokashiDefs += svg; _printPatDefs.add(pid); }
       }
       return _printPatDefs.has(pid) ? `url(#${pid})` : null;
