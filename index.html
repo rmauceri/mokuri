@@ -506,6 +506,7 @@ html, body {
 .workspace.print-preview-active .workspace-svg { opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
 .workspace.print-preview-active .washi-bg { opacity: 0.3; transition: opacity 0.4s ease; }
 .workspace.print-preview-active { cursor: zoom-in; }
+.workspace.print-preview-active #inline-print-canvas { pointer-events: auto; cursor: zoom-in; }
 
 /* Paper selector modal */
 .paper-modal {
@@ -6038,29 +6039,19 @@ function positionPrintCanvas() {
   const preset = MARGIN_PRESETS[presetKey];
   const hasMargins = preset && (preset.top > 0 || preset.sides > 0 || preset.bottom > 0);
   if (hasMargins) {
-    // Canvas includes margins + deckle — fit it entirely within the workspace
     const deckleExtra = STATE.presentationDeckle ? 0.02 : 0;
-    // Ratio of full canvas to print-only area
     const scaleW = 1 + preset.sides * 2 + deckleExtra * 2;
     const scaleH = 1 + preset.top + preset.bottom + deckleExtra * 2;
-    // Full canvas pixel dims at paper's current display scale
+    // Full canvas dimensions scaled to match current paper display size
     const fullDispW = paperRect.width * scaleW;
     const fullDispH = paperRect.height * scaleH;
-    // Available workspace area with a small padding
-    const pad = 12;
-    const availW = wsRect.width - pad * 2;
-    const availH = wsRect.height - pad * 2;
-    // Scale to fit the entire presentation in the workspace
-    const fitScale = Math.min(availW / fullDispW, availH / fullDispH, 1);
-    const dispW = fullDispW * fitScale;
-    const dispH = fullDispH * fitScale;
-    // Center in workspace
-    const left = (wsRect.width - dispW) / 2;
-    const top = (wsRect.height - dispH) / 2;
-    c.style.left = left + 'px';
-    c.style.top = top + 'px';
-    c.style.width = dispW + 'px';
-    c.style.height = dispH + 'px';
+    // Center the presentation around the paper center
+    const paperCX = (paperRect.left - wsRect.left) + paperRect.width / 2;
+    const paperCY = (paperRect.top - wsRect.top) + paperRect.height / 2;
+    c.style.left = (paperCX - fullDispW / 2) + 'px';
+    c.style.top = (paperCY - fullDispH / 2) + 'px';
+    c.style.width = fullDispW + 'px';
+    c.style.height = fullDispH + 'px';
   } else {
     c.style.left = (paperRect.left - wsRect.left) + 'px';
     c.style.top = (paperRect.top - wsRect.top) + 'px';
