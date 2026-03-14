@@ -1157,11 +1157,12 @@ html, body {
 .cs-tool-btn.active { border-color: var(--accent); background: var(--accent); color: #fff; }
 .cs-tool-name { font-size: 9px; color: var(--text-muted); margin-top: 2px; }
 
-/* Pattern chips */
-.cs-pattern-row { display: flex; flex-wrap: wrap; gap: 4px; }
+/* Pattern chips — swatch grid */
+.cs-pattern-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
 .cs-pattern-chip {
-  padding: 4px 10px;
-  font-size: 10px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 3px 2px;
+  font-size: 8px;
   border-radius: 4px;
   border: 1px solid var(--panel-border);
   background: transparent;
@@ -1169,8 +1170,9 @@ html, body {
   cursor: pointer;
   transition: all 0.15s;
 }
+.cs-pattern-chip svg { display: block; }
 .cs-pattern-chip:hover { border-color: var(--accent); color: var(--text); }
-.cs-pattern-chip.active { border-color: var(--accent); background: var(--accent); color: #fff; }
+.cs-pattern-chip.active { border-color: var(--accent); background: rgba(139,107,74,0.15); color: var(--text); }
 
 /* Element-specific section */
 .cs-element-section { border-top: 1px solid var(--panel-border); padding-top: 12px; }
@@ -1687,7 +1689,7 @@ html, body {
         </div>
 
         <div id="cs-tone-section" style="display:none">
-          <div class="ps-section-label">Tone</div>
+          <div class="ps-section-label">Pattern Density</div>
           <div style="display:flex; align-items:center; gap:8px; padding:0 2px;">
             <span style="font-size:11px; color:var(--text-muted)">■</span>
             <input type="range" id="cs-tone-slider" min="0.15" max="1.0" step="0.05" value="0.5"
@@ -4917,6 +4919,10 @@ const CARVE_PATTERNS = {
   diagonal:   { name: 'Diagonal',   icon: '╱' },
   stipple:    { name: 'Stipple',    icon: '∴' },
   wave:       { name: 'Wave',       icon: '∿' },
+  lines:      { name: 'Lines',      icon: '≡' },
+  arcs:       { name: 'Arcs',       icon: '◠' },
+  asanoha:    { name: 'Asanoha',    icon: '✻' },
+  cmarks:     { name: 'C Marks',    icon: '☾' },
 };
 
 // Generate SVG <pattern> markup for carve patterns (used in both workspace and print)
@@ -4982,6 +4988,66 @@ function generateCarvePatternSvg(patternId, uniqueId, paperColor, strokeColor, o
         <path d="M0,${y1} Q${q},${+(y1-s*0.15).toFixed(1)} ${h},${y1} T${s},${y1}" fill="none" stroke="${sc}" stroke-width="${sw}" stroke-opacity="${opacity}"/>
         <path d="M0,${y2} Q${q},${+(y2-s*0.15).toFixed(1)} ${h},${y2} T${s},${y2}" fill="none" stroke="${sc}" stroke-width="${sw}" stroke-opacity="${opacity}"/>
         <path d="M${+(-s*0.15).toFixed(1)},${s} Q${+(s*0.08).toFixed(1)},${+(s*0.85).toFixed(1)} ${+(s*0.33).toFixed(1)},${s}" fill="none" stroke="${sc}" stroke-width="${+(sw*0.8).toFixed(2)}" stroke-opacity="${minorOp}"/>
+      </pattern>`;
+    }
+    case 'lines': {
+      const s = +(5 * dScale).toFixed(1);
+      const sw = +(0.6 * Math.min(1.4, dScale)).toFixed(2);
+      return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}">
+        ${bgRect.replace(/W/g, s)}
+        <line x1="0" y1="${(s*0.5).toFixed(1)}" x2="${s}" y2="${(s*0.5).toFixed(1)}" stroke="${sc}" stroke-width="${sw}" stroke-opacity="${opacity}"/>
+      </pattern>`;
+    }
+    case 'arcs': {
+      const s = +(10 * dScale).toFixed(1);
+      const sw = +(0.5 * Math.min(1.4, dScale)).toFixed(2);
+      const r1 = +(s * 0.4).toFixed(1), r2 = +(s * 0.8).toFixed(1);
+      const cx = +(s * 0.5).toFixed(1), cy = +(s * 0.95).toFixed(1);
+      return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}">
+        ${bgRect.replace(/W/g, s)}
+        <circle cx="${cx}" cy="${cy}" r="${r1}" fill="none" stroke="${sc}" stroke-width="${sw}" stroke-opacity="${opacity}"/>
+        <circle cx="${cx}" cy="${cy}" r="${r2}" fill="none" stroke="${sc}" stroke-width="${sw}" stroke-opacity="${opacity}"/>
+      </pattern>`;
+    }
+    case 'asanoha': {
+      const s = +(12 * dScale).toFixed(1);
+      const sw = +(0.45 * Math.min(1.4, dScale)).toFixed(2);
+      const h = +(s/2).toFixed(1), q = +(s/4).toFixed(1), tq = +(s*3/4).toFixed(1);
+      return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}">
+        ${bgRect.replace(/W/g, s)}
+        <line x1="0" y1="${h}" x2="${h}" y2="0" stroke="${sc}" stroke-width="${sw}" stroke-opacity="${opacity}"/>
+        <line x1="${h}" y1="0" x2="${s}" y2="${h}" stroke="${sc}" stroke-width="${sw}" stroke-opacity="${opacity}"/>
+        <line x1="${s}" y1="${h}" x2="${h}" y2="${s}" stroke="${sc}" stroke-width="${sw}" stroke-opacity="${opacity}"/>
+        <line x1="${h}" y1="${s}" x2="0" y2="${h}" stroke="${sc}" stroke-width="${sw}" stroke-opacity="${opacity}"/>
+        <line x1="${h}" y1="0" x2="${h}" y2="${s}" stroke="${sc}" stroke-width="${sw}" stroke-opacity="${opacity}"/>
+        <line x1="0" y1="${h}" x2="${s}" y2="${h}" stroke="${sc}" stroke-width="${sw}" stroke-opacity="${opacity}"/>
+      </pattern>`;
+    }
+    case 'cmarks': {
+      const s = +(14 * dScale).toFixed(1);
+      const sw = +(0.5 * Math.min(1.4, dScale)).toFixed(2);
+      // Scattered C-shaped arcs at varied sizes and rotations
+      const marks = [
+        { cx: s*0.2, cy: s*0.2, r: s*0.12, a1: -60, a2: 120 },
+        { cx: s*0.7, cy: s*0.15, r: s*0.09, a1: 30, a2: 210 },
+        { cx: s*0.45, cy: s*0.55, r: s*0.14, a1: -120, a2: 60 },
+        { cx: s*0.85, cy: s*0.6, r: s*0.1, a1: 150, a2: 330 },
+        { cx: s*0.15, cy: s*0.8, r: s*0.11, a1: 80, a2: 260 },
+        { cx: s*0.65, cy: s*0.85, r: s*0.08, a1: -30, a2: 150 },
+      ];
+      let paths = '';
+      marks.forEach(m => {
+        const rad1 = m.a1 * Math.PI / 180, rad2 = m.a2 * Math.PI / 180;
+        const x1 = (m.cx + m.r * Math.cos(rad1)).toFixed(1);
+        const y1 = (m.cy + m.r * Math.sin(rad1)).toFixed(1);
+        const x2 = (m.cx + m.r * Math.cos(rad2)).toFixed(1);
+        const y2 = (m.cy + m.r * Math.sin(rad2)).toFixed(1);
+        const large = (m.a2 - m.a1 > 180) ? 1 : 0;
+        paths += `<path d="M${x1},${y1} A${m.r.toFixed(1)},${m.r.toFixed(1)} 0 ${large} 1 ${x2},${y2}" fill="none" stroke="${sc}" stroke-width="${sw}" stroke-linecap="round" stroke-opacity="${opacity}"/>`;
+      });
+      return `<pattern id="${uniqueId}" patternUnits="userSpaceOnUse" width="${s}" height="${s}">
+        ${bgRect.replace(/W/g, s)}
+        ${paths}
       </pattern>`;
     }
     default:
@@ -5186,7 +5252,33 @@ function buildCarveStudioUI() {
     entries.forEach(([pid, pat]) => {
       const chip = document.createElement('button');
       chip.className = 'cs-pattern-chip';
-      chip.textContent = `${pat.icon} ${pat.name}`;
+      // SVG swatch preview or "None" text
+      if (pid === 'none') {
+        chip.textContent = '◻ None';
+      } else {
+        const swatchSize = 28;
+        const swatchId = `swatch-${pid}`;
+        const patSvg = generateCarvePatternSvg(pid, swatchId, '#3a3228', '#f5f0e6', { bg: '#3a3228', opacity: '0.6' });
+        if (patSvg) {
+          const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          svg.setAttribute('width', swatchSize);
+          svg.setAttribute('height', swatchSize);
+          svg.setAttribute('viewBox', `0 0 ${swatchSize} ${swatchSize}`);
+          svg.style.borderRadius = '3px';
+          const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+          defs.innerHTML = patSvg;
+          svg.appendChild(defs);
+          const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          rect.setAttribute('width', swatchSize);
+          rect.setAttribute('height', swatchSize);
+          rect.setAttribute('fill', `url(#${swatchId})`);
+          svg.appendChild(rect);
+          chip.appendChild(svg);
+        }
+        const lbl = document.createElement('span');
+        lbl.textContent = pat.name;
+        chip.appendChild(lbl);
+      }
       if (isPatternTool) {
         if (pid === STATE.activePattern) chip.classList.add('active');
         chip.addEventListener('click', () => {
