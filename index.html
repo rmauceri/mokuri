@@ -6883,8 +6883,8 @@ function setupToolbar() {
     const btn = e.target.closest('.cs-tool-btn');
     if (!btn) return;
     STATE.carveTool = btn.dataset.tool;
-    // Sync tool button active states
-    $('cs-tool-row').querySelectorAll('.cs-tool-btn').forEach(b => b.classList.toggle('active', b.dataset.tool === STATE.carveTool));
+    // Rebuild UI to update context-sensitive pattern chips and tone slider
+    buildCarveStudioUI();
     updateToolCursorClass();
   });
   $('cs-back-compose').addEventListener('click', () => closeCarveStudio());
