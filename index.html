@@ -1161,7 +1161,7 @@ html, body {
 .cs-tool-name { font-size: 9px; color: var(--text-muted); margin-top: 2px; }
 
 /* Pattern chips — swatch grid */
-.cs-pattern-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.cs-pattern-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
 .cs-pattern-chip {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   padding: 4px 2px;
@@ -5298,7 +5298,7 @@ function closeCarveStudio() {
 function refreshPatternSwatches() {
   const patRow = $('cs-pattern-row');
   if (!patRow) return;
-  const swatchSize = 38;
+  const swatchSize = 52;
   const woodBg = WOOD_TONES[2];
   patRow.querySelectorAll('.cs-pattern-chip').forEach(chip => {
     const pid = chip.dataset.patternId;
@@ -5356,7 +5356,7 @@ function buildCarveStudioUI() {
       const chip = document.createElement('button');
       chip.className = 'cs-pattern-chip';
       chip.dataset.patternId = pid;
-      const swatchSize = 38;
+      const swatchSize = 52;
       const swatchId = `swatch-${pid}`;
       const woodBg = WOOD_TONES[2]; // mid wood tone for swatch background
       const patSvg = generateCarvePatternSvg(pid, swatchId, woodBg, '#f5f0e6', {
