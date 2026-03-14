@@ -5294,6 +5294,30 @@ function closeCarveStudio() {
   MokuriAudio.playPanelToggle();
 }
 
+// Lightweight refresh of pattern swatch SVGs (called during slider drag)
+function refreshPatternSwatches() {
+  const patRow = $('cs-pattern-row');
+  if (!patRow) return;
+  const swatchSize = 38;
+  const woodBg = WOOD_TONES[2];
+  patRow.querySelectorAll('.cs-pattern-chip').forEach(chip => {
+    const pid = chip.dataset.patternId;
+    if (!pid) return;
+    const svg = chip.querySelector('svg');
+    if (!svg) return;
+    const swatchId = `swatch-${pid}`;
+    const patSvg = generateCarvePatternSvg(pid, swatchId, woodBg, '#f5f0e6', {
+      bg: woodBg, opacity: '0.6',
+      density: STATE.patternDensity,
+      rotation: STATE.patternRotation,
+    });
+    if (patSvg) {
+      const defs = svg.querySelector('defs');
+      if (defs) defs.innerHTML = patSvg;
+    }
+  });
+}
+
 function buildCarveStudioUI() {
   // Tool buttons — sync active state with STATE.carveTool
   const toolRow = $('cs-tool-row');
@@ -5331,10 +5355,15 @@ function buildCarveStudioUI() {
     entries.forEach(([pid, pat]) => {
       const chip = document.createElement('button');
       chip.className = 'cs-pattern-chip';
+      chip.dataset.patternId = pid;
       const swatchSize = 38;
       const swatchId = `swatch-${pid}`;
       const woodBg = WOOD_TONES[2]; // mid wood tone for swatch background
-      const patSvg = generateCarvePatternSvg(pid, swatchId, woodBg, '#f5f0e6', { bg: woodBg, opacity: '0.6' });
+      const patSvg = generateCarvePatternSvg(pid, swatchId, woodBg, '#f5f0e6', {
+        bg: woodBg, opacity: '0.6',
+        density: STATE.patternDensity,
+        rotation: STATE.patternRotation,
+      });
       if (patSvg) {
         const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         svg.setAttribute('width', swatchSize);
@@ -5372,6 +5401,7 @@ function buildCarveStudioUI() {
       slider.oninput = () => {
         STATE.patternDensity = parseFloat(slider.value);
         localStorage.setItem('mokuri-patternDensity', STATE.patternDensity);
+        refreshPatternSwatches();
       };
     }
     // Rotation slider
@@ -5384,6 +5414,7 @@ function buildCarveStudioUI() {
         STATE.patternRotation = parseInt(rotSlider.value, 10);
         localStorage.setItem('mokuri-patternRotation', STATE.patternRotation);
         if (rotLabel) rotLabel.textContent = STATE.patternRotation + '°';
+        refreshPatternSwatches();
       };
     }
   }
