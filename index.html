@@ -272,6 +272,7 @@ html, body {
   transition: border-color 0.15s, box-shadow 0.15s;
   overflow: hidden;
   position: relative;
+  touch-action: pan-y;
 }
 .element-thumb:hover {
   border-color: var(--accent);
@@ -4369,23 +4370,40 @@ function buildElementPicker() {
       thumb.appendChild(lbl);
 
       // Drag-to-place: drag element from panel onto workspace
+      // Touch: vertical movement scrolls the panel (touch-action: pan-y handles this);
+      //        horizontal/outward drag places the element.
+      // Mouse: any drag past threshold starts placement.
       thumb.addEventListener('pointerdown', (e) => {
         if (e.button !== 0) return;
-        e.preventDefault();
         const startX = e.clientX, startY = e.clientY;
-        const DRAG_THRESHOLD = 4;
+        const pointerId = e.pointerId;
+        const isTouch = e.pointerType === 'touch';
+        const DRAG_THRESHOLD = isTouch ? 12 : 4;
         let ghost = null;
         let dragging = false;
+        let done = false;
 
         function onMove(me) {
+          if (done || me.pointerId !== pointerId) return;
           const dx = me.clientX - startX, dy = me.clientY - startY;
-          if (!dragging && dx * dx + dy * dy >= DRAG_THRESHOLD * DRAG_THRESHOLD) {
+          if (!dragging) {
+            // Not yet dragging — check if this is a scroll or a drag
+            if (isTouch && Math.abs(dy) > Math.abs(dx) + 6) {
+              // Primarily vertical — it's a scroll, bail out
+              cleanup();
+              return;
+            }
+            if (dx * dx + dy * dy < DRAG_THRESHOLD * DRAG_THRESHOLD) return;
+            // Crossed threshold with horizontal intent — start drag
             dragging = true;
+            me.preventDefault();
+            try { thumb.setPointerCapture(pointerId); } catch (ex) {}
             ghost = document.createElement('div');
             ghost.className = 'drag-ghost';
             ghost.appendChild(thumb.querySelector('svg').cloneNode(true));
             document.body.appendChild(ghost);
           }
+          if (dragging) me.preventDefault();
           if (ghost) {
             ghost.style.left = me.clientX + 'px';
             ghost.style.top = me.clientY + 'px';
@@ -4393,11 +4411,10 @@ function buildElementPicker() {
         }
 
         function onUp(ue) {
-          document.removeEventListener('pointermove', onMove);
-          document.removeEventListener('pointerup', onUp);
-          thumb.releasePointerCapture(ue.pointerId);
-          if (ghost) { ghost.remove(); ghost = null; }
-          if (!dragging) return; // no drag — let dblclick handle quick-add
+          if (done || ue.pointerId !== pointerId) return;
+          const wasDragging = dragging;
+          cleanup();
+          if (!wasDragging) return;
 
           // Check if dropped over the workspace
           const wsRect = workspaceEl.getBoundingClientRect();
@@ -4411,9 +4428,24 @@ function buildElementPicker() {
           }
         }
 
-        thumb.setPointerCapture(e.pointerId);
+        function onCancel(ce) {
+          if (ce.pointerId !== pointerId) return;
+          cleanup();
+        }
+
+        function cleanup() {
+          done = true;
+          document.removeEventListener('pointermove', onMove);
+          document.removeEventListener('pointerup', onUp);
+          document.removeEventListener('pointercancel', onCancel);
+          try { thumb.releasePointerCapture(pointerId); } catch (ex) {}
+          if (ghost) { ghost.remove(); ghost = null; }
+        }
+
+        // Don't preventDefault or capture yet — let browser handle scroll
         document.addEventListener('pointermove', onMove);
         document.addEventListener('pointerup', onUp);
+        document.addEventListener('pointercancel', onCancel);
       });
 
       // Double-click quick-add: place at viewport center (mouse/pen convenience)
