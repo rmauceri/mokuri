@@ -101,6 +101,16 @@ html, body {
   margin-right: 8px;
   white-space: nowrap;
   flex-shrink: 0;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.toolbar-title:hover { opacity: 0.8; }
+.toolbar-title .toolbar-title-kanji {
+  color: #c23b22;
+  font-family: serif;
+  font-size: 18px;
+  font-weight: bold;
+  margin-right: 2px;
 }
 
 .toolbar-title span.toolbar-title-sub {
@@ -861,15 +871,13 @@ html, body {
   text-align: center;
 }
 .maki-seal {
-  width: 72px;
-  height: 100px;
+  width: 80px;
+  height: 80px;
   border-radius: 6px;
   background: #c23b22;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0;
   box-shadow: 0 2px 12px rgba(0,0,0,0.4);
   margin-bottom: 16px;
   position: relative;
@@ -884,10 +892,10 @@ html, body {
 }
 .maki-seal-char {
   font-family: serif;
-  font-size: 34px;
+  font-size: 44px;
   font-weight: bold;
   color: #f5f0e6;
-  line-height: 1.15;
+  line-height: 1;
 }
 .maki-title {
   font-size: 24px;
@@ -979,9 +987,9 @@ html, body {
 /* Splash mode (brief title only, auto-dismiss) */
 .makimono.splash .maki-card { display: none; }
 .makimono.splash::after {
-  content: '墨栗';
+  content: '墨';
   font-family: serif;
-  font-size: 64px;
+  font-size: 72px;
   color: #c23b22;
   letter-spacing: 0.15em;
 }
@@ -989,8 +997,8 @@ html, body {
 /* Responsive: compact for landscape phones (short height) */
 @media (max-height: 500px) {
   .maki-card { gap: 24px; padding: 12px 20px; width: 96vw; }
-  .maki-seal { width: 44px; height: 62px; margin-bottom: 6px; }
-  .maki-seal-char { font-size: 20px; }
+  .maki-seal { width: 52px; height: 52px; margin-bottom: 6px; }
+  .maki-seal-char { font-size: 28px; }
   .maki-left { flex: 0 0 160px; }
   .maki-title { font-size: 16px; margin-bottom: 2px; }
   .maki-subtitle { font-size: 10px; margin-bottom: 8px; }
@@ -1017,8 +1025,8 @@ html, body {
     align-items: stretch;
   }
   .maki-left { flex: none; }
-  .maki-seal { width: 48px; height: 68px; margin-bottom: 8px; }
-  .maki-seal-char { font-size: 22px; }
+  .maki-seal { width: 52px; height: 52px; margin-bottom: 8px; }
+  .maki-seal-char { font-size: 28px; }
   .maki-title { font-size: 18px; }
   .maki-subtitle { margin-bottom: 10px; }
   .maki-divider { margin-bottom: 8px; }
@@ -1043,18 +1051,7 @@ html, body {
   .maki-card { gap: 12px; }
 }
 
-/* Gallery about link */
-.gallery-about-link {
-  display: block;
-  text-align: center;
-  padding: 16px 0 4px;
-  font-size: 12px;
-  color: var(--text-muted);
-  cursor: pointer;
-  letter-spacing: 0.04em;
-  transition: color 0.15s;
-}
-.gallery-about-link:hover { color: var(--accent); }
+/* Gallery about link — removed, about now accessible via toolbar brand */
 
 
 /* ============================================================
@@ -1637,13 +1634,13 @@ html, body {
   .toolbar { gap: 4px; padding: 0 8px; }
   .mode-btn .mode-label { display: none; }
   .mode-btn { padding: 4px 10px; }
-  .toolbar-title .toolbar-title-sub { display: none; }
-  .toolbar-title .toolbar-title-kanji { display: none; }
 }
 
 /* Narrow windows: hide low-priority toolbar items */
 @media (max-width: 850px) {
-  .toolbar-title { display: none; }
+  .toolbar-title { font-size: 0; margin-right: 4px; }
+  .toolbar-title .toolbar-title-kanji { font-size: 18px; margin-right: 0; }
+  .toolbar-title .toolbar-title-sub { display: none; }
   .toolbar > .toolbar-separator { display: none; }
   .toolbar-edit-group .toolbar-separator { display: none; }
   .tool-btn { width: 30px; height: 30px; font-size: 14px; }
@@ -1662,7 +1659,7 @@ html, body {
 <div class="app">
   <!-- Toolbar -->
   <div class="toolbar">
-    <div class="toolbar-title"><span class="toolbar-title-kanji">墨栗 </span>Mokuri <span class="toolbar-title-sub">Studio</span></div>
+    <div class="toolbar-title" id="toolbar-brand" title="About Mokuri Studio"><span class="toolbar-title-kanji">墨</span> Mokuri <span class="toolbar-title-sub">Studio</span></div>
     <div class="toolbar-separator"></div>
 
     <!-- Left group: Editing commands -->
@@ -1981,7 +1978,6 @@ html, body {
       <button class="gallery-toolbar-btn" id="gallery-export-all-btn" title="Export all compositions">📦 Export All</button>
     </div>
     <div class="gallery-recents" id="gallery-recents"></div>
-    <div class="gallery-about-link" id="gallery-about-link"><img src="assets/icon-192.png" style="width:18px;height:18px;vertical-align:middle;margin-right:4px;border-radius:3px">About Mokuri Studio</div>
   </div>
 </div>
 
@@ -1992,7 +1988,6 @@ html, body {
     <div class="maki-left">
       <div class="maki-seal">
         <span class="maki-seal-char">墨</span>
-        <span class="maki-seal-char">栗</span>
       </div>
       <div class="maki-title">MOKURI</div>
       <div class="maki-subtitle">A Japanese woodblock print studio</div>
@@ -7699,13 +7694,11 @@ function init() {
 
   $('maki-begin').addEventListener('click', hideMakimono);
   $('makimono').addEventListener('click', (e) => {
-    // Click on backdrop (not scroll content) dismisses full mode
+    // Click on backdrop (not card content) dismisses
     if (e.target === $('makimono')) hideMakimono();
   });
-  $('gallery-about-link').addEventListener('click', () => {
-    closeGallery();
-    showMakimono('full');
-  });
+  // Toolbar brand opens About
+  $('toolbar-brand').addEventListener('click', () => showMakimono('full'));
 }
 
 init();
