@@ -60,34 +60,39 @@ Paper selector updated to 3-column grid. Print engine now uses actual paper base
 
 ---
 
-## Phase 11 — The Woodblock (Planned)
+### Phase 11A: Pattern Carving Enhancements ✅ (Partial — Core Complete)
 
-Two interconnected areas deepening the physical material metaphor and expanding carving as a creative tool.
+Density and rotation controls, freehand pattern tool, and UX polish shipped. Per-zone patterns and library expansion deferred.
 
-### 11A: Pattern Carving — From Decoration to Tone
+- **Pattern density slider**: Sparse→dense tonal control in Carving Workbench. Stored per-element in save data.
+- **Pattern rotation**: 0°/45°/90° angle control for directional patterns. Persisted in localStorage.
+- **Freehand pattern tool**: New "pattern" carve tool — paint pattern fills along brush strokes. Uses existing pressure/tilt pipeline with pattern fill instead of solid cut. Strokes store pattern, density, and rotation per-stroke.
+- **Live swatch preview**: Pattern swatches in Carving Workbench reflect current density and rotation settings in real-time. ViewBox-based scale matching (SWATCH_VB=35 in SWATCH_CSS=52) so swatch preview matches actual carved appearance.
+- **Wood-tone swatch backgrounds**: Pattern swatches use wood tones instead of black for authentic preview.
 
-Current carve patterns (crosshatch, woodgrain, diagonal, stipple, wave) are all-or-nothing per element. In real mokuhanga, pattern carving is the primary tool for creating **tonal range** — the density of carved lines determines how much ink transfers, giving everything from solid black to barely-there whisper tones. This is the missing expressive dimension.
+Remaining 11A items (deferred):
+- Per-zone patterns (Inking Workbench zone editor)
+- Expanded pattern library (parallel lines, arcs, cloud swirls, rain dots)
 
-#### Per-Zone Patterns
-Apply different patterns to different color zones within an element. A koi's body might get woodgrain while its fins get stipple. This leverages the existing zone system — each zone in `el.colorOverrides` would gain an optional `pattern` and `patternDensity` field. The Inking Workbench zone editor would add pattern controls alongside the existing color picker and bokashi direction.
+### Phase 12-P0: PWA Reliability Foundations ✅
 
-#### Pattern Density & Scale
-A density slider (sparse → dense) controls the tonal value. At 20% density, crosshatch lines are far apart — the area prints mostly as paper. At 80%, it's nearly solid ink. This is the single most important control — it turns pattern carving from a texture effect into a tonal tool. Scale controls the physical size of the pattern repeat. Rotation controls the angle of directional patterns.
+- **Service worker** (`sw.js`): Cache-first with background update. Caches full app shell. Version-stamped cache name (`mokuri-v5`).
+- **Global error handler**: `window.onerror` + `window.onunhandledrejection` → status bar message.
+- **Storage quota UI**: Warning when localStorage is full.
+- **Print pipeline protection**: try/catch around `pullPrint()` with clean animation dismissal on failure.
+- **Canvas context guard**: Null-check on `getContext('2d')` in print engine.
 
-#### Pattern Library Expansion
-Expand beyond the current 6 patterns with traditional mokuhanga textures:
-- **Parallel lines** (single-direction hatch — the most basic tonal tool)
-- **Concentric arcs** (used for water, sky gradation)
-- **Cloud swirls** (traditional cloud/mist rendering)
-- **Rain dots** (scattered dot pattern for atmospheric effects)
-- **Grain following** (pattern lines that follow the element's form curves)
+### Mobile & Small-Screen Improvements ✅
 
-Each pattern should be parameterized (density, scale, rotation) rather than fixed, making the library combinatorially rich.
+Full compose→carve→ink→print workflow now usable on phone (landscape) and tablets.
 
-#### Freehand Pattern Regions (Future)
-A pattern brush tool that paints pattern fill into drawn regions, independent of element zones. This is the most expressive option — the artist draws where tone should be — but also the most complex to implement. Consider as a 11A+ stretch goal after per-zone patterns prove out.
+- **Zoom-compensated handles**: Handle sizes multiply by viewBox-to-viewport ratio (`svgPerPx`), maintaining constant screen size at any zoom. Touch devices (pointer: coarse) get 2× base size. `vector-effect: non-scaling-stroke` on selection UI.
+- **Elements panel toggle**: 🏞️ Compose button toggles Elements panel open/closed (matching workbench pattern). Auto-closes on narrow screens (<850px) when a workbench opens. CSS width + opacity transition.
+- **Pinch-to-zoom**: Two-finger gesture on workspace — zoom centered on pinch midpoint with simultaneous pan. Cancels in-progress carve strokes. Pointer events for cross-device support. Includes pointercancel handling.
+- **Mobile print fix**: Deckle edge complex polygon clip (~600 vertices) + multiply composite caused blank canvas on mobile Chromium. Refactored to simple rect clips during rendering with final cosmetic deckle mask via evenodd clip. Also added `willReadFrequently: true` on presentation canvas and try/catch around post-processing.
+- **Print preview zoom**: Removed fit-to-workspace clamping in `positionPrintCanvas()`. Canvas tracks paper rect directly, allowing zoom-in for proofing before PNG save.
 
-### 11B: The Wood Block Experience
+## Phase 11B — The Wood Block Experience (Planned)
 
 The workspace should feel like working with a physical block of cherry wood, not arranging shapes on paper. In compose and carve modes, the surface is a warm wood block with subtle grain texture. In ink mode, it reverts to paper (the "proof pull" preview). The transition is instant.
 
@@ -114,13 +119,8 @@ The workspace should feel like working with a physical block of cherry wood, not
 
 ### Implementation Sequence
 
-**11A-1**: Per-zone patterns + density slider (Inking Workbench zone editor) ✅
-**11A-2**: Pattern scale and rotation controls ✅
-**11A-3**: Expanded pattern library (parallel lines, arcs, cloud swirls, rain dots) — deferred
 **11B-1**: Wood block workspace surface (grain texture, wood tones for background)
 **11B-2**: Carved recess visual treatment for placed elements in compose/carve modes
-
-11A and 11B can proceed in parallel — patterns are about element rendering, woodblock is about workspace chrome.
 
 ---
 
@@ -134,8 +134,7 @@ The workspace should feel like working with a physical block of cherry wood, not
 - **More scene presets** — Seasonal themes, time-of-day variations, genre-specific starters (seascape, garden, urban, spiritual).
 
 ### Platform & Polish
-- **Touch gestures** — Pinch-to-zoom, two-finger pan for tablet use.
-- **Responsive layout** — Panels adapt for desktop (side panel) vs tablet (bottom sheet) vs phone (modal panels).
+- **Responsive layout** — Further tablet/phone refinements (bottom sheet panels, modal panels for very small screens).
 - **Keyboard shortcuts expansion** — More shortcuts for power users.
 
 ### Print Engine
@@ -146,24 +145,11 @@ The workspace should feel like working with a physical block of cherry wood, not
 
 ## Phase 12 — PWA Quality & Reliability (Planned)
 
-Architecture assessment identified gaps in offline support, error handling, and data safety. Organized by priority.
+Architecture assessment identified gaps in offline support, error handling, and data safety. P0 complete; P1–P3 planned.
 
-### 12-P0: Reliability Foundations
+### 12-P0: Reliability Foundations ✅
 
-#### Service Worker & Offline Support
-No service worker exists — the app is installable (manifest valid, icons present) but not offline-capable. Every load fetches from the network; a cache-first SW would enable true offline use and dramatically improve cold starts.
-
-- **Cache-first service worker** (`sw.js`): Cache app shell (index.html, print-engine.js, audio-engine.js, all element/gallery JS, manifest, icons) on install. Serve from cache, update in background. Version-stamped cache name for clean upgrades.
-- **Register SW from index.html**: `navigator.serviceWorker.register('./sw.js')` with feature detection.
-- **Offline indicator**: Subtle status bar hint when network is unavailable.
-
-#### Error Handling & Data Safety
-13 try/catch blocks exist but critical paths are unprotected. localStorage quota overflow silently loses data. Print pipeline rejects uncaught.
-
-- **Global error handler**: `window.onerror` + `window.onunhandledrejection` → log to console + show non-intrusive status bar message ("Something went wrong — your work is saved").
-- **Quota error UI**: Replace silent catch in `saveGallery()` with user-visible warning ("Storage full — delete a composition to save"). Same for other localStorage writes.
-- **Print pipeline protection**: Wrap `pullPrint()` async chain in try/catch. On failure, dismiss animation cleanly, show error in status bar, don't leave UI in broken state.
-- **Canvas context guard**: Check `getContext('2d')` return value before proceeding in print engine.
+See completed section above.
 
 ### 12-P1: Data & Interaction
 
@@ -173,13 +159,6 @@ Gallery is localStorage-only (max 10, ~5MB ceiling). No way to back up, share, o
 - **Export**: Download composition as `.mokuri` file (JSON with metadata). Button in gallery panel.
 - **Import**: File picker or drag-drop to load `.mokuri` files. Validate schema, merge into gallery.
 - **Bulk export**: Download all compositions as a single `.mokuri` archive (JSON array).
-
-#### Pinch-to-Zoom
-Wheel zoom works but no multi-touch gesture. `touch-action: none` prevents browser zoom but doesn't replace it.
-
-- **Two-finger pinch**: Track touch distance delta → map to zoom level change.
-- **Two-finger pan**: Track touch midpoint delta → map to viewBox translation.
-- **Gesture discrimination**: Distinguish pinch/pan from single-finger carve/move.
 
 #### Memory Bounds
 Carve stroke arrays are unbounded. Heavy sessions could grow to MB, bloating undo snapshots and localStorage.
