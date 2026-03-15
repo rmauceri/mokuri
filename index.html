@@ -6022,6 +6022,7 @@ function closePrintStudio() {
   } else if (prev === 'ink') {
     openInkStudio();
   } else {
+    setViewMode('carve');  // restore wood block view from ink/print
     setMode('select');
     updatePhaseButtons();
   }
