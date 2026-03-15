@@ -788,6 +788,41 @@ html, body {
   font-size: 12px;
   font-style: italic;
 }
+.gallery-toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.gallery-toolbar-btn {
+  padding: 5px 12px;
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.gallery-toolbar-btn:hover { border-color: var(--accent); background: var(--selection); }
+.gallery-recent-export {
+  position: absolute;
+  top: 4px;
+  right: 28px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+  font-size: 11px;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.gallery-recent:hover .gallery-recent-export { display: flex; }
+.gallery-recent-export:hover { background: var(--accent); }
 
 
 /* ============================================================
@@ -1863,6 +1898,10 @@ html, body {
     <div class="gallery-starters" id="gallery-starters"></div>
 
     <div class="gallery-section-title">Recent Prints</div>
+    <div class="gallery-toolbar" id="gallery-toolbar">
+      <button class="gallery-toolbar-btn" id="gallery-import-btn" title="Import compositions">📂 Import</button>
+      <button class="gallery-toolbar-btn" id="gallery-export-all-btn" title="Export all compositions">📦 Export All</button>
+    </div>
     <div class="gallery-recents" id="gallery-recents"></div>
     <div class="gallery-about-link" id="gallery-about-link"><img src="assets/icon-192.png" style="width:18px;height:18px;vertical-align:middle;margin-right:4px;border-radius:3px">About Mokuri Studio</div>
   </div>
@@ -3644,6 +3683,116 @@ function saveGallery(gallery) {
   }
 }
 
+// ── Export / Import (.mokuri file format) ──
+
+function serializeMokuriFile(galleryEntries) {
+  const compositions = galleryEntries.map(entry => ({
+    name: entry.name || 'Untitled',
+    data: entry.data,
+    createdAt: entry.createdAt || Date.now(),
+    updatedAt: entry.updatedAt || Date.now(),
+  }));
+  return JSON.stringify({ mokuri: 1, compositions }, null, 2);
+}
+
+function parseMokuriFile(jsonString) {
+  let obj;
+  try { obj = JSON.parse(jsonString); }
+  catch (e) { throw new Error('Invalid file — not valid JSON'); }
+  if (!obj || obj.mokuri !== 1) throw new Error('Not a Mokuri file (missing mokuri:1 marker)');
+  if (!Array.isArray(obj.compositions) || obj.compositions.length === 0) {
+    throw new Error('No compositions found in file');
+  }
+  for (let i = 0; i < obj.compositions.length; i++) {
+    const c = obj.compositions[i];
+    if (!c.data || !Array.isArray(c.data.elements)) {
+      throw new Error(`Composition ${i + 1} is missing element data`);
+    }
+  }
+  return obj;
+}
+
+function downloadFile(content, filename) {
+  const blob = new Blob([content], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function exportComposition(galleryEntry) {
+  const json = serializeMokuriFile([galleryEntry]);
+  const safeName = (galleryEntry.name || 'mokuri-print').replace(/[^a-zA-Z0-9_\-\u3000-\u9fff]/g, '_');
+  downloadFile(json, safeName + '.mokuri');
+  $('status-hint').textContent = 'Exported "' + galleryEntry.name + '"';
+  MokuriAudio.playPanelToggle();
+}
+
+function exportAllCompositions() {
+  const gallery = getGallery();
+  if (!gallery.length) {
+    $('status-hint').textContent = 'Nothing to export — gallery is empty';
+    return;
+  }
+  const json = serializeMokuriFile(gallery);
+  const date = new Date().toISOString().slice(0, 10);
+  downloadFile(json, 'mokuri-backup-' + date + '.mokuri');
+  $('status-hint').textContent = 'Exported ' + gallery.length + ' composition' + (gallery.length !== 1 ? 's' : '');
+  MokuriAudio.playPanelToggle();
+}
+
+function importCompositions() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.mokuri,.json';
+  input.style.display = 'none';
+  document.body.appendChild(input);
+  input.addEventListener('change', () => {
+    const file = input.files[0];
+    if (!file) { document.body.removeChild(input); return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      document.body.removeChild(input);
+      try {
+        const parsed = parseMokuriFile(reader.result);
+        const gallery = getGallery();
+        let imported = 0;
+        parsed.compositions.forEach(comp => {
+          const id = generateCompositionId();
+          const data = comp.data;
+          const entry = {
+            id,
+            name: comp.name || 'Imported',
+            data,
+            thumbnail: generateThumbnailSvg(data),
+            createdAt: comp.createdAt || Date.now(),
+            updatedAt: comp.updatedAt || Date.now(),
+            userNamed: true,
+          };
+          gallery.unshift(entry);
+          imported++;
+        });
+        saveGallery(gallery);
+        buildGalleryUI();
+        $('status-hint').textContent = 'Imported ' + imported + ' composition' + (imported !== 1 ? 's' : '');
+        MokuriAudio.playPlace();
+      } catch (e) {
+        $('status-hint').textContent = '⚠ Import failed: ' + e.message;
+      }
+    };
+    reader.onerror = () => {
+      document.body.removeChild(input);
+      $('status-hint').textContent = '⚠ Could not read file';
+    };
+    reader.readAsText(file);
+  });
+  input.click();
+}
+
 function getActiveCompositionId() {
   return localStorage.getItem(ACTIVE_ID_KEY) || null;
 }
@@ -4191,6 +4340,13 @@ function buildGalleryUI() {
   recents.innerHTML = '';
   const gallery = getGallery();
 
+  // Wire toolbar buttons
+  const importBtn = $('gallery-import-btn');
+  const exportAllBtn = $('gallery-export-all-btn');
+  importBtn.onclick = (e) => { e.stopPropagation(); importCompositions(); };
+  exportAllBtn.onclick = (e) => { e.stopPropagation(); exportAllCompositions(); };
+  exportAllBtn.disabled = gallery.length === 0;
+
   if (gallery.length === 0) {
     const empty = document.createElement('div');
     empty.className = 'gallery-empty';
@@ -4255,6 +4411,17 @@ function buildGalleryUI() {
     metaDiv.textContent = `${elCount} element${elCount !== 1 ? 's' : ''} · ${relativeTime(entry.updatedAt || entry.createdAt)}`;
     infoDiv.appendChild(metaDiv);
     card.appendChild(infoDiv);
+
+    // Export button
+    const expBtn = document.createElement('button');
+    expBtn.className = 'gallery-recent-export';
+    expBtn.textContent = '↓';
+    expBtn.title = 'Export this composition';
+    expBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      exportComposition(entry);
+    });
+    card.appendChild(expBtn);
 
     // Delete button with confirmation
     const delBtn = document.createElement('button');
