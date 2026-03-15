@@ -788,20 +788,19 @@ const PrintEngine = (() => {
     ctx.fillStyle = matColor;
     ctx.fillRect(0, 0, fullW, fullH);
 
-    // ── Paper area (with deckle edge if enabled) ──
+    // ── Paper area ──
+    // Use simple rect clips during heavy rendering (texture, composite,
+    // post-processing). Complex deckle clip is applied as a final mask
+    // to avoid mobile Chromium bugs with polygon clips + multiply composite.
     const paperX = deckleExtra;
     const paperY = deckleExtra;
     const paperW = pw + mSide * 2;
     const paperH = ph + mTop + mBottom;
 
     ctx.save();
-    if (opts.deckle) {
-      drawDeckleClip(ctx, paperX, paperY, paperW, paperH);
-    } else {
-      ctx.beginPath();
-      ctx.rect(paperX, paperY, paperW, paperH);
-      ctx.clip();
-    }
+    ctx.beginPath();
+    ctx.rect(paperX, paperY, paperW, paperH);
+    ctx.clip();
 
     // Draw paper texture on full paper area
     drawPaperTexture(ctx, fullW, fullH, paperType);
@@ -812,13 +811,9 @@ const PrintEngine = (() => {
     const printX = deckleExtra + mSide;
     const printY = deckleExtra + mTop;
     ctx.save();
-    if (opts.deckle) {
-      drawDeckleClip(ctx, paperX, paperY, paperW, paperH);
-    } else {
-      ctx.beginPath();
-      ctx.rect(paperX, paperY, paperW, paperH);
-      ctx.clip();
-    }
+    ctx.beginPath();
+    ctx.rect(paperX, paperY, paperW, paperH);
+    ctx.clip();
     ctx.globalCompositeOperation = 'multiply';
     ctx.drawImage(printCanvas, printX, printY);
     ctx.globalCompositeOperation = 'source-over';
@@ -843,18 +838,27 @@ const PrintEngine = (() => {
     // the print is still valid without these subtle margin effects.
     try {
       ctx.save();
-      if (opts.deckle) {
-        drawDeckleClip(ctx, paperX, paperY, paperW, paperH);
-      } else {
-        ctx.beginPath();
-        ctx.rect(paperX, paperY, paperW, paperH);
-        ctx.clip();
-      }
+      ctx.beginPath();
+      ctx.rect(paperX, paperY, paperW, paperH);
+      ctx.clip();
       applyBarenPressure(ctx, fullW, fullH, (paperType.barenIntensity || 1) * 0.3, paperBaseFromType(paperType));
       applyFineNoise(ctx, fullW, fullH, (paperType.noiseAmt || 7) * 0.5);
       ctx.restore();
     } catch (e) {
       console.warn('Print: presentation post-processing skipped:', e.message);
+    }
+
+    // ── Deckle edge mask — trim paper to irregular torn boundary ──
+    // Applied as a final cosmetic step (evenodd clears outside the path)
+    if (opts.deckle) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, 0, fullW, fullH);          // outer boundary (whole canvas)
+      buildDecklePath(ctx, paperX, paperY, paperW, paperH);  // inner deckle shape
+      ctx.clip('evenodd');                     // clips to area OUTSIDE deckle
+      ctx.fillStyle = matColor;                // repaint mat over paper edges
+      ctx.fillRect(0, 0, fullW, fullH);
+      ctx.restore();
     }
 
     // ── Deckle fiber wisps (drawn on top of everything, outside clip) ──
@@ -898,15 +902,14 @@ const PrintEngine = (() => {
     ctx.restore();
   }
 
-  // Deckle edge — subtle irregular paper boundary via clipping path
-  function drawDeckleClip(ctx, x, y, w, h) {
+  // Deckle edge — build the irregular paper boundary path (deterministic via seed)
+  function buildDecklePath(ctx, x, y, w, h) {
     const rng = presRng(137);
-    const step = 8;   // wider vertex spacing for smoother edge
-    const amp = 1.5;  // gentler noise amplitude (was 3)
-    const tearChance = 0.015; // rarer tears (was 0.04)
-    const tearAmp = 4;  // smaller tears (was 8)
+    const step = 8;
+    const amp = 1.5;
+    const tearChance = 0.015;
+    const tearAmp = 4;
 
-    ctx.beginPath();
     // Top edge (left to right)
     for (let px = 0; px <= w; px += step) {
       const dy = (rng() - 0.5) * amp * 2 + (rng() < tearChance ? (rng() - 0.5) * tearAmp * 2 : 0);
@@ -929,6 +932,12 @@ const PrintEngine = (() => {
       ctx.lineTo(x + dx, y + py);
     }
     ctx.closePath();
+  }
+
+  // Clip to deckle path (convenience wrapper)
+  function drawDeckleClip(ctx, x, y, w, h) {
+    ctx.beginPath();
+    buildDecklePath(ctx, x, y, w, h);
     ctx.clip();
   }
 
