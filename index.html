@@ -421,6 +421,9 @@ html, body {
 .paper-rect {
   filter: url(#paper-texture);
 }
+.paper-rect.wood-surface {
+  filter: url(#wood-texture);
+}
 
 /* Selection handles */
 .selection-box {
@@ -1627,10 +1630,30 @@ html, body {
             </feDiffuseLighting>
             <feComposite in="lit" in2="SourceGraphic" operator="multiply"/>
           </filter>
+          <!-- Wood block texture filter (horizontal grain bias) -->
+          <filter id="wood-texture" x="0" y="0" width="100%" height="100%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.008 0.05" numOctaves="3" seed="7" result="noise"/>
+            <feDiffuseLighting in="noise" lighting-color="#8a7963" surfaceScale="1.0" result="lit">
+              <feDistantLight azimuth="200" elevation="50"/>
+            </feDiffuseLighting>
+            <feComposite in="lit" in2="SourceGraphic" operator="multiply"/>
+          </filter>
+          <!-- Wood grain overlay pattern -->
+          <pattern id="wood-grain-surface" patternUnits="userSpaceOnUse" width="120" height="120">
+            <path d="M0,18 Q30,15 60,18 T120,17" stroke="rgba(0,0,0,0.07)" stroke-width="0.6" fill="none"/>
+            <path d="M0,38 Q30,41 60,37 T120,39" stroke="rgba(0,0,0,0.05)" stroke-width="0.8" fill="none"/>
+            <path d="M0,55 Q25,53 50,56 T120,54" stroke="rgba(0,0,0,0.08)" stroke-width="0.5" fill="none"/>
+            <path d="M0,72 Q35,74 70,71 T120,73" stroke="rgba(0,0,0,0.06)" stroke-width="0.7" fill="none"/>
+            <path d="M0,95 Q30,93 60,96 T120,94" stroke="rgba(0,0,0,0.05)" stroke-width="0.5" fill="none"/>
+            <path d="M0,110 Q25,112 55,109 T120,111" stroke="rgba(0,0,0,0.04)" stroke-width="0.6" fill="none"/>
+          </pattern>
         </defs>
 
         <!-- Paper (the printable area) -->
         <rect id="paper" class="paper-rect" fill="#f5f0e6" rx="2" ry="2"/>
+
+        <!-- Wood grain overlay (visible in compose/carve mode only) -->
+        <rect id="wood-grain-overlay" fill="url(#wood-grain-surface)" rx="2" ry="2" style="display:none; pointer-events:none;"/>
 
         <!-- Atmosphere layer (sky, ground, mist — behind elements) -->
         <g id="atmo-layer" clip-path="url(#paper-clip)"></g>
@@ -2141,6 +2164,9 @@ function resolveOverride(override, paletteColors) {
 
 // Monochrome wood tones for the carving workspace
 const WOOD_TONES = ['#5c4a3a', '#6b5a48', '#7a6955', '#8a7963', '#6f5c4b'];
+const WOOD_SURFACE = '#7a6955'; // block surface patina (compose/carve background)
+// Recess tones: 8–12% lighter than WOOD_SURFACE — fresh-cut wood below the patina
+const WOOD_RECESS_TONES = ['#8a7d6a', '#877a67', '#8d8070', '#847762', '#8b7e6c'];
 const PAPER_COLOR = '#f5f0e6';
 const CARVED_STROKE = '#3a3028'; // dark line for carved outlines
 const MOVE_DEAD_ZONE = 6; // px of screen travel before element move commits
@@ -2749,6 +2775,30 @@ function layoutPaper() {
   paperEl.setAttribute('y', 0);
   paperEl.setAttribute('width', STATE.paperW);
   paperEl.setAttribute('height', STATE.paperH);
+  // Keep wood grain overlay sized to paper
+  const grain = document.getElementById('wood-grain-overlay');
+  if (grain) {
+    grain.setAttribute('x', 0);
+    grain.setAttribute('y', 0);
+    grain.setAttribute('width', STATE.paperW);
+    grain.setAttribute('height', STATE.paperH);
+  }
+}
+
+// Switch workspace surface between wood block (compose/carve) and paper (ink)
+function updateWorkspaceSurface() {
+  const isWood = STATE.viewMode !== 'ink';
+  const grain = document.getElementById('wood-grain-overlay');
+  if (isWood) {
+    paperEl.setAttribute('fill', WOOD_SURFACE);
+    paperEl.classList.add('wood-surface');
+    if (grain) grain.style.display = '';
+  } else {
+    const pt = PAPER_TYPES[STATE.paperType];
+    paperEl.setAttribute('fill', pt ? pt.base : PAPER_COLOR);
+    paperEl.classList.remove('wood-surface');
+    if (grain) grain.style.display = 'none';
+  }
 }
 
 // ============================================================
@@ -2757,6 +2807,11 @@ function layoutPaper() {
 function renderAtmosphere() {
   const layer = $('atmo-layer');
   layer.innerHTML = '';
+
+  // Atmosphere only renders in ink mode (proof preview).
+  // In compose/carve mode, you're looking at the wood block.
+  if (STATE.viewMode !== 'ink') return;
+
   const W = STATE.paperW;
   const H = STATE.paperH;
   const horizonY = H * STATE.horizon;
@@ -2926,12 +2981,13 @@ function renderElementSvg(el, layerIndex) {
   const inkMode = STATE.viewMode === 'ink';
   const palette = inkMode ? PALETTES[STATE.paletteId] : null;
 
-  // In ink mode, resolve zone colors; in carve mode, use wood tones
+  // In ink mode, resolve zone colors; in carve mode, use recess tones
+  // (lighter than wood surface to show depth of element recesses)
   // Hanko elements always render in vermillion regardless of palette
   const HANKO_VERMILLION = '#c23b22';
-  const woodTone = WOOD_TONES[layerIndex % WOOD_TONES.length];
+  const recessTone = WOOD_RECESS_TONES[layerIndex % WOOD_RECESS_TONES.length];
   const zoneColor = (zoneId) => {
-    if (!inkMode) return def.hanko ? HANKO_VERMILLION : woodTone;
+    if (!inkMode) return def.hanko ? HANKO_VERMILLION : recessTone;
     if (def.hanko) {
       const ov = resolveOverride(el.colorOverrides && el.colorOverrides[zoneId], palette.colors);
       return ov || HANKO_VERMILLION;
@@ -3077,6 +3133,7 @@ function renderElementSvg(el, layerIndex) {
 }
 
 function rerenderAll() {
+  updateWorkspaceSurface();
   renderAtmosphere();
   renderBackgroundCarveStrokes();
   // Clear and re-render all elements
@@ -3740,8 +3797,6 @@ function applyCompositionData(data) {
   STATE.presentationHanko = data.presentationHanko || null;
   STATE.presentationHankoPos = data.presentationHankoPos || 'bottom-right';
   STATE.presentationDeckle = data.presentationDeckle ?? true;
-  const pt = PAPER_TYPES[STATE.paperType];
-  if (pt) paperEl.setAttribute('fill', pt.base);
   STATE.undoStack = [];
   STATE.redoStack = [];
   layoutPaper();
@@ -5984,7 +6039,7 @@ function buildPrintStudioUI() {
       <div class="ps-paper-chip-label">${pt.name}</div>`;
     chip.addEventListener('click', () => {
       STATE.paperType = id;
-      paperEl.setAttribute('fill', pt.base);
+      updateWorkspaceSurface();
       autoSave();
       buildPrintStudioUI();
     });
@@ -7344,6 +7399,7 @@ function adjustViewBoxForResize() {
 // ============================================================
 function init() {
   layoutPaper();
+  updateWorkspaceSurface();
   fitPaperToView();
   buildPaletteUI();
   buildElementPicker();
