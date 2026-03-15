@@ -781,7 +781,8 @@ const PrintEngine = (() => {
     const canvas = document.createElement('canvas');
     canvas.width = fullW;
     canvas.height = fullH;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return printCanvas; // fall back to raw print
 
     // ── Mat background ──
     ctx.fillStyle = matColor;
@@ -838,17 +839,23 @@ const PrintEngine = (() => {
     }
 
     // ── Light paper effects on full presentation ──
-    ctx.save();
-    if (opts.deckle) {
-      drawDeckleClip(ctx, paperX, paperY, paperW, paperH);
-    } else {
-      ctx.beginPath();
-      ctx.rect(paperX, paperY, paperW, paperH);
-      ctx.clip();
+    // Wrapped in try/catch: on mobile, large getImageData can fail;
+    // the print is still valid without these subtle margin effects.
+    try {
+      ctx.save();
+      if (opts.deckle) {
+        drawDeckleClip(ctx, paperX, paperY, paperW, paperH);
+      } else {
+        ctx.beginPath();
+        ctx.rect(paperX, paperY, paperW, paperH);
+        ctx.clip();
+      }
+      applyBarenPressure(ctx, fullW, fullH, (paperType.barenIntensity || 1) * 0.3, paperBaseFromType(paperType));
+      applyFineNoise(ctx, fullW, fullH, (paperType.noiseAmt || 7) * 0.5);
+      ctx.restore();
+    } catch (e) {
+      console.warn('Print: presentation post-processing skipped:', e.message);
     }
-    applyBarenPressure(ctx, fullW, fullH, (paperType.barenIntensity || 1) * 0.3, paperBaseFromType(paperType));
-    applyFineNoise(ctx, fullW, fullH, (paperType.noiseAmt || 7) * 0.5);
-    ctx.restore();
 
     // ── Deckle fiber wisps (drawn on top of everything, outside clip) ──
     if (opts.deckle) {
