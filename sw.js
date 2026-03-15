@@ -1,5 +1,5 @@
 // Mokuri Studio — Service Worker (cache-first with background update)
-const CACHE_NAME = 'mokuri-v7';
+const CACHE_NAME = 'mokuri-v8';
 const APP_SHELL = [
   './',
   './index.html',
