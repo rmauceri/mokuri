@@ -986,20 +986,60 @@ html, body {
   letter-spacing: 0.15em;
 }
 
-/* Responsive: single column on narrow/portrait screens */
+/* Responsive: compact for landscape phones (short height) */
+@media (max-height: 500px) {
+  .maki-card { gap: 28px; padding: 16px 28px; }
+  .maki-seal { width: 48px; height: 68px; margin-bottom: 8px; }
+  .maki-seal-char { font-size: 22px; }
+  .maki-left { flex: 0 0 200px; }
+  .maki-title { font-size: 18px; margin-bottom: 2px; }
+  .maki-subtitle { font-size: 11px; margin-bottom: 10px; }
+  .maki-divider { margin-bottom: 8px; }
+  .maki-philosophy { font-size: 11px; line-height: 1.6; }
+  .maki-steps { gap: 8px; }
+  .maki-step { padding: 8px 10px; }
+  .maki-step-icon { font-size: 18px; }
+  .maki-step-name { font-size: 13px; }
+  .maki-step-desc { font-size: 10px; line-height: 1.5; }
+  .maki-right { gap: 10px; }
+  .maki-begin { padding: 6px 24px; font-size: 12px; }
+}
+
+/* Responsive: single column for portrait phones (narrow width) */
 @media (max-width: 700px) {
   .maki-card {
     flex-direction: column;
-    gap: 24px;
-    padding: 28px 24px;
+    gap: 16px;
+    padding: 20px 20px;
     overflow-y: auto;
-    max-height: 90vh;
+    max-height: 92vh;
+    align-items: stretch;
   }
   .maki-left { flex: none; }
-  .maki-philosophy { font-size: 12px; }
-  .maki-steps { gap: 10px; }
-  .maki-step { padding: 10px 12px; }
-  .maki-step-desc { font-size: 11px; }
+  .maki-seal { width: 48px; height: 68px; margin-bottom: 8px; }
+  .maki-seal-char { font-size: 22px; }
+  .maki-title { font-size: 18px; }
+  .maki-subtitle { margin-bottom: 10px; }
+  .maki-divider { margin-bottom: 8px; }
+  .maki-philosophy { font-size: 11px; line-height: 1.6; }
+  .maki-steps { gap: 8px; }
+  .maki-step { padding: 8px 10px; }
+  .maki-step-icon { font-size: 18px; }
+  .maki-step-name { font-size: 13px; }
+  .maki-step-desc { font-size: 10px; line-height: 1.5; }
+  .maki-begin { padding: 7px 24px; font-size: 12px; }
+}
+
+/* Very small phones: hide philosophy to fit */
+@media (max-height: 400px) {
+  .maki-philosophy, .maki-divider { display: none; }
+  .maki-subtitle { margin-bottom: 0; }
+  .maki-card { gap: 20px; padding: 10px 20px; }
+}
+@media (max-width: 700px) and (max-height: 600px) {
+  .maki-philosophy, .maki-divider { display: none; }
+  .maki-subtitle { margin-bottom: 0; }
+  .maki-card { gap: 12px; }
 }
 
 /* Gallery about link */
