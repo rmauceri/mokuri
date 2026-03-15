@@ -1178,5 +1178,182 @@ const MOKURI_SCENE_ELEMENTS = [
         ]
       }
     ]
+  },
+
+  // ── Water Elements ──
+
+  {
+    id: 'shore-waves',
+    name: 'Shore Waves',
+    category: 'landscape',
+    viewBox: '0 0 300 100',
+    suggestedLayer: 'foreground',
+    colorZones: [
+      { id: 'water', defaultPaletteSlot: 0 },
+      { id: 'foam', defaultPaletteSlot: 2 },
+      { id: 'sand', defaultPaletteSlot: 3 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          // Shore/sand
+          { d: 'M0,58 Q40,52 80,56 Q130,62 180,54 Q230,46 280,52 L300,50 L300,100 L0,100 Z', type: 'fill', zone: 'sand' },
+          // Water body
+          { d: 'M0,0 L300,0 L300,50 Q280,52 230,46 Q180,54 130,62 Q80,56 40,52 L0,58 Z', type: 'fill', zone: 'water' },
+          // Foam line at shore edge
+          { d: 'M0,55 Q20,50 45,52 Q70,54 95,58 Q125,62 155,60 Q185,56 215,50 Q245,46 270,48 Q285,50 300,48 L300,54 Q280,56 250,52 Q220,50 190,55 Q160,60 130,64 Q100,62 70,58 Q40,54 20,54 L0,60 Z', type: 'fill', zone: 'foam' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M0,58 Q40,52 80,56 Q130,62 180,54 Q230,46 280,52 L300,50 L300,100 L0,100 Z', type: 'fill', zone: 'sand' },
+          { d: 'M0,0 L300,0 L300,50 Q280,52 230,46 Q180,54 130,62 Q80,56 40,52 L0,58 Z', type: 'fill', zone: 'water' },
+          { d: 'M0,55 Q20,50 45,52 Q70,54 95,58 Q125,62 155,60 Q185,56 215,50 Q245,46 270,48 Q285,50 300,48 L300,54 Q280,56 250,52 Q220,50 190,55 Q160,60 130,64 Q100,62 70,58 Q40,54 20,54 L0,60 Z', type: 'fill', zone: 'foam' },
+          // Shore edge outline
+          { d: 'M0,58 Q40,52 80,56 Q130,62 180,54 Q230,46 280,52 L300,50', type: 'stroke', zone: 'sand', strokeWidth: 1.2 },
+          // Inner wave crest
+          { d: 'M0,40 Q35,34 75,38 Q120,44 165,36 Q210,28 260,34 L300,32', type: 'stroke', zone: 'water', strokeWidth: 1.5 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M0,58 Q40,52 80,56 Q130,62 180,54 Q230,46 280,52 L300,50 L300,100 L0,100 Z', type: 'fill', zone: 'sand' },
+          { d: 'M0,0 L300,0 L300,50 Q280,52 230,46 Q180,54 130,62 Q80,56 40,52 L0,58 Z', type: 'fill', zone: 'water' },
+          { d: 'M0,55 Q20,50 45,52 Q70,54 95,58 Q125,62 155,60 Q185,56 215,50 Q245,46 270,48 Q285,50 300,48 L300,54 Q280,56 250,52 Q220,50 190,55 Q160,60 130,64 Q100,62 70,58 Q40,54 20,54 L0,60 Z', type: 'fill', zone: 'foam' },
+          { d: 'M0,58 Q40,52 80,56 Q130,62 180,54 Q230,46 280,52 L300,50', type: 'stroke', zone: 'sand', strokeWidth: 1.2 },
+          { d: 'M0,40 Q35,34 75,38 Q120,44 165,36 Q210,28 260,34 L300,32', type: 'stroke', zone: 'water', strokeWidth: 1.5 },
+          // Receding wave lines
+          { d: 'M10,26 Q50,20 95,24 Q140,30 185,22 Q230,16 275,22 M5,16 Q45,10 90,14 Q140,20 190,12 Q240,6 285,12', type: 'stroke', zone: 'water', strokeWidth: 0.6 },
+          // Foam lace detail
+          { d: 'M15,52 Q20,50 28,52 M50,54 Q58,52 65,54 M100,58 Q108,56 116,58 M150,60 Q158,57 166,59 M200,54 Q208,51 216,53 M250,50 Q258,47 266,49', type: 'stroke', zone: 'foam', strokeWidth: 0.7 },
+          // Wet sand texture
+          { d: 'M20,70 Q30,68 40,70 M60,72 Q70,70 80,72 M110,68 Q120,66 130,68 M160,72 Q170,70 180,72 M210,66 Q220,64 230,66 M260,68 Q270,66 280,68', type: 'stroke', zone: 'sand', strokeWidth: 0.3 },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'river-rapids',
+    name: 'River Rapids',
+    category: 'landscape',
+    viewBox: '0 0 260 140',
+    suggestedLayer: 'midground',
+    colorZones: [
+      { id: 'water', defaultPaletteSlot: 0 },
+      { id: 'rock', defaultPaletteSlot: 3 },
+      { id: 'foam', defaultPaletteSlot: 2 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          // Water body
+          { d: 'M0,30 Q30,20 65,28 Q100,38 140,32 Q180,24 220,34 Q245,40 260,35 L260,110 Q240,118 210,108 Q170,96 130,105 Q90,115 50,108 Q25,102 0,110 Z', type: 'fill', zone: 'water' },
+          // Large rock left
+          { d: 'M55,42 Q62,28 78,26 Q92,28 96,40 Q94,54 82,60 Q68,58 58,50 Q54,46 55,42 Z', type: 'fill', zone: 'rock' },
+          // Large rock right
+          { d: 'M170,38 Q178,24 194,22 Q208,26 212,38 Q210,50 200,56 Q186,54 176,46 Q170,42 170,38 Z', type: 'fill', zone: 'rock' },
+          // Small rock center
+          { d: 'M120,48 Q126,40 134,42 Q138,48 134,54 Q128,56 122,52 Q120,50 120,48 Z', type: 'fill', zone: 'rock' },
+          // Foam patches around rocks
+          { d: 'M48,48 Q54,38 62,36 Q56,34 50,38 Q46,42 48,48 Z M96,36 Q104,30 112,34 Q106,38 98,40 Q94,40 96,36 Z M162,44 Q168,34 176,32 Q170,30 164,34 Q160,38 162,44 Z M212,34 Q220,28 228,32 Q222,36 214,38 Q210,38 212,34 Z', type: 'fill', zone: 'foam' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M0,30 Q30,20 65,28 Q100,38 140,32 Q180,24 220,34 Q245,40 260,35 L260,110 Q240,118 210,108 Q170,96 130,105 Q90,115 50,108 Q25,102 0,110 Z', type: 'fill', zone: 'water' },
+          { d: 'M55,42 Q62,28 78,26 Q92,28 96,40 Q94,54 82,60 Q68,58 58,50 Q54,46 55,42 Z', type: 'fill', zone: 'rock' },
+          { d: 'M170,38 Q178,24 194,22 Q208,26 212,38 Q210,50 200,56 Q186,54 176,46 Q170,42 170,38 Z', type: 'fill', zone: 'rock' },
+          { d: 'M120,48 Q126,40 134,42 Q138,48 134,54 Q128,56 122,52 Q120,50 120,48 Z', type: 'fill', zone: 'rock' },
+          { d: 'M48,48 Q54,38 62,36 Q56,34 50,38 Q46,42 48,48 Z M96,36 Q104,30 112,34 Q106,38 98,40 Q94,40 96,36 Z M162,44 Q168,34 176,32 Q170,30 164,34 Q160,38 162,44 Z M212,34 Q220,28 228,32 Q222,36 214,38 Q210,38 212,34 Z', type: 'fill', zone: 'foam' },
+          // Rock outlines
+          { d: 'M55,42 Q62,28 78,26 Q92,28 96,40 Q94,54 82,60 Q68,58 58,50 Q54,46 55,42 Z', type: 'stroke', zone: 'rock', strokeWidth: 1.5 },
+          { d: 'M170,38 Q178,24 194,22 Q208,26 212,38 Q210,50 200,56 Q186,54 176,46 Q170,42 170,38 Z', type: 'stroke', zone: 'rock', strokeWidth: 1.5 },
+          { d: 'M120,48 Q126,40 134,42 Q138,48 134,54 Q128,56 122,52 Q120,50 120,48 Z', type: 'stroke', zone: 'rock', strokeWidth: 1.2 },
+          // Water banks
+          { d: 'M0,30 Q30,20 65,28 Q100,38 140,32 Q180,24 220,34 Q245,40 260,35', type: 'stroke', zone: 'water', strokeWidth: 1.5 },
+          { d: 'M0,110 Q25,102 50,108 Q90,115 130,105 Q170,96 210,108 Q240,118 260,110', type: 'stroke', zone: 'water', strokeWidth: 1.5 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M0,30 Q30,20 65,28 Q100,38 140,32 Q180,24 220,34 Q245,40 260,35 L260,110 Q240,118 210,108 Q170,96 130,105 Q90,115 50,108 Q25,102 0,110 Z', type: 'fill', zone: 'water' },
+          { d: 'M55,42 Q62,28 78,26 Q92,28 96,40 Q94,54 82,60 Q68,58 58,50 Q54,46 55,42 Z', type: 'fill', zone: 'rock' },
+          { d: 'M170,38 Q178,24 194,22 Q208,26 212,38 Q210,50 200,56 Q186,54 176,46 Q170,42 170,38 Z', type: 'fill', zone: 'rock' },
+          { d: 'M120,48 Q126,40 134,42 Q138,48 134,54 Q128,56 122,52 Q120,50 120,48 Z', type: 'fill', zone: 'rock' },
+          { d: 'M48,48 Q54,38 62,36 Q56,34 50,38 Q46,42 48,48 Z M96,36 Q104,30 112,34 Q106,38 98,40 Q94,40 96,36 Z M162,44 Q168,34 176,32 Q170,30 164,34 Q160,38 162,44 Z M212,34 Q220,28 228,32 Q222,36 214,38 Q210,38 212,34 Z', type: 'fill', zone: 'foam' },
+          { d: 'M55,42 Q62,28 78,26 Q92,28 96,40 Q94,54 82,60 Q68,58 58,50 Q54,46 55,42 Z', type: 'stroke', zone: 'rock', strokeWidth: 1.5 },
+          { d: 'M170,38 Q178,24 194,22 Q208,26 212,38 Q210,50 200,56 Q186,54 176,46 Q170,42 170,38 Z', type: 'stroke', zone: 'rock', strokeWidth: 1.5 },
+          { d: 'M120,48 Q126,40 134,42 Q138,48 134,54 Q128,56 122,52 Q120,50 120,48 Z', type: 'stroke', zone: 'rock', strokeWidth: 1.2 },
+          { d: 'M0,30 Q30,20 65,28 Q100,38 140,32 Q180,24 220,34 Q245,40 260,35', type: 'stroke', zone: 'water', strokeWidth: 1.5 },
+          { d: 'M0,110 Q25,102 50,108 Q90,115 130,105 Q170,96 210,108 Q240,118 260,110', type: 'stroke', zone: 'water', strokeWidth: 1.5 },
+          // Turbulent flow lines
+          { d: 'M8,55 Q25,44 48,50 M100,42 Q115,38 130,44 Q145,50 158,44 M216,40 Q232,36 248,42 M10,80 Q30,70 52,76 M100,70 Q118,64 135,72 Q152,80 168,72 M218,68 Q236,62 252,68', type: 'stroke', zone: 'water', strokeWidth: 0.6 },
+          // Wake lines behind rocks
+          { d: 'M82,64 Q95,72 108,68 Q118,66 128,70 M200,60 Q214,68 228,64 Q238,62 248,66 M134,58 Q145,64 156,60', type: 'stroke', zone: 'water', strokeWidth: 0.5 },
+          // Foam detail
+          { d: 'M46,44 Q50,42 54,44 M94,34 Q98,32 102,34 M160,40 Q164,38 168,40 M210,32 Q214,30 218,32 M108,46 Q112,44 116,46 M228,38 Q232,36 236,38', type: 'stroke', zone: 'foam', strokeWidth: 0.7 },
+          // Rock texture
+          { d: 'M65,34 L68,38 M72,32 L74,36 M80,36 L82,40 M60,48 L63,50 M180,30 L183,34 M188,28 L190,32 M196,32 L198,36 M176,44 L179,46 M126,44 L128,48 M132,46 L130,50', type: 'stroke', zone: 'rock', strokeWidth: 0.4 },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'water-ripples',
+    name: 'Water Ripples',
+    category: 'landscape',
+    viewBox: '0 0 200 120',
+    suggestedLayer: 'midground',
+    colorZones: [
+      { id: 'water', defaultPaletteSlot: 0 },
+      { id: 'ripple', defaultPaletteSlot: 2 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          // Water surface
+          { d: 'M0,20 Q50,10 100,16 Q150,22 200,14 L200,110 Q150,118 100,112 Q50,106 0,114 Z', type: 'fill', zone: 'water' },
+          // Central ripple rings (elliptical — perspective)
+          { d: 'M72,56 Q85,48 100,46 Q115,48 128,56 Q115,64 100,66 Q85,64 72,56 Z', type: 'fill', zone: 'ripple' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M0,20 Q50,10 100,16 Q150,22 200,14 L200,110 Q150,118 100,112 Q50,106 0,114 Z', type: 'fill', zone: 'water' },
+          { d: 'M72,56 Q85,48 100,46 Q115,48 128,56 Q115,64 100,66 Q85,64 72,56 Z', type: 'fill', zone: 'ripple' },
+          // Ripple ring outlines — expanding ellipses
+          { d: 'M72,56 Q85,48 100,46 Q115,48 128,56 Q115,64 100,66 Q85,64 72,56', type: 'stroke', zone: 'ripple', strokeWidth: 1.2 },
+          { d: 'M56,58 Q76,44 100,40 Q124,44 144,58 Q124,72 100,76 Q76,72 56,58', type: 'stroke', zone: 'ripple', strokeWidth: 1 },
+          { d: 'M38,60 Q64,40 100,34 Q136,40 162,60 Q136,80 100,86 Q64,80 38,60', type: 'stroke', zone: 'ripple', strokeWidth: 0.8 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M0,20 Q50,10 100,16 Q150,22 200,14 L200,110 Q150,118 100,112 Q50,106 0,114 Z', type: 'fill', zone: 'water' },
+          { d: 'M72,56 Q85,48 100,46 Q115,48 128,56 Q115,64 100,66 Q85,64 72,56 Z', type: 'fill', zone: 'ripple' },
+          { d: 'M72,56 Q85,48 100,46 Q115,48 128,56 Q115,64 100,66 Q85,64 72,56', type: 'stroke', zone: 'ripple', strokeWidth: 1.2 },
+          { d: 'M56,58 Q76,44 100,40 Q124,44 144,58 Q124,72 100,76 Q76,72 56,58', type: 'stroke', zone: 'ripple', strokeWidth: 1 },
+          { d: 'M38,60 Q64,40 100,34 Q136,40 162,60 Q136,80 100,86 Q64,80 38,60', type: 'stroke', zone: 'ripple', strokeWidth: 0.8 },
+          // Outer ripples — fading
+          { d: 'M20,62 Q52,36 100,28 Q148,36 180,62 Q148,88 100,96 Q52,88 20,62', type: 'stroke', zone: 'ripple', strokeWidth: 0.5 },
+          { d: 'M4,64 Q42,32 100,22 Q158,32 196,64 Q158,96 100,106 Q42,96 4,64', type: 'stroke', zone: 'ripple', strokeWidth: 0.3 },
+          // Subtle surface current lines
+          { d: 'M8,34 Q30,28 55,32 M145,28 Q170,24 192,30 M10,90 Q32,84 58,88 M142,86 Q168,82 190,88', type: 'stroke', zone: 'water', strokeWidth: 0.4 },
+          // Tiny secondary ripple set (offset)
+          { d: 'M30,40 Q38,36 46,40 Q38,44 30,40 M154,38 Q162,34 170,38 Q162,42 154,38 M28,82 Q36,78 44,82 Q36,86 28,82 M156,80 Q164,76 172,80 Q164,84 156,80', type: 'stroke', zone: 'ripple', strokeWidth: 0.3 },
+        ],
+      },
+    ],
   }
 ];
