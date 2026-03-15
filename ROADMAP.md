@@ -112,6 +112,16 @@ The workspace now feels like working with a physical block of cherry wood. In co
 - **Pan from outside paper**: Clicking empty space outside the paper in carve/erase mode now starts a pan drag (previously did nothing). Background carving/erasing still works within paper bounds.
 - **Print studio cursor cleanup**: `openPrintStudio()` calls `setMode('select')` before switching view mode, clearing carve cursor when entering print.
 - **Post-print view restore**: `closePrintStudio()` properly restores wood block view mode when returning from print.
+- **Compose button fix**: Compose button now reliably closes Print studio on all screen sizes. Previously gated on `composePanelOpen` state, which was false on narrow screens where the compose panel auto-closes. `closePrintStudio()` accepts `restorePanel=false` to suppress panel restoration when switching directly to compose.
+
+### About Screen Redesign ✅
+
+Landscape two-column layout replacing the vertical scrolling makimono.
+
+- **Vermillion hanko seal**: Single 墨 kanji in `#c23b22` square seal, matching the favicon brand mark. Consistent single-character brand identity across favicon, toolbar, about screen, and splash.
+- **Two-column layout**: Left column: seal + MOKURI title + philosophy text. Right column: 2×2 grid of step cards (景 Compose, 彫 Carve, 墨 Ink, 摺 Make Print). No scroll needed on desktop/tablet.
+- **Toolbar brand**: Red 墨 kanji + "Mokuri Studio" in toolbar, clickable to open About. On narrow screens collapses to just the red kanji. Replaced gallery About link.
+- **Responsive**: Compact two-column at ≤500px height (landscape phone), single column with scroll at ≤700px width (portrait phone), philosophy hidden at ≤400px height (very small landscape).
 
 ---
 
@@ -144,14 +154,16 @@ Architecture assessment identified gaps in offline support, error handling, and 
 
 See completed section above.
 
-### 12-P1: Data & Interaction
+### 12-P1: Export/Import Compositions ✅
 
-#### Export/Import Compositions
-Gallery is localStorage-only (max 10, ~5MB ceiling). No way to back up, share, or transfer between devices.
+Single `.mokuri` JSON file format for both individual and bulk export/import.
 
-- **Export**: Download composition as `.mokuri` file (JSON with metadata). Button in gallery panel.
-- **Import**: File picker or drag-drop to load `.mokuri` files. Validate schema, merge into gallery.
-- **Bulk export**: Download all compositions as a single `.mokuri` archive (JSON array).
+- **File format**: `{ mokuri: 1, compositions: [...] }` — name, data, timestamps. Same format for single and bulk. IDs and thumbnails regenerated on import.
+- **Export single**: Per-card ↓ download button in gallery. Downloads `{name}.mokuri`.
+- **Export all**: "Export All" button in gallery toolbar. Downloads `mokuri-backup-{date}.mokuri`.
+- **Import**: "Import" button in gallery toolbar. File picker (`.mokuri`/`.json`). Compositions added with fresh IDs and thumbnails. No gallery size limit enforcement on import. Validation checks mokuri:1 marker and element data.
+
+### 12-P1: Remaining (Planned)
 
 #### Memory Bounds
 Carve stroke arrays are unbounded. Heavy sessions could grow to MB, bloating undo snapshots and localStorage.
