@@ -6172,7 +6172,7 @@ function openPrintStudio() {
   MokuriAudio.playPanelToggle();
 }
 
-function closePrintStudio() {
+function closePrintStudio(restorePanel) {
   if (!STATE.printStudioOpen) return;
 
   const c = $('inline-print-canvas');
@@ -6183,6 +6183,15 @@ function closePrintStudio() {
 
   $('print-studio').classList.remove('open');
   STATE.printStudioOpen = false;
+
+  // Caller can suppress panel restore (e.g., Compose button overrides destination)
+  if (restorePanel === false) {
+    STATE._prePrintPanel = null;
+    setViewMode('carve');
+    setMode('select');
+    updatePhaseButtons();
+    return;
+  }
 
   // Restore previously open panel
   const prev = STATE._prePrintPanel;
@@ -7420,14 +7429,18 @@ function setupToolbar() {
 
   // Phase mode buttons
   $('btn-phase-compose').addEventListener('click', () => {
-    if (STATE.composePanelOpen) {
-      // If a workbench is open, close it and return to compose
+    // If a workbench is open, close it and go to compose
+    const hasWorkbench = STATE.carveStudioOpen || STATE.inkStudioOpen || STATE.printStudioOpen;
+    if (hasWorkbench) {
+      if (STATE.printStudioOpen) closePrintStudio(false);
       if (STATE.carveStudioOpen) closeCarveStudio();
-      else if (STATE.inkStudioOpen) closeInkStudio();
-      else if (STATE.printStudioOpen) closePrintStudio();
-      else { closeComposePanel(); return; }
+      if (STATE.inkStudioOpen) closeInkStudio();
+      openComposePanel();
+      return;
     }
-    openComposePanel();
+    // No workbench — toggle compose panel
+    if (STATE.composePanelOpen) closeComposePanel();
+    else openComposePanel();
   });
   $('btn-phase-carve').addEventListener('click', () => {
     if (STATE.carveStudioOpen) closeCarveStudio();
