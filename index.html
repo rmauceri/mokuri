@@ -429,6 +429,7 @@ html, body {
   stroke-width: 1.5;
   stroke-dasharray: 5 3;
   pointer-events: none;
+  vector-effect: non-scaling-stroke;
 }
 
 .handle {
@@ -436,7 +437,7 @@ html, body {
   stroke: var(--accent);
   stroke-width: 1.5;
   cursor: pointer;
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+  vector-effect: non-scaling-stroke;
 }
 
 .handle-rotate {
@@ -449,7 +450,7 @@ html, body {
   stroke: var(--accent);
   stroke-width: 1.2;
   cursor: pointer;
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+  vector-effect: non-scaling-stroke;
 }
 
 @media (pointer: coarse) {
@@ -3232,9 +3233,13 @@ function updateSelection() {
     rect.classList.add('selection-box');
     g.appendChild(rect);
 
-    // Corner handles (larger on touch devices)
+    // Corner handles (larger on touch devices, zoom-compensated)
     const isCoarse = window.matchMedia('(pointer: coarse)').matches;
-    const handleSize = isCoarse ? 14 : 7;
+    // Handle dimensions are in SVG units — scale inversely with zoom
+    // so they stay a constant screen size regardless of zoom level
+    const wsRect = workspaceEl.getBoundingClientRect();
+    const svgPerPx = STATE.viewBox.w / wsRect.width;
+    const handleSize = (isCoarse ? 14 : 7) * svgPerPx;
     const corners = [
       { cx: -hw - pad, cy: -hh - pad, cursor: 'nw-resize' },
       { cx: hw + pad, cy: -hh - pad, cursor: 'ne-resize' },
@@ -3247,7 +3252,7 @@ function updateSelection() {
       h.setAttribute('y', c.cy - handleSize / 2);
       h.setAttribute('width', handleSize);
       h.setAttribute('height', handleSize);
-      h.setAttribute('rx', 2);
+      h.setAttribute('rx', 2 * svgPerPx);
       h.classList.add('handle');
       h.style.cursor = c.cursor;
       h.setAttribute('data-handle', c.cursor);
@@ -3255,7 +3260,7 @@ function updateSelection() {
     });
 
     // Edge midpoint handles (stretch one axis)
-    const edgeW = isCoarse ? 16 : 10, edgeH = isCoarse ? 6 : 4;
+    const edgeW = (isCoarse ? 16 : 10) * svgPerPx, edgeH = (isCoarse ? 6 : 4) * svgPerPx;
     const edges = [
       { cx: 0, cy: -hh - pad, cursor: 'n-resize', horiz: true },
       { cx: 0, cy: hh + pad, cursor: 's-resize', horiz: true },
@@ -3270,7 +3275,7 @@ function updateSelection() {
       h.setAttribute('y', ed.cy - ht / 2);
       h.setAttribute('width', w);
       h.setAttribute('height', ht);
-      h.setAttribute('rx', 2);
+      h.setAttribute('rx', 2 * svgPerPx);
       h.classList.add('handle-edge');
       h.style.cursor = ed.cursor;
       h.setAttribute('data-handle', ed.cursor);
@@ -3278,17 +3283,18 @@ function updateSelection() {
     });
 
     // Rotation handle
+    const rotArm = (isCoarse ? 28 : 20) * svgPerPx;
     const rotLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
     rotLine.setAttribute('x1', 0); rotLine.setAttribute('y1', -hh - pad);
-    rotLine.setAttribute('x2', 0); rotLine.setAttribute('y2', -hh - pad - (isCoarse ? 28 : 20));
+    rotLine.setAttribute('x2', 0); rotLine.setAttribute('y2', -hh - pad - rotArm);
     rotLine.setAttribute('stroke', '#8b6b4a');
-    rotLine.setAttribute('stroke-width', isCoarse ? 2 : 1.5);
+    rotLine.setAttribute('stroke-width', (isCoarse ? 2 : 1.5) * svgPerPx);
     g.appendChild(rotLine);
 
     const rotHandle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     rotHandle.setAttribute('cx', 0);
-    rotHandle.setAttribute('cy', -hh - pad - (isCoarse ? 28 : 20));
-    rotHandle.setAttribute('r', isCoarse ? 8 : 5);
+    rotHandle.setAttribute('cy', -hh - pad - rotArm);
+    rotHandle.setAttribute('r', (isCoarse ? 8 : 5) * svgPerPx);
     rotHandle.classList.add('handle', 'handle-rotate');
     rotHandle.setAttribute('data-handle', 'rotate');
     g.appendChild(rotHandle);
@@ -3298,9 +3304,9 @@ function updateSelection() {
       g.setAttribute('opacity', '0.4');
       g.style.pointerEvents = 'none';
       const lockIcon = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      lockIcon.setAttribute('x', hw + pad + 6);
-      lockIcon.setAttribute('y', -hh - pad + 4);
-      lockIcon.setAttribute('font-size', '14');
+      lockIcon.setAttribute('x', hw + pad + 6 * svgPerPx);
+      lockIcon.setAttribute('y', -hh - pad + 4 * svgPerPx);
+      lockIcon.setAttribute('font-size', 14 * svgPerPx);
       lockIcon.setAttribute('fill', '#8b6b4a');
       lockIcon.textContent = '🔒';
       g.appendChild(lockIcon);
