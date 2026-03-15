@@ -220,7 +220,18 @@ html, body {
   z-index: 5;
   flex-shrink: 0;
   overflow: hidden;
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
+.panel:not(.open) { width: 0; border-right-width: 0; }
+.panel-inner {
+  width: var(--panel-w);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.25s ease 0.1s;
+}
+.panel.open .panel-inner { opacity: 1; }
 
 .panel-header {
   padding: 10px 12px 6px;
@@ -439,6 +450,11 @@ html, body {
   stroke-width: 1.2;
   cursor: pointer;
   filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+}
+
+@media (pointer: coarse) {
+  .handle { stroke-width: 2; }
+  .handle-edge { stroke-width: 1.8; }
 }
 
 /* Ghost element (dragging from picker) */
@@ -1585,10 +1601,12 @@ html, body {
   <!-- Main area -->
   <div class="main">
     <!-- Element picker panel -->
-    <div class="panel" id="panel">
-      <div class="panel-header">Elements</div>
-      <div class="panel-scroll" id="element-list"></div>
-      <div class="palette-bar" id="palette-bar"></div>
+    <div class="panel open" id="panel">
+      <div class="panel-inner">
+        <div class="panel-header">Elements</div>
+        <div class="panel-scroll" id="element-list"></div>
+        <div class="palette-bar" id="palette-bar"></div>
+      </div>
     </div>
 
     <!-- Workspace -->
@@ -2038,6 +2056,7 @@ const STATE = {
   printStudioOpen: false, // true when print studio panel is open
   carveStudioOpen: false, // true when carve studio panel is open
   inkStudioOpen: false,   // true when ink studio panel is open
+  composePanelOpen: true, // true when elements panel is visible
 
   // Studio materials
   paperType: 'kozo',    // 'hosho' | 'kozo' | 'torinoko'
@@ -3213,8 +3232,9 @@ function updateSelection() {
     rect.classList.add('selection-box');
     g.appendChild(rect);
 
-    // Corner handles
-    const handleSize = 7;
+    // Corner handles (larger on touch devices)
+    const isCoarse = window.matchMedia('(pointer: coarse)').matches;
+    const handleSize = isCoarse ? 14 : 7;
     const corners = [
       { cx: -hw - pad, cy: -hh - pad, cursor: 'nw-resize' },
       { cx: hw + pad, cy: -hh - pad, cursor: 'ne-resize' },
@@ -3235,7 +3255,7 @@ function updateSelection() {
     });
 
     // Edge midpoint handles (stretch one axis)
-    const edgeW = 10, edgeH = 4;
+    const edgeW = isCoarse ? 16 : 10, edgeH = isCoarse ? 6 : 4;
     const edges = [
       { cx: 0, cy: -hh - pad, cursor: 'n-resize', horiz: true },
       { cx: 0, cy: hh + pad, cursor: 's-resize', horiz: true },
@@ -3260,15 +3280,15 @@ function updateSelection() {
     // Rotation handle
     const rotLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
     rotLine.setAttribute('x1', 0); rotLine.setAttribute('y1', -hh - pad);
-    rotLine.setAttribute('x2', 0); rotLine.setAttribute('y2', -hh - pad - 20);
+    rotLine.setAttribute('x2', 0); rotLine.setAttribute('y2', -hh - pad - (isCoarse ? 28 : 20));
     rotLine.setAttribute('stroke', '#8b6b4a');
-    rotLine.setAttribute('stroke-width', 1.5);
+    rotLine.setAttribute('stroke-width', isCoarse ? 2 : 1.5);
     g.appendChild(rotLine);
 
     const rotHandle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     rotHandle.setAttribute('cx', 0);
-    rotHandle.setAttribute('cy', -hh - pad - 20);
-    rotHandle.setAttribute('r', 5);
+    rotHandle.setAttribute('cy', -hh - pad - (isCoarse ? 28 : 20));
+    rotHandle.setAttribute('r', isCoarse ? 8 : 5);
     rotHandle.classList.add('handle', 'handle-rotate');
     rotHandle.setAttribute('data-handle', 'rotate');
     g.appendChild(rotHandle);
@@ -4305,6 +4325,8 @@ function updatePhaseButtons() {
   if (STATE.printStudioOpen) active = 'print';
   else if (STATE.inkStudioOpen) active = 'ink';
   else if (STATE.carveStudioOpen) active = 'carve';
+  else if (STATE.composePanelOpen) active = 'compose';
+  else active = '';  // nothing active when all panels closed
   phases.forEach(p => {
     const btn = $(`btn-phase-${p}`);
     if (btn) btn.classList.toggle('active', p === active);
@@ -5262,6 +5284,27 @@ function animateViewBox(target, durationMs) {
 }
 
 // ============================================================
+//  ELEMENTS PANEL (left, toggled via Compose button)
+// ============================================================
+
+function openComposePanel() {
+  if (STATE.composePanelOpen) return;
+  STATE.composePanelOpen = true;
+  $('panel').classList.add('open');
+  setMode('select');
+  if (STATE.viewMode !== 'carve') setViewMode('carve');
+  updatePhaseButtons();
+  MokuriAudio.playPanelToggle();
+}
+
+function closeComposePanel() {
+  if (!STATE.composePanelOpen) return;
+  STATE.composePanelOpen = false;
+  $('panel').classList.remove('open');
+  updatePhaseButtons();
+}
+
+// ============================================================
 //  CARVE STUDIO (right flyout panel)
 // ============================================================
 
@@ -5270,6 +5313,8 @@ function openCarveStudio() {
   // Close other right panels first
   if (STATE.printStudioOpen) closePrintStudio();
   if (STATE.inkStudioOpen) closeInkStudio();
+  // Auto-close elements panel on narrow screens
+  if (window.innerWidth < 850) closeComposePanel();
 
   STATE.carveStudioOpen = true;
 
@@ -5507,6 +5552,8 @@ function openInkStudio() {
   // Close other right panels first
   if (STATE.printStudioOpen) closePrintStudio();
   if (STATE.carveStudioOpen) closeCarveStudio();
+  // Auto-close elements panel on narrow screens
+  if (window.innerWidth < 850) closeComposePanel();
 
   STATE.inkStudioOpen = true;
 
@@ -5864,6 +5911,8 @@ function buildInkStudioUI() {
 
 function openPrintStudio() {
   if (STATE.printStudioOpen) return;
+  // Auto-close elements panel on narrow screens
+  if (window.innerWidth < 850) closeComposePanel();
   // Save which panel was open before (to restore on close)
   STATE._prePrintPanel = STATE.carveStudioOpen ? 'carve' : STATE.inkStudioOpen ? 'ink' : null;
   // Close other right panels without resetting view mode
@@ -6428,7 +6477,54 @@ async function pullPrint() {
 function setupInteraction() {
   const ws = workspaceEl;
 
+  // ── Pinch-to-zoom tracking ──
+  const pinchPointers = new Map();
+  let pinchStartDist = 0;
+  let pinchStartZoom = 1;
+  let pinchStartCenterX = 0;
+  let pinchStartCenterY = 0;
+  let pinchStartVBx = 0;
+  let pinchStartVBy = 0;
+  let pinchStartVBw = 0;
+  let pinchStartVBh = 0;
+  let isPinching = false;
+
+  function getPinchDist() {
+    const pts = [...pinchPointers.values()];
+    return Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
+  }
+  function getPinchCenter() {
+    const pts = [...pinchPointers.values()];
+    return { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 };
+  }
+
   ws.addEventListener('pointerdown', (e) => {
+    // Track all pointers for pinch detection
+    pinchPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    if (pinchPointers.size === 2) {
+      // Cancel any in-progress single-finger action
+      if (STATE.carving) {
+        STATE.carving = null;
+        clearCarvePreview();
+        clearBgCarvePreview();
+        if (STATE.undoStack.length) STATE.undoStack.pop();
+      }
+      STATE.dragging = null;
+      isPinching = true;
+      pinchStartDist = getPinchDist();
+      pinchStartZoom = STATE.zoom;
+      const c = getPinchCenter();
+      pinchStartCenterX = c.x;
+      pinchStartCenterY = c.y;
+      pinchStartVBx = STATE.viewBox.x;
+      pinchStartVBy = STATE.viewBox.y;
+      pinchStartVBw = STATE.viewBox.w;
+      pinchStartVBh = STATE.viewBox.h;
+      e.preventDefault();
+      return;
+    }
+    if (pinchPointers.size > 2) { e.preventDefault(); return; }
 
     if (e.button === 1 || (e.button === 0 && e.altKey)) {
       // Middle click or alt+click: pan (always available)
@@ -6650,6 +6746,35 @@ function setupInteraction() {
   });
 
   ws.addEventListener('pointermove', (e) => {
+    // ── Pinch-to-zoom ──
+    if (pinchPointers.has(e.pointerId)) {
+      pinchPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    }
+    if (isPinching && pinchPointers.size >= 2) {
+      const dist = getPinchDist();
+      const c = getPinchCenter();
+      const rect = ws.getBoundingClientRect();
+
+      // Absolute zoom from initial pinch state
+      const scale = dist / pinchStartDist;
+      STATE.zoom = Math.max(0.2, Math.min(5, pinchStartZoom * scale));
+      const ratio = pinchStartZoom / STATE.zoom;
+      STATE.viewBox.w = pinchStartVBw * ratio;
+      STATE.viewBox.h = pinchStartVBh * ratio;
+
+      // SVG point that was under pinch center at start
+      const svgCx = pinchStartVBx + (pinchStartCenterX - rect.left) / rect.width * pinchStartVBw;
+      const svgCy = pinchStartVBy + (pinchStartCenterY - rect.top) / rect.height * pinchStartVBh;
+
+      // Reposition so current center maps to original SVG point (handles zoom + pan)
+      STATE.viewBox.x = svgCx - (c.x - rect.left) / rect.width * STATE.viewBox.w;
+      STATE.viewBox.y = svgCy - (c.y - rect.top) / rect.height * STATE.viewBox.h;
+
+      updateViewBox();
+      e.preventDefault();
+      return;
+    }
+
     // Carve stroke in progress
     if (STATE.carving) {
       const alpha = 0.45, pAlpha = 0.5, tAlpha = 0.4;
@@ -6796,7 +6921,14 @@ function setupInteraction() {
     }
   });
 
-  ws.addEventListener('pointerup', () => {
+  ws.addEventListener('pointerup', (e) => {
+    // ── Pinch-to-zoom cleanup ──
+    pinchPointers.delete(e.pointerId);
+    if (isPinching) {
+      if (pinchPointers.size < 2) isPinching = false;
+      return;
+    }
+
     // Finalize carve stroke
     if (STATE.carving) {
       if (STATE.carving.background) {
@@ -6849,6 +6981,11 @@ function setupInteraction() {
     }
     STATE.dragging = null;
     ws.style.cursor = '';  // Clear inline cursor — let CSS classes control it
+  });
+
+  ws.addEventListener('pointercancel', (e) => {
+    pinchPointers.delete(e.pointerId);
+    if (pinchPointers.size < 2) isPinching = false;
   });
 
   // Zoom with wheel
@@ -7036,12 +7173,14 @@ function setupToolbar() {
 
   // Phase mode buttons
   $('btn-phase-compose').addEventListener('click', () => {
-    if (STATE.carveStudioOpen) closeCarveStudio();
-    else if (STATE.inkStudioOpen) closeInkStudio();
-    else if (STATE.printStudioOpen) closePrintStudio();
-    setMode('select');
-    if (STATE.viewMode !== 'carve') setViewMode('carve');
-    updatePhaseButtons();
+    if (STATE.composePanelOpen) {
+      // If a workbench is open, close it and return to compose
+      if (STATE.carveStudioOpen) closeCarveStudio();
+      else if (STATE.inkStudioOpen) closeInkStudio();
+      else if (STATE.printStudioOpen) closePrintStudio();
+      else { closeComposePanel(); return; }
+    }
+    openComposePanel();
   });
   $('btn-phase-carve').addEventListener('click', () => {
     if (STATE.carveStudioOpen) closeCarveStudio();
@@ -7207,6 +7346,11 @@ function init() {
   setupToolbar();
   updateToolbarState();
   updateStatus();
+  // Auto-close elements panel on narrow screens
+  if (window.innerWidth < 850) {
+    STATE.composePanelOpen = false;
+    $('panel').classList.remove('open');
+  }
   window.addEventListener('resize', onResize);
   // Keep viewBox in sync when workspace resizes (panel open/close, layout shifts)
   new ResizeObserver(adjustViewBoxForResize).observe(workspaceEl);
