@@ -5991,7 +5991,8 @@ function openPrintStudio() {
 
   STATE.printStudioOpen = true;
 
-  // Switch to ink view for print context
+  // Switch to ink view and select mode for print context
+  setMode('select');
   if (STATE.viewMode !== 'ink') setViewMode('ink');
 
   // Build panel UI
@@ -6645,16 +6646,20 @@ function setupInteraction() {
         ws.setPointerCapture(e.pointerId);
         return;
       }
-      // No element hit — deselect and carve the background
+      // No element hit — deselect and carve the background (or pan if outside paper)
       deselectAll();
       const svgPt = clientToSvg(e.clientX, e.clientY);
-      // Only carve within paper bounds
       if (svgPt.x >= 0 && svgPt.x <= STATE.paperW && svgPt.y >= 0 && svgPt.y <= STATE.paperH) {
         pushUndo();
         STATE.carving = { background: true, points: [{ x: svgPt.x, y: svgPt.y, pressure: e.pressure || 0.5, tilt: Math.min(1, Math.hypot(e.tiltX || 0, e.tiltY || 0) / 90), tiltX: e.tiltX || 0, tiltY: e.tiltY || 0 }], smoothX: svgPt.x, smoothY: svgPt.y, smoothP: e.pressure || 0.5, smoothTiltX: e.tiltX || 0, smoothTiltY: e.tiltY || 0 };
         MokuriAudio.playCarveStart();
         ws.setPointerCapture(e.pointerId);
+        return;
       }
+      // Outside paper — start pan
+      STATE.dragging = { type: 'pan', startX: e.clientX, startY: e.clientY, origVBx: STATE.viewBox.x, origVBy: STATE.viewBox.y };
+      ws.setPointerCapture(e.pointerId);
+      ws.style.cursor = 'grabbing';
       return;
     }
 
@@ -6699,10 +6704,11 @@ function setupInteraction() {
         rerenderAll();
         return;
       }
-      // No element hit — erase background strokes
+      // No element hit — erase background strokes (if on paper), or pan (if off paper)
       deselectAll();
-      if (STATE.backgroundCarveStrokes.length) {
-        const svgPt = clientToSvg(e.clientX, e.clientY);
+      const svgPt = clientToSvg(e.clientX, e.clientY);
+      const onPaper = svgPt.x >= 0 && svgPt.x <= STATE.paperW && svgPt.y >= 0 && svgPt.y <= STATE.paperH;
+      if (onPaper && STATE.backgroundCarveStrokes.length) {
         let bestIdx = STATE.backgroundCarveStrokes.length - 1;
         let bestDist = Infinity;
         STATE.backgroundCarveStrokes.forEach((stroke, si) => {
@@ -6714,6 +6720,12 @@ function setupInteraction() {
         pushUndo();
         STATE.backgroundCarveStrokes.splice(bestIdx, 1);
         rerenderAll();
+        return;
+      }
+      if (!onPaper) {
+        STATE.dragging = { type: 'pan', startX: e.clientX, startY: e.clientY, origVBx: STATE.viewBox.x, origVBy: STATE.viewBox.y };
+        ws.setPointerCapture(e.pointerId);
+        ws.style.cursor = 'grabbing';
       }
       return;
     }
