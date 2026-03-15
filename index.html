@@ -833,8 +833,8 @@ html, body {
   inset: 0;
   z-index: 300;
   display: flex;
-  flex-direction: column;
   align-items: center;
+  justify-content: center;
   background: rgba(20, 17, 12, 0.94);
   opacity: 0;
   pointer-events: none;
@@ -843,59 +843,76 @@ html, body {
 .makimono.visible { opacity: 1; pointer-events: auto; }
 .makimono.fade-out { opacity: 0; pointer-events: none; }
 
-/* Fixed title header */
-.maki-header {
-  flex-shrink: 0;
-  text-align: center;
-  padding: 48px 24px 20px;
-}
-.maki-kanji {
-  font-size: 56px;
-  letter-spacing: 0.15em;
-  color: #c9a96e;
-  margin-bottom: 4px;
-  font-family: serif;
-}
-.maki-title {
-  font-size: 26px;
-  font-weight: 700;
-  color: #e8ddd0;
-  letter-spacing: 0.1em;
-  margin-bottom: 4px;
-}
-.maki-subtitle {
-  font-size: 14px;
-  color: #a09484;
-  letter-spacing: 0.06em;
-  font-style: italic;
-}
-
-/* Scrollable body below fixed header */
-.makimono-scroll {
-  flex: 1;
+.maki-card {
+  display: flex;
+  gap: 48px;
+  align-items: center;
+  max-width: 820px;
   width: 90vw;
-  max-width: 500px;
-  overflow-y: auto;
-  scroll-behavior: smooth;
-  padding: 0 8px 32px;
+  padding: 40px 48px;
 }
-.makimono-scroll::-webkit-scrollbar { width: 4px; }
-.makimono-scroll::-webkit-scrollbar-thumb { background: rgba(180,160,130,0.25); border-radius: 2px; }
 
-.makimono-panel {
+/* Left column: seal + title + philosophy */
+.maki-left {
+  flex: 0 0 280px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px 24px;
   text-align: center;
 }
-
-/* Philosophy */
+.maki-seal {
+  width: 72px;
+  height: 100px;
+  border-radius: 6px;
+  background: #c23b22;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+  margin-bottom: 16px;
+  position: relative;
+}
+.maki-seal::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: 0.8px solid rgba(245,240,230,0.45);
+  border-radius: 4px;
+  pointer-events: none;
+}
+.maki-seal-char {
+  font-family: serif;
+  font-size: 34px;
+  font-weight: bold;
+  color: #f5f0e6;
+  line-height: 1.15;
+}
+.maki-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #e8ddd0;
+  letter-spacing: 0.12em;
+  margin-bottom: 4px;
+}
+.maki-subtitle {
+  font-size: 13px;
+  color: #a09484;
+  letter-spacing: 0.06em;
+  font-style: italic;
+  margin-bottom: 20px;
+}
+.maki-divider {
+  width: 36px;
+  height: 1px;
+  background: #5a4e40;
+  margin: 0 auto 16px;
+}
 .maki-philosophy {
-  font-size: 15px;
-  line-height: 1.85;
+  font-size: 13px;
+  line-height: 1.8;
   color: #b0a494;
-  max-width: 400px;
   letter-spacing: 0.02em;
 }
 .maki-philosophy em {
@@ -904,66 +921,86 @@ html, body {
   font-weight: 500;
 }
 
-/* Step panels */
+/* Right column: 2×2 step grid + button */
+.maki-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+.maki-steps {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.maki-step {
+  padding: 14px 16px;
+  border: 1px solid #3a332a;
+  border-radius: 8px;
+  background: rgba(40,35,28,0.5);
+}
 .maki-step-heading {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 7px;
+  margin-bottom: 6px;
 }
 .maki-step-icon {
-  font-size: 26px;
+  font-size: 22px;
   line-height: 1;
 }
-.maki-step-num {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  color: #c9a96e;
-  margin-bottom: 4px;
-  font-weight: 600;
-}
 .maki-step-name {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 600;
 }
 .maki-step-desc {
-  font-size: 14px;
+  font-size: 12px;
   color: #a09484;
-  line-height: 1.7;
-  max-width: 360px;
+  line-height: 1.65;
 }
-
-/* Divider */
-.maki-divider {
-  width: 36px;
-  height: 1px;
-  background: #5a4e40;
-  margin: 8px auto 16px;
-}
-
-/* Begin button */
 .maki-begin {
   background: none;
-  border: 1px solid #c9a96e;
-  color: #c9a96e;
-  padding: 10px 36px;
+  border: 1px solid #c23b22;
+  color: #e8ddd0;
+  padding: 9px 32px;
   border-radius: 6px;
-  font-size: 15px;
+  font-size: 14px;
   cursor: pointer;
   letter-spacing: 0.06em;
-  margin-top: 12px;
+  margin-top: 4px;
   transition: background 0.2s, color 0.2s;
 }
 .maki-begin:hover {
-  background: #c9a96e;
-  color: #1e1912;
+  background: #c23b22;
+  color: #f5f0e6;
 }
 
-/* Splash mode (brief title only) */
-.makimono.splash { justify-content: center; }
-.makimono.splash .makimono-scroll { display: none; }
-.makimono.splash .maki-header { padding: 0 24px; }
+/* Splash mode (brief title only, auto-dismiss) */
+.makimono.splash .maki-card { display: none; }
+.makimono.splash::after {
+  content: '墨栗';
+  font-family: serif;
+  font-size: 64px;
+  color: #c23b22;
+  letter-spacing: 0.15em;
+}
+
+/* Responsive: single column on narrow/portrait screens */
+@media (max-width: 700px) {
+  .maki-card {
+    flex-direction: column;
+    gap: 24px;
+    padding: 28px 24px;
+    overflow-y: auto;
+    max-height: 90vh;
+  }
+  .maki-left { flex: none; }
+  .maki-philosophy { font-size: 12px; }
+  .maki-steps { gap: 10px; }
+  .maki-step { padding: 10px 12px; }
+  .maki-step-desc { font-size: 11px; }
+}
 
 /* Gallery about link */
 .gallery-about-link {
@@ -1909,88 +1946,78 @@ html, body {
 
 <!-- Makimono (巻物) — Welcome / About / FRE scroll -->
 <div class="makimono" id="makimono">
-  <div class="maki-header">
-    <div class="maki-kanji">墨栗</div>
-    <div class="maki-title">MOKURI</div>
-    <div class="maki-subtitle">A Japanese woodblock print studio</div>
-  </div>
+  <div class="maki-card">
 
-  <div class="makimono-scroll" id="makimono-scroll">
-
-    <div class="makimono-panel maki-panel-philosophy">
+    <div class="maki-left">
+      <div class="maki-seal">
+        <span class="maki-seal-char">墨</span>
+        <span class="maki-seal-char">栗</span>
+      </div>
+      <div class="maki-title">MOKURI</div>
+      <div class="maki-subtitle">A Japanese woodblock print studio</div>
       <div class="maki-divider"></div>
       <div class="maki-philosophy">
         Mokuhanga is the art of Japanese woodblock printing —
-        carving an image into wood, inking it by hand, and pressing
-        paper to reveal the print. Each impression is unique: the grain
-        of the wood, the weight of the ink, the texture of the paper
-        all leave their mark.<br><br>
-        <em>Mokuri Studio</em> captures that spirit. Compose your scene,
-        carve the block, choose your inks, and pull your print —
-        embracing the beauty of imperfection and the calm of
-        creating something with intention.
+        carving into wood, inking by hand, pressing paper to
+        reveal the print. Each impression is unique.<br><br>
+        <em>Mokuri Studio</em> captures that spirit: compose,
+        carve, ink, and print — embracing imperfection and the
+        calm of creating with intention.
       </div>
     </div>
 
-    <div class="makimono-panel">
-      <div class="maki-step-num">Step One</div>
-      <div class="maki-step-heading">
-        <span class="maki-step-icon" style="color:#b8956a">景</span>
-        <span class="maki-step-name" style="color:#b8956a">Compose</span>
-      </div>
-      <div class="maki-step-desc">
-        Place elements from the library — landscape, flora, fauna,
-        objects, and more — onto your block. Set the atmosphere with
-        sky and ground, adjust the horizon, and add mist for depth.
-        Arrange, resize, and layer to design your scene. Start from
-        scratch or choose a curated scene preset.
-      </div>
-    </div>
+    <div class="maki-right">
+      <div class="maki-steps">
 
-    <div class="makimono-panel">
-      <div class="maki-step-num">Step Two</div>
-      <div class="maki-step-heading">
-        <span class="maki-step-icon" style="color:#8b6b4a">彫</span>
-        <span class="maki-step-name" style="color:#8b6b4a">Carve</span>
-      </div>
-      <div class="maki-step-desc">
-        Choose from three gouges — fine, V, and U — to carve detail
-        into the woodblock. Set the carve level for each element, then
-        draw pressure-sensitive freehand strokes with your pen or mouse.
-        Apply carve patterns like crosshatch or woodgrain. Focus in on
-        a single element to carve up close.
-      </div>
-    </div>
+        <div class="maki-step">
+          <div class="maki-step-heading">
+            <span class="maki-step-icon" style="color:#b8956a">景</span>
+            <span class="maki-step-name" style="color:#b8956a">Compose</span>
+          </div>
+          <div class="maki-step-desc">
+            Place elements — landscape, flora, fauna — onto your
+            block. Set atmosphere, horizon, and mist. Arrange and
+            layer to design your scene.
+          </div>
+        </div>
 
-    <div class="makimono-panel">
-      <div class="maki-step-num">Step Three</div>
-      <div class="maki-step-heading">
-        <span class="maki-step-icon" style="color:#6a7b8b">墨</span>
-        <span class="maki-step-name" style="color:#6a7b8b">Ink</span>
-      </div>
-      <div class="maki-step-desc">
-        Choose from ten traditional palettes — Sumi, Edo, Hokusai,
-        Hiroshige, and more. Customize each element's color zones
-        and add bokashi gradients for soft directional ink transitions.
-        Stamp your work with a custom hanko seal.
-      </div>
-    </div>
+        <div class="maki-step">
+          <div class="maki-step-heading">
+            <span class="maki-step-icon" style="color:#8b6b4a">彫</span>
+            <span class="maki-step-name" style="color:#8b6b4a">Carve</span>
+          </div>
+          <div class="maki-step-desc">
+            Three gouges — fine, V, and U — for pressure-sensitive
+            freehand carving. Apply patterns like crosshatch or
+            woodgrain. Focus in for detail.
+          </div>
+        </div>
 
-    <div class="makimono-panel">
-      <div class="maki-step-num">Step Four</div>
-      <div class="maki-step-heading">
-        <span class="maki-step-icon" style="color:#9b7065">摺</span>
-        <span class="maki-step-name" style="color:#9b7065">Make Print</span>
-      </div>
-      <div class="maki-step-desc">
-        Select from six washi papers — smooth Hosho, fibrous Kozo,
-        silky Gampi, and more. Set the ink load and number of
-        impressions, then pull your print. Save as PNG to share.
-        Every pull is unique.
-      </div>
-    </div>
+        <div class="maki-step">
+          <div class="maki-step-heading">
+            <span class="maki-step-icon" style="color:#6a7b8b">墨</span>
+            <span class="maki-step-name" style="color:#6a7b8b">Ink</span>
+          </div>
+          <div class="maki-step-desc">
+            Ten traditional palettes — Sumi, Edo, Hokusai, and more.
+            Customize color zones, add bokashi gradients, and stamp
+            with a hanko seal.
+          </div>
+        </div>
 
-    <div class="makimono-panel">
+        <div class="maki-step">
+          <div class="maki-step-heading">
+            <span class="maki-step-icon" style="color:#9b7065">摺</span>
+            <span class="maki-step-name" style="color:#9b7065">Make Print</span>
+          </div>
+          <div class="maki-step-desc">
+            Six washi papers — Hosho, Kozo, Gampi, and more. Choose
+            ink load and baren passes, then pull your print. Every
+            impression is unique.
+          </div>
+        </div>
+
+      </div>
       <button class="maki-begin" id="maki-begin">Begin Creating</button>
     </div>
 
@@ -4482,10 +4509,8 @@ function incrementMokuriVisits() {
 
 function showMakimono(mode) {
   const el = $('makimono');
-  const scroll = $('makimono-scroll');
 
   el.classList.remove('fade-out', 'splash', 'visible');
-  scroll.scrollTop = 0;
 
   if (mode === 'splash') {
     el.classList.add('splash');
