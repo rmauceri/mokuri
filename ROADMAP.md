@@ -92,35 +92,26 @@ Full compose→carve→ink→print workflow now usable on phone (landscape) and 
 - **Mobile print fix**: Deckle edge complex polygon clip (~600 vertices) + multiply composite caused blank canvas on mobile Chromium. Refactored to simple rect clips during rendering with final cosmetic deckle mask via evenodd clip. Also added `willReadFrequently: true` on presentation canvas and try/catch around post-processing.
 - **Print preview zoom**: Removed fit-to-workspace clamping in `positionPrintCanvas()`. Canvas tracks paper rect directly, allowing zoom-in for proofing before PNG save.
 
-## Phase 11B — The Wood Block Experience (Planned)
+## Phase 11B — The Wood Block Experience ✅
 
-The workspace should feel like working with a physical block of cherry wood, not arranging shapes on paper. In compose and carve modes, the surface is a warm wood block with subtle grain texture. In ink mode, it reverts to paper (the "proof pull" preview). The transition is instant.
+The workspace now feels like working with a physical block of cherry wood. In compose and carve modes, the surface is a warm wood block with subtle grain texture. In ink mode, it reverts to paper (the "proof pull" preview). The transition is instant.
 
-#### 11B-1: Wood Block Surface
-- **Wood surface color** (`WOOD_SURFACE`): Mid wood tone (~`#7a6955`) as base fill for the workspace in compose/carve modes, replacing the paper-type base color.
-- **SVG wood grain pattern**: `<pattern id="wood-grain-surface">` in workspace defs — large tile (~80×80), 3–4 gentle horizontal curves, low opacity (0.08–0.12). Subtle and organic — barely visible grain, emphasis on warm brown color rather than pronounced lines.
-- **Wood texture filter**: `<filter id="wood-texture">` alongside existing `paper-texture` — elongated feTurbulence (horizontal bias for grain direction), warm brown feDiffuseLighting, multiply composite.
-- **Surface mode switcher**: `updateWorkspaceSurface()` function called from `setViewMode()` and `rerenderAll()`. In non-ink mode: paper rect fill → `WOOD_SURFACE`, filter → `wood-texture`, grain overlay on. In ink mode: restore paper-type base color + `paper-texture` filter.
-- **Atmosphere gating**: `renderAtmosphere()` only renders in ink mode. In compose/carve mode, the atmo layer is cleared — you're looking at the wood block, not the scene. Sky/ground/mist appear in ink mode as part of the proof preview.
+#### 11B-1: Wood Block Surface ✅
+- **Wood surface color** (`WOOD_SURFACE`): Mid wood tone (`#7a6955`) as base fill for the workspace in compose/carve modes.
+- **SVG wood grain pattern**: `<pattern id="wood-grain-surface">` — large tile (120×120), 6 horizontal curves at varying opacity for subtle organic grain.
+- **Wood texture filter**: `<filter id="wood-texture">` — elongated feTurbulence (horizontal bias `0.008 0.05`, 3 octaves) for warm brown surface.
+- **Surface mode switcher**: `updateWorkspaceSurface()` toggles paper fill/filter/grain between wood and paper based on viewMode.
+- **Atmosphere gating**: `renderAtmosphere()` only renders in ink mode — compose/carve show the wood block, not the scene.
 
-#### 11B-2: Carved Recess Treatment
-- **Recess tones** (`WOOD_RECESS_TONES`): 5 tones 8–12% lighter than `WOOD_SURFACE` — the appearance of fresh-cut wood below the surface patina. Used in `renderElementSvg()` carve-mode branch instead of `WOOD_TONES`, creating subtle depth differentiation between block surface and element recesses.
-- **Carved detail**: Existing behavior (PAPER_COLOR fills for carved areas, CARVED_STROKE outlines) reads well against the lighter recess tones — no changes needed.
-- **Freehand carve strokes**: Already render as PAPER_COLOR / CARVED_STROKE — naturally read as cuts through wood into paper beneath.
+#### 11B-2: Carved Recess Treatment ✅
+- **Recess tones** (`WOOD_RECESS_TONES`): 5 tones 8–12% lighter than surface — fresh-cut wood appearance in element recesses.
+- **Carved detail**: PAPER_COLOR fills for carved areas read naturally as cuts through wood into paper beneath.
 
-#### View Mode Visual Language
-- **Compose mode**: Warm wood block surface with subtle grain. Placed elements appear as lighter recesses in the wood. No atmosphere.
-- **Carve mode**: Same wood surface. Carved areas within elements reveal paper color. Freehand carve strokes cut visible grooves. The carve level pips control material removal.
-- **Ink mode**: Paper surface (paper-type base color). Atmosphere renders (sky/ground/mist). Elements show palette colors. Carved recesses show paper through ink. This is the "proof pull" preview — what the print will look like.
-
-#### Future (Deferred)
-- **Border & corner elements** (11B-3): Corner ornaments, edge repeaters as a new element category with edge-snapping behavior.
-- **Frame presets** (11B-4): Pre-composed corner+edge combinations for one-click decorative borders.
-
-### Implementation Sequence
-
-**11B-1**: Wood block workspace surface (grain texture, wood tones for background)
-**11B-2**: Carved recess visual treatment for placed elements in compose/carve modes
+#### 11B Cursor & Interaction Fixes ✅
+- **Tool cursor scoped to paper**: Carve/erase tool cursors (gouge shapes, eraser) only show when hovering over the paper canvas. Crosshair cursor outside paper. `.over-paper` class toggled in pointermove via SVG coordinate bounds check. Carve ring indicator also hidden off-paper.
+- **Pan from outside paper**: Clicking empty space outside the paper in carve/erase mode now starts a pan drag (previously did nothing). Background carving/erasing still works within paper bounds.
+- **Print studio cursor cleanup**: `openPrintStudio()` calls `setMode('select')` before switching view mode, clearing carve cursor when entering print.
+- **Post-print view restore**: `closePrintStudio()` properly restores wood block view mode when returning from print.
 
 ---
 
@@ -132,9 +123,11 @@ The workspace should feel like working with a physical block of cherry wood, not
 ### Composition & Creativity
 - **Composition guides** — Rule-of-thirds, golden ratio, and horizon-line overlays to help users compose intentional scenes.
 - **More scene presets** — Seasonal themes, time-of-day variations, genre-specific starters (seascape, garden, urban, spiritual).
+- **Border & corner elements** — Corner ornaments, edge repeaters as a new element category with edge-snapping behavior.
+- **Frame presets** — Pre-composed corner+edge combinations for one-click decorative borders.
 
 ### Platform & Polish
-- **Responsive layout** — Further tablet/phone refinements (bottom sheet panels, modal panels for very small screens).
+- **Responsive layout** — Further phone refinements (bottom sheet panels, modal panels for very small screens).
 - **Keyboard shortcuts expansion** — More shortcuts for power users.
 
 ### Print Engine
