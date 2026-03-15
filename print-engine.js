@@ -596,6 +596,60 @@ const PrintEngine = (() => {
   }
 
   // ============================================================
+  //  SVG-TO-CANVAS RENDERING (with blank detection + fallback)
+  // ============================================================
+
+  // Check if an SVG Image has visible content (not all-transparent).
+  // Scales the image to a tiny canvas and checks for non-zero alpha.
+  function svgImageHasContent(img) {
+    const tc = document.createElement('canvas');
+    tc.width = 16; tc.height = 16;
+    const tctx = tc.getContext('2d');
+    if (!tctx) return true; // assume content if we can't check
+    tctx.drawImage(img, 0, 0, 16, 16);
+    const d = tctx.getImageData(0, 0, 16, 16).data;
+    for (let i = 3; i < d.length; i += 4) {
+      if (d[i] > 10) return true;
+    }
+    return false;
+  }
+
+  // Draw an SVG string to canvas via Image + blob URL.
+  // Returns true if content was drawn, false if SVG rendered blank.
+  async function drawSvgImpression(ctx, svgStr, w, h, opacity) {
+    const blob = new Blob([svgStr], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        URL.revokeObjectURL(url);
+        resolve(false); // treat timeout as blank
+      }, 10000);
+
+      const img = new Image();
+      img.onload = () => {
+        clearTimeout(timer);
+        const hasContent = svgImageHasContent(img);
+        if (hasContent) {
+          ctx.globalCompositeOperation = 'multiply';
+          ctx.globalAlpha = opacity;
+          ctx.drawImage(img, 0, 0, w, h);
+          ctx.globalAlpha = 1.0;
+          ctx.globalCompositeOperation = 'source-over';
+        }
+        URL.revokeObjectURL(url);
+        resolve(hasContent);
+      };
+      img.onerror = () => {
+        clearTimeout(timer);
+        URL.revokeObjectURL(url);
+        resolve(false); // treat error as blank — caller will retry
+      };
+      img.src = url;
+    });
+  }
+
+  // ============================================================
   //  MAIN PRINT PIPELINE
   // ============================================================
 
@@ -614,7 +668,7 @@ const PrintEngine = (() => {
     const canvas = document.createElement('canvas');
     canvas.width = w;
     canvas.height = h;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
     if (!ctx) throw new Error('Canvas 2D context unavailable');
 
     // Step 1 — Paper texture base layer (varies by paper type)
@@ -629,23 +683,15 @@ const PrintEngine = (() => {
       const impOpacity = impressions === 1 ? 1.0 : (imp === 0 ? 0.92 : 0.35);
 
       const svgStr = renderColoredSvg(elements, palette, paperW, paperH, scale, inkLoad, impOffset, atmosphere, bgStrokes, paperType.base);
-      const blob = new Blob([svgStr], { type: 'image/svg+xml' });
-      const url = URL.createObjectURL(blob);
 
-      await new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => {
-          ctx.globalCompositeOperation = 'multiply';
-          ctx.globalAlpha = impOpacity;
-          ctx.drawImage(img, 0, 0, w, h);
-          ctx.globalAlpha = 1.0;
-          ctx.globalCompositeOperation = 'source-over';
-          URL.revokeObjectURL(url);
-          resolve();
-        };
-        img.onerror = reject;
-        img.src = url;
-      });
+      // Draw SVG to canvas; detect blank render (mobile SVG filter failure)
+      // and retry without the wobble filter if needed
+      const drew = await drawSvgImpression(ctx, svgStr, w, h, impOpacity);
+      if (!drew) {
+        console.warn('Print: SVG filters rendered blank — retrying without wobble filter');
+        const simpleSvg = svgStr.replace(/ filter="url\(#wobble\)"/g, '');
+        await drawSvgImpression(ctx, simpleSvg, w, h, impOpacity);
+      }
     }
 
     // Step 3 — Post-processing (intensity scaled by paper type)

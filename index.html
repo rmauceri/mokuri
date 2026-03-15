@@ -6339,6 +6339,7 @@ async function pullPrint() {
   c.width = canvas.width;
   c.height = canvas.height;
   const ctx = c.getContext('2d');
+  if (!ctx) throw new Error('Inline canvas context unavailable');
   ctx.save();
   ctx.translate(canvas.width, 0);
   ctx.scale(-1, 1);
