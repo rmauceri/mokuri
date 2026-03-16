@@ -3102,8 +3102,12 @@ function renderElementSvg(el, layerIndex) {
   const HANKO_VERMILLION = '#c23b22';
   const recessTone = WOOD_RECESS_TONES[layerIndex % WOOD_RECESS_TONES.length];
   const zoneColor = (zoneId) => {
-    if (!inkMode) return def.hanko ? HANKO_VERMILLION : recessTone;
+    if (!inkMode) {
+      if (def.hanko && zoneId === 'char') return PAPER_COLOR;
+      return def.hanko ? HANKO_VERMILLION : recessTone;
+    }
     if (def.hanko) {
+      if (zoneId === 'char') return PAPER_COLOR;
       const ov = resolveOverride(el.colorOverrides && el.colorOverrides[zoneId], palette.colors);
       return ov || HANKO_VERMILLION;
     }
@@ -3946,7 +3950,7 @@ function generateThumbnailSvg(data) {
         if (p.type === 'fill') {
           let col;
           if (def.hanko) {
-            col = '#c23b22';
+            col = p.zone === 'char' ? PAPER_COLOR : '#c23b22';
           } else if (el.colorOverrides && el.colorOverrides[p.zone] !== undefined) {
             col = resolveOverride(el.colorOverrides[p.zone], palette.colors) || palette.colors[0];
           } else {

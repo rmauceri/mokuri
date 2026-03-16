@@ -248,6 +248,7 @@ const MOKURI_HANKO_ELEMENTS = [
     hanko: true,
     colorZones: [
       { id: 'seal', defaultPaletteSlot: 2 },
+      { id: 'char', defaultPaletteSlot: 4 },
     ],
     carveLevels: [
       {
@@ -268,46 +269,8 @@ const MOKURI_HANKO_ELEMENTS = [
         paths: [
           { d: 'M6 6 Q6 4 8 4 L52 4 Q54 4 54 6 L54 54 Q54 56 52 56 L8 56 Q6 56 6 54 Z', type: 'fill', zone: 'seal' },
           { d: 'M10 9 L50 9 L50 51 L10 51 Z', type: 'stroke', zone: 'seal', strokeWidth: 1.2 },
-          // ── 墨 (sumi / ink) ──
-          // Structure: 黒 (black) on top, 土 (earth) on bottom
-          // 黒 = 里-grid + 灬 (four fire dots)
-          //
-          // ── 里 upper section (田-like grid) ──
-          // top horizontal
-          { d: 'M18 12 L42 12', type: 'stroke', zone: 'seal', strokeWidth: 1.5 },
-          // left vertical
-          { d: 'M19 12 L19 21', type: 'stroke', zone: 'seal', strokeWidth: 1.3 },
-          // right vertical
-          { d: 'M41 12 L41 21', type: 'stroke', zone: 'seal', strokeWidth: 1.3 },
-          // center vertical
-          { d: 'M30 12 L30 21', type: 'stroke', zone: 'seal', strokeWidth: 1.1 },
-          // middle horizontal
-          { d: 'M19 16.5 L41 16.5', type: 'stroke', zone: 'seal', strokeWidth: 1.0 },
-          // ── 里 lower section ──
-          // divider horizontal
-          { d: 'M19 21 L41 21', type: 'stroke', zone: 'seal', strokeWidth: 1.3 },
-          // left vertical
-          { d: 'M19 21 L19 29', type: 'stroke', zone: 'seal', strokeWidth: 1.3 },
-          // right vertical
-          { d: 'M41 21 L41 29', type: 'stroke', zone: 'seal', strokeWidth: 1.3 },
-          // center vertical
-          { d: 'M30 21 L30 29', type: 'stroke', zone: 'seal', strokeWidth: 1.1 },
-          // middle horizontal
-          { d: 'M19 25 L41 25', type: 'stroke', zone: 'seal', strokeWidth: 1.0 },
-          // bottom closing horizontal (wider)
-          { d: 'M17 29 L43 29', type: 'stroke', zone: 'seal', strokeWidth: 1.5 },
-          // ── 灬 (four fire dots) ──
-          { d: 'M17 32.5 Q18.5 35 20.5 33', type: 'stroke', zone: 'seal', strokeWidth: 1.5 },
-          { d: 'M25 33 Q26.5 35.5 28.5 33.5', type: 'stroke', zone: 'seal', strokeWidth: 1.5 },
-          { d: 'M31.5 33 Q33 35.5 35 33.5', type: 'stroke', zone: 'seal', strokeWidth: 1.5 },
-          { d: 'M39.5 32.5 Q41 35 43 33', type: 'stroke', zone: 'seal', strokeWidth: 1.5 },
-          // ── 土 (earth radical) ──
-          // center vertical
-          { d: 'M30 37 L30 47', type: 'stroke', zone: 'seal', strokeWidth: 1.3 },
-          // short cross horizontal
-          { d: 'M23 41.5 L37 41.5', type: 'stroke', zone: 'seal', strokeWidth: 1.2 },
-          // long bottom horizontal
-          { d: 'M15 47 L45 47', type: 'stroke', zone: 'seal', strokeWidth: 1.6 },
+          // 墨 character — font-traced outlines from Yu Gothic Bold
+          { d: 'M19.5,32.4 L15.3,32.5 Q15.1,32.5 15.0,32.4 Q15.0,32.3 15.0,32.1 L15.0,30.3 Q15.0,30.0 15.0,30.0 Q15.1,29.9 15.3,29.9 L19.5,30.0 L28.3,30.0 L28.3,28.6 L22.2,28.6 L17.6,28.7 Q17.2,28.7 17.2,28.3 L17.2,26.6 Q17.2,26.3 17.3,26.3 Q17.4,26.2 17.6,26.2 L22.2,26.3 L28.3,26.3 L28.3,24.8 L23.9,24.8 L19.2,24.9 Q18.9,24.9 18.9,24.8 Q18.8,24.8 18.8,24.5 L18.9,21.8 L18.9,18.5 L18.8,15.8 Q18.8,15.5 18.9,15.5 Q18.9,15.4 19.2,15.4 L23.9,15.5 L36.0,15.5 L40.7,15.4 Q41.0,15.4 41.1,15.5 Q41.1,15.6 41.1,15.8 L41.1,18.5 L41.1,21.8 L41.1,24.5 Q41.1,24.8 41.1,24.8 Q41.0,24.9 40.7,24.9 L36.0,24.8 L31.6,24.8 L31.6,26.3 L37.8,26.3 L42.4,26.2 Q42.6,26.2 42.7,26.3 Q42.7,26.4 42.7,26.6 L42.7,28.3 Q42.7,28.7 42.4,28.7 L37.8,28.6 L31.6,28.6 L31.6,30.0 L40.5,30.0 L44.7,29.9 Q44.9,29.9 45.0,30.0 Q45.0,30.1 45.0,30.3 L45.0,32.1 Q45.0,32.3 44.9,32.5 Q44.9,32.5 44.7,32.5 L40.5,32.4 Z M37.8,22.8 L37.8,21.2 L31.6,21.2 L31.6,22.8 Z M37.8,17.7 L31.6,17.7 L31.6,19.2 L37.8,19.2 Z M22.2,22.8 L28.3,22.8 L28.3,21.2 L22.2,21.2 Z M22.2,19.2 L28.3,19.2 L28.3,17.7 L22.2,17.7 Z M20.1,44.5 L15.8,44.6 Q15.5,44.6 15.5,44.5 Q15.4,44.4 15.4,44.2 L15.4,42.2 Q15.4,41.9 15.5,41.8 Q15.5,41.8 15.8,41.8 L20.1,41.9 L28.3,41.9 L28.3,40.1 L24.0,40.1 L19.3,40.1 Q19.0,40.1 19.0,40.1 Q18.9,40.0 18.9,39.8 L18.9,38.0 Q18.9,37.7 19.0,37.7 Q19.1,37.6 19.3,37.6 L24.0,37.7 L28.3,37.7 Q28.3,36.3 28.1,35.0 Q29.8,35.1 31.4,35.3 Q31.9,35.3 31.9,35.6 Q31.9,35.7 31.7,36.1 Q31.6,36.5 31.6,37.7 L36.1,37.7 L40.8,37.6 Q41.0,37.6 41.1,37.7 Q41.1,37.8 41.1,38.0 L41.1,39.8 Q41.1,40.0 41.0,40.1 Q41.0,40.1 40.8,40.1 L36.1,40.1 L31.6,40.1 L31.6,41.9 L39.9,41.9 L44.2,41.8 Q44.5,41.8 44.6,41.9 Q44.6,42.0 44.6,42.2 L44.6,44.2 Q44.6,44.5 44.5,44.5 Q44.5,44.6 44.2,44.6 L39.9,44.5 Z M19.6,32.7 L21.4,33.6 Q21.7,33.8 21.7,34.0 Q21.7,34.1 21.6,34.2 Q20.1,36.2 18.0,38.0 Q17.8,38.1 17.7,38.1 Q17.5,38.1 17.2,37.9 L15.5,36.5 Q15.2,36.3 15.2,36.2 Q15.2,36.1 15.5,35.9 Q17.5,34.6 18.8,32.8 Q19.0,32.5 19.1,32.5 Q19.3,32.5 19.6,32.7 Z M41.0,32.7 Q42.6,34.1 44.2,36.0 Q44.4,36.2 44.4,36.3 Q44.4,36.4 44.0,36.6 L42.0,37.8 Q41.8,38.0 41.6,38.0 Q41.5,38.0 41.3,37.7 Q39.8,35.5 38.3,34.2 Q38.1,34.0 38.1,33.9 Q38.1,33.7 38.4,33.6 L40.2,32.7 Q40.6,32.5 40.7,32.5 Q40.8,32.5 41.0,32.7 Z M24.6,33.4 L26.6,33.1 Q26.8,33.1 26.8,33.1 Q27.1,33.1 27.2,33.4 Q27.6,34.7 27.8,36.0 Q27.9,36.1 27.9,36.2 Q27.9,36.4 27.4,36.5 L25.3,36.9 Q25.1,36.9 25.0,36.9 Q24.8,36.9 24.7,36.5 Q24.6,35.2 24.2,33.9 Q24.2,33.7 24.2,33.7 Q24.2,33.5 24.6,33.4 Z M35.4,36.2 L33.3,36.7 Q33.1,36.8 33.0,36.8 Q32.8,36.8 32.7,36.4 Q32.4,35.4 31.6,33.8 Q31.5,33.7 31.5,33.6 Q31.5,33.5 31.9,33.4 L33.8,33.0 Q33.9,32.9 34.0,32.9 Q34.2,32.9 34.4,33.2 Q35.2,34.3 35.8,35.8 Q35.8,35.9 35.8,36.0 Q35.8,36.1 35.4,36.2 Z', type: 'fill', zone: 'char' },
         ],
       },
     ],
