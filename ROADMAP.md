@@ -123,12 +123,49 @@ Landscape two-column layout replacing the vertical scrolling makimono.
 - **Toolbar brand**: Red 墨 kanji + "Mokuri Studio" in toolbar, clickable to open About. On narrow screens collapses to just the red kanji. Replaced gallery About link.
 - **Responsive**: Compact two-column at ≤500px height (landscape phone), single column with scroll at ≤700px width (portrait phone), philosophy hidden at ≤400px height (very small landscape).
 
+### Element Library Quality & Expansion ✅
+
+Systematic quality pass across the element library guided by a new Element Design Guide (`ELEMENT-GUIDE.md`), plus two new element categories.
+
+#### Element Design Guide ✅
+Established a reusable design spec (`docs/ELEMENT-GUIDE.md`) codifying the Mokuri element aesthetic: block→shape→detail carve level accumulation, fill-only block level, organic hand-drawn geometry, zone-based coloring, and woodblock-appropriate detail density. Used as the reference for all subsequent element work.
+
+#### Element Fixes & Redesigns ✅
+- **Lantern fixes**: Kasuga Grand Lantern, Yukimi Lantern, Oribe Lantern — fixed carve level accumulation so block⊂shape⊂detail, split single-blob fills into proper zones.
+- **Great Peak fix**: Corrected inconsistent snow cap geometry between levels, carried forward ridge strokes.
+- **Flora redesigns**: Cherry Blossom, Pine Bough, Maple Branch redesigned with organic hand-drawn aesthetic following the Element Design Guide — richer detail, proper hatching, form-following texture lines.
+- **Wooden Bridge redesign**: Rebuilt as arched soribashi (4→7→11 paths), fill-only block, proper level accumulation. Served as the test case for the Element Design Guide.
+
+#### New Landscape & Flora Elements ✅
+Rolling Hills, Farmland, Tranquil Pond, Waterfall, Chrysanthemum, Susuki Grass, Bare Winter Branch — organic silhouettes with woodblock-appropriate detail at each carve level.
+
+#### New Objects ✅
+Fishing Boat — hull, cabin, and sail zones with plank detail at level 2.
+
+#### Human Figures Category ✅
+New `figures-elements.js` with 8 staffage figures in the ukiyo-e tradition: Traveler, Umbrella Figure, Fisherman, Field Worker, Two Travelers, Seated Figure, Boatman, Woman with Bundle. Small-scale figures designed as compositional accents — simplified forms, expressive silhouettes, 2–3 color zones each.
+
+#### Built Structures ✅
+Pagoda, Tea House, Bamboo Fence, Farmhouse added to `scene-elements.js`. Multi-zone architecture with structural detail (roof tiles, lattice screens, bamboo lashing, thatch texture) emerging at higher carve levels. Replaced the non-functional Temple Roof element approach with properly designed structures.
+
+### Print Presentation ✅
+
+Authentic print presentation features wrapping the existing print output — margins, edges, title, and edition numbering matching real woodblock print display conventions.
+
+- **Paper margins**: 4 presets (None, Narrow, Standard, Wide) with asymmetric bottom margin larger than sides and top, matching traditional print mounting. Two-canvas wrapper architecture — existing print canvas composited onto a larger presentation canvas.
+- **Organic print edge**: Semi-transparent paper-color overlay at the print boundary, softening the transition between inked area and paper margin. Painted over the composite for authentic edge bleed.
+- **Deckle edge**: Subtle irregular paper boundary with torn-edge path and wispy fiber decorations. Configurable on/off.
+- **Embossed title (karazuri)**: Title text rendered in paper-base color with canvas shadow API — dark shadow lower-right for depth, light highlight upper-left for raised edge. Pre-flipped for correct reading after the print engine's global mirror. Font scales proportionally to bottom margin height.
+- **Edition numbering**: Pencil-style edition text (e.g., "1/25") below the title with matching emboss treatment. Smaller font, right-justified under the print edge.
+- **Viewport fitting**: Presentation canvas scales to fit entirely within the workspace regardless of aspect ratio.
+- **PNG export**: Save includes full presentation with margins. Filename uses composition name.
+
 ---
 
 ## Future Work
 
 ### Element Fidelity
-- **Hand-crafted SVG replacements** — Current elements are procedural. Hand-drawn SVGs with hatching, texture lines, and form-following detail would dramatically raise visual quality. This is the single biggest remaining quality gap vs. what AI image generators produce.
+- **Hand-crafted SVG refinement** — The Element Design Guide established conventions for organic, woodblock-appropriate geometry. Continued iteration on individual elements — especially older ones predating the guide — would further raise visual quality. Hatching density, form-following texture lines, and zone boundary refinement are the main opportunities.
 
 ### Composition & Creativity
 - **Composition guides** — Rule-of-thirds, golden ratio, and horizon-line overlays to help users compose intentional scenes.
@@ -143,6 +180,7 @@ Landscape two-column layout replacing the vertical scrolling makimono.
 ### Print Engine
 - **Advanced bokashi** — Multi-directional gradients, radial fades, more nuanced ink distribution.
 - **Registration marks** — Visual guides showing block alignment for multi-color printing authenticity.
+- **Seal placement** — Hanko seal stamp positioning on the presentation margin (deferred from Print Presentation).
 
 ---
 
