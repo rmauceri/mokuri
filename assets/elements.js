@@ -20,34 +20,31 @@ const MOKURI_ELEMENTS = [
       { id: 'detail', defaultPaletteSlot: 3 },
     ],
     carveLevels: [
-      // Level 0: Solid silhouette with color zones
       {
         name: 'block',
         paths: [
-          { d: 'M0 140 L60 30 L100 60 L140 15 L180 50 L240 140 Z', type: 'fill', zone: 'body' },
-          { d: 'M110 45 L140 15 L170 40 L155 42 L140 30 L125 43 Z', type: 'fill', zone: 'snow' },
+          { d: 'M0,140 Q14,130 30,112 Q46,88 62,65 Q72,48 80,40 Q88,46 98,55 Q108,44 122,30 Q132,20 140,18 Q150,22 160,35 Q170,48 182,55 Q192,46 205,56 Q218,76 230,108 Q236,128 240,140 Z', type: 'fill', zone: 'body' },
+          { d: 'M110,42 Q118,32 128,24 Q134,20 140,18 Q148,22 156,30 Q162,38 168,46 Q160,50 154,44 Q148,36 140,34 Q134,36 128,44 Q122,48 115,44 Z', type: 'fill', zone: 'snow' },
         ],
       },
-      // Level 1: Outline + snow cap
       {
         name: 'shape',
         paths: [
-          { d: 'M0 140 L60 30 L100 60 L140 15 L180 50 L240 140 Z', type: 'fill', zone: 'body' },
-          { d: 'M110 45 L140 15 L170 40 L155 42 L140 30 L125 43 Z', type: 'fill', zone: 'snow' },
-          { d: 'M0 140 L60 30 L100 60 L140 15 L180 50 L240 140', type: 'stroke', zone: 'body', strokeWidth: 2 },
+          { d: 'M0,140 Q14,130 30,112 Q46,88 62,65 Q72,48 80,40 Q88,46 98,55 Q108,44 122,30 Q132,20 140,18 Q150,22 160,35 Q170,48 182,55 Q192,46 205,56 Q218,76 230,108 Q236,128 240,140 Z', type: 'fill', zone: 'body' },
+          { d: 'M110,42 Q118,32 128,24 Q134,20 140,18 Q148,22 156,30 Q162,38 168,46 Q160,50 154,44 Q148,36 140,34 Q134,36 128,44 Q122,48 115,44 Z', type: 'fill', zone: 'snow' },
+          { d: 'M0,140 Q14,130 30,112 Q46,88 62,65 Q72,48 80,40 Q88,46 98,55 Q108,44 122,30 Q132,20 140,18 Q150,22 160,35 Q170,48 182,55 Q192,46 205,56 Q218,76 230,108 Q236,128 240,140', type: 'stroke', zone: 'body', strokeWidth: 1.8 },
         ],
       },
-      // Level 2: Full detail with ridgelines
       {
         name: 'detail',
         paths: [
-          { d: 'M0 140 L60 30 L100 60 L140 15 L180 50 L240 140 Z', type: 'fill', zone: 'body' },
-          { d: 'M110 45 L140 15 L170 40 L155 42 L140 30 L125 43 Z', type: 'fill', zone: 'snow' },
-          { d: 'M0 140 L60 30 L100 60 L140 15 L180 50 L240 140', type: 'stroke', zone: 'body', strokeWidth: 2 },
-          // Ridgelines
-          { d: 'M60 30 L80 70 M100 60 L110 85 M140 15 L145 55 M180 50 L190 80', type: 'stroke', zone: 'detail', strokeWidth: 1 },
-          // Rock texture hatching
-          { d: 'M30 100 L45 85 M50 110 L65 95 M70 120 L85 105 M150 90 L165 75 M170 100 L185 85 M190 110 L205 95 M100 100 L115 85 M120 115 L135 100', type: 'stroke', zone: 'detail', strokeWidth: 0.7 },
+          { d: 'M0,140 Q14,130 30,112 Q46,88 62,65 Q72,48 80,40 Q88,46 98,55 Q108,44 122,30 Q132,20 140,18 Q150,22 160,35 Q170,48 182,55 Q192,46 205,56 Q218,76 230,108 Q236,128 240,140 Z', type: 'fill', zone: 'body' },
+          { d: 'M110,42 Q118,32 128,24 Q134,20 140,18 Q148,22 156,30 Q162,38 168,46 Q160,50 154,44 Q148,36 140,34 Q134,36 128,44 Q122,48 115,44 Z', type: 'fill', zone: 'snow' },
+          { d: 'M0,140 Q14,130 30,112 Q46,88 62,65 Q72,48 80,40 Q88,46 98,55 Q108,44 122,30 Q132,20 140,18 Q150,22 160,35 Q170,48 182,55 Q192,46 205,56 Q218,76 230,108 Q236,128 240,140', type: 'stroke', zone: 'body', strokeWidth: 1.8 },
+          // Ridge contours following slopes
+          { d: 'M62,65 Q66,78 70,92 M122,30 Q128,48 132,66 M160,35 Q166,52 172,70 M205,56 Q210,72 216,88', type: 'stroke', zone: 'detail', strokeWidth: 0.9 },
+          // Rock texture — varied angles following terrain
+          { d: 'M22,122 Q28,116 34,110 M50,116 Q55,110 58,106 M82,96 Q86,90 90,86 M162,80 Q166,74 170,70 M200,94 Q204,88 208,84 M224,106 Q228,100 232,96 M112,82 Q116,78 120,74', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
         ],
       },
     ],
@@ -68,33 +65,39 @@ const MOKURI_ELEMENTS = [
       {
         name: 'block',
         paths: [
-          { d: 'M0 160 L40 80 L90 50 L130 70 L170 40 L220 65 L260 160 Z', type: 'fill', zone: 'body' },
-          { d: 'M90 50 L130 70 L120 110 L80 100 Z', type: 'fill', zone: 'shadow' },
+          { d: 'M0,160 Q14,146 30,122 Q48,92 66,68 Q78,50 88,42 Q96,38 102,42 Q112,52 124,56 Q136,46 150,34 Q162,24 170,22 Q180,26 192,38 Q206,56 222,78 Q238,108 250,135 Q256,148 260,160 Z', type: 'fill', zone: 'body' },
+          { d: 'M88,42 Q98,50 112,56 Q124,50 134,42 Q126,60 114,76 Q102,84 92,74 Q84,60 88,42 Z', type: 'fill', zone: 'shadow' },
         ],
       },
       {
         name: 'shape',
         paths: [
-          { d: 'M0 160 L40 80 L90 50 L130 70 L170 40 L220 65 L260 160 Z', type: 'fill', zone: 'body' },
-          { d: 'M90 50 L130 70 L120 110 L80 100 Z', type: 'fill', zone: 'shadow' },
-          { d: 'M0 160 L40 80 L90 50 L130 70 L170 40 L220 65 L260 160', type: 'stroke', zone: 'shadow', strokeWidth: 2.5 },
+          { d: 'M0,160 Q14,146 30,122 Q48,92 66,68 Q78,50 88,42 Q96,38 102,42 Q112,52 124,56 Q136,46 150,34 Q162,24 170,22 Q180,26 192,38 Q206,56 222,78 Q238,108 250,135 Q256,148 260,160 Z', type: 'fill', zone: 'body' },
+          { d: 'M88,42 Q98,50 112,56 Q124,50 134,42 Q126,60 114,76 Q102,84 92,74 Q84,60 88,42 Z', type: 'fill', zone: 'shadow' },
+          { d: 'M0,160 Q14,146 30,122 Q48,92 66,68 Q78,50 88,42 Q96,38 102,42 Q112,52 124,56 Q136,46 150,34 Q162,24 170,22 Q180,26 192,38 Q206,56 222,78 Q238,108 250,135 Q256,148 260,160', type: 'stroke', zone: 'shadow', strokeWidth: 2 },
+          // Ravine division
+          { d: 'M124,56 Q128,68 126,82 Q120,96 112,106', type: 'stroke', zone: 'shadow', strokeWidth: 1.2 },
         ],
       },
       {
         name: 'detail',
         paths: [
-          { d: 'M0 160 L40 80 L90 50 L130 70 L170 40 L220 65 L260 160 Z', type: 'fill', zone: 'body' },
-          { d: 'M90 50 L130 70 L120 110 L80 100 Z', type: 'fill', zone: 'shadow' },
-          { d: 'M0 160 L40 80 L90 50 L130 70 L170 40 L220 65 L260 160', type: 'stroke', zone: 'shadow', strokeWidth: 2.5 },
-          { d: 'M40 80 L55 100 M90 50 L95 80 M170 40 L180 70 M220 65 L225 90', type: 'stroke', zone: 'detail', strokeWidth: 1 },
-          { d: 'M15 130 L30 115 M35 140 L50 125 M55 130 L70 115 M140 120 L155 105 M160 130 L175 115 M200 130 L215 115', type: 'stroke', zone: 'detail', strokeWidth: 0.7 },
-          // Tree suggestion marks on slopes
-          { d: 'M25 110 Q30 100 35 110 M45 105 Q50 95 55 105 M195 100 Q200 90 205 100 M215 105 Q220 95 225 105', type: 'stroke', zone: 'detail', strokeWidth: 1 },
+          { d: 'M0,160 Q14,146 30,122 Q48,92 66,68 Q78,50 88,42 Q96,38 102,42 Q112,52 124,56 Q136,46 150,34 Q162,24 170,22 Q180,26 192,38 Q206,56 222,78 Q238,108 250,135 Q256,148 260,160 Z', type: 'fill', zone: 'body' },
+          { d: 'M88,42 Q98,50 112,56 Q124,50 134,42 Q126,60 114,76 Q102,84 92,74 Q84,60 88,42 Z', type: 'fill', zone: 'shadow' },
+          { d: 'M0,160 Q14,146 30,122 Q48,92 66,68 Q78,50 88,42 Q96,38 102,42 Q112,52 124,56 Q136,46 150,34 Q162,24 170,22 Q180,26 192,38 Q206,56 222,78 Q238,108 250,135 Q256,148 260,160', type: 'stroke', zone: 'shadow', strokeWidth: 2 },
+          { d: 'M124,56 Q128,68 126,82 Q120,96 112,106', type: 'stroke', zone: 'shadow', strokeWidth: 1.2 },
+          // Ridge contours
+          { d: 'M66,68 Q70,82 74,96 M150,34 Q156,52 160,70 M192,38 Q198,56 204,74 M222,78 Q226,92 230,106', type: 'stroke', zone: 'detail', strokeWidth: 0.9 },
+          // Rock texture — follows terrain contour
+          { d: 'M18,138 Q24,130 30,124 M44,130 Q50,122 54,118 M72,108 Q78,100 82,96 M160,86 Q166,78 170,74 M206,96 Q212,88 216,84 M234,116 Q238,110 242,106 M140,82 Q144,76 148,72', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
+          // Tree suggestions — rounded organic crowns
+          { d: 'M28,112 Q32,106 36,108 Q40,104 44,110 M52,104 Q56,98 60,100 Q64,96 68,102 M200,92 Q204,86 208,88 Q212,84 216,90 M228,100 Q232,94 236,98', type: 'stroke', zone: 'detail', strokeWidth: 0.7 },
         ],
       },
     ],
   },
-{
+
+  {
     id: 'mountain-fuji-peak',
     name: 'Great Peak (Fuji style)',
     category: 'landscape',
@@ -109,26 +112,34 @@ const MOKURI_ELEMENTS = [
       {
         name: 'block',
         paths: [
-          { d: 'M20,170 L160,30 L300,170 Z', type: 'fill', zone: 'mountain' }
+          // Broad volcanic cone — gently convex slopes, flattish summit
+          { d: 'M22,175 Q48,158 78,130 Q108,98 132,70 Q148,52 156,42 Q160,37 163,35 Q166,37 170,42 Q178,52 194,70 Q218,98 248,130 Q278,158 302,175 Z', type: 'fill', zone: 'mountain' },
+          // Snow cap with irregular drip edge
+          { d: 'M132,70 Q144,54 152,44 Q158,38 163,35 Q168,38 174,44 Q182,54 194,70 Q186,76 180,70 Q174,62 168,68 Q162,60 158,68 Q152,62 146,68 Q140,62 136,72 Z', type: 'fill', zone: 'snow' },
         ],
       },
       {
         name: 'shape',
         paths: [
-          { d: 'M20,170 L160,30 L300,170 Z', type: 'fill', zone: 'mountain' },
-          { d: 'M160,30 L120,70 Q140,85 160,70 Q180,85 200,70 L160,30 Z', type: 'fill', zone: 'snow' },
-          { d: 'M110,170 L130,120 M210,170 L190,120', type: 'stroke', zone: 'texture', strokeWidth: 3 }
+          { d: 'M22,175 Q48,158 78,130 Q108,98 132,70 Q148,52 156,42 Q160,37 163,35 Q166,37 170,42 Q178,52 194,70 Q218,98 248,130 Q278,158 302,175 Z', type: 'fill', zone: 'mountain' },
+          { d: 'M132,70 Q144,54 152,44 Q158,38 163,35 Q168,38 174,44 Q182,54 194,70 Q186,76 180,70 Q174,62 168,68 Q162,60 158,68 Q152,62 146,68 Q140,62 136,72 Z', type: 'fill', zone: 'snow' },
+          // Mountain outline
+          { d: 'M22,175 Q48,158 78,130 Q108,98 132,70 Q148,52 156,42 Q160,37 163,35 Q166,37 170,42 Q178,52 194,70 Q218,98 248,130 Q278,158 302,175', type: 'stroke', zone: 'mountain', strokeWidth: 2 },
+          // Major slope ridges
+          { d: 'M110,114 Q120,96 132,76 M208,114 Q200,96 190,78', type: 'stroke', zone: 'texture', strokeWidth: 2 },
         ],
       },
       {
         name: 'detail',
         paths: [
-          { d: 'M20,170 L160,30 L300,170 Z', type: 'fill', zone: 'mountain' },
-          { d: 'M160,30 L120,70 Q140,85 160,70 Q180,85 200,70 L160,30 Z', type: 'fill', zone: 'snow' },
-          { d: 'M110,170 L130,120 M210,170 L190,120', type: 'stroke', zone: 'texture', strokeWidth: 3 },
-          // Raked "chisel" textures for mountain ridges
-          { d: 'M130,70 L110,100 M190,70 L210,100 M160,95 V140', type: 'stroke', zone: 'texture', strokeWidth: 1.2 },
-          { d: 'M80,170 L100,140 M240,170 L220,140 M140,170 L150,150 M180,170 L170,150', type: 'stroke', zone: 'texture', strokeWidth: 0.8 },
+          { d: 'M22,175 Q48,158 78,130 Q108,98 132,70 Q148,52 156,42 Q160,37 163,35 Q166,37 170,42 Q178,52 194,70 Q218,98 248,130 Q278,158 302,175 Z', type: 'fill', zone: 'mountain' },
+          { d: 'M132,70 Q144,54 152,44 Q158,38 163,35 Q168,38 174,44 Q182,54 194,70 Q186,76 180,70 Q174,62 168,68 Q162,60 158,68 Q152,62 146,68 Q140,62 136,72 Z', type: 'fill', zone: 'snow' },
+          { d: 'M22,175 Q48,158 78,130 Q108,98 132,70 Q148,52 156,42 Q160,37 163,35 Q166,37 170,42 Q178,52 194,70 Q218,98 248,130 Q278,158 302,175', type: 'stroke', zone: 'mountain', strokeWidth: 2 },
+          { d: 'M110,114 Q120,96 132,76 M208,114 Q200,96 190,78', type: 'stroke', zone: 'texture', strokeWidth: 2 },
+          // Secondary contour lines following slope curvature
+          { d: 'M82,148 Q98,126 116,100 M234,148 Q220,126 206,102 M160,56 Q162,48 164,42', type: 'stroke', zone: 'texture', strokeWidth: 1 },
+          // Fine slope texture — curving with mountain form
+          { d: 'M58,162 Q66,154 74,146 M96,142 Q104,132 112,124 M206,124 Q214,132 222,142 M250,146 Q258,154 266,162 M142,84 Q148,76 154,70 M172,70 Q178,76 184,84', type: 'stroke', zone: 'texture', strokeWidth: 0.6 },
         ],
       },
     ],
@@ -174,12 +185,12 @@ const MOKURI_ELEMENTS = [
           { d: 'M0,70 Q50,45 100,55 Q150,35 200,50 Q250,40 300,55', type: 'stroke', zone: 'far', strokeWidth: 1.5 },
           { d: 'M0,90 Q60,65 130,75 Q190,60 250,72 L300,80', type: 'stroke', zone: 'mid', strokeWidth: 1.5 },
           { d: 'M0,115 Q80,90 160,98 Q230,85 300,100', type: 'stroke', zone: 'near', strokeWidth: 2 },
-          // Tree suggestions on far hills
-          { d: 'M65,55 Q70,48 75,55 M120,52 Q125,45 130,52 M175,45 Q180,38 185,45 M230,48 Q235,41 240,48', type: 'stroke', zone: 'far', strokeWidth: 1 },
-          // Grass texture on mid hill
-          { d: 'M30,82 L35,75 M70,74 L75,67 M110,76 L115,69 M160,70 L165,63 M210,68 L215,61 M260,74 L265,67', type: 'stroke', zone: 'mid', strokeWidth: 0.7 },
-          // Grass texture on near hill
-          { d: 'M40,108 L46,102 M100,98 L106,92 M170,97 L176,91 M230,92 L236,86 M280,98 L286,92', type: 'stroke', zone: 'near', strokeWidth: 0.8 },
+          // Tree suggestions — rounded organic crowns on far hills
+          { d: 'M62,56 Q66,50 70,52 Q74,48 78,54 M118,52 Q122,46 126,48 Q130,44 134,50 M172,44 Q176,38 180,40 Q184,36 188,44 M228,48 Q232,42 236,44 Q240,40 244,48', type: 'stroke', zone: 'far', strokeWidth: 0.8 },
+          // Grass texture on mid hill — varied Q-curve tufts
+          { d: 'M28,82 Q32,76 34,78 M68,74 Q72,68 76,70 M112,76 Q116,70 118,72 M158,70 Q162,64 166,66 M208,68 Q212,62 216,64 M258,74 Q262,68 264,70', type: 'stroke', zone: 'mid', strokeWidth: 0.6 },
+          // Grass texture on near hill — fuller tufts
+          { d: 'M38,108 Q42,102 46,106 M98,98 Q102,92 108,96 M168,96 Q172,90 178,94 M228,92 Q232,86 238,90 M278,96 Q282,90 286,94', type: 'stroke', zone: 'near', strokeWidth: 0.7 },
         ],
       },
     ],
