@@ -102,7 +102,7 @@ const MOKURI_SCENE_ELEMENTS = [
     ]
   },
 
-  // 2. rock-formation
+  // 2. rock-formation — craggy garden rocks (suiseki-inspired)
   {
     id: 'rock-formation',
     name: 'Rock Formation',
@@ -119,50 +119,46 @@ const MOKURI_SCENE_ELEMENTS = [
       {
         name: 'block',
         paths: [
-          { d: 'M18,155 Q22,112 38,88 Q52,68 78,56 Q96,52 110,58 Q128,68 136,88 Q142,108 140,155 Z', type: 'fill', zone: 'rock' },
-          { d: 'M100,155 Q106,128 118,108 Q132,90 152,78 Q168,72 182,76 Q198,84 206,100 Q212,120 210,155 Z', type: 'fill', zone: 'rock' },
-          { d: 'M56,155 Q60,140 68,130 Q78,120 90,116 Q100,114 108,118 Q116,124 118,136 Q120,148 118,155 Z', type: 'fill', zone: 'rock' }
+          { d: 'M14,156 Q18,128 26,105 Q36,82 52,68 L62,60 Q70,55 78,58 L84,64 Q92,78 98,98 Q104,120 108,156 Z', type: 'fill', zone: 'rock' },
+          { d: 'M122,156 Q126,126 134,100 Q142,78 154,62 L162,50 Q168,46 174,52 Q182,64 188,84 Q194,108 198,134 Q200,148 202,156 Z', type: 'fill', zone: 'rock' },
+          { d: 'M68,156 Q72,138 80,128 Q90,118 102,114 Q112,116 118,126 Q124,138 126,156 Z', type: 'fill', zone: 'rock' },
+          { d: 'M4,156 Q8,146 16,140 Q24,136 32,138 Q38,142 40,156 Z', type: 'fill', zone: 'rock' }
         ]
       },
       {
         name: 'shape',
         paths: [
-          { d: 'M18,155 Q22,112 38,88 Q52,68 78,56 Q96,52 110,58 Q128,68 136,88 Q142,108 140,155 Z', type: 'fill', zone: 'rock' },
-          { d: 'M100,155 Q106,128 118,108 Q132,90 152,78 Q168,72 182,76 Q198,84 206,100 Q212,120 210,155 Z', type: 'fill', zone: 'rock' },
-          { d: 'M56,155 Q60,140 68,130 Q78,120 90,116 Q100,114 108,118 Q116,124 118,136 Q120,148 118,155 Z', type: 'fill', zone: 'rock' },
-          { d: 'M78,155 Q82,130 96,112 Q108,100 120,108 Q126,118 124,155 Z', type: 'fill', zone: 'shadow' },
-          { d: 'M160,155 Q166,132 178,118 Q190,108 200,114 Q206,124 206,155 Z', type: 'fill', zone: 'shadow' },
-          { d: 'M28,80 Q34,74 42,76 Q48,80 46,86 Q42,90 36,88 Q30,86 28,80 Z', type: 'fill', zone: 'moss' },
-          { d: 'M68,62 Q74,56 82,58 Q86,62 84,68 Q80,72 74,70 Q68,68 68,62 Z', type: 'fill', zone: 'moss' },
-          { d: 'M148,82 Q154,76 162,78 Q166,82 164,88 Q160,92 154,90 Q148,88 148,82 Z', type: 'fill', zone: 'moss' },
-          { d: 'M18,155 Q22,112 38,88 Q52,68 78,56 Q96,52 110,58 Q128,68 136,88 Q142,108 140,155', type: 'stroke', zone: 'rock', strokeWidth: 1.2 },
-          { d: 'M100,155 Q106,128 118,108 Q132,90 152,78 Q168,72 182,76 Q198,84 206,100 Q212,120 210,155', type: 'stroke', zone: 'rock', strokeWidth: 1.2 },
-          { d: 'M56,155 Q60,140 68,130 Q78,120 90,116 Q100,114 108,118 Q116,124 118,136 Q120,148 118,155', type: 'stroke', zone: 'rock', strokeWidth: 1 }
+          { d: 'M14,156 Q18,128 26,105 Q36,82 52,68 L62,60 Q70,55 78,58 L84,64 Q92,78 98,98 Q104,120 108,156 Z', type: 'fill', zone: 'rock' },
+          { d: 'M122,156 Q126,126 134,100 Q142,78 154,62 L162,50 Q168,46 174,52 Q182,64 188,84 Q194,108 198,134 Q200,148 202,156 Z', type: 'fill', zone: 'rock' },
+          { d: 'M68,156 Q72,138 80,128 Q90,118 102,114 Q112,116 118,126 Q124,138 126,156 Z', type: 'fill', zone: 'rock' },
+          { d: 'M4,156 Q8,146 16,140 Q24,136 32,138 Q38,142 40,156 Z', type: 'fill', zone: 'rock' },
+          { d: 'M84,156 Q86,132 92,118 Q98,108 106,114 Q112,122 114,156 Z', type: 'fill', zone: 'shadow' },
+          { d: 'M166,156 Q170,130 178,112 Q186,100 194,108 Q198,120 200,156 Z', type: 'fill', zone: 'shadow' },
+          { d: 'M46,72 Q52,64 60,62 Q66,64 64,70 Q58,76 50,78 Q44,76 46,72 Z', type: 'fill', zone: 'moss' },
+          { d: 'M150,66 Q156,58 164,56 Q170,60 166,66 Q160,72 152,70 Q148,68 150,66 Z', type: 'fill', zone: 'moss' },
+          { d: 'M14,156 Q18,128 26,105 Q36,82 52,68 L62,60 Q70,55 78,58 L84,64 Q92,78 98,98 Q104,120 108,156', type: 'stroke', zone: 'rock', strokeWidth: 1.1 },
+          { d: 'M122,156 Q126,126 134,100 Q142,78 154,62 L162,50 Q168,46 174,52 Q182,64 188,84 Q194,108 198,134 Q200,148 202,156', type: 'stroke', zone: 'rock', strokeWidth: 1.1 }
         ]
       },
       {
         name: 'detail',
         paths: [
-          { d: 'M18,155 Q22,112 38,88 Q52,68 78,56 Q96,52 110,58 Q128,68 136,88 Q142,108 140,155 Z', type: 'fill', zone: 'rock' },
-          { d: 'M100,155 Q106,128 118,108 Q132,90 152,78 Q168,72 182,76 Q198,84 206,100 Q212,120 210,155 Z', type: 'fill', zone: 'rock' },
-          { d: 'M56,155 Q60,140 68,130 Q78,120 90,116 Q100,114 108,118 Q116,124 118,136 Q120,148 118,155 Z', type: 'fill', zone: 'rock' },
-          { d: 'M78,155 Q82,130 96,112 Q108,100 120,108 Q126,118 124,155 Z', type: 'fill', zone: 'shadow' },
-          { d: 'M160,155 Q166,132 178,118 Q190,108 200,114 Q206,124 206,155 Z', type: 'fill', zone: 'shadow' },
-          { d: 'M28,80 Q34,74 42,76 Q48,80 46,86 Q42,90 36,88 Q30,86 28,80 Z', type: 'fill', zone: 'moss' },
-          { d: 'M68,62 Q74,56 82,58 Q86,62 84,68 Q80,72 74,70 Q68,68 68,62 Z', type: 'fill', zone: 'moss' },
-          { d: 'M148,82 Q154,76 162,78 Q166,82 164,88 Q160,92 154,90 Q148,88 148,82 Z', type: 'fill', zone: 'moss' },
-          { d: 'M32,100 Q40,92 50,96', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
-          { d: 'M42,118 Q54,108 64,112', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
-          { d: 'M26,130 Q36,122 48,128', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
-          { d: 'M60,80 Q72,72 84,78', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
-          { d: 'M90,70 Q100,64 112,68', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
-          { d: 'M110,90 Q120,82 130,88', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
-          { d: 'M120,120 Q132,110 142,116', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
-          { d: 'M140,96 Q152,88 164,94', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
-          { d: 'M170,100 Q180,92 192,98', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
-          { d: 'M176,120 Q186,112 196,118', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
-          { d: 'M50,142 Q58,136 68,140', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
-          { d: 'M74,126 Q82,120 92,124', type: 'stroke', zone: 'detail', strokeWidth: 0.4 }
+          { d: 'M14,156 Q18,128 26,105 Q36,82 52,68 L62,60 Q70,55 78,58 L84,64 Q92,78 98,98 Q104,120 108,156 Z', type: 'fill', zone: 'rock' },
+          { d: 'M122,156 Q126,126 134,100 Q142,78 154,62 L162,50 Q168,46 174,52 Q182,64 188,84 Q194,108 198,134 Q200,148 202,156 Z', type: 'fill', zone: 'rock' },
+          { d: 'M68,156 Q72,138 80,128 Q90,118 102,114 Q112,116 118,126 Q124,138 126,156 Z', type: 'fill', zone: 'rock' },
+          { d: 'M4,156 Q8,146 16,140 Q24,136 32,138 Q38,142 40,156 Z', type: 'fill', zone: 'rock' },
+          { d: 'M84,156 Q86,132 92,118 Q98,108 106,114 Q112,122 114,156 Z', type: 'fill', zone: 'shadow' },
+          { d: 'M166,156 Q170,130 178,112 Q186,100 194,108 Q198,120 200,156 Z', type: 'fill', zone: 'shadow' },
+          { d: 'M46,72 Q52,64 60,62 Q66,64 64,70 Q58,76 50,78 Q44,76 46,72 Z', type: 'fill', zone: 'moss' },
+          { d: 'M150,66 Q156,58 164,56 Q170,60 166,66 Q160,72 152,70 Q148,68 150,66 Z', type: 'fill', zone: 'moss' },
+          { d: 'M14,156 Q18,128 26,105 Q36,82 52,68 L62,60 Q70,55 78,58 L84,64 Q92,78 98,98 Q104,120 108,156', type: 'stroke', zone: 'rock', strokeWidth: 1.1 },
+          { d: 'M122,156 Q126,126 134,100 Q142,78 154,62 L162,50 Q168,46 174,52 Q182,64 188,84 Q194,108 198,134 Q200,148 202,156', type: 'stroke', zone: 'rock', strokeWidth: 1.1 },
+          { d: 'M30,100 Q38,92 48,96 M24,118 Q34,112 44,116 M20,138 Q30,130 42,136', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
+          { d: 'M66,86 Q76,78 88,84 M78,102 Q88,94 98,100 M74,122 Q84,114 96,120', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
+          { d: 'M136,88 Q146,80 158,86 M142,108 Q154,98 166,106 M148,126 Q160,118 172,124', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
+          { d: 'M80,134 Q90,128 100,132 M10,148 Q18,142 28,146', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
+          { d: 'M28,86 Q34,80 40,84 Q36,90 28,86 Z', type: 'fill', zone: 'moss' },
+          { d: 'M68,156 Q72,138 80,128 Q90,118 102,114 Q112,116 118,126 Q124,138 126,156', type: 'stroke', zone: 'rock', strokeWidth: 0.8 }
         ]
       }
     ]
@@ -326,7 +322,7 @@ const MOKURI_SCENE_ELEMENTS = [
     ]
   },
 
-  // 5. stone-path
+  // 5. stone-path — garden stepping stones (tobi-ishi)
   {
     id: 'stone-path',
     name: 'Stone Path',
@@ -343,58 +339,51 @@ const MOKURI_SCENE_ELEMENTS = [
       {
         name: 'block',
         paths: [
-          { d: 'M14,48 Q18,36 28,32 Q38,30 44,36 Q48,42 44,50 Q38,56 28,56 Q18,54 14,48 Z', type: 'fill', zone: 'stone' },
-          { d: 'M56,38 Q62,26 74,22 Q86,20 92,28 Q96,36 90,44 Q82,50 72,50 Q62,48 56,38 Z', type: 'fill', zone: 'stone' },
-          { d: 'M104,32 Q110,22 120,18 Q132,16 140,22 Q146,30 140,38 Q132,44 122,44 Q112,42 104,32 Z', type: 'fill', zone: 'stone' },
-          { d: 'M152,36 Q158,28 168,24 Q178,22 184,28 Q188,34 184,42 Q178,48 168,48 Q158,46 152,36 Z', type: 'fill', zone: 'stone' },
-          { d: 'M196,42 Q202,32 212,28 Q222,26 228,32 Q232,40 226,48 Q218,54 208,54 Q198,50 196,42 Z', type: 'fill', zone: 'stone' }
+          { d: 'M10,50 Q14,36 24,30 Q34,26 44,28 Q52,32 54,42 Q52,52 44,56 Q32,60 20,58 Q12,54 10,50 Z', type: 'fill', zone: 'stone' },
+          { d: 'M64,40 Q70,28 80,22 Q90,20 98,26 Q102,34 96,42 Q88,50 76,50 Q66,48 64,40 Z', type: 'fill', zone: 'stone' },
+          { d: 'M112,34 Q118,22 130,16 Q142,14 150,20 Q156,28 152,38 Q144,46 132,48 Q120,46 112,34 Z', type: 'fill', zone: 'stone' },
+          { d: 'M164,38 Q168,28 178,24 Q186,22 192,28 Q196,36 190,44 Q182,50 172,48 Q166,44 164,38 Z', type: 'fill', zone: 'stone' },
+          { d: 'M202,42 Q208,30 218,24 Q230,22 236,30 Q240,40 234,50 Q224,58 212,56 Q204,50 202,42 Z', type: 'fill', zone: 'stone' }
         ]
       },
       {
         name: 'shape',
         paths: [
-          { d: 'M14,48 Q18,36 28,32 Q38,30 44,36 Q48,42 44,50 Q38,56 28,56 Q18,54 14,48 Z', type: 'fill', zone: 'stone' },
-          { d: 'M56,38 Q62,26 74,22 Q86,20 92,28 Q96,36 90,44 Q82,50 72,50 Q62,48 56,38 Z', type: 'fill', zone: 'stone' },
-          { d: 'M104,32 Q110,22 120,18 Q132,16 140,22 Q146,30 140,38 Q132,44 122,44 Q112,42 104,32 Z', type: 'fill', zone: 'stone' },
-          { d: 'M152,36 Q158,28 168,24 Q178,22 184,28 Q188,34 184,42 Q178,48 168,48 Q158,46 152,36 Z', type: 'fill', zone: 'stone' },
-          { d: 'M196,42 Q202,32 212,28 Q222,26 228,32 Q232,40 226,48 Q218,54 208,54 Q198,50 196,42 Z', type: 'fill', zone: 'stone' },
-          { d: 'M28,52 Q34,56 40,52 Q44,56 42,60 Q36,62 30,60 Q26,58 28,52 Z', type: 'fill', zone: 'shadow' },
-          { d: 'M72,46 Q80,50 88,46 Q92,50 88,54 Q80,56 72,54 Q68,52 72,46 Z', type: 'fill', zone: 'shadow' },
-          { d: 'M120,40 Q128,44 138,40 Q142,44 138,48 Q128,50 120,48 Q116,46 120,40 Z', type: 'fill', zone: 'shadow' },
-          { d: 'M166,44 Q174,48 182,44 Q186,48 182,52 Q174,54 166,52 Q162,50 166,44 Z', type: 'fill', zone: 'shadow' },
-          { d: 'M208,50 Q216,54 224,50 Q228,54 224,58 Q216,60 208,58 Q204,56 208,50 Z', type: 'fill', zone: 'shadow' },
-          { d: 'M14,48 Q18,36 28,32 Q38,30 44,36 Q48,42 44,50 Q38,56 28,56 Q18,54 14,48 Z', type: 'stroke', zone: 'stone', strokeWidth: 0.8 },
-          { d: 'M56,38 Q62,26 74,22 Q86,20 92,28 Q96,36 90,44 Q82,50 72,50 Q62,48 56,38', type: 'stroke', zone: 'stone', strokeWidth: 0.8 },
-          { d: 'M104,32 Q110,22 120,18 Q132,16 140,22 Q146,30 140,38 Q132,44 122,44 Q112,42 104,32', type: 'stroke', zone: 'stone', strokeWidth: 0.8 },
-          { d: 'M152,36 Q158,28 168,24 Q178,22 184,28 Q188,34 184,42 Q178,48 168,48 Q158,46 152,36', type: 'stroke', zone: 'stone', strokeWidth: 0.8 },
-          { d: 'M196,42 Q202,32 212,28 Q222,26 228,32 Q232,40 226,48 Q218,54 208,54 Q198,50 196,42', type: 'stroke', zone: 'stone', strokeWidth: 0.8 }
+          { d: 'M10,50 Q14,36 24,30 Q34,26 44,28 Q52,32 54,42 Q52,52 44,56 Q32,60 20,58 Q12,54 10,50 Z', type: 'fill', zone: 'stone' },
+          { d: 'M64,40 Q70,28 80,22 Q90,20 98,26 Q102,34 96,42 Q88,50 76,50 Q66,48 64,40 Z', type: 'fill', zone: 'stone' },
+          { d: 'M112,34 Q118,22 130,16 Q142,14 150,20 Q156,28 152,38 Q144,46 132,48 Q120,46 112,34 Z', type: 'fill', zone: 'stone' },
+          { d: 'M164,38 Q168,28 178,24 Q186,22 192,28 Q196,36 190,44 Q182,50 172,48 Q166,44 164,38 Z', type: 'fill', zone: 'stone' },
+          { d: 'M202,42 Q208,30 218,24 Q230,22 236,30 Q240,40 234,50 Q224,58 212,56 Q204,50 202,42 Z', type: 'fill', zone: 'stone' },
+          { d: 'M18,56 Q30,60 42,58 Q50,54 52,58 Q46,66 32,66 Q18,62 18,56 Z', type: 'fill', zone: 'shadow' },
+          { d: 'M70,48 Q82,52 94,48 Q100,42 102,46 Q96,56 80,56 Q68,52 70,48 Z', type: 'fill', zone: 'shadow' },
+          { d: 'M122,44 Q134,48 148,44 Q154,38 156,42 Q150,52 136,54 Q120,50 122,44 Z', type: 'fill', zone: 'shadow' },
+          { d: 'M170,46 Q180,50 190,46 Q194,40 196,44 Q190,52 178,54 Q168,50 170,46 Z', type: 'fill', zone: 'shadow' },
+          { d: 'M210,54 Q222,58 234,52 Q238,44 240,48 Q236,60 220,62 Q208,58 210,54 Z', type: 'fill', zone: 'shadow' },
+          { d: 'M10,50 Q14,36 24,30 Q34,26 44,28 Q52,32 54,42 Q52,52 44,56 Q32,60 20,58 Q12,54 10,50', type: 'stroke', zone: 'stone', strokeWidth: 0.8 },
+          { d: 'M112,34 Q118,22 130,16 Q142,14 150,20 Q156,28 152,38 Q144,46 132,48 Q120,46 112,34', type: 'stroke', zone: 'stone', strokeWidth: 0.8 }
         ]
       },
       {
         name: 'detail',
         paths: [
-          { d: 'M14,48 Q18,36 28,32 Q38,30 44,36 Q48,42 44,50 Q38,56 28,56 Q18,54 14,48 Z', type: 'fill', zone: 'stone' },
-          { d: 'M56,38 Q62,26 74,22 Q86,20 92,28 Q96,36 90,44 Q82,50 72,50 Q62,48 56,38 Z', type: 'fill', zone: 'stone' },
-          { d: 'M104,32 Q110,22 120,18 Q132,16 140,22 Q146,30 140,38 Q132,44 122,44 Q112,42 104,32 Z', type: 'fill', zone: 'stone' },
-          { d: 'M152,36 Q158,28 168,24 Q178,22 184,28 Q188,34 184,42 Q178,48 168,48 Q158,46 152,36 Z', type: 'fill', zone: 'stone' },
-          { d: 'M196,42 Q202,32 212,28 Q222,26 228,32 Q232,40 226,48 Q218,54 208,54 Q198,50 196,42 Z', type: 'fill', zone: 'stone' },
-          { d: 'M28,52 Q34,56 40,52 Q44,56 42,60 Q36,62 30,60 Q26,58 28,52 Z', type: 'fill', zone: 'shadow' },
-          { d: 'M72,46 Q80,50 88,46 Q92,50 88,54 Q80,56 72,54 Q68,52 72,46 Z', type: 'fill', zone: 'shadow' },
-          { d: 'M120,40 Q128,44 138,40 Q142,44 138,48 Q128,50 120,48 Q116,46 120,40 Z', type: 'fill', zone: 'shadow' },
-          { d: 'M166,44 Q174,48 182,44 Q186,48 182,52 Q174,54 166,52 Q162,50 166,44 Z', type: 'fill', zone: 'shadow' },
-          { d: 'M208,50 Q216,54 224,50 Q228,54 224,58 Q216,60 208,58 Q204,56 208,50 Z', type: 'fill', zone: 'shadow' },
-          { d: 'M16,52 Q20,50 22,54', type: 'stroke', zone: 'moss', strokeWidth: 1.2 },
-          { d: 'M42,34 Q46,32 48,36', type: 'stroke', zone: 'moss', strokeWidth: 1 },
-          { d: 'M138,20 Q142,18 144,22', type: 'stroke', zone: 'moss', strokeWidth: 1 },
-          { d: 'M22,38 Q28,36 32,40', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
-          { d: 'M34,42 Q38,38 42,42', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
-          { d: 'M64,28 Q70,26 76,30', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
-          { d: 'M78,34 Q82,30 86,34', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
-          { d: 'M112,24 Q118,22 124,26', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
-          { d: 'M128,28 Q132,24 136,28', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
-          { d: 'M160,30 Q166,28 172,32', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
-          { d: 'M204,34 Q210,32 216,36', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
-          { d: 'M218,40 Q222,36 226,40', type: 'stroke', zone: 'detail', strokeWidth: 0.4 }
+          { d: 'M10,50 Q14,36 24,30 Q34,26 44,28 Q52,32 54,42 Q52,52 44,56 Q32,60 20,58 Q12,54 10,50 Z', type: 'fill', zone: 'stone' },
+          { d: 'M64,40 Q70,28 80,22 Q90,20 98,26 Q102,34 96,42 Q88,50 76,50 Q66,48 64,40 Z', type: 'fill', zone: 'stone' },
+          { d: 'M112,34 Q118,22 130,16 Q142,14 150,20 Q156,28 152,38 Q144,46 132,48 Q120,46 112,34 Z', type: 'fill', zone: 'stone' },
+          { d: 'M164,38 Q168,28 178,24 Q186,22 192,28 Q196,36 190,44 Q182,50 172,48 Q166,44 164,38 Z', type: 'fill', zone: 'stone' },
+          { d: 'M202,42 Q208,30 218,24 Q230,22 236,30 Q240,40 234,50 Q224,58 212,56 Q204,50 202,42 Z', type: 'fill', zone: 'stone' },
+          { d: 'M18,56 Q30,60 42,58 Q50,54 52,58 Q46,66 32,66 Q18,62 18,56 Z', type: 'fill', zone: 'shadow' },
+          { d: 'M70,48 Q82,52 94,48 Q100,42 102,46 Q96,56 80,56 Q68,52 70,48 Z', type: 'fill', zone: 'shadow' },
+          { d: 'M122,44 Q134,48 148,44 Q154,38 156,42 Q150,52 136,54 Q120,50 122,44 Z', type: 'fill', zone: 'shadow' },
+          { d: 'M170,46 Q180,50 190,46 Q194,40 196,44 Q190,52 178,54 Q168,50 170,46 Z', type: 'fill', zone: 'shadow' },
+          { d: 'M210,54 Q222,58 234,52 Q238,44 240,48 Q236,60 220,62 Q208,58 210,54 Z', type: 'fill', zone: 'shadow' },
+          { d: 'M10,50 Q14,36 24,30 Q34,26 44,28 Q52,32 54,42 Q52,52 44,56 Q32,60 20,58 Q12,54 10,50', type: 'stroke', zone: 'stone', strokeWidth: 0.8 },
+          { d: 'M112,34 Q118,22 130,16 Q142,14 150,20 Q156,28 152,38 Q144,46 132,48 Q120,46 112,34', type: 'stroke', zone: 'stone', strokeWidth: 0.8 },
+          { d: 'M56,46 Q60,42 62,46 M102,32 Q106,28 108,32 M158,34 Q162,30 164,34', type: 'stroke', zone: 'moss', strokeWidth: 1.2 },
+          { d: 'M22,36 Q30,32 38,36 M26,44 Q34,40 40,44', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
+          { d: 'M74,28 Q82,24 90,28 M76,36 Q82,32 90,36', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
+          { d: 'M124,22 Q134,20 142,24 M128,32 Q136,28 144,32', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
+          { d: 'M172,30 Q178,28 184,32', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
+          { d: 'M212,30 Q220,28 228,32 M216,40 Q224,36 230,40', type: 'stroke', zone: 'detail', strokeWidth: 0.5 }
         ]
       }
     ]
@@ -824,7 +813,7 @@ const MOKURI_SCENE_ELEMENTS = [
     ],
   },
 
-  // 11. iris-cluster
+  // 11. iris-cluster — kakitsubata (杜若) water iris
   {
     id: 'iris-cluster',
     name: 'Iris Cluster',
@@ -841,72 +830,84 @@ const MOKURI_SCENE_ELEMENTS = [
       {
         name: 'block',
         paths: [
-          { d: 'M58,196 Q56,150 54,110 Q52,80 50,60', type: 'stroke', zone: 'stem', strokeWidth: 3 },
-          { d: 'M102,196 Q100,148 98,108 Q96,78 94,56', type: 'stroke', zone: 'stem', strokeWidth: 3 },
-          { d: 'M34,46 Q40,28 48,18 Q52,14 56,18 Q58,24 54,36 Q50,46 50,56 Z', type: 'fill', zone: 'petal' },
-          { d: 'M50,56 Q56,48 64,42 Q70,38 74,42 Q76,48 70,56 Q64,62 56,64 Z', type: 'fill', zone: 'petal' },
-          { d: 'M50,56 Q44,48 36,44 Q30,42 28,46 Q26,52 32,58 Q38,62 46,62 Z', type: 'fill', zone: 'petal' },
-          { d: 'M50,60 Q54,68 58,78 Q60,86 56,88 Q50,86 48,78 Q46,68 50,60 Z', type: 'fill', zone: 'petal' },
-          { d: 'M76,40 Q82,22 90,12 Q94,8 98,12 Q100,18 96,30 Q92,40 92,52 Z', type: 'fill', zone: 'petal' },
-          { d: 'M92,52 Q98,44 106,38 Q112,34 116,38 Q118,44 112,52 Q106,58 98,60 Z', type: 'fill', zone: 'petal' },
-          { d: 'M92,52 Q86,44 78,40 Q72,38 70,42 Q68,48 74,54 Q80,58 88,58 Z', type: 'fill', zone: 'petal' },
-          { d: 'M92,56 Q96,64 100,74 Q102,82 98,84 Q92,82 90,74 Q88,64 92,56 Z', type: 'fill', zone: 'petal' },
-          { d: 'M20,196 Q28,160 34,130 Q38,108 36,90 Q32,80 26,86 Q18,96 12,120 Q8,148 10,196 Z', type: 'fill', zone: 'leaf' },
-          { d: 'M70,196 Q74,158 80,128 Q84,106 86,90 Q88,80 92,86 Q96,98 100,130 Q104,160 106,196 Z', type: 'fill', zone: 'leaf' },
-          { d: 'M126,196 Q128,162 130,132 Q132,108 136,92 Q140,84 144,90 Q146,100 148,128 Q150,162 152,196 Z', type: 'fill', zone: 'leaf' }
+          // stems as tapered fills (wide at base, narrow at flower)
+          { d: 'M54,196 Q53,150 52,110 Q51,80 50,62 L52,60 Q53,78 54,108 Q55,148 56,196 Z', type: 'fill', zone: 'stem' },
+          { d: 'M98,196 Q97,148 96,108 Q95,78 94,58 L96,56 Q97,76 98,106 Q99,146 100,196 Z', type: 'fill', zone: 'stem' },
+          // left flower — 3 upper petals + 1 drooping
+          { d: 'M32,48 Q38,26 46,16 Q50,12 54,16 Q56,22 52,34 Q48,44 48,56 Z', type: 'fill', zone: 'petal' },
+          { d: 'M48,56 Q54,46 62,40 Q68,36 72,40 Q74,46 68,54 Q62,60 54,62 Z', type: 'fill', zone: 'petal' },
+          { d: 'M48,56 Q42,46 34,42 Q28,40 26,44 Q24,50 30,56 Q36,62 44,62 Z', type: 'fill', zone: 'petal' },
+          { d: 'M48,60 Q52,70 56,80 Q58,88 54,90 Q48,88 46,78 Q44,68 48,60 Z', type: 'fill', zone: 'petal' },
+          // right flower — slightly different proportions
+          { d: 'M78,42 Q84,22 92,10 Q96,6 100,10 Q102,18 98,32 Q94,42 94,54 Z', type: 'fill', zone: 'petal' },
+          { d: 'M94,54 Q100,44 108,36 Q114,32 118,36 Q120,44 114,52 Q108,60 100,62 Z', type: 'fill', zone: 'petal' },
+          { d: 'M94,54 Q88,46 80,42 Q74,40 72,44 Q70,50 76,56 Q82,62 90,60 Z', type: 'fill', zone: 'petal' },
+          { d: 'M94,58 Q98,68 102,78 Q104,86 100,88 Q94,86 92,76 Q90,66 94,58 Z', type: 'fill', zone: 'petal' },
+          // leaves — sword-shaped, varied curves
+          { d: 'M18,196 Q26,158 32,128 Q36,104 34,88 Q30,78 24,84 Q16,94 10,118 Q6,146 8,196 Z', type: 'fill', zone: 'leaf' },
+          { d: 'M68,196 Q72,156 78,126 Q82,102 84,88 Q86,78 90,84 Q94,96 98,128 Q102,158 104,196 Z', type: 'fill', zone: 'leaf' },
+          { d: 'M124,196 Q126,160 128,130 Q130,106 134,90 Q138,82 142,88 Q144,98 146,126 Q148,160 150,196 Z', type: 'fill', zone: 'leaf' }
         ]
       },
       {
         name: 'shape',
         paths: [
-          { d: 'M58,196 Q56,150 54,110 Q52,80 50,60', type: 'stroke', zone: 'stem', strokeWidth: 3 },
-          { d: 'M102,196 Q100,148 98,108 Q96,78 94,56', type: 'stroke', zone: 'stem', strokeWidth: 3 },
-          { d: 'M34,46 Q40,28 48,18 Q52,14 56,18 Q58,24 54,36 Q50,46 50,56 Z', type: 'fill', zone: 'petal' },
-          { d: 'M50,56 Q56,48 64,42 Q70,38 74,42 Q76,48 70,56 Q64,62 56,64 Z', type: 'fill', zone: 'petal' },
-          { d: 'M50,56 Q44,48 36,44 Q30,42 28,46 Q26,52 32,58 Q38,62 46,62 Z', type: 'fill', zone: 'petal' },
-          { d: 'M50,60 Q54,68 58,78 Q60,86 56,88 Q50,86 48,78 Q46,68 50,60 Z', type: 'fill', zone: 'petal' },
-          { d: 'M76,40 Q82,22 90,12 Q94,8 98,12 Q100,18 96,30 Q92,40 92,52 Z', type: 'fill', zone: 'petal' },
-          { d: 'M92,52 Q98,44 106,38 Q112,34 116,38 Q118,44 112,52 Q106,58 98,60 Z', type: 'fill', zone: 'petal' },
-          { d: 'M92,52 Q86,44 78,40 Q72,38 70,42 Q68,48 74,54 Q80,58 88,58 Z', type: 'fill', zone: 'petal' },
-          { d: 'M92,56 Q96,64 100,74 Q102,82 98,84 Q92,82 90,74 Q88,64 92,56 Z', type: 'fill', zone: 'petal' },
-          { d: 'M20,196 Q28,160 34,130 Q38,108 36,90 Q32,80 26,86 Q18,96 12,120 Q8,148 10,196 Z', type: 'fill', zone: 'leaf' },
-          { d: 'M70,196 Q74,158 80,128 Q84,106 86,90 Q88,80 92,86 Q96,98 100,130 Q104,160 106,196 Z', type: 'fill', zone: 'leaf' },
-          { d: 'M126,196 Q128,162 130,132 Q132,108 136,92 Q140,84 144,90 Q146,100 148,128 Q150,162 152,196 Z', type: 'fill', zone: 'leaf' },
-          { d: 'M34,46 Q40,28 48,18 Q52,14 56,18 Q58,24 54,36 Q50,46 50,56', type: 'stroke', zone: 'petal', strokeWidth: 0.8 },
-          { d: 'M50,56 Q56,48 64,42 Q70,38 74,42 Q76,48 70,56 Q64,62 56,64', type: 'stroke', zone: 'petal', strokeWidth: 0.8 },
-          { d: 'M76,40 Q82,22 90,12 Q94,8 98,12 Q100,18 96,30 Q92,40 92,52', type: 'stroke', zone: 'petal', strokeWidth: 0.8 },
-          { d: 'M92,52 Q98,44 106,38 Q112,34 116,38 Q118,44 112,52 Q106,58 98,60', type: 'stroke', zone: 'petal', strokeWidth: 0.8 }
+          // all block fills carried forward
+          { d: 'M54,196 Q53,150 52,110 Q51,80 50,62 L52,60 Q53,78 54,108 Q55,148 56,196 Z', type: 'fill', zone: 'stem' },
+          { d: 'M98,196 Q97,148 96,108 Q95,78 94,58 L96,56 Q97,76 98,106 Q99,146 100,196 Z', type: 'fill', zone: 'stem' },
+          { d: 'M32,48 Q38,26 46,16 Q50,12 54,16 Q56,22 52,34 Q48,44 48,56 Z', type: 'fill', zone: 'petal' },
+          { d: 'M48,56 Q54,46 62,40 Q68,36 72,40 Q74,46 68,54 Q62,60 54,62 Z', type: 'fill', zone: 'petal' },
+          { d: 'M48,56 Q42,46 34,42 Q28,40 26,44 Q24,50 30,56 Q36,62 44,62 Z', type: 'fill', zone: 'petal' },
+          { d: 'M48,60 Q52,70 56,80 Q58,88 54,90 Q48,88 46,78 Q44,68 48,60 Z', type: 'fill', zone: 'petal' },
+          { d: 'M78,42 Q84,22 92,10 Q96,6 100,10 Q102,18 98,32 Q94,42 94,54 Z', type: 'fill', zone: 'petal' },
+          { d: 'M94,54 Q100,44 108,36 Q114,32 118,36 Q120,44 114,52 Q108,60 100,62 Z', type: 'fill', zone: 'petal' },
+          { d: 'M94,54 Q88,46 80,42 Q74,40 72,44 Q70,50 76,56 Q82,62 90,60 Z', type: 'fill', zone: 'petal' },
+          { d: 'M94,58 Q98,68 102,78 Q104,86 100,88 Q94,86 92,76 Q90,66 94,58 Z', type: 'fill', zone: 'petal' },
+          { d: 'M18,196 Q26,158 32,128 Q36,104 34,88 Q30,78 24,84 Q16,94 10,118 Q6,146 8,196 Z', type: 'fill', zone: 'leaf' },
+          { d: 'M68,196 Q72,156 78,126 Q82,102 84,88 Q86,78 90,84 Q94,96 98,128 Q102,158 104,196 Z', type: 'fill', zone: 'leaf' },
+          { d: 'M124,196 Q126,160 128,130 Q130,106 134,90 Q138,82 142,88 Q144,98 146,126 Q148,160 150,196 Z', type: 'fill', zone: 'leaf' },
+          // petal outlines — left flower
+          { d: 'M32,48 Q38,26 46,16 Q50,12 54,16 Q56,22 52,34 Q48,44 48,56', type: 'stroke', zone: 'petal', strokeWidth: 0.8 },
+          { d: 'M48,56 Q54,46 62,40 Q68,36 72,40 Q74,46 68,54 Q62,60 54,62', type: 'stroke', zone: 'petal', strokeWidth: 0.7 },
+          // petal outlines — right flower
+          { d: 'M78,42 Q84,22 92,10 Q96,6 100,10 Q102,18 98,32 Q94,42 94,54', type: 'stroke', zone: 'petal', strokeWidth: 0.8 },
+          { d: 'M94,54 Q100,44 108,36 Q114,32 118,36 Q120,44 114,52 Q108,60 100,62', type: 'stroke', zone: 'petal', strokeWidth: 0.7 },
+          // leaf edge strokes
+          { d: 'M18,196 Q26,158 32,128 Q36,104 34,88 Q30,78 24,84', type: 'stroke', zone: 'leaf', strokeWidth: 0.6 },
+          { d: 'M124,196 Q126,160 128,130 Q130,106 134,90 Q138,82 142,88', type: 'stroke', zone: 'leaf', strokeWidth: 0.6 }
         ]
       },
       {
         name: 'detail',
         paths: [
-          { d: 'M58,196 Q56,150 54,110 Q52,80 50,60', type: 'stroke', zone: 'stem', strokeWidth: 3 },
-          { d: 'M102,196 Q100,148 98,108 Q96,78 94,56', type: 'stroke', zone: 'stem', strokeWidth: 3 },
-          { d: 'M34,46 Q40,28 48,18 Q52,14 56,18 Q58,24 54,36 Q50,46 50,56 Z', type: 'fill', zone: 'petal' },
-          { d: 'M50,56 Q56,48 64,42 Q70,38 74,42 Q76,48 70,56 Q64,62 56,64 Z', type: 'fill', zone: 'petal' },
-          { d: 'M50,56 Q44,48 36,44 Q30,42 28,46 Q26,52 32,58 Q38,62 46,62 Z', type: 'fill', zone: 'petal' },
-          { d: 'M50,60 Q54,68 58,78 Q60,86 56,88 Q50,86 48,78 Q46,68 50,60 Z', type: 'fill', zone: 'petal' },
-          { d: 'M76,40 Q82,22 90,12 Q94,8 98,12 Q100,18 96,30 Q92,40 92,52 Z', type: 'fill', zone: 'petal' },
-          { d: 'M92,52 Q98,44 106,38 Q112,34 116,38 Q118,44 112,52 Q106,58 98,60 Z', type: 'fill', zone: 'petal' },
-          { d: 'M92,52 Q86,44 78,40 Q72,38 70,42 Q68,48 74,54 Q80,58 88,58 Z', type: 'fill', zone: 'petal' },
-          { d: 'M92,56 Q96,64 100,74 Q102,82 98,84 Q92,82 90,74 Q88,64 92,56 Z', type: 'fill', zone: 'petal' },
-          { d: 'M20,196 Q28,160 34,130 Q38,108 36,90 Q32,80 26,86 Q18,96 12,120 Q8,148 10,196 Z', type: 'fill', zone: 'leaf' },
-          { d: 'M70,196 Q74,158 80,128 Q84,106 86,90 Q88,80 92,86 Q96,98 100,130 Q104,160 106,196 Z', type: 'fill', zone: 'leaf' },
-          { d: 'M126,196 Q128,162 130,132 Q132,108 136,92 Q140,84 144,90 Q146,100 148,128 Q150,162 152,196 Z', type: 'fill', zone: 'leaf' },
-          { d: 'M48,24 Q50,36 50,48', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
-          { d: 'M52,20 Q52,32 52,44', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
-          { d: 'M58,46 Q62,50 66,54', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
-          { d: 'M42,48 Q38,52 34,54', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
-          { d: 'M52,64 Q54,72 56,80', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
-          { d: 'M90,18 Q92,30 92,42', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
-          { d: 'M94,14 Q94,26 94,38', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
-          { d: 'M100,42 Q104,46 108,50', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
-          { d: 'M84,44 Q80,48 76,50', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
-          { d: 'M94,60 Q96,68 98,76', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
-          { d: 'M28,100 Q32,120 30,140', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
-          { d: 'M82,100 Q86,120 88,140', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
-          { d: 'M134,96 Q136,116 138,136', type: 'stroke', zone: 'detail', strokeWidth: 0.5 }
+          // all shape paths carried forward
+          { d: 'M54,196 Q53,150 52,110 Q51,80 50,62 L52,60 Q53,78 54,108 Q55,148 56,196 Z', type: 'fill', zone: 'stem' },
+          { d: 'M98,196 Q97,148 96,108 Q95,78 94,58 L96,56 Q97,76 98,106 Q99,146 100,196 Z', type: 'fill', zone: 'stem' },
+          { d: 'M32,48 Q38,26 46,16 Q50,12 54,16 Q56,22 52,34 Q48,44 48,56 Z', type: 'fill', zone: 'petal' },
+          { d: 'M48,56 Q54,46 62,40 Q68,36 72,40 Q74,46 68,54 Q62,60 54,62 Z', type: 'fill', zone: 'petal' },
+          { d: 'M48,56 Q42,46 34,42 Q28,40 26,44 Q24,50 30,56 Q36,62 44,62 Z', type: 'fill', zone: 'petal' },
+          { d: 'M48,60 Q52,70 56,80 Q58,88 54,90 Q48,88 46,78 Q44,68 48,60 Z', type: 'fill', zone: 'petal' },
+          { d: 'M78,42 Q84,22 92,10 Q96,6 100,10 Q102,18 98,32 Q94,42 94,54 Z', type: 'fill', zone: 'petal' },
+          { d: 'M94,54 Q100,44 108,36 Q114,32 118,36 Q120,44 114,52 Q108,60 100,62 Z', type: 'fill', zone: 'petal' },
+          { d: 'M94,54 Q88,46 80,42 Q74,40 72,44 Q70,50 76,56 Q82,62 90,60 Z', type: 'fill', zone: 'petal' },
+          { d: 'M94,58 Q98,68 102,78 Q104,86 100,88 Q94,86 92,76 Q90,66 94,58 Z', type: 'fill', zone: 'petal' },
+          { d: 'M18,196 Q26,158 32,128 Q36,104 34,88 Q30,78 24,84 Q16,94 10,118 Q6,146 8,196 Z', type: 'fill', zone: 'leaf' },
+          { d: 'M68,196 Q72,156 78,126 Q82,102 84,88 Q86,78 90,84 Q94,96 98,128 Q102,158 104,196 Z', type: 'fill', zone: 'leaf' },
+          { d: 'M124,196 Q126,160 128,130 Q130,106 134,90 Q138,82 142,88 Q144,98 146,126 Q148,160 150,196 Z', type: 'fill', zone: 'leaf' },
+          { d: 'M32,48 Q38,26 46,16 Q50,12 54,16 Q56,22 52,34 Q48,44 48,56', type: 'stroke', zone: 'petal', strokeWidth: 0.8 },
+          { d: 'M48,56 Q54,46 62,40 Q68,36 72,40 Q74,46 68,54 Q62,60 54,62', type: 'stroke', zone: 'petal', strokeWidth: 0.7 },
+          { d: 'M78,42 Q84,22 92,10 Q96,6 100,10 Q102,18 98,32 Q94,42 94,54', type: 'stroke', zone: 'petal', strokeWidth: 0.8 },
+          { d: 'M94,54 Q100,44 108,36 Q114,32 118,36 Q120,44 114,52 Q108,60 100,62', type: 'stroke', zone: 'petal', strokeWidth: 0.7 },
+          { d: 'M18,196 Q26,158 32,128 Q36,104 34,88 Q30,78 24,84', type: 'stroke', zone: 'leaf', strokeWidth: 0.6 },
+          { d: 'M124,196 Q126,160 128,130 Q130,106 134,90 Q138,82 142,88', type: 'stroke', zone: 'leaf', strokeWidth: 0.6 },
+          // petal veins — left flower
+          { d: 'M46,22 Q48,34 48,48 M40,44 Q36,48 32,52 M56,44 Q60,48 64,52', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
+          { d: 'M50,64 Q52,72 54,82', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
+          // petal veins — right flower
+          { d: 'M90,16 Q92,30 94,44 M82,44 Q78,48 74,52 M102,42 Q106,46 110,50', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
+          { d: 'M94,62 Q96,70 100,80', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
+          // leaf midrib strokes
+          { d: 'M26,98 Q30,118 28,142 M84,96 Q86,118 88,142 M134,94 Q136,114 138,138', type: 'stroke', zone: 'detail', strokeWidth: 0.5 }
         ]
       }
     ]
