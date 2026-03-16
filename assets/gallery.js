@@ -9,7 +9,590 @@
 
 const MOKURI_GALLERY_PRESETS = [
 
-  // Farm and Full Moon (600×420)
+  // Koi Fishing (420×280)
+  {
+  "elements": [
+    {
+      "id": 3,
+      "defId": "rolling-hills",
+      "x": 211.13594890510947,
+      "y": 138.78010948905109,
+      "scaleX": 1.4075729927007299,
+      "scaleY": 2.0004301355578726,
+      "rotation": 0,
+      "carveLevel": 1,
+      "colorOverrides": {
+        "near": 3
+      },
+      "variationSeed": 23073
+    },
+    {
+      "id": 1,
+      "defId": "flowing-stream",
+      "x": 209.29110784578776,
+      "y": 181.66785014339013,
+      "scaleX": 1.5523634372325528,
+      "scaleY": 1.313793103448276,
+      "rotation": 7.709793315073327,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "water": 1,
+        "rock": 2,
+        "foam": "#f5f0e1"
+      },
+      "variationSeed": 8822,
+      "carveStrokes": [
+        {
+          "points": [
+            {
+              "x": 239.2645884034119,
+              "y": 86.36068816225476,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 245.21527826675262,
+              "y": 84.07835653666903,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 264.0241490871006,
+              "y": 81.03200690850234,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 279.51386876315576,
+              "y": 81.09205600816406,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            }
+          ],
+          "tool": "pattern",
+          "pattern": "woodgrain",
+          "density": 0.7,
+          "rotation": 10
+        },
+        {
+          "points": [
+            {
+              "x": 159.26442114282793,
+              "y": 80.34670260359098,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 193.91048531216427,
+              "y": 80.25875703755167,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 207.32971405439974,
+              "y": 82.27686073750542,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 213.5562093368417,
+              "y": 85.28952519984266,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            }
+          ],
+          "tool": "pattern",
+          "pattern": "woodgrain",
+          "density": 0.7,
+          "rotation": 10
+        },
+        {
+          "points": [
+            {
+              "x": 85.29295778669136,
+              "y": 63.79182312383491,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 97.11107075867787,
+              "y": 67.1439638960958,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 114.67452540570659,
+              "y": 66.77000758049327,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 137.24637686827512,
+              "y": 71.05604038952548,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 160.76035829486557,
+              "y": 78.93690086640238,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 177.04387617791707,
+              "y": 78.1806188126957,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 187.72370798477777,
+              "y": 80.26953399405491,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            }
+          ],
+          "tool": "pattern",
+          "pattern": "woodgrain",
+          "density": 0.7,
+          "rotation": 10
+        },
+        {
+          "points": [
+            {
+              "x": 25.06591941396198,
+              "y": 48.4585353255906,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 27.831240383525444,
+              "y": 47.029498349507314,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 54.18703671107727,
+              "y": 42.77418482171279,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 66.89569185792024,
+              "y": 42.38895075747917,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 73.77071824189584,
+              "y": 44.115107867271725,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            }
+          ],
+          "tool": "pattern",
+          "pattern": "woodgrain",
+          "density": 0.7,
+          "rotation": 5
+        },
+        {
+          "points": [
+            {
+              "x": 19.268102640074602,
+              "y": 61.01460858127722,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 54.048730724541635,
+              "y": 57.16109637603101,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 59.422837965448295,
+              "y": 58.08406740280456,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            }
+          ],
+          "tool": "pattern",
+          "pattern": "woodgrain",
+          "density": 0.7,
+          "rotation": 5
+        },
+        {
+          "points": [
+            {
+              "x": 22.708825223121906,
+              "y": 55.675958199151985,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 50.814249672668616,
+              "y": 51.18013701960824,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 63.982302366960006,
+              "y": 51.61164782661912,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            }
+          ],
+          "tool": "pattern",
+          "pattern": "woodgrain",
+          "density": 0.7,
+          "rotation": 5
+        },
+        {
+          "points": [
+            {
+              "x": 25.99819158817033,
+              "y": 61.648138895892785,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 50.95625523666855,
+              "y": 59.10567680456028,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 57.22526425120965,
+              "y": 59.80371536569853,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            }
+          ],
+          "tool": "pattern",
+          "pattern": "woodgrain",
+          "density": 0.7,
+          "rotation": 5
+        },
+        {
+          "points": [
+            {
+              "x": 115.90852571287911,
+              "y": 65.73484806194493,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 122.73605088460306,
+              "y": 66.15628028579805,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 140.58435301813458,
+              "y": 72.67762430088845,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 160.43234482211238,
+              "y": 74.73047964494869,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            }
+          ],
+          "tool": "pattern",
+          "pattern": "woodgrain",
+          "density": 0.7,
+          "rotation": 5
+        },
+        {
+          "points": [
+            {
+              "x": 111.43753469428032,
+              "y": 67.13407767032024,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 157.2838547534719,
+              "y": 71.65017117242311,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 191.51931700839202,
+              "y": 83.93349864078108,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 215.46061093781248,
+              "y": 85.24809412031235,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            }
+          ],
+          "tool": "pattern",
+          "pattern": "woodgrain",
+          "density": 0.7,
+          "rotation": 5
+        },
+        {
+          "points": [
+            {
+              "x": 240.49341789735735,
+              "y": 84.45402731149576,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 275.01931847438465,
+              "y": 81.5635756153385,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            }
+          ],
+          "tool": "pattern",
+          "pattern": "woodgrain",
+          "density": 0.7,
+          "rotation": 5
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "defId": "wooden-bridge",
+      "x": 206.19910767855464,
+      "y": 149.76228390320088,
+      "scaleX": 1.0758874698452106,
+      "scaleY": 1.158020652990142,
+      "rotation": -1.137205016518763,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "shadow": "#1a1a1a",
+        "deck": 2,
+        "rail": "#c23b22"
+      },
+      "variationSeed": 52451
+    },
+    {
+      "id": 4,
+      "defId": "fisherman",
+      "x": 351.1860122546366,
+      "y": 239.8291860693709,
+      "scaleX": 0.6605172413793103,
+      "scaleY": 0.71959475204525,
+      "rotation": 0.042171590476030474,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "rod": "#c46a20",
+        "hat": "#1a1a1a"
+      },
+      "variationSeed": 9430
+    },
+    {
+      "id": 7,
+      "defId": "koi-leaping",
+      "x": 233.4629441650064,
+      "y": 204.67078554352355,
+      "scaleX": 0.14016180206258005,
+      "scaleY": 0.1189019496043315,
+      "rotation": 0,
+      "carveLevel": 0,
+      "colorOverrides": {},
+      "variationSeed": 98835
+    },
+    {
+      "id": 8,
+      "defId": "crane-flying",
+      "x": 128.09615384615384,
+      "y": 51.980769230769226,
+      "scaleX": 0.19038461538461535,
+      "scaleY": 0.19038461538461535,
+      "rotation": 0,
+      "carveLevel": 0,
+      "colorOverrides": {
+        "body": "#f5f0e1",
+        "wing": "#f5f0e1",
+        "detail": 2
+      },
+      "variationSeed": 13118
+    },
+    {
+      "id": 9,
+      "defId": "cloud-bank",
+      "x": 251.72297297297297,
+      "y": 28.33783783783784,
+      "scaleX": 0.35363825363825363,
+      "scaleY": 0.20219594594594595,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "body": "#f5f0e1",
+        "highlight": 1
+      },
+      "variationSeed": 36608
+    },
+    {
+      "id": 10,
+      "defId": "cloud-bank",
+      "x": 276.8571517671517,
+      "y": 44.338295218295215,
+      "scaleX": 0.2662088597473213,
+      "scaleY": 0.15220738045738047,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "body": "#f5f0e1",
+        "highlight": 1
+      },
+      "variationSeed": 723,
+      "locked": false
+    },
+    {
+      "id": 11,
+      "defId": "cloud-bank",
+      "x": 14.35715176715172,
+      "y": 33.838295218295215,
+      "scaleX": 0.2662088597473213,
+      "scaleY": 0.15220738045738047,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "body": "#f5f0e1",
+        "highlight": 1
+      },
+      "variationSeed": 75136,
+      "locked": false
+    },
+    {
+      "id": 12,
+      "defId": "cloud-bank",
+      "x": 400.3571517671517,
+      "y": 45.838295218295215,
+      "scaleX": 0.2662088597473213,
+      "scaleY": 0.15220738045738047,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "body": "#f5f0e1",
+        "highlight": 1
+      },
+      "variationSeed": 6835,
+      "locked": false
+    },
+    {
+      "id": 13,
+      "defId": "hanko-mokuri",
+      "x": 17.625,
+      "y": 259.625,
+      "scaleX": 0.4458333333333333,
+      "scaleY": 0.4458333333333333,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {},
+      "variationSeed": 91122
+    }
+  ],
+  "nextId": 14,
+  "paletteId": "hiroshige",
+  "paperW": 420,
+  "paperH": 280,
+  "paperType": "hosho",
+  "inkLoad": "standard",
+  "impressions": 1,
+  "sky": "day",
+  "ground": "none",
+  "horizon": 0.58,
+  "mist": 1,
+  "backgroundCarveStrokes": [],
+  "presentationMargin": "standard",
+  "presentationTitle": "Koi Fishing",
+  "presentationEdition": "",
+  "presentationHanko": null,
+  "presentationHankoPos": "bottom-right",
+  "presentationDeckle": true,
+  "compositionName": "Koi Fishing"
+},
+ 
+// Farm and Full Moon (600×420)
   {
   "elements": [
     {
