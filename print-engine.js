@@ -176,12 +176,21 @@ const PrintEngine = (() => {
     const edgeOpacity = Math.min(0.7, 0.45 * inkLoad.edgeMul);
 
     // feTurbulence makes every edge slightly wobbly/hand-carved
+    // Hanko get a gentler filter — stamps are applied separately with more control
+    const hankoTurbScale = Math.max(1, inkLoad.turbScale * 0.3);
     const defs = `<defs>
       <filter id="wobble" x="-5%" y="-5%" width="110%" height="110%"
               color-interpolation-filters="sRGB">
         <feTurbulence type="turbulence" baseFrequency="0.04" numOctaves="3"
                       seed="${seed}" result="noise"/>
         <feDisplacementMap in="SourceGraphic" in2="noise" scale="${inkLoad.turbScale}"
+                          xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+      <filter id="wobble-hanko" x="-5%" y="-5%" width="110%" height="110%"
+              color-interpolation-filters="sRGB">
+        <feTurbulence type="turbulence" baseFrequency="0.03" numOctaves="2"
+                      seed="${seed + 7}" result="noise"/>
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="${hankoTurbScale}"
                           xChannelSelector="R" yChannelSelector="G"/>
       </filter>
     </defs>`;
@@ -316,7 +325,7 @@ const PrintEngine = (() => {
       // Procedural variation — seeded per element instance
       // Uses coordinate-value-based noise so concentric paths stay aligned
       const isHanko = def.hanko;
-      const perturbAmt = isHanko ? 0.15 : (isBlock ? 0.6 : (el.carveLevel === 1 ? 0.9 : 1.3));
+      const perturbAmt = isHanko ? 0.06 : (isBlock ? 0.6 : (el.carveLevel === 1 ? 0.9 : 1.3));
       const elemSeed = el.variationSeed || el.id * 31;
       const perturb = (d) => perturbPath(d, perturbAmt, elemSeed);
 
@@ -333,7 +342,8 @@ const PrintEngine = (() => {
         : `translate(${el.x + misX},${el.y + misY}) rotate(${el.rotation}) scale(${el.scaleX},${el.scaleY})`;
       const inner = `translate(${offX},${offY})`;
 
-      svgContent += `<g transform="${xform}" filter="url(#wobble)"><g transform="${inner}">`;
+      const wobbleId = isHanko ? 'wobble-hanko' : 'wobble';
+      svgContent += `<g transform="${xform}" filter="url(#${wobbleId})"><g transform="${inner}">`;
 
       const HANKO_VERMILLION = '#c23b22';
       const resolveOv = (ov) => {
@@ -699,7 +709,7 @@ const PrintEngine = (() => {
       const drew = await drawSvgImpression(ctx, svgStr, w, h, impOpacity);
       if (!drew) {
         console.warn('Print: SVG filters rendered blank — retrying without wobble filter');
-        const simpleSvg = svgStr.replace(/ filter="url\(#wobble\)"/g, '');
+        const simpleSvg = svgStr.replace(/ filter="url\(#wobble(?:-hanko)?\)"/g, '');
         await drawSvgImpression(ctx, simpleSvg, w, h, impOpacity);
       }
     }
