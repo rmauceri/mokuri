@@ -342,6 +342,7 @@ const PrintEngine = (() => {
         return ov;
       };
       const zoneColor = (zoneId) => {
+        if (isHanko && zoneId === 'char') return atmosphere.paperBase || '#f5f0e6';
         const ov = resolveOv(el.colorOverrides && el.colorOverrides[zoneId]);
         if (isHanko) return ov || HANKO_VERMILLION;
         const z = def.colorZones.find(c => c.id === zoneId);
@@ -364,14 +365,18 @@ const PrintEngine = (() => {
       };
 
       // Render fill paths: dark edge behind (ink pooling) + semi-transparent ink
+      // Hanko 'char' zone: paper-colored carved character — no ink edge, full opacity
       const renderFills = (fillPaths) => {
         fillPaths.forEach(p => {
           if (p.type !== 'fill') return;
           const col = zoneColor(p.zone);
           const fill = zoneFillAttr(p.zone);
           const pd = perturb(p.d);
-          svgContent += `<path d="${pd}" fill="none" stroke="${darken(col, 0.35)}" stroke-width="${edgeWeight}" stroke-linejoin="round" stroke-opacity="${edgeOpacity.toFixed(2)}"/>`;
-          svgContent += `<path d="${pd}" fill="${fill}" fill-opacity="${inkOpacity.toFixed(2)}" stroke="none"/>`;
+          const isCharZone = isHanko && p.zone === 'char';
+          if (!isCharZone) {
+            svgContent += `<path d="${pd}" fill="none" stroke="${darken(col, 0.35)}" stroke-width="${edgeWeight}" stroke-linejoin="round" stroke-opacity="${edgeOpacity.toFixed(2)}"/>`;
+          }
+          svgContent += `<path d="${pd}" fill="${fill}" fill-opacity="${isCharZone ? '0.95' : inkOpacity.toFixed(2)}" stroke="none"/>`;
         });
       };
 
@@ -382,9 +387,14 @@ const PrintEngine = (() => {
         carve.paths.forEach(p => {
           const col = zoneColor(p.zone);
           const pd = perturb(p.d);
+          const isCharZone = isHanko && p.zone === 'char';
           if (p.type === 'fill') {
             const fill = zoneFillAttr(p.zone);
-            svgContent += `<path d="${pd}" fill="${fill}" fill-opacity="${inkOpacity.toFixed(2)}" stroke="${darken(col, 0.3)}" stroke-width="0.8" stroke-opacity="${(0.4 * inkLoad.edgeMul).toFixed(2)}" stroke-linejoin="round"/>`;
+            if (isCharZone) {
+              svgContent += `<path d="${pd}" fill="${fill}" fill-opacity="0.95" stroke="none"/>`;
+            } else {
+              svgContent += `<path d="${pd}" fill="${fill}" fill-opacity="${inkOpacity.toFixed(2)}" stroke="${darken(col, 0.3)}" stroke-width="0.8" stroke-opacity="${(0.4 * inkLoad.edgeMul).toFixed(2)}" stroke-linejoin="round"/>`;
+            }
           } else if (p.type === 'stroke') {
             // Hanko strokes are carved-away lines — reveal paper, not ink
             const strokeCol = isHanko ? (atmosphere.paperBase || '#f5f0e6') : darken(col, 0.45);
