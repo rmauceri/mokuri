@@ -268,28 +268,30 @@ const MOKURI_HANKO_ELEMENTS = [
         paths: [
           { d: 'M6 6 Q6 4 8 4 L52 4 Q54 4 54 6 L54 54 Q54 56 52 56 L8 56 Q6 56 6 54 Z', type: 'fill', zone: 'seal' },
           { d: 'M10 9 L50 9 L50 51 L10 51 Z', type: 'stroke', zone: 'seal', strokeWidth: 1.2 },
-          // 墨 upper box (里 top)
-          { d: 'M19 12 L22 11.5 L30 12 L38 11.5 L41 12', type: 'stroke', zone: 'seal', strokeWidth: 1.3 },
-          { d: 'M20 12 L19.5 17 L20 22', type: 'stroke', zone: 'seal', strokeWidth: 1.2 },
-          { d: 'M40 12 L40.5 17 L40 22', type: 'stroke', zone: 'seal', strokeWidth: 1.2 },
-          { d: 'M20 17 L30 17.5 L40 17', type: 'stroke', zone: 'seal', strokeWidth: 1.1 },
-          { d: 'M30 12 L30 22', type: 'stroke', zone: 'seal', strokeWidth: 1.0 },
-          // 里 lower box
-          { d: 'M20 22 L30 22.5 L40 22', type: 'stroke', zone: 'seal', strokeWidth: 1.2 },
-          { d: 'M20 22 L19.5 27 L20 31', type: 'stroke', zone: 'seal', strokeWidth: 1.2 },
-          { d: 'M40 22 L40.5 27 L40 31', type: 'stroke', zone: 'seal', strokeWidth: 1.2 },
-          { d: 'M20 27 L30 27.5 L40 27', type: 'stroke', zone: 'seal', strokeWidth: 1.0 },
-          { d: 'M30 22 L30 31', type: 'stroke', zone: 'seal', strokeWidth: 1.0 },
-          { d: 'M19 31 L30 31.5 L41 31', type: 'stroke', zone: 'seal', strokeWidth: 1.3 },
-          // 土 (earth radical)
-          { d: 'M30 33 L30.5 43', type: 'stroke', zone: 'seal', strokeWidth: 1.2 },
-          { d: 'M22 38 L30 38.5 L38 38', type: 'stroke', zone: 'seal', strokeWidth: 1.1 },
-          { d: 'M16 44 L24 44.5 L30 44 L36 44.5 L44 44', type: 'stroke', zone: 'seal', strokeWidth: 1.4 },
-          // 灬 (four fire dots)
-          { d: 'M17 48 Q18 50 20 49', type: 'stroke', zone: 'seal', strokeWidth: 1.3 },
-          { d: 'M25 49 Q26 51 28 49.5', type: 'stroke', zone: 'seal', strokeWidth: 1.3 },
-          { d: 'M32 49 Q33 51 35 49.5', type: 'stroke', zone: 'seal', strokeWidth: 1.3 },
-          { d: 'M40 48 Q41 50 43 49', type: 'stroke', zone: 'seal', strokeWidth: 1.3 },
+          // 墨 = 黒 (black) over 土 (earth)
+          // 黒 = 里 (village) over 灬 (fire dots)
+          // ── 里 upper box (田-like) ──
+          { d: 'M19 12 L30 11.5 L41 12', type: 'stroke', zone: 'seal', strokeWidth: 1.3 },
+          { d: 'M20 12 L19.5 16.5 L20 21', type: 'stroke', zone: 'seal', strokeWidth: 1.2 },
+          { d: 'M40 12 L40.5 16.5 L40 21', type: 'stroke', zone: 'seal', strokeWidth: 1.2 },
+          { d: 'M20 16.5 L30 17 L40 16.5', type: 'stroke', zone: 'seal', strokeWidth: 1.0 },
+          { d: 'M30 12 L30 21', type: 'stroke', zone: 'seal', strokeWidth: 1.0 },
+          // ── 里 lower box ──
+          { d: 'M20 21 L30 21.5 L40 21', type: 'stroke', zone: 'seal', strokeWidth: 1.2 },
+          { d: 'M20 21 L19.5 25 L20 28.5', type: 'stroke', zone: 'seal', strokeWidth: 1.2 },
+          { d: 'M40 21 L40.5 25 L40 28.5', type: 'stroke', zone: 'seal', strokeWidth: 1.2 },
+          { d: 'M20 25 L30 25.5 L40 25', type: 'stroke', zone: 'seal', strokeWidth: 1.0 },
+          { d: 'M30 21 L30 28.5', type: 'stroke', zone: 'seal', strokeWidth: 1.0 },
+          { d: 'M18 28.5 L30 29 L42 28.5', type: 'stroke', zone: 'seal', strokeWidth: 1.3 },
+          // ── 灬 (four fire dots) ──
+          { d: 'M18 33 Q19 35 21 33.5', type: 'stroke', zone: 'seal', strokeWidth: 1.3 },
+          { d: 'M26 33.5 Q27 35.5 29 34', type: 'stroke', zone: 'seal', strokeWidth: 1.3 },
+          { d: 'M32 33.5 Q33 35.5 35 34', type: 'stroke', zone: 'seal', strokeWidth: 1.3 },
+          { d: 'M39 33 Q40 35 42 33.5', type: 'stroke', zone: 'seal', strokeWidth: 1.3 },
+          // ── 土 (earth radical) ──
+          { d: 'M30 37 L30.5 45', type: 'stroke', zone: 'seal', strokeWidth: 1.2 },
+          { d: 'M22 41 L30 41.5 L38 41', type: 'stroke', zone: 'seal', strokeWidth: 1.1 },
+          { d: 'M16 47 L24 47.5 L30 47 L36 47.5 L44 47', type: 'stroke', zone: 'seal', strokeWidth: 1.4 },
         ],
       },
     ],

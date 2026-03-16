@@ -9,7 +9,251 @@
 
 const MOKURI_GALLERY_PRESETS = [
 
-  // Bridge in Summer (600×420)
+    // Cranes at Dawn (600×420)
+  {
+  "elements": [
+    {
+      "id": 7,
+      "defId": "shore-waves",
+      "x": 298.8439027878959,
+      "y": 359.41420921493966,
+      "scaleX": 2.0213577276071897,
+      "scaleY": 2.7276627109941916,
+      "rotation": 0,
+      "carveLevel": 0,
+      "colorOverrides": {
+        "water": "#4a90c4"
+      },
+      "variationSeed": 82354,
+      "zoneBokashi": {
+        "water": "up",
+        "sand": "down"
+      }
+    },
+    {
+      "id": 1,
+      "defId": "rock-formation",
+      "x": 97.8706421491377,
+      "y": 207.3635184731365,
+      "scaleX": 0.6097522566840304,
+      "scaleY": 0.35972470770275855,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "rock": 2,
+        "shadow": 3,
+        "moss": 0
+      },
+      "variationSeed": 26660
+    },
+    {
+      "id": 3,
+      "defId": "rock-formation",
+      "x": 284.87361375827203,
+      "y": 198.18450529885502,
+      "scaleX": 0.6097522566840304,
+      "scaleY": 0.4262430712969206,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "shadow": 3,
+        "rock": 2,
+        "moss": 0,
+        "detail": 4
+      },
+      "variationSeed": 580,
+      "locked": false
+    },
+    {
+      "id": 2,
+      "defId": "rock-formation",
+      "x": 203.15684292763214,
+      "y": 226.3519624893052,
+      "scaleX": -0.5134174145359788,
+      "scaleY": 0.38878840727258285,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "shadow": 4,
+        "moss": 0,
+        "detail": "#d4a030"
+      },
+      "variationSeed": 48448,
+      "locked": false
+    },
+    {
+      "id": 4,
+      "defId": "iris-cluster",
+      "x": 467.9167566229503,
+      "y": 249.9425076914202,
+      "scaleX": 0.4762971965032356,
+      "scaleY": 0.49054046504708254,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "petal": "#4a90c4",
+        "stem": 0,
+        "leaf": 1,
+        "detail": 4
+      },
+      "variationSeed": 46310
+    },
+    {
+      "id": 5,
+      "defId": "iris-cluster",
+      "x": 529.5784760405493,
+      "y": 288.4588545995577,
+      "scaleX": -0.4762971965032356,
+      "scaleY": 0.4762971965032356,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "petal": "#1b4872",
+        "stem": 0,
+        "leaf": 1,
+        "detail": "#d4a030"
+      },
+      "variationSeed": 46102,
+      "locked": false
+    },
+    {
+      "id": 6,
+      "defId": "stone-path",
+      "x": 390.78797071189854,
+      "y": 322.50898456505246,
+      "scaleX": 0.7741509647028996,
+      "scaleY": 0.7741509647028996,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "stone": 3,
+        "shadow": 4,
+        "moss": 1,
+        "detail": 2
+      },
+      "variationSeed": 81917
+    },
+    {
+      "id": 8,
+      "defId": "crane-flying",
+      "x": 152.79224220692996,
+      "y": 52.71945422361272,
+      "scaleX": -0.2573149184835521,
+      "scaleY": 0.2573149184835521,
+      "rotation": 7.538360707234432,
+      "carveLevel": 0,
+      "colorOverrides": {
+        "body": "#f5f0e1",
+        "wing": "#f5f0e1",
+        "accent": "#c23b22",
+        "detail": "#d4a030"
+      },
+      "variationSeed": 53616
+    },
+    {
+      "id": 9,
+      "defId": "crane-flying",
+      "x": 220.4153287490306,
+      "y": 74.92500910061656,
+      "scaleX": -0.20222639837715822,
+      "scaleY": 0.20222639837715822,
+      "rotation": -10.961030040805923,
+      "carveLevel": 0,
+      "colorOverrides": {
+        "body": "#f5f0e1",
+        "wing": "#f5f0e1",
+        "accent": "#c23b22",
+        "detail": "#d4a030"
+      },
+      "variationSeed": 23905,
+      "locked": false
+    },
+    {
+      "id": 11,
+      "defId": "crane-landing",
+      "x": 392.07943343559737,
+      "y": 194.65890745362663,
+      "scaleX": 0.5088561005606365,
+      "scaleY": 0.5088561005606365,
+      "rotation": -4.829505118542542,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "body": "#f5f0e1",
+        "wing": "#f5f0e1",
+        "accent": "#c23b22",
+        "detail": "#d4a030"
+      },
+      "variationSeed": 89645
+    },
+    {
+      "id": 12,
+      "defId": "iris-cluster",
+      "x": 75.65121534403553,
+      "y": 305.5030980962224,
+      "scaleX": 0.4378906122395488,
+      "scaleY": 0.45987096488600787,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "petal": "#1b4872",
+        "stem": 0,
+        "leaf": 1,
+        "detail": "#d4a030"
+      },
+      "variationSeed": 81578
+    },
+    {
+      "id": 13,
+      "defId": "crane-standing",
+      "x": 163.3991865967653,
+      "y": 264.8208078705087,
+      "scaleX": -0.6147525572308369,
+      "scaleY": 0.582169712090369,
+      "rotation": 4.863075176756254,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "body": "#f5f0e1",
+        "wing": "#f5f0e1",
+        "detail": "#d4a030",
+        "accent": "#c23b22"
+      },
+      "variationSeed": 43578
+    },
+    {
+      "id": 14,
+      "defId": "hanko-mokuri",
+      "x": 581.4970996926081,
+      "y": 398.1675802690702,
+      "scaleX": 0.5189466838947671,
+      "scaleY": 0.5189466838947671,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {},
+      "variationSeed": 14717
+    }
+  ],
+  "nextId": 15,
+  "paletteId": "matcha",
+  "paperW": 600,
+  "paperH": 420,
+  "paperType": "hosho",
+  "inkLoad": "light",
+  "impressions": 1,
+  "sky": "pink",
+  "ground": "water",
+  "horizon": 0.53,
+  "mist": 2,
+  "backgroundCarveStrokes": [],
+  "presentationMargin": "narrow",
+  "presentationTitle": "Cranes at Dawn",
+  "presentationEdition": "",
+  "presentationHanko": null,
+  "presentationHankoPos": "bottom-right",
+  "presentationDeckle": true,
+  "compositionName": "Cranes at Dawn"
+},
+
+// Bridge in Summer (600×420)
   {
   "elements": [
     {
@@ -2406,220 +2650,7 @@ const MOKURI_GALLERY_PRESETS = [
   "presentationDeckle": true,
   "compositionName": "Farm and Full Moon"
 },
-
-  // Crane and Rabbit (600×420)
-  {
-  "elements": [
-    {
-      "id": 1,
-      "defId": "crane",
-      "x": 501.7241379310345,
-      "y": 290.1724137931035,
-      "scaleX": 0.9870689655172414,
-      "scaleY": 0.9870689655172414,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {},
-      "variationSeed": 81411
-    },
-    {
-      "id": 2,
-      "defId": "rabbit",
-      "x": 85.86206896551727,
-      "y": 203.27586206896552,
-      "scaleX": 0.48068370986920356,
-      "scaleY": 0.48068370986920356,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "detail": 4,
-        "body": "#f5f0e1"
-      },
-      "variationSeed": 6105
-    },
-    {
-      "id": 3,
-      "defId": "rock-formation",
-      "x": 156.69222195953932,
-      "y": 329.99999999999994,
-      "scaleX": 0.6546970244374372,
-      "scaleY": 0.6546970244374372,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {},
-      "variationSeed": 99397
-    },
-    {
-      "id": 4,
-      "defId": "stone-path",
-      "x": 113.24597250835893,
-      "y": 258.1034482758621,
-      "scaleX": 1,
-      "scaleY": 1,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "stone": 0,
-        "shadow": 3,
-        "moss": "#2a2a4a"
-      },
-      "variationSeed": 33388
-    },
-    {
-      "id": 5,
-      "defId": "stone-path",
-      "x": 251.26414265932655,
-      "y": 255.86206896551727,
-      "scaleX": 1,
-      "scaleY": -1,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "stone": 2
-      },
-      "variationSeed": 93787,
-      "locked": false
-    },
-    {
-      "id": 6,
-      "defId": "bamboo-grove",
-      "x": 396.2068965517242,
-      "y": 335.1724137931035,
-      "scaleX": 0.4342672413793103,
-      "scaleY": 0.4342672413793103,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "detail": 2
-      },
-      "variationSeed": 93900
-    },
-    {
-      "id": 7,
-      "defId": "bamboo-grove",
-      "x": 351.17241379310354,
-      "y": 357.75862068965523,
-      "scaleX": 0.32008490636147446,
-      "scaleY": 0.32008490636147446,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "detail": 2
-      },
-      "variationSeed": 45289,
-      "locked": false
-    },
-    {
-      "id": 8,
-      "defId": "bamboo-grove",
-      "x": 521.0344827586207,
-      "y": 368.96551724137936,
-      "scaleX": 0.2635181772200069,
-      "scaleY": 0.2635181772200069,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "detail": 2
-      },
-      "variationSeed": 21904,
-      "locked": false
-    },
-    {
-      "id": 9,
-      "defId": "cloud-bank",
-      "x": 407.64294640143197,
-      "y": 62.58620689655169,
-      "scaleX": 0.5209430558673533,
-      "scaleY": 0.5209430558673533,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "body": "#f5f0e1"
-      },
-      "variationSeed": 20516
-    },
-    {
-      "id": 10,
-      "defId": "cloud-bank",
-      "x": 484.70667702387783,
-      "y": 106.89655172413791,
-      "scaleX": 0.36325147442581823,
-      "scaleY": 0.36325147442581823,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "body": "#c8c8c8",
-        "highlight": 0
-      },
-      "variationSeed": 50190,
-      "locked": false
-    },
-    {
-      "id": 11,
-      "defId": "cloud-bank",
-      "x": 518.3241581951434,
-      "y": 45.689655172413794,
-      "scaleX": 0.2727002088285429,
-      "scaleY": 0.2727002088285429,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "body": "#c8c8c8",
-        "highlight": 0
-      },
-      "variationSeed": 35745,
-      "locked": false
-    },
-    {
-      "id": 12,
-      "defId": "hanko-diamond",
-      "x": 571.052720456618,
-      "y": 391.551724137931,
-      "scaleX": 0.45060623459083327,
-      "scaleY": 0.45060623459083327,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {},
-      "variationSeed": 14145
-    },
-    {
-      "id": 13,
-      "defId": "koi-leaping",
-      "x": 76.03448275862067,
-      "y": 319.65517241379314,
-      "scaleX": 0.33082174465828507,
-      "scaleY": 0.33082174465828507,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "belly": "#8a8aaa",
-        "fin": "#c4b870",
-        "detail": "#1a1a3a"
-      },
-      "variationSeed": 75483
-    }
-  ],
-  "nextId": 14,
-  "paletteId": "edo",
-  "paperW": 600,
-  "paperH": 420,
-  "paperType": "unryu",
-  "inkLoad": "light",
-  "impressions": 1,
-  "sky": "day",
-  "ground": "water",
-  "horizon": 0.62,
-  "mist": 2,
-  "backgroundCarveStrokes": [],
-  "presentationMargin": "standard",
-  "presentationTitle": "",
-  "presentationEdition": "",
-  "presentationHanko": null,
-  "presentationHankoPos": "bottom-right",
-  "presentationDeckle": true,
-  "compositionName": "Crane and Rabbit"
-},
-
+ 
   // Winter Branches (400×280)
   {
   "elements": [
