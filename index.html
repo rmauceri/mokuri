@@ -6390,12 +6390,19 @@ function positionPrintCanvas() {
   const preset = MARGIN_PRESETS[presetKey];
   const hasMargins = preset && (preset.top > 0 || preset.sides > 0 || preset.bottom > 0);
   if (hasMargins) {
-    const deckleExtra = STATE.presentationDeckle ? 0.02 : 0;
-    const scaleW = 1 + preset.sides * 2 + deckleExtra * 2;
-    const scaleH = 1 + preset.top + preset.bottom + deckleExtra * 2;
-    // Full canvas dimensions scaled to match current paper display size
-    const fullDispW = paperRect.width * scaleW;
-    const fullDispH = paperRect.height * scaleH;
+    // Use geometric mean for margin sizing — must match applyPresentation() in print-engine.js
+    const pw = STATE.paperW * 2, ph = STATE.paperH * 2; // print canvas is 2x
+    const ref = Math.sqrt(pw * ph);
+    const mTop = Math.round(ref * preset.top);
+    const mBottom = Math.round(ref * preset.bottom);
+    const mSide = Math.round(ref * preset.sides);
+    const deckleExtra = STATE.presentationDeckle ? Math.round(Math.min(pw, ph) * 0.02) : 0;
+    const fullW = pw + mSide * 2 + deckleExtra * 2;
+    const fullH = ph + mTop + mBottom + deckleExtra * 2;
+    // Scale from canvas pixels to display pixels using paper rect
+    const scale = paperRect.width / pw;
+    const fullDispW = fullW * scale;
+    const fullDispH = fullH * scale;
     // Center the presentation around the paper center
     const paperCX = (paperRect.left - wsRect.left) + paperRect.width / 2;
     const paperCY = (paperRect.top - wsRect.top) + paperRect.height / 2;
