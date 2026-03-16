@@ -9,6 +9,254 @@
 
 const MOKURI_GALLERY_PRESETS = [
 
+  // Bridge in Summer (600×420)
+  {
+  "elements": [
+    {
+      "id": 1,
+      "defId": "rolling-hills",
+      "x": 299.50489387354384,
+      "y": 281.46957687847834,
+      "scaleX": 2.014781140018286,
+      "scaleY": 2.014781140018286,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {},
+      "variationSeed": 27070
+    },
+    {
+      "id": 6,
+      "defId": "form-wave-band",
+      "x": 286.98686981533507,
+      "y": 346.76228812164237,
+      "scaleX": -1.2858851173046024,
+      "scaleY": 1.2858851173046024,
+      "rotation": 48.37890138753633,
+      "carveLevel": 0,
+      "colorOverrides": {
+        "body": "#4a90c4"
+      },
+      "variationSeed": 61281,
+      "zoneBokashi": {
+        "body": "up"
+      }
+    },
+    {
+      "id": 3,
+      "defId": "pine-tree",
+      "x": 560.3037902965972,
+      "y": 200.61240938172116,
+      "scaleX": 0.6063757942279911,
+      "scaleY": 0.6063757942279911,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "detail": "#d4a030",
+        "foliage": 0
+      },
+      "variationSeed": 41105
+    },
+    {
+      "id": 19,
+      "defId": "farmhouse",
+      "x": 407.8782908334872,
+      "y": 185.86159194248333,
+      "scaleX": 0.5754639555673488,
+      "scaleY": 0.5754639555673488,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "thatch": 3,
+        "frame": 4,
+        "wall": "#d4a030"
+      },
+      "variationSeed": 65215
+    },
+    {
+      "id": 5,
+      "defId": "pine-tree",
+      "x": 471.8004008808362,
+      "y": 190.46475713471082,
+      "scaleX": 0.5515658518747395,
+      "scaleY": 0.5515658518747395,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "foliage": 1
+      },
+      "variationSeed": 70260,
+      "locked": false
+    },
+    {
+      "id": 4,
+      "defId": "pine-tree",
+      "x": 511.2568444834971,
+      "y": 209.2119883570291,
+      "scaleX": 0.672371289879249,
+      "scaleY": 0.672371289879249,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "detail": "#d4a030"
+      },
+      "variationSeed": 86438,
+      "locked": false
+    },
+    {
+      "id": 7,
+      "defId": "mountain-fuji-peak",
+      "x": 156.7589453422701,
+      "y": 95.9007769274364,
+      "scaleX": 0.881305636622647,
+      "scaleY": 0.659083440896133,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "snow": "#f5f0e1",
+        "mountain": "#4a90c4",
+        "texture": "#f5f0e1"
+      },
+      "variationSeed": 41029,
+      "zoneBokashi": {
+        "snow": "left",
+        "mountain": "down"
+      }
+    },
+    {
+      "id": 8,
+      "defId": "cloud-wisp",
+      "x": 291.50502671286847,
+      "y": 35.7129955086122,
+      "scaleX": 0.7365764888875939,
+      "scaleY": 0.6032432745078969,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "cloud": "#f5f0e1",
+        "detail": "#4a90c4"
+      },
+      "variationSeed": 43248,
+      "zoneBokashi": {
+        "cloud": "down"
+      }
+    },
+    {
+      "id": 9,
+      "defId": "distant-village",
+      "x": 157.53338689194263,
+      "y": 152.7332804480563,
+      "scaleX": 0.9163333383585105,
+      "scaleY": 0.9163333383585105,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "wall": "#c23b22",
+        "roof": "#1b4872",
+        "tree": 1
+      },
+      "variationSeed": 34523
+    },
+    {
+      "id": 10,
+      "defId": "two-travelers",
+      "x": 319.3317623468953,
+      "y": 266.4593631466461,
+      "scaleX": 0.3818874319138617,
+      "scaleY": 0.3818874319138617,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "hat": "#1b4872",
+        "outer": 4
+      },
+      "variationSeed": 81833
+    },
+    {
+      "id": 2,
+      "defId": "wooden-bridge",
+      "x": 265.74995741634507,
+      "y": 302.58331050843015,
+      "scaleX": 1,
+      "scaleY": 1,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "rail": "#c23b22",
+        "detail": "#f5f0e1",
+        "wood": 2,
+        "deck": "#d4a030"
+      },
+      "variationSeed": 98567
+    },
+    {
+      "id": 15,
+      "defId": "field-worker",
+      "x": 489.5422283702196,
+      "y": 348.16103425443646,
+      "scaleX": 1,
+      "scaleY": 1,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "hat": "#1b4872",
+        "accent": "#c23b22",
+        "garment": "#f5f0e1"
+      },
+      "variationSeed": 88770
+    },
+    {
+      "id": 16,
+      "defId": "hanko-mokuri",
+      "x": 16.574544451183243,
+      "y": 402.2652334216981,
+      "scaleX": 0.467245445909928,
+      "scaleY": 0.467245445909928,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {},
+      "variationSeed": 41370
+    },
+    {
+      "id": 17,
+      "defId": "cloud-wisp",
+      "x": 371.9473096285628,
+      "y": 95.9581023639385,
+      "scaleX": 0.41832250877935045,
+      "scaleY": 0.3425988255171203,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "cloud": "#f5f0e1",
+        "detail": "#4a90c4"
+      },
+      "variationSeed": 1305,
+      "locked": false,
+      "zoneBokashi": {
+        "cloud": "down"
+      }
+    }
+  ],
+  "nextId": 20,
+  "paletteId": "matcha",
+  "paperW": 600,
+  "paperH": 420,
+  "paperType": "hosho",
+  "inkLoad": "light",
+  "impressions": 1,
+  "sky": "day",
+  "ground": "earth",
+  "horizon": 0.35,
+  "mist": 2,
+  "backgroundCarveStrokes": [],
+  "presentationMargin": "narrow",
+  "presentationTitle": "",
+  "presentationEdition": "",
+  "presentationHanko": null,
+  "presentationHankoPos": "bottom-right",
+  "presentationDeckle": true,
+  "compositionName": "Bridge in Summer"
+},
+
   // Koi Fishing (420×280)
   {
   "elements": [
@@ -29,8 +277,8 @@ const MOKURI_GALLERY_PRESETS = [
     {
       "id": 1,
       "defId": "flowing-stream",
-      "x": 209.29110784578776,
-      "y": 181.66785014339013,
+      "x": 213.95776449169202,
+      "y": 180.00116281730254,
       "scaleX": 1.5523634372325528,
       "scaleY": 1.313793103448276,
       "rotation": 7.709793315073327,
@@ -459,7 +707,7 @@ const MOKURI_GALLERY_PRESETS = [
       "y": 239.8291860693709,
       "scaleX": 0.6605172413793103,
       "scaleY": 0.71959475204525,
-      "rotation": 0.042171590476030474,
+      "rotation": -3.0056513544306256,
       "carveLevel": 2,
       "colorOverrides": {
         "rod": "#c46a20",
@@ -470,8 +718,8 @@ const MOKURI_GALLERY_PRESETS = [
     {
       "id": 7,
       "defId": "koi-leaping",
-      "x": 233.4629441650064,
-      "y": 204.67078554352355,
+      "x": 230.7962875841438,
+      "y": 199.33747218667338,
       "scaleX": 0.14016180206258005,
       "scaleY": 0.1189019496043315,
       "rotation": 0,
@@ -569,6 +817,19 @@ const MOKURI_GALLERY_PRESETS = [
       "carveLevel": 2,
       "colorOverrides": {},
       "variationSeed": 91122
+    },
+    {
+      "id": 14,
+      "defId": "koi-leaping",
+      "x": 194.17245236943754,
+      "y": 182.4438035020614,
+      "scaleX": -0.09486388342381127,
+      "scaleY": 0.0804748549186965,
+      "rotation": 0,
+      "carveLevel": 0,
+      "colorOverrides": {},
+      "variationSeed": 79539,
+      "locked": false
     }
   ],
   "nextId": 14,
@@ -2463,6 +2724,140 @@ const MOKURI_GALLERY_PRESETS = [
   "presentationHankoPos": "bottom-right",
   "presentationDeckle": true,
   "compositionName": "Wintery Branches"
+},
+
+  // Cloud Peak (320×800)
+  {
+  "elements": [
+    {
+      "id": 1,
+      "defId": "full-moon",
+      "x": 131.7080552802654,
+      "y": 84.57488788004622,
+      "scaleX": 1,
+      "scaleY": 1,
+      "rotation": 0,
+      "carveLevel": 0,
+      "colorOverrides": {
+        "body": "#f5f0e1",
+        "glow": "#4a90c4"
+      },
+      "variationSeed": 40390
+    },
+    {
+      "id": 2,
+      "defId": "mountain-fuji-peak",
+      "x": 194.2297728359727,
+      "y": 273.5861980255747,
+      "scaleX": 1.403000719053984,
+      "scaleY": 1.9858219741995085,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "mountain": "#4a90c4",
+        "snow": "#f5f0e1",
+        "texture": "#1b4872"
+      },
+      "variationSeed": 60028,
+      "zoneBokashi": {
+        "mountain": "down"
+      }
+    },
+    {
+      "id": 3,
+      "defId": "cloud-bank",
+      "x": 105.41103887329422,
+      "y": 442.5968025443226,
+      "scaleX": 1,
+      "scaleY": 1,
+      "rotation": 0,
+      "carveLevel": 1,
+      "colorOverrides": {
+        "body": "#f5f0e1",
+        "highlight": "#4a90c4"
+      },
+      "variationSeed": 43441
+    },
+    {
+      "id": 4,
+      "defId": "cloud-bank",
+      "x": 249.29311291273126,
+      "y": 450.2673088070625,
+      "scaleX": 1,
+      "scaleY": 1,
+      "rotation": 0,
+      "carveLevel": 1,
+      "colorOverrides": {
+        "body": "#f5f0e1",
+        "highlight": "#4a90c4"
+      },
+      "variationSeed": 34965,
+      "locked": false
+    },
+    {
+      "id": 5,
+      "defId": "hanko-mokuri",
+      "x": 291.8672867978457,
+      "y": 769.0969057094185,
+      "scaleX": 0.772433560247249,
+      "scaleY": 0.772433560247249,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {},
+      "variationSeed": 72101
+    },
+    {
+      "id": 6,
+      "defId": "cloud-bank",
+      "x": 56.451467495570625,
+      "y": 493.2455115631043,
+      "scaleX": 1,
+      "scaleY": 1.1741400660448675,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "body": "#f5f0e1",
+        "highlight": "#4a90c4"
+      },
+      "variationSeed": 60560,
+      "locked": false
+    },
+    {
+      "id": 7,
+      "defId": "cloud-bank",
+      "x": 225.30994736023487,
+      "y": 512.298216138885,
+      "scaleX": 1.1974845262279974,
+      "scaleY": 1.1974845262279974,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "body": "#f5f0e1",
+        "highlight": "#4a90c4"
+      },
+      "variationSeed": 37956,
+      "locked": false
+    }
+  ],
+  "nextId": 8,
+  "paletteId": "matcha",
+  "paperW": 320,
+  "paperH": 800,
+  "paperType": "gampi",
+  "inkLoad": "standard",
+  "impressions": 1,
+  "sky": "day",
+  "ground": "water",
+  "horizon": 0.66,
+  "mist": 3,
+  "backgroundCarveStrokes": [],
+  "presentationMargin": "narrow",
+  "presentationTitle": "Cloud Peak",
+  "presentationEdition": "",
+  "presentationHanko": null,
+  "presentationHankoPos": "bottom-right",
+  "presentationDeckle": true,
+  "compositionName": "Cloud Peak"
 },
 
   // Sparrow and Blossums (800×320)
