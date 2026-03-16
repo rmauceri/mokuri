@@ -1505,9 +1505,9 @@ html, body {
   font-size: 10px; color: var(--text-muted);
   display: block; margin-bottom: 3px; margin-top: 8px;
 }
-.is-atmo-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.is-atmo-chips { display: flex; flex-wrap: wrap; gap: 3px; }
 .is-atmo-chip {
-  padding: 3px 8px; font-size: 10px;
+  padding: 3px 6px; font-size: 9.5px;
   border-radius: 4px; border: 1px solid var(--panel-border);
   background: transparent; color: var(--text-muted);
   cursor: pointer; transition: all 0.15s;
@@ -2363,6 +2363,12 @@ const SKY_TYPES = {
     { offset: 0.85, color: '#d4943a', opacity: 0.45 },
     { offset: 1, color: '#e0c070', opacity: 0.3 },
   ]},
+  golden:   { name: '金 Golden',   stops: [
+    { offset: 0, color: '#8a6a20', opacity: 0.55 },
+    { offset: 0.35, color: '#b8922e', opacity: 0.45 },
+    { offset: 0.65, color: '#d4b050', opacity: 0.35 },
+    { offset: 1, color: '#e8d8a0', opacity: 0.18 },
+  ]},
   night:    { name: '夜 Night',    stops: [
     { offset: 0, color: '#0a0a1a', opacity: 0.92 },
     { offset: 0.3, color: '#1a1a3a', opacity: 0.85 },
@@ -2374,12 +2380,6 @@ const SKY_TYPES = {
     { offset: 0.4, color: '#8a8a82', opacity: 0.3 },
     { offset: 0.7, color: '#a0a098', opacity: 0.22 },
     { offset: 1, color: '#b8b4a8', opacity: 0.15 },
-  ]},
-  golden:   { name: '金 Golden',   stops: [
-    { offset: 0, color: '#8a6a20', opacity: 0.55 },
-    { offset: 0.35, color: '#b8922e', opacity: 0.45 },
-    { offset: 0.65, color: '#d4b050', opacity: 0.35 },
-    { offset: 1, color: '#e8d8a0', opacity: 0.18 },
   ]},
   pink:     { name: '桃 Pink',     stops: [
     { offset: 0, color: '#8a4a6a', opacity: 0.5 },
