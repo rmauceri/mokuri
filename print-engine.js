@@ -346,7 +346,9 @@ const PrintEngine = (() => {
       const inner = `translate(${offX},${offY})`;
 
       const wobbleId = isHanko ? 'wobble-hanko' : 'wobble';
-      svgContent += `<g transform="${xform}" filter="url(#${wobbleId})"><g transform="${inner}">`;
+      const elClipId = `pe-clip-${el.id}`;
+      bokashiDefs += `<clipPath id="${elClipId}"><rect x="${vb[0]}" y="${vb[1]}" width="${vb[2]}" height="${vb[3]}"/></clipPath>`;
+      svgContent += `<g transform="${xform}" filter="url(#${wobbleId})"><g transform="${inner}" clip-path="url(#${elClipId})">`;
 
       const HANKO_VERMILLION = '#c23b22';
       const resolveOv = (ov) => {
