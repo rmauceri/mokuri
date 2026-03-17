@@ -507,10 +507,14 @@ const PrintEngine = (() => {
     paperBase = paperBase || PAPER_BASE;
     const d = ctx.getImageData(0, 0, w, h);
     const px = d.data;
+    // Scale frequencies relative to canvas size so baren pattern looks
+    // consistent regardless of screen/canvas resolution
+    const ref = Math.sqrt(w * h);
+    const fScale = 1200 / ref;
     const waves = [
-      { fx: 0.0012 + Math.random() * 0.002, fy: 0.0008 + Math.random() * 0.001,
+      { fx: (0.0012 + Math.random() * 0.002) * fScale, fy: (0.0008 + Math.random() * 0.001) * fScale,
         ph: Math.random() * Math.PI * 2, amp: 16 * intensity },
-      { fx: 0.003 + Math.random() * 0.002, fy: 0.002 + Math.random() * 0.002,
+      { fx: (0.003 + Math.random() * 0.002) * fScale, fy: (0.002 + Math.random() * 0.002) * fScale,
         ph: Math.random() * Math.PI * 2, amp: 10 * intensity },
     ];
     for (let y = 0; y < h; y++) {
