@@ -501,7 +501,399 @@ const MOKURI_GALLERY_PRESETS = [
   "compositionName": "Bridge in Summer"
 },
 
-  // Koi Fishing (420×280)
+  // Temple View (500×500)
+  {
+  "elements": [
+    {
+      "id": 2,
+      "defId": "mountain-fuji-peak",
+      "x": 203.65888612017582,
+      "y": 204.28820558661872,
+      "scaleX": 1.456177839693121,
+      "scaleY": 1.3633547982145218,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "snow": "#f5f0e1",
+        "mountain": 0,
+        "texture": "#d4a0a0"
+      },
+      "variationSeed": 99804
+    },
+    {
+      "id": 5,
+      "defId": "rolling-hills",
+      "x": 231.51635236345857,
+      "y": 305.18251076744,
+      "scaleX": 2.23095366492314,
+      "scaleY": 2.8152894919983864,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "far": "#4a90c4",
+        "mid": "#a0b8c4",
+        "near": "#c8c8c8"
+      },
+      "variationSeed": 54743,
+      "locked": false,
+      "carveStrokes": [
+        {
+          "points": [
+            {
+              "x": 88.2241128251487,
+              "y": 115.13058080759535,
+              "pressure": 1,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 82.6493384568655,
+              "y": 134.08328577940674,
+              "pressure": 1,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            }
+          ],
+          "tool": "pattern",
+          "pattern": "crosshatch",
+          "density": 1,
+          "rotation": 45
+        },
+        {
+          "points": [
+            {
+              "x": 100.01025745544916,
+              "y": 115.4673537455452,
+              "pressure": 1,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 104.71377882627812,
+              "y": 122.14117892998259,
+              "pressure": 1,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 106.77926964435409,
+              "y": 130.36131301101244,
+              "pressure": 1,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 100.58932031458365,
+              "y": 149.41759710755386,
+              "pressure": 1,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            }
+          ],
+          "tool": "pattern",
+          "pattern": "crosshatch",
+          "density": 1,
+          "rotation": 45
+        },
+        {
+          "points": [
+            {
+              "x": 89.69738090393626,
+              "y": 133.24894294397563,
+              "pressure": 1,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 87.17941946507719,
+              "y": 141.9246439268465,
+              "pressure": 1,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 80.7643261302795,
+              "y": 151.27936807642655,
+              "pressure": 1,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            }
+          ],
+          "tool": "pattern",
+          "pattern": "crosshatch",
+          "density": 1,
+          "rotation": 45
+        },
+        {
+          "points": [
+            {
+              "x": 93.01223408120828,
+              "y": 116.8144454973446,
+              "pressure": 1,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 96.09189654954521,
+              "y": 111.00419219473294,
+              "pressure": 1,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 95.59332029725437,
+              "y": 104.59929640634616,
+              "pressure": 1,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            }
+          ],
+          "tool": "pattern",
+          "pattern": "crosshatch",
+          "density": 1,
+          "rotation": 45
+        },
+        {
+          "points": [
+            {
+              "x": 97.98451384711628,
+              "y": 103.94971926766041,
+              "pressure": 1,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 102.93197835227,
+              "y": 98.81616787756684,
+              "pressure": 1,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            }
+          ],
+          "tool": "pattern",
+          "pattern": "crosshatch",
+          "density": 1,
+          "rotation": 45
+        },
+        {
+          "points": [
+            {
+              "x": 96.87956278802562,
+              "y": 121.73130846609085,
+              "pressure": 1,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 98.3507945292085,
+              "y": 133.47871315357128,
+              "pressure": 1,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 88.7941337004681,
+              "y": 149.73918512385416,
+              "pressure": 1,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 87.2700571861666,
+              "y": 158.7681751176993,
+              "pressure": 1,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            }
+          ],
+          "tool": "pattern",
+          "pattern": "crosshatch",
+          "density": 1,
+          "rotation": 45
+        },
+        {
+          "points": [
+            {
+              "x": 99.45778192590384,
+              "y": 121.394535528141,
+              "pressure": 1,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 92.01691133293221,
+              "y": 130.98311812871188,
+              "pressure": 1,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 82.86829072550957,
+              "y": 154.61151425028228,
+              "pressure": 1,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            }
+          ],
+          "tool": "pattern",
+          "pattern": "crosshatch",
+          "density": 1,
+          "rotation": 45
+        },
+        {
+          "points": [
+            {
+              "x": 97.98451384711628,
+              "y": 107.45215782233882,
+              "pressure": 1,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 95.8248009985604,
+              "y": 123.73282021386093,
+              "pressure": 1,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 87.65548828609406,
+              "y": 144.7856141848661,
+              "pressure": 1,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 83.38476532151604,
+              "y": 149.69663436752947,
+              "pressure": 1,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            }
+          ],
+          "tool": "pattern",
+          "pattern": "crosshatch",
+          "density": 1,
+          "rotation": 45
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "defId": "cloud-wisp",
+      "x": 348.1226275544309,
+      "y": 54.45654223152354,
+      "scaleX": 0.7449966342907848,
+      "scaleY": 0.7449966342907848,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "cloud": "#f5f0e1",
+        "detail": "#4a90c4"
+      },
+      "variationSeed": 6532
+    },
+    {
+      "id": 1,
+      "defId": "pagoda",
+      "x": 411.44959461910787,
+      "y": 274.19860549731635,
+      "scaleX": 2.316116034425937,
+      "scaleY": 2.316116034425937,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "finial": 1
+      },
+      "variationSeed": 41258
+    },
+    {
+      "id": 3,
+      "defId": "sakura-blossom",
+      "x": 107.89414634010723,
+      "y": 45.49326628909198,
+      "scaleX": 1.2377655778016767,
+      "scaleY": 1.1262951135905581,
+      "rotation": 129.05840091407845,
+      "carveLevel": 2,
+      "colorOverrides": {},
+      "variationSeed": 25430
+    },
+    {
+      "id": 4,
+      "defId": "sakura-blossom",
+      "x": 149.59163031381883,
+      "y": 82.05501893206201,
+      "scaleX": 1.4026700927907125,
+      "scaleY": 1.5258404805741408,
+      "rotation": 139.39687548290922,
+      "carveLevel": 2,
+      "colorOverrides": {},
+      "variationSeed": 19076,
+      "locked": false
+    },
+    {
+      "id": 6,
+      "defId": "torii-gate",
+      "x": 104.84916720624885,
+      "y": 375.8333867537532,
+      "scaleX": 0.9475875499309719,
+      "scaleY": 0.9475875499309719,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "detail": 2
+      },
+      "variationSeed": 56076
+    }
+  ],
+  "nextId": 8,
+  "paletteId": "edo",
+  "paperW": 500,
+  "paperH": 500,
+  "paperType": "torinoko",
+  "inkLoad": "light",
+  "impressions": 1,
+  "sky": "day",
+  "ground": "water",
+  "horizon": 0.33,
+  "mist": 2,
+  "backgroundCarveStrokes": [],
+  "presentationMargin": "narrow",
+  "presentationTitle": "Temple View",
+  "presentationEdition": "",
+  "presentationHanko": null,
+  "presentationHankoPos": "bottom-right",
+  "presentationDeckle": true,
+  "compositionName": "Temple View"
+},
+ 
+// Koi Fishing (420×280)
   {
   "elements": [
     {
