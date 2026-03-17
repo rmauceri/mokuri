@@ -206,11 +206,14 @@ const PrintEngine = (() => {
       const patId = stroke.pattern;
       const density = stroke.density || 0.5;
       const rotation = stroke.rotation || 0;
+      const press = stroke.pressure !== undefined ? stroke.pressure : 50;
+      const patternOpacity = (0.4 + 0.5 * (press / 100)).toFixed(2);
       const dKey = Math.round(density * 100);
       const rKey = Math.round(rotation);
-      const pid = `pe-sp-${elKey}-${patId}-${dKey}-r${rKey}`;
+      const pKey = Math.round(press);
+      const pid = `pe-sp-${elKey}-${patId}-${dKey}-r${rKey}-p${pKey}`;
       if (!_printPatDefs.has(pid) && typeof generateCarvePatternSvg === 'function') {
-        const svg = generateCarvePatternSvg(patId, pid, paperBase, paperBase, { density, rotation, bg: 'none', opacity: '0.85' });
+        const svg = generateCarvePatternSvg(patId, pid, paperBase, paperBase, { density, rotation, bg: 'none', opacity: patternOpacity });
         if (svg) { bokashiDefs += svg; _printPatDefs.add(pid); }
       }
       return _printPatDefs.has(pid) ? `url(#${pid})` : null;
