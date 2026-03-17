@@ -3515,8 +3515,13 @@ function updateSelection() {
         const offsetY = -vb[3] / 2;
         const zg = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         zg.setAttribute('transform', `translate(${el.x}, ${el.y}) rotate(${el.rotation}) scale(${el.scaleX}, ${el.scaleY})`);
-        const zi = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        zi.setAttribute('transform', `translate(${offsetX}, ${offsetY})`);
+        const zi = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        zi.setAttribute('x', offsetX);
+        zi.setAttribute('y', offsetY);
+        zi.setAttribute('width', vb[2]);
+        zi.setAttribute('height', vb[3]);
+        zi.setAttribute('viewBox', def.viewBox);
+        zi.setAttribute('overflow', 'hidden');
         zonePaths.forEach(p => {
           const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
           path.setAttribute('d', p.d);
