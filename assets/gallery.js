@@ -3283,7 +3283,7 @@ const MOKURI_GALLERY_PRESETS = [
   "compositionName": "Cloud Peak"
 },
 
-  // Sparrow and Blossums (800×320)
+  // Sparrows and Wisps (800×320)
   {
   "elements": [
     {
@@ -3311,23 +3311,27 @@ const MOKURI_GALLERY_PRESETS = [
       "rotation": 0,
       "carveLevel": 2,
       "colorOverrides": {
-        "cloud": 3,
-        "detail": "#e8c870"
+        "cloud": 4,
+        "detail": 2
       },
-      "variationSeed": 78873
+      "variationSeed": 78873,
+      "zoneBokashi": {
+        "cloud": "down"
+      }
     },
     {
       "id": 3,
       "defId": "cherry-branch",
       "x": 668.6078164867548,
       "y": 101.7652405569981,
-      "scaleX": -1.3166614388118754,
+      "scaleX": 1.3166614388118754,
       "scaleY": 1.3166614388118754,
       "rotation": 0,
       "carveLevel": 2,
       "colorOverrides": {
         "blossom": "#d4a030",
-        "branch": 1
+        "branch": 1,
+        "detail": 1
       },
       "variationSeed": 8598
     },
@@ -3357,27 +3361,43 @@ const MOKURI_GALLERY_PRESETS = [
       "carveLevel": 2,
       "colorOverrides": {},
       "variationSeed": 81746
+    },
+    {
+      "id": 6,
+      "defId": "sparrow",
+      "x": 237.09922203353977,
+      "y": 246.38602468218463,
+      "scaleX": 0.7270844589116013,
+      "scaleY": 0.7270844589116013,
+      "rotation": -4.842287462346093,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "detail": "#c46a20",
+        "body": 2
+      },
+      "variationSeed": 23443,
+      "locked": false
     }
   ],
-  "nextId": 6,
+  "nextId": 7,
   "paletteId": "sumi",
   "paperW": 800,
   "paperH": 320,
   "paperType": "hosho",
-  "inkLoad": "standard",
+  "inkLoad": "light",
   "impressions": 1,
-  "sky": "day",
+  "sky": "pink",
   "ground": "water",
   "horizon": 0.33,
   "mist": 3,
   "backgroundCarveStrokes": [],
-  "presentationMargin": "wide",
-  "presentationTitle": "",
+  "presentationMargin": "narrow",
+  "presentationTitle": "Sparrows and Wisps",
   "presentationEdition": "",
   "presentationHanko": null,
   "presentationHankoPos": "bottom-right",
   "presentationDeckle": true,
-  "compositionName": "Sparrow and Blossums"
+  "compositionName": "Sparrows and Wisps"
 },
 
   // Spring (420×280)
