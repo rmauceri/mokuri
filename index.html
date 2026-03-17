@@ -4306,6 +4306,7 @@ function setPaperSize(w, h) {
   fitPaperToView();
   rerenderAll();
   autoSave();
+  updateStatus();
   $('status-hint').textContent = `Paper: ${w} × ${h}`;
 }
 
@@ -4656,7 +4657,7 @@ function updatePhaseButtons() {
 }
 
 function updateStatus() {
-  $('status-elements').textContent = `${STATE.elements.length} element${STATE.elements.length !== 1 ? 's' : ''}`;
+  $('status-elements').textContent = `${STATE.paperW} × ${STATE.paperH} · ${STATE.elements.length} element${STATE.elements.length !== 1 ? 's' : ''}`;
 }
 
 // ============================================================
