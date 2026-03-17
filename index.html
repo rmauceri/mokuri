@@ -714,6 +714,12 @@ html, body {
   text-align: center;
   line-height: 1.2;
 }
+.gallery-starter-dims {
+  font-size: 9px;
+  font-weight: 400;
+  color: var(--text-muted);
+  text-align: center;
+}
 
 /* Recent prints grid */
 .gallery-recents {
@@ -4372,6 +4378,12 @@ function buildGalleryUI() {
       name.textContent = preset.presentationTitle || preset.compositionName || `Curated ${idx + 1}`;
       card.appendChild(thumb);
       card.appendChild(name);
+      if (preset.paperW && preset.paperH) {
+        const dims = document.createElement('div');
+        dims.className = 'gallery-starter-dims';
+        dims.textContent = `${preset.paperW} × ${preset.paperH}`;
+        card.appendChild(dims);
+      }
       card.addEventListener('click', () => {
         closeGallery();
         const id = generateCompositionId();
@@ -4406,6 +4418,10 @@ function buildGalleryUI() {
       name.textContent = preset.name;
       card.appendChild(thumb);
       card.appendChild(name);
+      const dims = document.createElement('div');
+      dims.className = 'gallery-starter-dims';
+      dims.textContent = `${galleryPaperW} × ${galleryPaperH}`;
+      card.appendChild(dims);
       card.addEventListener('click', () => {
         closeGallery();
         newComposition(galleryPaperW, galleryPaperH, pid);
