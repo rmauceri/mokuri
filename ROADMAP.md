@@ -203,6 +203,25 @@ Single `.mokuri` JSON file format for both individual and bulk export/import.
 
 ### 12-P1: Remaining (Planned)
 
+#### Marquee Selection
+Drag-to-select multiple elements via a bounding box rectangle. Complements existing Ctrl/Cmd+click additive selection with a faster spatial selection method.
+
+**Interaction design:**
+- **Mouse/Pen**: Ctrl/Cmd + drag on empty workspace space draws a selection rectangle. Elements whose centers fall within the rect are added to selection. Without Ctrl/Cmd, drag continues to pan as today.
+- **Touch**: Long press (~300ms) on empty space initiates marquee mode — a subtle visual pulse confirms activation, then drag draws the selection rectangle. Quick tap+drag continues to pan as today.
+- **Visual feedback**: Semi-transparent dashed rectangle drawn on the selection layer while dragging. Matches the existing selection box style (brown dashed).
+- **Selection behavior**: Ctrl/Cmd+marquee adds to existing selection (additive). Plain marquee (touch long-press) replaces selection. Elements selected by center point, not intersection, to avoid accidental selection of large background elements.
+- **Threshold**: 4–5px movement threshold distinguishes click-to-deselect from drag-to-marquee.
+- **Touch considerations**: `preventDefault` on long press to suppress native context menu. Cancel marquee if second finger touches (pinch-zoom takes priority).
+
+**What works immediately after marquee select:**
+All existing multi-selection operations apply: move/drag, delete, flip H/V, duplicate, lock/unlock, layer ordering, arrow nudge. No new operations needed for MVP.
+
+**Deferred (future consideration):**
+- Group resize handles (scale all selected proportionally around group center)
+- Group rotation (rotate all selected around group center)
+- Batch ink settings for elements sharing the same definition or color zones
+
 #### Memory Bounds
 Carve stroke arrays are unbounded. Heavy sessions could grow to MB, bloating undo snapshots and localStorage.
 
