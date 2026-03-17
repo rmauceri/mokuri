@@ -3168,23 +3168,13 @@ function renderElementSvg(el, layerIndex) {
     return `url(#${gradId})`;
   };
 
-  const inner = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-  inner.setAttribute('transform', `translate(${offsetX}, ${offsetY})`);
-
-  // Clip to viewBox bounds — prevents fill paths from overflowing element bounding box
-  // (landscape elements extend fills below viewBox to eliminate bottom edge lines)
-  const clipId = `el-clip-${el.id}`;
-  const clipPath = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
-  clipPath.setAttribute('id', clipId);
-  const clipRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-  clipRect.setAttribute('x', vb[0]);
-  clipRect.setAttribute('y', vb[1]);
-  clipRect.setAttribute('width', vb[2]);
-  clipRect.setAttribute('height', vb[3]);
-  clipPath.appendChild(clipRect);
-  gradDefs.appendChild(clipPath);
-  hasGrads = true;
-  inner.setAttribute('clip-path', `url(#${clipId})`);
+  const inner = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  inner.setAttribute('x', offsetX);
+  inner.setAttribute('y', offsetY);
+  inner.setAttribute('width', vb[2]);
+  inner.setAttribute('height', vb[3]);
+  inner.setAttribute('viewBox', def.viewBox);
+  inner.setAttribute('overflow', 'hidden');
 
   // Carve pattern fill (replaces flat paper color on carved areas)
   let carvePatternFill = PAPER_COLOR;
