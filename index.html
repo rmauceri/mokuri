@@ -1784,6 +1784,7 @@ html, body {
 
         <!-- Selection overlay -->
         <g id="selection-layer"></g>
+        <g id="overlay-layer"></g>
 
         <!-- Carve tool width indicator ring -->
         <circle id="carve-ring" r="4" fill="rgba(245,240,230,0.12)" stroke="rgba(245,240,230,0.5)" stroke-width="0.3" stroke-dasharray="2 2" style="display:none; pointer-events:none;"/>
@@ -2280,6 +2281,9 @@ const WOOD_RECESS_TONES = ['#8a7d6a', '#877a67', '#8d8070', '#847762', '#8b7e6c'
 const PAPER_COLOR = '#f5f0e6';
 const CARVED_STROKE = '#3a3028'; // dark line for carved outlines
 const MOVE_DEAD_ZONE = 6; // px of screen travel before element move commits
+const MARQUEE_THRESHOLD = 5; // px movement before marquee rect appears
+let marquee = null;          // marquee selection state
+let longPressTimer = null;   // touch long-press timer
 
 // Paper size presets
 const PAPER_PRESETS = [
@@ -3560,6 +3564,8 @@ function updateSelection() {
       rect.setAttribute('height', hh * 2 + pad * 2);
       rect.classList.add('selection-box');
       rect.setAttribute('stroke-dasharray', '4 3');
+      // White boxes in carve/compose for visibility against wood tones
+      if (STATE.viewMode !== 'ink') rect.style.stroke = '#f5f0e6';
       g.appendChild(rect);
 
       if (el.locked) {
@@ -6843,6 +6849,124 @@ async function pullPrint() {
 // ============================================================
 //  POINTER INTERACTION
 // ============================================================
+// ── Marquee selection helpers ──
+const LONG_PRESS_MS = 300;
+const LONG_PRESS_RING_R = 24; // radius in SVG units
+
+function showLongPressRing(svgX, svgY) {
+  removeLongPressRing();
+  const overlay = document.getElementById('overlay-layer');
+  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  g.id = 'long-press-ring';
+  g.setAttribute('pointer-events', 'none');
+  const r = LONG_PRESS_RING_R;
+  // Compute stroke width in SVG units to approximate consistent screen size
+  const svgPerPx = STATE.viewBox.w / workspaceEl.getBoundingClientRect().width;
+  const shadowW = 4 * svgPerPx;
+  const mainW = 2.5 * svgPerPx;
+  const circumference = 2 * Math.PI * r;
+  // Shadow ring for contrast
+  const shadow = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  shadow.setAttribute('cx', svgX);
+  shadow.setAttribute('cy', svgY);
+  shadow.setAttribute('r', r);
+  shadow.setAttribute('fill', 'none');
+  shadow.setAttribute('stroke', 'rgba(0,0,0,0.4)');
+  shadow.setAttribute('stroke-width', shadowW);
+  shadow.setAttribute('stroke-linecap', 'round');
+  shadow.style.strokeDasharray = `${circumference}`;
+  shadow.style.strokeDashoffset = `${circumference}`;
+  shadow.style.transition = `stroke-dashoffset ${LONG_PRESS_MS}ms linear`;
+  g.appendChild(shadow);
+  // Main ring in vermillion
+  const circ = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  circ.setAttribute('cx', svgX);
+  circ.setAttribute('cy', svgY);
+  circ.setAttribute('r', r);
+  circ.setAttribute('fill', 'none');
+  circ.setAttribute('stroke', '#f5f0e6');
+  circ.setAttribute('stroke-width', mainW);
+  circ.setAttribute('stroke-linecap', 'round');
+  circ.style.strokeDasharray = `${circumference}`;
+  circ.style.strokeDashoffset = `${circumference}`;
+  circ.style.transition = `stroke-dashoffset ${LONG_PRESS_MS}ms linear`;
+  g.appendChild(circ);
+  overlay.appendChild(g);
+  requestAnimationFrame(() => {
+    shadow.style.strokeDashoffset = '0';
+    circ.style.strokeDashoffset = '0';
+  });
+}
+
+function pulseLongPressRing() {
+  const g = document.getElementById('long-press-ring');
+  if (!g) return;
+  const circles = g.querySelectorAll('circle');
+  circles.forEach(c => {
+    c.setAttribute('opacity', '1');
+    c.style.transition = 'opacity 250ms ease-out';
+  });
+  requestAnimationFrame(() => circles.forEach(c => c.setAttribute('opacity', '0')));
+  setTimeout(() => removeLongPressRing(), 270);
+}
+
+function removeLongPressRing() {
+  const g = document.getElementById('long-press-ring');
+  if (g) g.remove();
+}
+
+function cancelLongPress() {
+  if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+  removeLongPressRing();
+}
+function cancelMarquee() {
+  marquee = null;
+  cancelLongPress();
+  const rect = document.getElementById('marquee-rect');
+  if (rect) rect.remove();
+}
+function drawMarqueeRect(x1, y1, x2, y2) {
+  const minX = Math.min(x1, x2), minY = Math.min(y1, y2);
+  const w = Math.abs(x2 - x1), h = Math.abs(y2 - y1);
+  // High contrast in carve/compose (wood background), accent in ink mode
+  const isInk = STATE.viewMode === 'ink';
+  const strokeColor = isInk ? '#8b6b4a' : '#f5f0e6';
+  const fillColor = isInk ? 'rgba(139,107,74,0.12)' : 'rgba(245,240,230,0.1)';
+  let rect = document.getElementById('marquee-rect');
+  if (!rect) {
+    rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.id = 'marquee-rect';
+    rect.setAttribute('stroke-width', '1.5');
+    rect.setAttribute('stroke-dasharray', '6 4');
+    rect.setAttribute('vector-effect', 'non-scaling-stroke');
+    rect.setAttribute('pointer-events', 'none');
+    selectionLayer.appendChild(rect);
+  }
+  rect.setAttribute('fill', fillColor);
+  rect.setAttribute('stroke', strokeColor);
+  rect.setAttribute('x', minX);
+  rect.setAttribute('y', minY);
+  rect.setAttribute('width', w);
+  rect.setAttribute('height', h);
+}
+function completeMarquee(svgEnd, additive) {
+  if (!marquee) return;
+  const x1 = marquee.startX, y1 = marquee.startY;
+  const x2 = svgEnd.x, y2 = svgEnd.y;
+  const minX = Math.min(x1, x2), maxX = Math.max(x1, x2);
+  const minY = Math.min(y1, y2), maxY = Math.max(y1, y2);
+  const hits = [];
+  for (const el of STATE.elements) {
+    if (el.x >= minX && el.x <= maxX && el.y >= minY && el.y <= maxY) {
+      hits.push(el.id);
+    }
+  }
+  if (!additive) STATE.selectedIds.clear();
+  for (const id of hits) STATE.selectedIds.add(id);
+  refreshSelectionUI();
+  cancelMarquee();
+}
+
 function setupInteraction() {
   const ws = workspaceEl;
 
@@ -6857,6 +6981,11 @@ function setupInteraction() {
   let pinchStartVBw = 0;
   let pinchStartVBh = 0;
   let isPinching = false;
+
+  // ── Marquee selection helpers (defined at module scope above) ──
+
+  // Suppress native context menu on long-press (needed for touch marquee)
+  ws.addEventListener('contextmenu', (e) => e.preventDefault());
 
   function getPinchDist() {
     const pts = [...pinchPointers.values()];
@@ -6880,6 +7009,7 @@ function setupInteraction() {
         if (STATE.undoStack.length) STATE.undoStack.pop();
       }
       STATE.dragging = null;
+      cancelMarquee();
       isPinching = true;
       pinchStartDist = getPinchDist();
       pinchStartZoom = STATE.zoom;
@@ -7116,7 +7246,32 @@ function setupInteraction() {
     }
 
     // Clicked empty space — deselect (but not in carve focus mode)
-    if (!STATE.carveFocus) deselectAll();
+    if (!STATE.carveFocus) {
+      // Ctrl/Cmd + drag on empty space: start marquee immediately (mouse/pen)
+      if ((e.ctrlKey || e.metaKey) && e.pointerType !== 'touch') {
+        marquee = { startX: pt.x, startY: pt.y, pointerId: e.pointerId, isTouch: false, additive: true, dragging: false, clientStartX: e.clientX, clientStartY: e.clientY };
+        ws.setPointerCapture(e.pointerId);
+        return;
+      }
+
+      // Touch or pen on empty space: start long-press timer for marquee
+      if (e.pointerType === 'touch' || e.pointerType === 'pen') {
+        const touchPt = { x: pt.x, y: pt.y };
+        const touchClientX = e.clientX, touchClientY = e.clientY;
+        const touchPointerId = e.pointerId;
+        showLongPressRing(touchPt.x, touchPt.y);
+        longPressTimer = setTimeout(() => {
+          longPressTimer = null;
+          if (isPinching) { removeLongPressRing(); return; }
+          pulseLongPressRing();
+          marquee = { startX: touchPt.x, startY: touchPt.y, pointerId: touchPointerId, isTouch: true, additive: false, dragging: false, clientStartX: touchClientX, clientStartY: touchClientY };
+          MokuriAudio.playPanelToggle?.();
+          if (STATE.dragging && STATE.dragging.type === 'pan') { STATE.dragging = null; ws.style.cursor = 'crosshair'; }
+        }, LONG_PRESS_MS);
+      }
+
+      deselectAll();
+    }
 
     // Start pan (but not in carve focus mode — keep viewport locked on element)
     if (STATE.carveFocus) return;
@@ -7215,6 +7370,34 @@ function setupInteraction() {
       ws.classList.remove('over-paper');
     }
 
+    // ── Marquee / long-press tracking ──
+    // Cancel long-press timer if finger moves too much before it fires
+    if (longPressTimer && !marquee) {
+      const d = STATE.dragging;
+      if (d && d.type === 'pan') {
+        const dx = e.clientX - d.startX;
+        const dy = e.clientY - d.startY;
+        if (Math.sqrt(dx * dx + dy * dy) > 10) cancelLongPress();
+      }
+    }
+    if (marquee) {
+      const dx = e.clientX - marquee.clientStartX;
+      const dy = e.clientY - marquee.clientStartY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist >= MARQUEE_THRESHOLD) {
+        marquee.dragging = true;
+        // Cancel concurrent pan drag
+        if (STATE.dragging && STATE.dragging.type === 'pan') {
+          STATE.dragging = null;
+          ws.style.cursor = 'crosshair';
+        }
+        const svgPt = clientToSvg(e.clientX, e.clientY);
+        drawMarqueeRect(marquee.startX, marquee.startY, svgPt.x, svgPt.y);
+      }
+      if (marquee.dragging) return;
+    }
+
     if (!STATE.dragging) return;
     const d = STATE.dragging;
 
@@ -7310,6 +7493,21 @@ function setupInteraction() {
     pinchPointers.delete(e.pointerId);
     if (isPinching) {
       if (pinchPointers.size < 2) isPinching = false;
+      cancelMarquee();
+      return;
+    }
+
+    // ── Marquee completion ──
+    cancelLongPress();
+    if (marquee) {
+      if (marquee.dragging) {
+        const svgPt = clientToSvg(e.clientX, e.clientY);
+        completeMarquee(svgPt, marquee.additive);
+        ws.style.cursor = '';
+      } else {
+        cancelMarquee();
+      }
+      STATE.dragging = null;
       return;
     }
 
@@ -7370,6 +7568,7 @@ function setupInteraction() {
   ws.addEventListener('pointercancel', (e) => {
     pinchPointers.delete(e.pointerId);
     if (pinchPointers.size < 2) isPinching = false;
+    cancelMarquee();
   });
 
   // Zoom with wheel
@@ -7478,7 +7677,8 @@ function setupKeyboard() {
       });
     }
     if (e.key === 'Escape') {
-      if ($('makimono').classList.contains('visible')) { hideMakimono(); }
+      if (marquee) { cancelMarquee(); workspaceEl.style.cursor = ''; }
+      else if ($('makimono').classList.contains('visible')) { hideMakimono(); }
       else if ($('gallery-modal').classList.contains('visible')) { closeGallery(); }
       else if (STATE.carveFocus) { exitCarveFocus(); }
       else if (STATE.carveStudioOpen) { closeCarveStudio(); }
