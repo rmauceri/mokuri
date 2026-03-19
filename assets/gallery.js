@@ -253,7 +253,7 @@ const MOKURI_GALLERY_PRESETS = [
   "compositionName": "Cranes at Dawn"
 },
 
-// Bridge in Summer (600×420)
+  // Bridge in Summer (600×420)
   {
   "elements": [
     {
@@ -451,8 +451,8 @@ const MOKURI_GALLERY_PRESETS = [
     {
       "id": 16,
       "defId": "hanko-mokuri",
-      "x": 16.574544451183243,
-      "y": 402.2652334216981,
+      "x": 582.671526704932,
+      "y": 404.74287933326605,
       "scaleX": 0.467245445909928,
       "scaleY": 0.467245445909928,
       "rotation": 0,
@@ -870,9 +870,21 @@ const MOKURI_GALLERY_PRESETS = [
         "detail": 2
       },
       "variationSeed": 56076
+    },
+    {
+      "id": 8,
+      "defId": "hanko-mokuri",
+      "x": 475.8018536622574,
+      "y": 476.244955281424,
+      "scaleX": 0.6061991818782839,
+      "scaleY": 0.6061991818782839,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {},
+      "variationSeed": 27793
     }
   ],
-  "nextId": 8,
+  "nextId": 9,
   "paletteId": "edo",
   "paperW": 500,
   "paperH": 500,
@@ -893,7 +905,7 @@ const MOKURI_GALLERY_PRESETS = [
   "compositionName": "Temple View"
 },
  
-// Koi Fishing (420×280)
+  //Koi Fishing (420×280)
   {
   "elements": [
     {
@@ -1317,6 +1329,146 @@ const MOKURI_GALLERY_PRESETS = [
           "pattern": "woodgrain",
           "density": 0.7,
           "rotation": 5
+        },
+        {
+          "points": [
+            {
+              "x": 217.96767393399085,
+              "y": 79.93905015878073,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 226.8960957909748,
+              "y": 80.75667954602845,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 236.37514844472284,
+              "y": 84.10823114238593,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 246.41366416495086,
+              "y": 82.66617891507067,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            }
+          ],
+          "tool": "pattern",
+          "pattern": "woodgrain",
+          "density": 0.75,
+          "rotation": 15,
+          "pressure": 54
+        },
+        {
+          "points": [
+            {
+              "x": 213.2432617382964,
+              "y": 85.10534600410007,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 223.75561969115694,
+              "y": 83.54517621199666,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 231.49050896627367,
+              "y": 84.72369774769638,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 244.88635059823207,
+              "y": 83.8927421117837,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            }
+          ],
+          "tool": "pattern",
+          "pattern": "woodgrain",
+          "density": 0.75,
+          "rotation": 15,
+          "pressure": 54
+        },
+        {
+          "points": [
+            {
+              "x": 251.31967668243857,
+              "y": 140.95061683930382,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 214.92667624890018,
+              "y": 146.88419867950898,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            }
+          ],
+          "tool": "pattern",
+          "pattern": "woodgrain",
+          "density": 0.75,
+          "rotation": 15,
+          "pressure": 54
+        },
+        {
+          "points": [
+            {
+              "x": 235.15734125836417,
+              "y": 70.60814614036329,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 254.221292304392,
+              "y": 70.77272444227941,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            },
+            {
+              "x": 267.29460756363756,
+              "y": 68.930438674733,
+              "pressure": 0.5,
+              "tilt": 0,
+              "tiltX": 0,
+              "tiltY": 0
+            }
+          ],
+          "tool": "pattern",
+          "pattern": "woodgrain",
+          "density": 0.75,
+          "rotation": 15,
+          "pressure": 54
         }
       ]
     },
@@ -1339,8 +1491,8 @@ const MOKURI_GALLERY_PRESETS = [
     {
       "id": 4,
       "defId": "fisherman",
-      "x": 351.1860122546366,
-      "y": 239.8291860693709,
+      "x": 172.18601758925212,
+      "y": 199.82918726146374,
       "scaleX": 0.6605172413793103,
       "scaleY": 0.71959475204525,
       "rotation": -3.0056513544306256,
@@ -1354,12 +1506,12 @@ const MOKURI_GALLERY_PRESETS = [
     {
       "id": 7,
       "defId": "koi-leaping",
-      "x": 230.7962875841438,
-      "y": 199.33747218667338,
+      "x": 247.7962870775044,
+      "y": 201.004159148721,
       "scaleX": 0.14016180206258005,
       "scaleY": 0.1189019496043315,
       "rotation": 0,
-      "carveLevel": 0,
+      "carveLevel": 2,
       "colorOverrides": {},
       "variationSeed": 98835
     },
@@ -1445,8 +1597,8 @@ const MOKURI_GALLERY_PRESETS = [
     {
       "id": 13,
       "defId": "hanko-mokuri",
-      "x": 17.625,
-      "y": 259.625,
+      "x": 406.9583166440333,
+      "y": 263.29165638486575,
       "scaleX": 0.4458333333333333,
       "scaleY": 0.4458333333333333,
       "rotation": 0,
@@ -1457,12 +1609,12 @@ const MOKURI_GALLERY_PRESETS = [
     {
       "id": 14,
       "defId": "koi-leaping",
-      "x": 194.17245236943754,
-      "y": 182.4438035020614,
+      "x": 299.7280056094244,
+      "y": 220.962309872794,
       "scaleX": -0.09486388342381127,
       "scaleY": 0.0804748549186965,
       "rotation": 0,
-      "carveLevel": 0,
+      "carveLevel": 2,
       "colorOverrides": {},
       "variationSeed": 79539,
       "locked": false
@@ -1486,10 +1638,10 @@ const MOKURI_GALLERY_PRESETS = [
   "presentationHanko": null,
   "presentationHankoPos": "bottom-right",
   "presentationDeckle": true,
-  "compositionName": "Koi Fishing"
+  "compositionName": "Daylight Rolling Hills & Flowing Stream"
 },
- 
-// Farm and Full Moon (600×420)
+
+  // Farm and Full Moon (600×420)
   {
   "elements": [
     {
@@ -3020,9 +3172,21 @@ const MOKURI_GALLERY_PRESETS = [
         "accent": "#d4826a"
       },
       "variationSeed": 59729
+    },
+    {
+      "id": 11,
+      "defId": "hanko-mokuri",
+      "x": 576.3526106550687,
+      "y": 396.80041709605877,
+      "scaleX": 0.6315301510767938,
+      "scaleY": 0.6315301510767938,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {},
+      "variationSeed": 15232
     }
   ],
-  "nextId": 11,
+  "nextId": 12,
   "paletteId": "fuyu",
   "paperW": 600,
   "paperH": 420,
@@ -3126,9 +3290,21 @@ const MOKURI_GALLERY_PRESETS = [
       "zoneBokashi": {
         "body": "right"
       }
+    },
+    {
+      "id": 6,
+      "defId": "hanko-mokuri",
+      "x": 383.0154257000038,
+      "y": 261.98003144072317,
+      "scaleX": 0.4277928816303946,
+      "scaleY": 0.4277928816303946,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {},
+      "variationSeed": 98717
     }
   ],
-  "nextId": 6,
+  "nextId": 7,
   "paletteId": "fuyu",
   "paperW": 400,
   "paperH": 280,
@@ -3146,7 +3322,7 @@ const MOKURI_GALLERY_PRESETS = [
   "presentationHanko": null,
   "presentationHankoPos": "bottom-right",
   "presentationDeckle": true,
-  "compositionName": "Wintery Branches"
+  "compositionName": "Winter Branches"
 },
 
   // Cloud Peak (320×800)
@@ -3452,8 +3628,7 @@ const MOKURI_GALLERY_PRESETS = [
       "rotation": 0,
       "carveLevel": 2,
       "colorOverrides": {
-        "leaf": 2,
-        "branch": "#5c7a4a"
+        "leaf": 2
       },
       "variationSeed": 40001
     },
@@ -3487,26 +3662,26 @@ const MOKURI_GALLERY_PRESETS = [
       "locked": false
     },
     {
-      "id": 7,
-      "defId": "hanko-diamond",
-      "x": 390.17081997610245,
-      "y": 254.20488935636658,
-      "scaleX": 0.7761832402248247,
-      "scaleY": 0.7761832402248247,
+      "id": 8,
+      "defId": "hanko-mokuri",
+      "x": 406.250054664908,
+      "y": 264.4166851515566,
+      "scaleX": 0.374999764313308,
+      "scaleY": 0.374999764313308,
       "rotation": 0,
       "carveLevel": 2,
       "colorOverrides": {},
-      "variationSeed": 31523
+      "variationSeed": 90239
     }
   ],
-  "nextId": 8,
+  "nextId": 9,
   "paletteId": "beni",
   "paperW": 420,
   "paperH": 280,
   "paperType": "kozo",
   "inkLoad": "standard",
   "impressions": 1,
-  "sky": "day",
+  "sky": "pink",
   "ground": "grass",
   "horizon": 0.1,
   "mist": 0,
