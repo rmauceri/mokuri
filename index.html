@@ -3400,6 +3400,37 @@ function refreshSelectionUI() {
   if (STATE.inkStudioOpen) buildInkStudioUI();
 }
 
+// Compute axis-aligned bounding box for a set of elements,
+// accounting for each element's rotation.
+function computeGroupAABB(ids) {
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const id of ids) {
+    const el = STATE.elements.find(e => e.id === id);
+    if (!el) continue;
+    const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+    if (!def) continue;
+    const vb = def.viewBox.split(' ').map(Number);
+    const hw = (vb[2] / 2) * Math.abs(el.scaleX);
+    const hh = (vb[3] / 2) * Math.abs(el.scaleY);
+    const rad = el.rotation * Math.PI / 180;
+    const cosR = Math.cos(rad), sinR = Math.sin(rad);
+    // Four corners in world coordinates
+    const corners = [
+      { x: el.x + cosR * (-hw) - sinR * (-hh), y: el.y + sinR * (-hw) + cosR * (-hh) },
+      { x: el.x + cosR * (hw) - sinR * (-hh), y: el.y + sinR * (hw) + cosR * (-hh) },
+      { x: el.x + cosR * (hw) - sinR * (hh), y: el.y + sinR * (hw) + cosR * (hh) },
+      { x: el.x + cosR * (-hw) - sinR * (hh), y: el.y + sinR * (-hw) + cosR * (hh) },
+    ];
+    for (const c of corners) {
+      if (c.x < minX) minX = c.x;
+      if (c.x > maxX) maxX = c.x;
+      if (c.y < minY) minY = c.y;
+      if (c.y > maxY) maxY = c.y;
+    }
+  }
+  return { minX, minY, maxX, maxY };
+}
+
 function updateSelection() {
   while (selectionLayer.firstChild) selectionLayer.removeChild(selectionLayer.firstChild);
   if (!STATE.selectedIds.size) return;
@@ -3543,7 +3574,47 @@ function updateSelection() {
       }
     }
   } else {
-    // --- Multi-selection: per-element dashed boxes, no handles ---
+    // --- Multi-selection: group bounding box with corner handles + per-element boxes ---
+    const groupPad = 12;
+    const bb = computeGroupAABB(STATE.selectedIds);
+
+    // Group bounding box
+    const groupRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    groupRect.setAttribute('x', bb.minX - groupPad);
+    groupRect.setAttribute('y', bb.minY - groupPad);
+    groupRect.setAttribute('width', bb.maxX - bb.minX + groupPad * 2);
+    groupRect.setAttribute('height', bb.maxY - bb.minY + groupPad * 2);
+    groupRect.classList.add('selection-box');
+    groupRect.setAttribute('stroke-dasharray', '8 4');
+    if (STATE.viewMode !== 'ink') groupRect.style.stroke = '#f5f0e6';
+    selectionLayer.appendChild(groupRect);
+
+    // Corner resize handles on the group box
+    const isCoarse = window.matchMedia('(pointer: coarse)').matches;
+    const wsRect = workspaceEl.getBoundingClientRect();
+    const svgPerPx = STATE.viewBox.w / wsRect.width;
+    const handleSize = (isCoarse ? 14 : 7) * svgPerPx;
+    const groupCorners = [
+      { cx: bb.minX - groupPad, cy: bb.minY - groupPad, cursor: 'nw-resize' },
+      { cx: bb.maxX + groupPad, cy: bb.minY - groupPad, cursor: 'ne-resize' },
+      { cx: bb.maxX + groupPad, cy: bb.maxY + groupPad, cursor: 'se-resize' },
+      { cx: bb.minX - groupPad, cy: bb.maxY + groupPad, cursor: 'sw-resize' },
+    ];
+    groupCorners.forEach(c => {
+      const h = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      h.setAttribute('x', c.cx - handleSize / 2);
+      h.setAttribute('y', c.cy - handleSize / 2);
+      h.setAttribute('width', handleSize);
+      h.setAttribute('height', handleSize);
+      h.setAttribute('rx', 2 * svgPerPx);
+      h.classList.add('handle');
+      h.style.cursor = c.cursor;
+      h.setAttribute('data-handle', c.cursor);
+      h.setAttribute('data-group-handle', 'true');
+      selectionLayer.appendChild(h);
+    });
+
+    // Per-element dashed boxes inside the group
     for (const id of STATE.selectedIds) {
       const el = STATE.elements.find(e => e.id === id);
       if (!el) continue;
@@ -3564,8 +3635,8 @@ function updateSelection() {
       rect.setAttribute('height', hh * 2 + pad * 2);
       rect.classList.add('selection-box');
       rect.setAttribute('stroke-dasharray', '4 3');
-      // White boxes in carve/compose for visibility against wood tones
       if (STATE.viewMode !== 'ink') rect.style.stroke = '#f5f0e6';
+      rect.setAttribute('opacity', '0.5');
       g.appendChild(rect);
 
       if (el.locked) {
@@ -7167,53 +7238,82 @@ function setupInteraction() {
     // ---- SELECT MODE (existing behavior) ----
     const pt = clientToSvg(e.clientX, e.clientY);
 
-    // Check if clicking a handle (only in single-selection mode)
+    // Check if clicking a handle
     const handleEl = e.target.closest('[data-handle]');
-    if (handleEl && STATE.selectedIds.size === 1) {
+    if (handleEl) {
       const handleType = handleEl.getAttribute('data-handle');
-      const el = STATE.elements.find(el => el.id === primarySelectedId());
-      if (el && !el.locked) {
-        if (handleType === 'rotate') {
-          STATE.dragging = {
-            type: 'rotate', elementId: el.id,
-            centerX: el.x, centerY: el.y,
-            startAngle: Math.atan2(pt.y - el.y, pt.x - el.x) * 180 / Math.PI,
-            origRotation: el.rotation,
-          };
-        } else {
-          // Resize — anchor-based for 1:1 handle tracking
-          pushUndo();
-          const def = MOKURI_ELEMENTS.find(de => de.id === el.defId);
-          const vb = def.viewBox.split(' ').map(Number);
-          const hw = vb[2] / 2 * Math.abs(el.scaleX);
-          const hh = vb[3] / 2 * Math.abs(el.scaleY);
-          const rad = el.rotation * Math.PI / 180;
-          const cosR = Math.cos(rad);
-          const sinR = Math.sin(rad);
-          const dir = handleType.split('-')[0];
-          const sX = dir.includes('e') ? 1 : dir.includes('w') ? -1 : 0;
-          const sY = dir.includes('s') ? 1 : dir.includes('n') ? -1 : 0;
-          // Anchor point (opposite corner/edge) in world coords
-          const aLX = -sX * hw, aLY = -sY * hh;
-          const anchorWorldX = el.x + cosR * aLX - sinR * aLY;
-          const anchorWorldY = el.y + sinR * aLX + cosR * aLY;
-          // Grab offset: element edge position minus pointer (avoids initial jump)
-          const hLX = sX * hw, hLY = sY * hh;
-          const handleWorldX = el.x + cosR * hLX - sinR * hLY;
-          const handleWorldY = el.y + sinR * hLX + cosR * hLY;
-          STATE.dragging = {
-            type: 'resize', elementId: el.id, handle: handleType,
-            origScaleX: el.scaleX, origScaleY: el.scaleY,
-            origRotation: el.rotation,
-            anchorWorldX, anchorWorldY,
-            grabOffsetX: handleWorldX - pt.x,
-            grabOffsetY: handleWorldY - pt.y,
-            sX, sY, hw, hh,
-          };
-          ws.style.cursor = handleType;
-        }
+      const isGroupHandle = handleEl.hasAttribute('data-group-handle');
+
+      if (isGroupHandle && STATE.selectedIds.size > 1) {
+        // Group resize handle
+        pushUndo();
+        const groupPad = 12;
+        const bb = computeGroupAABB(STATE.selectedIds);
+        const dir = handleType.split('-')[0];
+        const sX = dir.includes('e') ? 1 : dir.includes('w') ? -1 : 0;
+        const sY = dir.includes('s') ? 1 : dir.includes('n') ? -1 : 0;
+        // Anchor = opposite corner of group box
+        const anchorX = sX > 0 ? bb.minX - groupPad : bb.maxX + groupPad;
+        const anchorY = sY > 0 ? bb.minY - groupPad : bb.maxY + groupPad;
+        // Handle position (the corner being dragged)
+        const handleX = sX > 0 ? bb.maxX + groupPad : bb.minX - groupPad;
+        const handleY = sY > 0 ? bb.maxY + groupPad : bb.minY - groupPad;
+        const origDist = Math.hypot(handleX - anchorX, handleY - anchorY);
+        // Snapshot unlocked elements
+        const unlocked = STATE.elements.filter(de => STATE.selectedIds.has(de.id) && !de.locked);
+        STATE.dragging = {
+          type: 'group-resize',
+          anchorX, anchorY, origDist,
+          grabOffsetX: handleX - pt.x,
+          grabOffsetY: handleY - pt.y,
+          origElements: unlocked.map(de => ({ id: de.id, x: de.x, y: de.y, scaleX: de.scaleX, scaleY: de.scaleY })),
+        };
         ws.setPointerCapture(e.pointerId);
+        ws.style.cursor = handleType;
         return;
+      } else if (!isGroupHandle && STATE.selectedIds.size === 1) {
+        const el = STATE.elements.find(el => el.id === primarySelectedId());
+        if (el && !el.locked) {
+          if (handleType === 'rotate') {
+            STATE.dragging = {
+              type: 'rotate', elementId: el.id,
+              centerX: el.x, centerY: el.y,
+              startAngle: Math.atan2(pt.y - el.y, pt.x - el.x) * 180 / Math.PI,
+              origRotation: el.rotation,
+            };
+          } else {
+            // Resize — anchor-based for 1:1 handle tracking
+            pushUndo();
+            const def = MOKURI_ELEMENTS.find(de => de.id === el.defId);
+            const vb = def.viewBox.split(' ').map(Number);
+            const hw = vb[2] / 2 * Math.abs(el.scaleX);
+            const hh = vb[3] / 2 * Math.abs(el.scaleY);
+            const rad = el.rotation * Math.PI / 180;
+            const cosR = Math.cos(rad);
+            const sinR = Math.sin(rad);
+            const dir = handleType.split('-')[0];
+            const sX = dir.includes('e') ? 1 : dir.includes('w') ? -1 : 0;
+            const sY = dir.includes('s') ? 1 : dir.includes('n') ? -1 : 0;
+            const aLX = -sX * hw, aLY = -sY * hh;
+            const anchorWorldX = el.x + cosR * aLX - sinR * aLY;
+            const anchorWorldY = el.y + sinR * aLX + cosR * aLY;
+            const hLX = sX * hw, hLY = sY * hh;
+            const handleWorldX = el.x + cosR * hLX - sinR * hLY;
+            const handleWorldY = el.y + sinR * hLX + cosR * hLY;
+            STATE.dragging = {
+              type: 'resize', elementId: el.id, handle: handleType,
+              origScaleX: el.scaleX, origScaleY: el.scaleY,
+              origRotation: el.rotation,
+              anchorWorldX, anchorWorldY,
+              grabOffsetX: handleWorldX - pt.x,
+              grabOffsetY: handleWorldY - pt.y,
+              sX, sY, hw, hh,
+            };
+            ws.style.cursor = handleType;
+          }
+          ws.setPointerCapture(e.pointerId);
+          return;
+        }
       }
     }
 
@@ -7486,6 +7586,23 @@ function setupInteraction() {
       }
       return;
     }
+
+    if (d.type === 'group-resize') {
+      const targetX = pt.x + d.grabOffsetX;
+      const targetY = pt.y + d.grabOffsetY;
+      const curDist = Math.hypot(targetX - d.anchorX, targetY - d.anchorY);
+      const f = Math.max(0.1, curDist / d.origDist);
+      d.origElements.forEach(orig => {
+        const el = STATE.elements.find(e => e.id === orig.id);
+        if (!el) return;
+        el.scaleX = orig.scaleX * f;
+        el.scaleY = orig.scaleY * f;
+        el.x = d.anchorX + (orig.x - d.anchorX) * f;
+        el.y = d.anchorY + (orig.y - d.anchorY) * f;
+      });
+      rerenderAll();
+      return;
+    }
   });
 
   ws.addEventListener('pointerup', (e) => {
@@ -7560,6 +7677,9 @@ function setupInteraction() {
         });
         if (!moved) STATE.undoStack.pop();
       }
+    }
+    if (STATE.dragging && STATE.dragging.type === 'group-resize') {
+      autoSave();
     }
     STATE.dragging = null;
     ws.style.cursor = '';  // Clear inline cursor — let CSS classes control it
