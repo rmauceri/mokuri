@@ -168,7 +168,48 @@ Authentic print presentation features wrapping the existing print output — mar
 - **Hand-crafted SVG refinement** — The Element Design Guide established conventions for organic, woodblock-appropriate geometry. Continued iteration on individual elements — especially older ones predating the guide — would further raise visual quality. Hatching density, form-following texture lines, and zone boundary refinement are the main opportunities.
 
 ### Composition & Creativity
-- **Composition guides** — Rule-of-thirds, golden ratio, and horizon-line overlays to help users compose intentional scenes.
+
+#### Composition Guides (Planned)
+
+Wire-line overlay showing paper boundaries and rule-of-thirds grid. Helps users compose intentional scenes and see composition edges even when elements extend beyond the paper.
+
+**What renders:**
+- 4 border lines at paper edges (x=0, x=paperW, y=0, y=paperH)
+- 2 vertical third lines (x=paperW/3, x=2*paperW/3)
+- 2 horizontal third lines (y=paperH/3, y=2*paperH/3)
+- All 8 lines extend ~20 SVG units beyond paper corners ("wire lines" that overshoot, making borders easy to spot)
+
+**Visual treatment — dual-stroke halo for universal contrast:**
+- Inner line: `rgba(255, 255, 255, 0.5)` — white, semi-transparent (~1.5px)
+- Outer halo: `rgba(0, 0, 0, 0.15)` — subtle dark edge (~3px behind inner)
+- `vector-effect: non-scaling-stroke` — consistent line weight at any zoom
+- `pointer-events: none` — never interferes with interaction
+- Works against wood tones (carve), light paper (ink), dark atmosphere (night), bright atmosphere (day/snow)
+
+**SVG layer placement:**
+- New `#guide-layer` group between `#comp-layer` and `#selection-layer`
+- Guides render over elements but under selection handles
+- Rendered once in `renderGuides()`, called from `rerenderAll()` and `updateViewBox()` (if line weight needs zoom adjustment)
+
+**Toggle control:**
+- Keyboard: `G` key toggles guides on/off
+- Toolbar button: in zoom group (right of ⊡ fit-to-view), icon is `⊞` (3×3 grid feel), with `.active` class when on
+- STATE field: `guides: false` (off by default)
+- Persisted in localStorage (`mokuri-guides`)
+
+**Implementation:**
+1. Add `STATE.guides` field + localStorage read at init
+2. Add `#guide-layer` SVG group in workspace HTML
+3. `renderGuides()` function — creates 8 lines (each as two `<line>` elements for halo effect), or clears group if guides off
+4. Add toolbar button after `#btn-zoom-fit`, wire click handler
+5. Add `G` keydown handler
+6. Call `renderGuides()` from `rerenderAll()`
+
+**Future extensions (not in scope now):**
+- Golden ratio overlay option
+- Horizon-line guide synced with atmosphere horizon slider
+- Diagonal composition lines
+
 - **More scene presets** — Seasonal themes, time-of-day variations, genre-specific starters (seascape, garden, urban, spiritual).
 - **Border & corner elements** — Corner ornaments, edge repeaters as a new element category with edge-snapping behavior.
 - **Frame presets** — Pre-composed corner+edge combinations for one-click decorative borders.
