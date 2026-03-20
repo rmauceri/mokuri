@@ -1712,6 +1712,7 @@ html, body {
       <button class="tool-btn" id="btn-zoom-in" title="Zoom In (+)">+</button>
       <button class="tool-btn" id="btn-zoom-out" title="Zoom Out (−)">−</button>
       <button class="tool-btn" id="btn-zoom-fit" title="Fit to View (0)">⊡</button>
+      <button class="tool-btn" id="btn-guides" title="Composition Guides (G)">⊞</button>
     </div>
     <div class="toolbar-separator"></div>
     <button class="mode-btn" id="btn-file" title="Gallery — compositions & presets">
@@ -1781,6 +1782,9 @@ html, body {
 
         <!-- Composition layer (elements go here) -->
         <g id="comp-layer"></g>
+
+        <!-- Composition guides (rule-of-thirds + borders) -->
+        <g id="guide-layer" style="pointer-events:none;"></g>
 
         <!-- Selection overlay -->
         <g id="selection-layer"></g>
@@ -2203,6 +2207,9 @@ const STATE = {
   ground: 'none',       // 'none' | 'earth' | 'grass' | 'snow' | 'sand' | 'water'
   horizon: 0.62,        // 0-1, fraction from top (0.62 = 62% down)
   mist: 0,              // 0-3 mist bands
+
+  // Composition guides
+  guides: localStorage.getItem('mokuri-guides') === 'true',
 
   // Composition identity (set at runtime, not serialized)
   activeCompositionId: null,
@@ -2900,6 +2907,13 @@ function fitPaperToView() {
   updateViewBox();
 }
 
+function toggleGuides() {
+  STATE.guides = !STATE.guides;
+  localStorage.setItem('mokuri-guides', STATE.guides);
+  $('btn-guides').classList.toggle('active', STATE.guides);
+  renderGuides();
+}
+
 function layoutPaper() {
   paperEl.setAttribute('x', 0);
   paperEl.setAttribute('y', 0);
@@ -3289,7 +3303,52 @@ function rerenderAll() {
     }
   });
   updateSelection();
+  renderGuides();
   updateStatus();
+}
+
+function renderGuides() {
+  const layer = $('guide-layer');
+  while (layer.firstChild) layer.removeChild(layer.firstChild);
+  if (!STATE.guides) return;
+
+  const w = STATE.paperW, h = STATE.paperH;
+  const ext = 20; // overshoot beyond paper corners
+
+  // 8 lines: 4 borders + 2 vertical thirds + 2 horizontal thirds
+  const lines = [
+    // Borders (extended beyond corners)
+    [-ext, 0, w + ext, 0],           // top
+    [-ext, h, w + ext, h],           // bottom
+    [0, -ext, 0, h + ext],           // left
+    [w, -ext, w, h + ext],           // right
+    // Rule of thirds
+    [w / 3, -ext, w / 3, h + ext],
+    [2 * w / 3, -ext, 2 * w / 3, h + ext],
+    [-ext, h / 3, w + ext, h / 3],
+    [-ext, 2 * h / 3, w + ext, 2 * h / 3],
+  ];
+
+  const svgNS = 'http://www.w3.org/2000/svg';
+  lines.forEach(([x1, y1, x2, y2]) => {
+    // Dark halo (outer)
+    const halo = document.createElementNS(svgNS, 'line');
+    halo.setAttribute('x1', x1); halo.setAttribute('y1', y1);
+    halo.setAttribute('x2', x2); halo.setAttribute('y2', y2);
+    halo.setAttribute('stroke', 'rgba(0,0,0,0.15)');
+    halo.setAttribute('stroke-width', '3');
+    halo.setAttribute('vector-effect', 'non-scaling-stroke');
+    layer.appendChild(halo);
+
+    // White inner line
+    const line = document.createElementNS(svgNS, 'line');
+    line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+    line.setAttribute('stroke', 'rgba(255,255,255,0.5)');
+    line.setAttribute('stroke-width', '1.5');
+    line.setAttribute('vector-effect', 'non-scaling-stroke');
+    layer.appendChild(line);
+  });
 }
 
 function renderBackgroundCarveStrokes() {
@@ -7745,6 +7804,7 @@ function setupKeyboard() {
     if (e.key === '=' || e.key === '+') { zoomBy(0.15, workspaceEl.clientWidth / 2, workspaceEl.clientHeight / 2); e.preventDefault(); }
     if (e.key === '-') { zoomBy(-0.15, workspaceEl.clientWidth / 2, workspaceEl.clientHeight / 2); e.preventDefault(); }
     if (e.key === '0') { fitPaperToView(); e.preventDefault(); }
+    if (e.key === 'g' && !e.ctrlKey && !e.metaKey) { toggleGuides(); e.preventDefault(); }
 
     // Flip, duplicate, lock
     if (e.key === 'h' && !e.ctrlKey && !e.metaKey) { flipSelectedH(); e.preventDefault(); }
@@ -7874,6 +7934,8 @@ function setupToolbar() {
   $('btn-zoom-in').addEventListener('click', () => zoomBy(0.2, workspaceEl.clientWidth / 2, workspaceEl.clientHeight / 2));
   $('btn-zoom-out').addEventListener('click', () => zoomBy(-0.2, workspaceEl.clientWidth / 2, workspaceEl.clientHeight / 2));
   $('btn-zoom-fit').addEventListener('click', fitPaperToView);
+  $('btn-guides').addEventListener('click', toggleGuides);
+  if (STATE.guides) $('btn-guides').classList.add('active');
 
   // Phase mode buttons
   $('btn-phase-compose').addEventListener('click', () => {
