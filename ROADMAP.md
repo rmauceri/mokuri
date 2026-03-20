@@ -177,6 +177,25 @@ Authentic print presentation features wrapping the existing print output — mar
 - **Responsive layout** — Further phone refinements (bottom sheet panels, modal panels for very small screens).
 - **Keyboard shortcuts expansion** — More shortcuts for power users.
 
+### User Feedback Collection
+Phased approach — start simple, layer on richer options as distribution expands.
+
+**Phase A: Google Form link (immediate, pre-Capacitor)**
+- Create a short Google Form (structured: what were you doing, what happened, satisfaction rating, free text).
+- Add a 💬 "Send Feedback" button in the About/Makimono screen.
+- Button opens the form URL in a new tab. Pre-fill app version and paper size via URL parameters.
+- Free, zero dependencies, structured responses land in a Google Sheet.
+
+**Phase B: In-app feedback modal (post-Capacitor)**
+- Build a lightweight modal inside Mokuri: emoji rating (😐🙂😊), category chips (Bug / Idea / Question), free-text textarea.
+- Submit via Formspree.io or Formsubmit.co — single `fetch()` POST, no backend needed. Free tier (~50 submissions/month).
+- Queue submissions if offline; send when connectivity returns.
+- Accessible from About screen and optionally from a subtle status bar icon.
+
+**Phase C: App Store review prompts (Capacitor native builds only)**
+- Use `@capacitor/app-review` to prompt for ratings at natural moments (after pulling a print, after saving a composition).
+- Apple and Google handle review collection and display. Requires Phase 13 (Capacitor) to be complete.
+
 ### Print Engine
 - **Advanced bokashi** — Multi-directional gradients, radial fades, more nuanced ink distribution.
 - **Registration marks** — Visual guides showing block alignment for multi-color printing authenticity.
