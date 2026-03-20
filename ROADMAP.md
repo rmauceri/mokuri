@@ -293,3 +293,95 @@ All print work runs on main thread, blocking UI during the 500–2000ms render.
 
 - **Minification**: HTML/CSS/JS minification for production deploy (GitHub Actions workflow).
 - **Lazy-load print engine**: Only load print-engine.js when user enters Print phase.
+
+---
+
+## Phase 13 — Native App Distribution via Capacitor (Planned)
+
+Wrap Mokuri in Capacitor to publish on iOS App Store and Google Play while keeping the existing PWA and GitHub Pages deployment intact. Mokuri's zero-dependency, offline-first, pure browser architecture (SVG + Canvas + Web Audio) makes it an ideal Capacitor candidate — no native plugins required for core functionality.
+
+### Why Capacitor
+
+- **~95% code reuse** — Mokuri runs as-is inside a native WebView. No framework migration, no rewrite.
+- **Eliminates PWA friction on iOS** — no "Add to Home Screen" dance, no Safari storage eviction, full-screen without address bar.
+- **App Store presence** — discoverability, credibility, potential monetization path.
+- **Additive** — PWA continues to work. Capacitor is an additional distribution channel, not a replacement.
+
+### Prerequisites
+
+Complete before starting Capacitor work:
+- **IndexedDB migration (12-P1.5)** — eliminates localStorage 5MB ceiling. IndexedDB works reliably in Capacitor WebViews.
+- **npm init** — Capacitor requires a `package.json`. Mokuri currently has none. This is a lightweight addition (no build step needed).
+
+### Development Environment
+
+All day-to-day development stays on Windows. Mac access is only needed for iOS signing setup.
+
+- **Android**: Android Studio runs natively on Windows. Full local build/test/deploy cycle.
+- **iOS**: Two options for building without owning a Mac:
+  1. **GitHub Actions CI** (recommended) — `macos-latest` runner builds the `.ipa` on push. All development on Windows, CI produces signed artifacts. Free tier includes Mac runner minutes.
+  2. **Cloud Mac rental** (one-time) — MacStadium, MacinCloud, or XcodeClub for initial provisioning profile and certificate setup (~1 hour). After that, CI handles ongoing builds.
+- **macOS VM on Windows** — technically possible but violates Apple's EULA on non-Apple hardware. Not recommended.
+
+### Implementation Steps
+
+#### 13-1: Project Initialization
+- `npm init` to create `package.json` (no dependencies beyond Capacitor)
+- Install Capacitor: `@capacitor/core`, `@capacitor/cli`
+- `npx cap init` — configure app name ("Mokuri"), app ID (`art.mokuri.app`), web directory (`.`)
+- Add `capacitor.config.ts` with WebView preferences (no bounce, status bar style, background color)
+- `.gitignore` additions: `node_modules/`, `android/`, `ios/` (native projects are generated, not committed)
+
+#### 13-2: Android Build
+- `npm install @capacitor/android && npx cap add android`
+- `npx cap copy android && npx cap open android`
+- Configure in Android Studio: app icon (existing `icon-512.png`), splash screen, permissions (none needed — Mokuri is offline-only)
+- Test on emulator and physical device
+- Build signed APK/AAB for Google Play
+
+#### 13-3: iOS Build via CI
+- `npm install @capacitor/ios && npx cap add ios`
+- **One-time Mac setup** (cloud Mac rental, ~1 hour):
+  - Apple Developer account ($99/year)
+  - Create App ID, provisioning profile, distribution certificate
+  - Export signing credentials for CI use
+- **GitHub Actions workflow** (`.github/workflows/ios-build.yml`):
+  - Trigger: push to `main` or manual dispatch
+  - Runner: `macos-latest`
+  - Steps: checkout → npm install → `npx cap copy ios` → `xcodebuild archive` → export `.ipa`
+  - Signing via GitHub Secrets (certificate + provisioning profile)
+  - Artifact: signed `.ipa` uploaded to workflow artifacts or App Store Connect
+
+#### 13-4: Service Worker Considerations
+- Capacitor apps have their own offline model (assets bundled in the native shell)
+- **Option A**: Disable service worker registration in Capacitor builds (detect via `window.Capacitor`)
+- **Option B**: Keep SW active for caching — harmless but redundant
+- Decision: likely Option A for cleaner behavior
+
+#### 13-5: Platform-Specific Enhancements (Optional)
+Native features that could enhance Mokuri if desired (none required for launch):
+- **Haptic feedback** — subtle vibration on carve strokes (`@capacitor/haptics`)
+- **Share sheet** — native share for exported PNGs (`@capacitor/share`)
+- **File system** — save/load `.mokuri` files to device storage (`@capacitor/filesystem`)
+- **Splash screen** — branded launch screen (`@capacitor/splash-screen`)
+
+#### 13-6: App Store Submission
+- **Google Play**: Straightforward — upload AAB, fill metadata, screenshots, submit for review
+- **App Store**: Apple scrutinizes "web wrapper" apps, but Mokuri's rich Canvas/SVG interaction, procedural audio, and creative tooling should pass review comfortably (not a thin website wrapper)
+- App Store metadata: description, screenshots (phone + tablet), privacy policy (no data collection — easy), age rating
+
+### Risks & Mitigations
+
+| Risk | Mitigation |
+|------|------------|
+| Apple rejects as "web wrapper" | Mokuri has rich interaction (carving, Canvas rendering, Web Audio) — not a thin wrapper. Add haptic feedback plugin to strengthen native feel if needed. |
+| WebView performance for print engine | Canvas rendering is well-optimized in modern WebViews. Test on lower-end devices. OffscreenCanvas Worker (12-P2) would help if needed. |
+| iOS signing complexity | One-time setup via cloud Mac. CI handles ongoing builds automatically. |
+| Keeping three targets in sync (PWA + Android + iOS) | Single codebase. `npx cap copy` syncs web assets to native projects. CI automates builds. |
+
+### Cost
+
+- **Apple Developer Program**: $99/year
+- **Google Play Developer**: $25 one-time
+- **Cloud Mac rental**: ~$1–5 for initial 1-hour setup session
+- **Ongoing**: $0 (GitHub Actions free tier, development on Windows)
