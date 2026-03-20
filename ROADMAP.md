@@ -201,26 +201,56 @@ Single `.mokuri` JSON file format for both individual and bulk export/import.
 - **Export all**: "Export All" button in gallery toolbar. Downloads `mokuri-backup-{date}.mokuri`.
 - **Import**: "Import" button in gallery toolbar. File picker (`.mokuri`/`.json`). Compositions added with fresh IDs and thumbnails. No gallery size limit enforcement on import. Validation checks mokuri:1 marker and element data.
 
-### 12-P1: Remaining (Planned)
+### 12-P1: Marquee Selection & Group Resize ✅
 
-#### Marquee Selection
-Drag-to-select multiple elements via a bounding box rectangle. Complements existing Ctrl/Cmd+click additive selection with a faster spatial selection method.
-
-**Interaction design:**
-- **Mouse/Pen**: Ctrl/Cmd + drag on empty workspace space draws a selection rectangle. Elements whose centers fall within the rect are added to selection. Without Ctrl/Cmd, drag continues to pan as today.
-- **Touch**: Long press (~300ms) on empty space initiates marquee mode — a subtle visual pulse confirms activation, then drag draws the selection rectangle. Quick tap+drag continues to pan as today.
-- **Visual feedback**: Semi-transparent dashed rectangle drawn on the selection layer while dragging. Matches the existing selection box style (brown dashed).
-- **Selection behavior**: Ctrl/Cmd+marquee adds to existing selection (additive). Plain marquee (touch long-press) replaces selection. Elements selected by center point, not intersection, to avoid accidental selection of large background elements.
-- **Threshold**: 4–5px movement threshold distinguishes click-to-deselect from drag-to-marquee.
-- **Touch considerations**: `preventDefault` on long press to suppress native context menu. Cancel marquee if second finger touches (pinch-zoom takes priority).
-
-**What works immediately after marquee select:**
-All existing multi-selection operations apply: move/drag, delete, flip H/V, duplicate, lock/unlock, layer ordering, arrow nudge. No new operations needed for MVP.
+- **Marquee selection**: Ctrl/Cmd+drag (mouse/pen) or long-press+drag (touch/pen) draws selection rectangle. Elements selected by center point. Additive with Ctrl/Cmd, replaces on touch.
+- **Long-press feedback**: Animated progress ring (24 SVG units, 300ms, white) confirms activation on touch/pen.
+- **Adaptive selection colors**: White boxes/rect in compose/carve modes (high contrast on wood tones), accent brown in ink mode.
+- **Group resize**: Proportional corner-handle resize for multi-selected elements. Group AABB from rotated corners, locked elements excluded, undo/redo supported.
 
 **Deferred (future consideration):**
-- Group resize handles (scale all selected proportionally around group center)
 - Group rotation (rotate all selected around group center)
 - Batch ink settings for elements sharing the same definition or color zones
+
+### 12-P1.5: IndexedDB Gallery Migration (Planned)
+
+Gallery compositions stored in localStorage (~5MB browser limit). Heavy carving sessions with many strokes can approach this ceiling, risking silent data loss. Migration to IndexedDB removes the storage cap (~hundreds of MB+) and improves reliability on mobile where localStorage can be evicted under storage pressure.
+
+**What moves to IndexedDB:**
+- `mokuri-gallery` — array of composition objects (elements, carve strokes, atmosphere, materials). This is the only large data blob.
+- `mokuri-active-id` — active composition pointer (small, but logically coupled to gallery).
+
+**What stays in localStorage (small preferences, synchronous access fine):**
+- `mokuri-pressure`, `mokuri-activePattern`, `mokuri-patternDensity`, `mokuri-patternRotation`
+- `mokuri-visits` (FRE counter)
+- `mokuri-audio` (audio prefs)
+
+**Implementation plan:**
+
+1. **IndexedDB abstraction layer** — `MokuriDB` object with async methods: `open()`, `loadGallery()`, `saveGallery(gallery)`, `getActiveId()`, `setActiveId(id)`. Uses a single object store (`gallery`) with a well-known key. Opens database lazily on first access; caches the `db` handle. All errors caught and surfaced via status bar message.
+
+2. **Async conversion of gallery functions** — `loadGallery()` and `saveGallery()` become async, returning Promises. Callers updated:
+   - `autoSave()` — fire-and-forget (no await), but catches and logs write failures
+   - `autoLoad()` — already runs at startup; await before rendering
+   - `switchToComposition()`, `deleteComposition()`, `renameComposition()` — await save
+   - Gallery UI builders (`buildGalleryUI`) — await load
+   - Export/import functions — await load/save
+
+3. **One-time migration** — On first `open()`, check for existing `mokuri-gallery` in localStorage. If found, read it, write all compositions to IndexedDB, verify round-trip, then delete the localStorage key. Migration runs once and is invisible to the user.
+
+4. **Storage persistence request** — Call `navigator.storage.persist()` on startup for installed PWA. Prevents iOS Safari / WebKit from evicting IndexedDB under storage pressure. Fails silently if denied (non-critical).
+
+5. **Error handling & fallback** — If IndexedDB is unavailable (private browsing edge cases, broken browser state), fall back to localStorage with a console warning. Gallery functions detect which backend is active.
+
+6. **Remove MAX_GALLERY_SIZE cap** — Currently 10 compositions. With IndexedDB's generous quota, raise or remove the limit.
+
+**Risks & mitigations:**
+- **Async ripple**: Contained to ~15 call sites in gallery-related code. No changes to rendering, interaction, or print engine.
+- **iOS storage eviction**: Mitigated by `navigator.storage.persist()`. Installed PWAs almost always get persistent storage.
+- **Migration data loss**: Verify round-trip read before deleting localStorage. Keep localStorage copy for one more session if verification fails.
+- **Private browsing**: IndexedDB works but data is ephemeral — same as localStorage today, no regression.
+
+**Cross-platform support:** IndexedDB is universally supported in all modern browsers (Chrome, Edge, Firefox, Safari 10+), all PWA webviews, and all platforms (Windows, macOS, iOS, Android). No compatibility concerns.
 
 #### Memory Bounds
 Carve stroke arrays are unbounded. Heavy sessions could grow to MB, bloating undo snapshots and localStorage.
@@ -263,4 +293,3 @@ All print work runs on main thread, blocking UI during the 500–2000ms render.
 
 - **Minification**: HTML/CSS/JS minification for production deploy (GitHub Actions workflow).
 - **Lazy-load print engine**: Only load print-engine.js when user enters Print phase.
-- **IndexedDB migration**: Move gallery storage from localStorage (~5MB limit) to IndexedDB (~unlimited) for compositions with heavy carving.
