@@ -1643,6 +1643,12 @@ html, body {
   .mode-btn { padding: 4px 10px; }
 }
 
+/* Hide zoom controls before Gallery clips — zoom is redundant with mouse/keyboard/touch */
+@media (max-width: 1200px) {
+  .toolbar-zoom-group { display: none; }
+  .toolbar-zoom-group + .toolbar-separator { display: none; }
+}
+
 /* Narrow windows: hide low-priority toolbar items */
 @media (max-width: 850px) {
   .toolbar-title { font-size: 0; margin-right: 4px; }
@@ -1708,7 +1714,7 @@ html, body {
     <div class="toolbar-spacer"></div>
 
     <!-- Right group: Zoom + File -->
-    <div class="toolbar-group">
+    <div class="toolbar-group toolbar-zoom-group">
       <button class="tool-btn" id="btn-zoom-in" title="Zoom In (+)">+</button>
       <button class="tool-btn" id="btn-zoom-out" title="Zoom Out (−)">−</button>
       <button class="tool-btn" id="btn-zoom-fit" title="Fit to View (0)">⊡</button>
