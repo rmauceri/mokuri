@@ -67,6 +67,7 @@ Density and rotation controls, freehand pattern tool, and UX polish shipped. Per
 - **Pattern density slider**: Sparse→dense tonal control in Carving Workbench. Stored per-element in save data.
 - **Pattern rotation**: 0°/45°/90° angle control for directional patterns. Persisted in localStorage.
 - **Freehand pattern tool**: New "pattern" carve tool — paint pattern fills along brush strokes. Uses existing pressure/tilt pipeline with pattern fill instead of solid cut. Strokes store pattern, density, and rotation per-stroke.
+- **Pattern tool pressure control**: Continuous pressure slider applies to the pattern carve tool, matching the fine/V/U gouge behavior.
 - **Live swatch preview**: Pattern swatches in Carving Workbench reflect current density and rotation settings in real-time. ViewBox-based scale matching (SWATCH_VB=35 in SWATCH_CSS=52) so swatch preview matches actual carved appearance.
 - **Wood-tone swatch backgrounds**: Pattern swatches use wood tones instead of black for authentic preview.
 
@@ -76,7 +77,7 @@ Remaining 11A items (deferred):
 
 ### Phase 12-P0: PWA Reliability Foundations ✅
 
-- **Service worker** (`sw.js`): Cache-first with background update. Caches full app shell. Version-stamped cache name (`mokuri-v5`).
+- **Service worker** (`sw.js`): Cache-first with background update. Caches full app shell. Version-stamped cache name (`mokuri-v24`).
 - **Global error handler**: `window.onerror` + `window.onunhandledrejection` → status bar message.
 - **Storage quota UI**: Warning when localStorage is full.
 - **Print pipeline protection**: try/catch around `pullPrint()` with clean animation dismissal on failure.
@@ -135,9 +136,16 @@ Established a reusable design spec (`docs/ELEMENT-GUIDE.md`) codifying the Mokur
 - **Great Peak fix**: Corrected inconsistent snow cap geometry between levels, carried forward ridge strokes.
 - **Flora redesigns**: Cherry Blossom, Pine Bough, Maple Branch redesigned with organic hand-drawn aesthetic following the Element Design Guide — richer detail, proper hatching, form-following texture lines.
 - **Wooden Bridge redesign**: Rebuilt as arched soribashi (4→7→11 paths), fill-only block, proper level accumulation. Served as the test case for the Element Design Guide.
+- **Mountain element redesign**: All 4 mountains rebuilt with organic Q-curves replacing angular L-line paths. Distant Mountain: undulating ridgeline with asymmetric peaks. Near Mountain: natural ravine shadow zone, rounded tree suggestions. Great Peak (Fuji): iconic volcanic profile with convex slopes, wide summit, and concave crater cup. Rolling Hills: improved tree crowns and grass tufts.
+- **Rock, Path & Iris redesign**: Rock Formation, Stone Path, and Iris Cluster redesigned with organic geometry.
+- **Hanko rendering**: Font-traced 墨 glyph for Mokuri hanko element, sharper hanko character rendering in prints.
+- **Basic forms shape level**: Added shape carve level to all basic form elements (previously had only block and detail).
 
 #### New Landscape & Flora Elements ✅
 Rolling Hills, Farmland, Tranquil Pond, Waterfall, Chrysanthemum, Susuki Grass, Bare Winter Branch — organic silhouettes with woodblock-appropriate detail at each carve level.
+
+#### Water Elements ✅
+Flowing Stream (replaced Great Wave), Shore Waves, River Rapids, Water Ripples — 4 new water elements for landscape compositions. Q-curves for organic water forms, M-move technique for flow/ripple detail lines. All follow element-guide.md accumulation rule strictly.
 
 #### New Objects ✅
 Fishing Boat — hull, cabin, and sail zones with plank detail at level 2.
@@ -159,60 +167,41 @@ Authentic print presentation features wrapping the existing print output — mar
 - **Edition numbering**: Pencil-style edition text (e.g., "1/25") below the title with matching emboss treatment. Smaller font, right-justified under the print edge.
 - **Viewport fitting**: Presentation canvas scales to fit entirely within the workspace regardless of aspect ratio.
 - **PNG export**: Save includes full presentation with margins. Filename uses composition name.
+- **Margin aspect ratio fix**: Corrected distortion in margin rendering that stretched prints at non-standard aspect ratios.
+
+### Atmosphere Expansion ✅
+
+- **Golden & Pink sky types**: Two new atmosphere options added to the existing 6 sky types, expanding creative range for warm/romantic scene lighting.
+
+### Rendering & Interaction Polish ✅
+
+- **Element viewBox clipping**: Elements now clip to their viewBox bounds in both workspace and print engine, preventing path overflow from bleeding into surrounding composition space.
+- **Baren animation scaling**: Baren burnishing animation and pressure pattern scale proportionally with paper size, maintaining authentic feel across all paper presets.
+- **Toolbar overflow fix**: Zoom controls hide gracefully before Gallery button clips on narrow screens.
+- **Paper dimensions display**: Paper dimensions shown in status bar and on gallery preset cards.
+
+### Composition Guides ✅
+
+Wire-line overlay showing paper boundaries and rule-of-thirds grid. Helps compose intentional scenes and see composition edges even when elements extend beyond the paper.
+
+- **8 guide lines**: 4 border lines at paper edges + 4 rule-of-thirds lines, all extending ~20 SVG units beyond paper corners.
+- **Dual-stroke halo**: White inner line with dark outer halo — visible against wood tones, paper, dark and bright atmospheres.
+- **Non-scaling strokes**: Consistent line weight at any zoom level. `pointer-events: none` for zero interaction interference.
+- **Toggle**: `G` key or toolbar button (⊞). Persisted in localStorage. Off by default.
 
 ---
 
 ## Future Work
 
 ### Element Fidelity
-- **Hand-crafted SVG refinement** — The Element Design Guide established conventions for organic, woodblock-appropriate geometry. Continued iteration on individual elements — especially older ones predating the guide — would further raise visual quality. Hatching density, form-following texture lines, and zone boundary refinement are the main opportunities.
+- **Continued SVG refinement** — Mountain and water elements now follow the Element Design Guide. Remaining older elements (particularly some flora and objects predating the guide) could benefit from the same organic Q-curve treatment. Hatching density, form-following texture lines, and zone boundary refinement are ongoing opportunities.
 
 ### Composition & Creativity
-
-#### Composition Guides (Planned)
-
-Wire-line overlay showing paper boundaries and rule-of-thirds grid. Helps users compose intentional scenes and see composition edges even when elements extend beyond the paper.
-
-**What renders:**
-- 4 border lines at paper edges (x=0, x=paperW, y=0, y=paperH)
-- 2 vertical third lines (x=paperW/3, x=2*paperW/3)
-- 2 horizontal third lines (y=paperH/3, y=2*paperH/3)
-- All 8 lines extend ~20 SVG units beyond paper corners ("wire lines" that overshoot, making borders easy to spot)
-
-**Visual treatment — dual-stroke halo for universal contrast:**
-- Inner line: `rgba(255, 255, 255, 0.5)` — white, semi-transparent (~1.5px)
-- Outer halo: `rgba(0, 0, 0, 0.15)` — subtle dark edge (~3px behind inner)
-- `vector-effect: non-scaling-stroke` — consistent line weight at any zoom
-- `pointer-events: none` — never interferes with interaction
-- Works against wood tones (carve), light paper (ink), dark atmosphere (night), bright atmosphere (day/snow)
-
-**SVG layer placement:**
-- New `#guide-layer` group between `#comp-layer` and `#selection-layer`
-- Guides render over elements but under selection handles
-- Rendered once in `renderGuides()`, called from `rerenderAll()` and `updateViewBox()` (if line weight needs zoom adjustment)
-
-**Toggle control:**
-- Keyboard: `G` key toggles guides on/off
-- Toolbar button: in zoom group (right of ⊡ fit-to-view), icon is `⊞` (3×3 grid feel), with `.active` class when on
-- STATE field: `guides: false` (off by default)
-- Persisted in localStorage (`mokuri-guides`)
-
-**Implementation:**
-1. Add `STATE.guides` field + localStorage read at init
-2. Add `#guide-layer` SVG group in workspace HTML
-3. `renderGuides()` function — creates 8 lines (each as two `<line>` elements for halo effect), or clears group if guides off
-4. Add toolbar button after `#btn-zoom-fit`, wire click handler
-5. Add `G` keydown handler
-6. Call `renderGuides()` from `rerenderAll()`
-
-**Future extensions (not in scope now):**
-- Golden ratio overlay option
-- Horizon-line guide synced with atmosphere horizon slider
-- Diagonal composition lines
 
 - **More scene presets** — Seasonal themes, time-of-day variations, genre-specific starters (seascape, garden, urban, spiritual).
 - **Border & corner elements** — Corner ornaments, edge repeaters as a new element category with edge-snapping behavior.
 - **Frame presets** — Pre-composed corner+edge combinations for one-click decorative borders.
+- **Composition guide extensions** — Golden ratio overlay, horizon-line guide synced with atmosphere slider, diagonal composition lines.
 
 ### Platform & Polish
 - **Responsive layout** — Further phone refinements (bottom sheet panels, modal panels for very small screens).
