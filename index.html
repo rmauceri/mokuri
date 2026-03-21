@@ -3905,23 +3905,265 @@ function redo() {
 }
 
 // ============================================================
-//  SAVE / LOAD — Composition Gallery (LocalStorage)
+//  SAVE / LOAD — Composition Gallery (IndexedDB)
 // ============================================================
+
+// ── MokuriDB — IndexedDB abstraction layer ──
+
+const MokuriDB = (() => {
+  const DB_NAME = 'mokuri';
+  const DB_VERSION = 1;
+  let _db = null;
+  let _opening = null;
+
+  function open() {
+    if (_db) return Promise.resolve(_db);
+    if (_opening) return _opening;
+    _opening = new Promise((resolve, reject) => {
+      try {
+        const req = indexedDB.open(DB_NAME, DB_VERSION);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          // Compositions store — one record per composition
+          if (!db.objectStoreNames.contains('compositions')) {
+            const cs = db.createObjectStore('compositions', { keyPath: 'id' });
+            cs.createIndex('updatedAt', 'updatedAt', { unique: false });
+          }
+          // Prints store — saved print images (future use)
+          if (!db.objectStoreNames.contains('prints')) {
+            const ps = db.createObjectStore('prints', { keyPath: 'id', autoIncrement: true });
+            ps.createIndex('createdAt', 'createdAt', { unique: false });
+            ps.createIndex('compositionId', 'compositionId', { unique: false });
+          }
+          // Meta store — small key-value pairs
+          if (!db.objectStoreNames.contains('meta')) {
+            db.createObjectStore('meta', { keyPath: 'key' });
+          }
+        };
+        req.onsuccess = (e) => {
+          _db = e.target.result;
+          _db.onclose = () => { _db = null; _opening = null; };
+          _opening = null;
+          resolve(_db);
+        };
+        req.onerror = (e) => {
+          _opening = null;
+          console.warn('MokuriDB open failed:', e.target.error);
+          reject(e.target.error);
+        };
+        req.onblocked = () => {
+          _opening = null;
+          console.warn('MokuriDB open blocked — close other tabs');
+          reject(new Error('Database blocked'));
+        };
+      } catch (err) {
+        _opening = null;
+        reject(err);
+      }
+    });
+    return _opening;
+  }
+
+  function _tx(storeName, mode) {
+    return open().then(db => {
+      const tx = db.transaction(storeName, mode);
+      return tx.objectStore(storeName);
+    });
+  }
+
+  function _req(idbRequest) {
+    return new Promise((resolve, reject) => {
+      idbRequest.onsuccess = () => resolve(idbRequest.result);
+      idbRequest.onerror = () => reject(idbRequest.error);
+    });
+  }
+
+  return {
+    open,
+
+    async getAllCompositions() {
+      const store = await _tx('compositions', 'readonly');
+      const all = await _req(store.index('updatedAt').getAll());
+      // Index returns ascending; reverse for most-recent-first
+      all.reverse();
+      return all;
+    },
+
+    async getComposition(id) {
+      const store = await _tx('compositions', 'readonly');
+      return _req(store.get(id));
+    },
+
+    async putComposition(entry) {
+      const store = await _tx('compositions', 'readwrite');
+      return _req(store.put(entry));
+    },
+
+    async deleteComposition(id) {
+      const store = await _tx('compositions', 'readwrite');
+      return _req(store.delete(id));
+    },
+
+    async getActiveId() {
+      try {
+        const store = await _tx('meta', 'readonly');
+        const rec = await _req(store.get('activeCompositionId'));
+        return rec ? rec.value : null;
+      } catch (e) { return null; }
+    },
+
+    async setActiveId(id) {
+      const store = await _tx('meta', 'readwrite');
+      if (id) {
+        return _req(store.put({ key: 'activeCompositionId', value: id }));
+      } else {
+        return _req(store.delete('activeCompositionId'));
+      }
+    },
+
+    // Check if IndexedDB is available
+    get available() {
+      return typeof indexedDB !== 'undefined';
+    },
+  };
+})();
+
+// ── localStorage fallback for environments without IndexedDB ──
+
+let _useLocalStorage = false;
+
 const GALLERY_KEY = 'mokuri-gallery';
 const ACTIVE_ID_KEY = 'mokuri-active-id';
-const MAX_GALLERY_SIZE = 10;
 
-function getGallery() {
+function _lsGetGallery() {
   try { return JSON.parse(localStorage.getItem(GALLERY_KEY) || '[]'); }
   catch (e) { return []; }
 }
 
-function saveGallery(gallery) {
+function _lsSaveGallery(gallery) {
   try { localStorage.setItem(GALLERY_KEY, JSON.stringify(gallery)); }
   catch (e) {
     if (e.name === 'QuotaExceededError' || e.code === 22) {
       $('status-hint').textContent = '⚠ Storage full — delete a composition to save';
     }
+  }
+}
+
+// ── Async gallery API (used by all gallery code) ──
+
+async function getGallery() {
+  if (_useLocalStorage) return _lsGetGallery();
+  try { return await MokuriDB.getAllCompositions(); }
+  catch (e) { return _lsGetGallery(); }
+}
+
+async function saveComposition(entry) {
+  if (_useLocalStorage) {
+    const gallery = _lsGetGallery();
+    const idx = gallery.findIndex(e => e.id === entry.id);
+    if (idx >= 0) gallery[idx] = entry;
+    else gallery.unshift(entry);
+    _lsSaveGallery(gallery);
+    return;
+  }
+  try { await MokuriDB.putComposition(entry); }
+  catch (e) {
+    console.warn('MokuriDB putComposition failed, falling back to localStorage:', e);
+    const gallery = _lsGetGallery();
+    const idx = gallery.findIndex(g => g.id === entry.id);
+    if (idx >= 0) gallery[idx] = entry;
+    else gallery.unshift(entry);
+    _lsSaveGallery(gallery);
+  }
+}
+
+async function removeComposition(id) {
+  if (_useLocalStorage) {
+    const gallery = _lsGetGallery().filter(e => e.id !== id);
+    _lsSaveGallery(gallery);
+    return;
+  }
+  try { await MokuriDB.deleteComposition(id); }
+  catch (e) {
+    const gallery = _lsGetGallery().filter(g => g.id !== id);
+    _lsSaveGallery(gallery);
+  }
+}
+
+async function getActiveCompositionId() {
+  if (_useLocalStorage) return localStorage.getItem(ACTIVE_ID_KEY) || null;
+  try { return await MokuriDB.getActiveId(); }
+  catch (e) { return localStorage.getItem(ACTIVE_ID_KEY) || null; }
+}
+
+async function setActiveCompositionId(id) {
+  if (_useLocalStorage) {
+    if (id) localStorage.setItem(ACTIVE_ID_KEY, id);
+    else localStorage.removeItem(ACTIVE_ID_KEY);
+    return;
+  }
+  try { await MokuriDB.setActiveId(id); }
+  catch (e) {
+    if (id) localStorage.setItem(ACTIVE_ID_KEY, id);
+    else localStorage.removeItem(ACTIVE_ID_KEY);
+  }
+}
+
+// ── One-time migration from localStorage to IndexedDB ──
+
+async function migrateToIndexedDB() {
+  const lsData = localStorage.getItem(GALLERY_KEY);
+  if (!lsData) return; // Nothing to migrate
+
+  try {
+    const gallery = JSON.parse(lsData);
+    if (!Array.isArray(gallery) || gallery.length === 0) {
+      localStorage.removeItem(GALLERY_KEY);
+      return;
+    }
+
+    // Write each composition to IndexedDB
+    for (const entry of gallery) {
+      await MokuriDB.putComposition(entry);
+    }
+
+    // Migrate active ID
+    const activeId = localStorage.getItem(ACTIVE_ID_KEY);
+    if (activeId) {
+      await MokuriDB.setActiveId(activeId);
+    }
+
+    // Verify round-trip
+    const readBack = await MokuriDB.getAllCompositions();
+    if (readBack.length >= gallery.length) {
+      // Migration successful — remove localStorage data
+      localStorage.removeItem(GALLERY_KEY);
+      localStorage.removeItem(ACTIVE_ID_KEY);
+      console.log('MokuriDB: migrated ' + gallery.length + ' compositions from localStorage');
+    } else {
+      console.warn('MokuriDB: migration verification failed, keeping localStorage backup');
+    }
+  } catch (e) {
+    console.warn('MokuriDB: migration failed, keeping localStorage:', e);
+  }
+}
+
+async function initStorage() {
+  if (!MokuriDB.available) {
+    _useLocalStorage = true;
+    console.warn('IndexedDB not available — using localStorage fallback');
+    return;
+  }
+  try {
+    await MokuriDB.open();
+    await migrateToIndexedDB();
+    // Request persistent storage for installed PWA
+    if (navigator.storage && navigator.storage.persist) {
+      navigator.storage.persist().catch(() => {});
+    }
+  } catch (e) {
+    _useLocalStorage = true;
+    console.warn('MokuriDB init failed — using localStorage fallback:', e);
   }
 }
 
@@ -3974,8 +4216,8 @@ function exportComposition(galleryEntry) {
   MokuriAudio.playPanelToggle();
 }
 
-function exportAllCompositions() {
-  const gallery = getGallery();
+async function exportAllCompositions() {
+  const gallery = await getGallery();
   if (!gallery.length) {
     $('status-hint').textContent = 'Nothing to export — gallery is empty';
     return;
@@ -3997,13 +4239,12 @@ function importCompositions() {
     const file = input.files[0];
     if (!file) { document.body.removeChild(input); return; }
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       document.body.removeChild(input);
       try {
         const parsed = parseMokuriFile(reader.result);
-        const gallery = getGallery();
         let imported = 0;
-        parsed.compositions.forEach(comp => {
+        for (const comp of parsed.compositions) {
           const id = generateCompositionId();
           const data = comp.data;
           const entry = {
@@ -4015,11 +4256,10 @@ function importCompositions() {
             updatedAt: comp.updatedAt || Date.now(),
             userNamed: true,
           };
-          gallery.unshift(entry);
+          await saveComposition(entry);
           imported++;
-        });
-        saveGallery(gallery);
-        buildGalleryUI();
+        }
+        await buildGalleryUI();
         $('status-hint').textContent = 'Imported ' + imported + ' composition' + (imported !== 1 ? 's' : '');
         MokuriAudio.playPlace();
       } catch (e) {
@@ -4033,15 +4273,6 @@ function importCompositions() {
     reader.readAsText(file);
   });
   input.click();
-}
-
-function getActiveCompositionId() {
-  return localStorage.getItem(ACTIVE_ID_KEY) || null;
-}
-
-function setActiveCompositionId(id) {
-  if (id) localStorage.setItem(ACTIVE_ID_KEY, id);
-  else localStorage.removeItem(ACTIVE_ID_KEY);
 }
 
 function generateCompositionId() {
@@ -4200,43 +4431,51 @@ function applyCompositionData(data) {
   updateStatus();
 }
 
-function autoSave() {
+async function autoSave() {
   const id = STATE.activeCompositionId;
   if (!id) return;
 
-  const gallery = getGallery();
-  const idx = gallery.findIndex(e => e.id === id);
   const data = getCompositionData();
+  const name = STATE.compositionName || generateCompositionName(data);
 
-  if (idx >= 0) {
-    gallery[idx].data = data;
-    gallery[idx].updatedAt = Date.now();
-    if (!gallery[idx].userNamed) {
-      gallery[idx].name = generateCompositionName(data);
-    }
-    gallery[idx].thumbnail = generateThumbnailSvg(data);
-  } else {
-    gallery.unshift({
-      id: id,
-      name: STATE.compositionName || generateCompositionName(data),
-      data: data,
-      thumbnail: generateThumbnailSvg(data),
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      userNamed: false,
-    });
-    if (gallery.length > MAX_GALLERY_SIZE) gallery.length = MAX_GALLERY_SIZE;
+  // Check if entry exists to preserve userNamed flag
+  let existing;
+  try { existing = await (_useLocalStorage ? null : MokuriDB.getComposition(id)); }
+  catch (e) { existing = null; }
+
+  // For localStorage fallback, look up in array
+  if (_useLocalStorage && !existing) {
+    const gallery = _lsGetGallery();
+    existing = gallery.find(e => e.id === id);
   }
 
-  saveGallery(gallery);
+  const entry = {
+    id: id,
+    name: (existing && existing.userNamed) ? existing.name : name,
+    data: data,
+    thumbnail: generateThumbnailSvg(data),
+    createdAt: existing ? existing.createdAt : Date.now(),
+    updatedAt: Date.now(),
+    userNamed: existing ? existing.userNamed : false,
+  };
+
+  await saveComposition(entry);
 }
 
-function autoLoad() {
+async function autoLoad() {
   // Try gallery system
-  const activeId = getActiveCompositionId();
+  const activeId = await getActiveCompositionId();
   if (activeId) {
-    const gallery = getGallery();
-    const entry = gallery.find(e => e.id === activeId);
+    let entry;
+    try {
+      if (_useLocalStorage) {
+        const gallery = _lsGetGallery();
+        entry = gallery.find(e => e.id === activeId);
+      } else {
+        entry = await MokuriDB.getComposition(activeId);
+      }
+    } catch (e) { entry = null; }
+
     if (entry && entry.data) {
       STATE.activeCompositionId = activeId;
       STATE.compositionName = entry.name || 'Untitled Print';
@@ -4245,7 +4484,7 @@ function autoLoad() {
     }
   }
 
-  // Migration from old storage
+  // Migration from old storage (mokuri-autosave / mokuri-slots)
   try {
     const raw = localStorage.getItem('mokuri-autosave');
     if (raw) {
@@ -4255,16 +4494,16 @@ function autoLoad() {
         STATE.activeCompositionId = id;
         applyCompositionData(data);
         STATE.compositionName = generateCompositionName(data);
-        setActiveCompositionId(id);
-        autoSave();
+        await setActiveCompositionId(id);
+        await autoSave();
 
         // Migrate old slots
         try {
           const slots = JSON.parse(localStorage.getItem('mokuri-slots') || '[]');
-          const gallery = getGallery();
-          slots.forEach((slot, i) => {
+          for (let i = 0; i < slots.length; i++) {
+            const slot = slots[i];
             if (slot && slot.elements) {
-              gallery.push({
+              await saveComposition({
                 id: generateCompositionId() + '-s' + i,
                 name: slot.slotName || generateCompositionName(slot),
                 data: slot,
@@ -4274,9 +4513,7 @@ function autoLoad() {
                 userNamed: !!slot.slotName,
               });
             }
-          });
-          if (gallery.length > MAX_GALLERY_SIZE) gallery.length = MAX_GALLERY_SIZE;
-          saveGallery(gallery);
+          }
         } catch (e) {}
 
         localStorage.removeItem('mokuri-autosave');
@@ -4314,13 +4551,13 @@ function resetToCompose() {
   updatePhaseButtons();
 }
 
-function newComposition(paperW, paperH, presetId) {
-  autoSave();
+async function newComposition(paperW, paperH, presetId) {
+  await autoSave();
   resetToCompose();
 
   const id = generateCompositionId();
   STATE.activeCompositionId = id;
-  setActiveCompositionId(id);
+  await setActiveCompositionId(id);
 
   if (presetId && SCENE_PRESETS[presetId]) {
     const preset = SCENE_PRESETS[presetId];
@@ -4367,41 +4604,55 @@ function newComposition(paperW, paperH, presetId) {
   $('status-hint').textContent = STATE.compositionName;
 }
 
-function switchToComposition(compositionId) {
-  autoSave();
+async function switchToComposition(compositionId) {
+  await autoSave();
   resetToCompose();
-  const gallery = getGallery();
-  const entry = gallery.find(e => e.id === compositionId);
+  let entry;
+  try {
+    if (_useLocalStorage) {
+      const gallery = _lsGetGallery();
+      entry = gallery.find(e => e.id === compositionId);
+    } else {
+      entry = await MokuriDB.getComposition(compositionId);
+    }
+  } catch (e) { entry = null; }
   if (!entry || !entry.data) return;
 
   STATE.activeCompositionId = compositionId;
   STATE.compositionName = entry.name;
-  setActiveCompositionId(compositionId);
+  await setActiveCompositionId(compositionId);
   applyCompositionData(entry.data);
   $('status-hint').textContent = entry.name;
 }
 
-function deleteComposition(compositionId) {
-  let gallery = getGallery();
-  gallery = gallery.filter(e => e.id !== compositionId);
-  saveGallery(gallery);
+async function deleteComposition(compositionId) {
+  await removeComposition(compositionId);
 
   if (STATE.activeCompositionId === compositionId) {
+    const gallery = await getGallery();
     if (gallery.length > 0) {
-      switchToComposition(gallery[0].id);
+      await switchToComposition(gallery[0].id);
     } else {
-      newComposition();
+      await newComposition();
     }
   }
 }
 
-function renameComposition(compositionId, newName) {
-  const gallery = getGallery();
-  const entry = gallery.find(e => e.id === compositionId);
+async function renameComposition(compositionId, newName) {
+  let entry;
+  try {
+    if (_useLocalStorage) {
+      const gallery = _lsGetGallery();
+      entry = gallery.find(e => e.id === compositionId);
+    } else {
+      entry = await MokuriDB.getComposition(compositionId);
+    }
+  } catch (e) { entry = null; }
+
   if (entry) {
     entry.name = newName;
     entry.userNamed = true;
-    saveGallery(gallery);
+    await saveComposition(entry);
     if (compositionId === STATE.activeCompositionId) {
       STATE.compositionName = newName;
     }
@@ -4483,7 +4734,7 @@ function closeGallery() {
   $('gallery-modal').classList.remove('visible');
 }
 
-function buildGalleryUI() {
+async function buildGalleryUI() {
   // Paper size chips
   const paperRow = $('gallery-paper-row');
   paperRow.innerHTML = '';
@@ -4591,7 +4842,7 @@ function buildGalleryUI() {
   // Recent prints
   const recents = $('gallery-recents');
   recents.innerHTML = '';
-  const gallery = getGallery();
+  const gallery = await getGallery();
 
   // Wire toolbar buttons
   const importBtn = $('gallery-import-btn');
@@ -6531,15 +6782,13 @@ function buildPrintStudioUI() {
   // Title input
   const titleInput = $('ps-title-input');
   titleInput.value = STATE.presentationTitle || STATE.compositionName || '';
-  titleInput.onchange = () => {
+  titleInput.onchange = async () => {
     const t = titleInput.value.trim();
     STATE.presentationTitle = t;
     if (t) {
       STATE.compositionName = t;
       // Mark as user-named so autoSave won't overwrite it
-      const gallery = getGallery();
-      const entry = gallery.find(e => e.id === STATE.activeCompositionId);
-      if (entry) { entry.name = t; entry.userNamed = true; saveGallery(gallery); }
+      await renameComposition(STATE.activeCompositionId, t);
       $('status-hint').textContent = t;
     }
     autoSave();
@@ -8112,7 +8361,7 @@ function adjustViewBoxForResize() {
 // ============================================================
 //  INIT
 // ============================================================
-function init() {
+async function init() {
   layoutPaper();
   updateWorkspaceSurface();
   fitPaperToView();
@@ -8131,15 +8380,19 @@ function init() {
   window.addEventListener('resize', onResize);
   // Keep viewBox in sync when workspace resizes (panel open/close, layout shifts)
   new ResizeObserver(adjustViewBoxForResize).observe(workspaceEl);
+
+  // Initialize IndexedDB storage and migrate from localStorage
+  await initStorage();
+
   // Restore previous session from gallery
-  if (autoLoad()) {
+  if (await autoLoad()) {
     $('status-hint').textContent = STATE.compositionName || 'Session restored';
   } else {
     // First run — create initial composition entry
     const id = generateCompositionId();
     STATE.activeCompositionId = id;
     STATE.compositionName = 'Untitled Print';
-    setActiveCompositionId(id);
+    await setActiveCompositionId(id);
   }
   // Sync ambient tone to current atmosphere
   MokuriAudio.setAmbienceForAtmosphere(STATE.sky, STATE.ground);
