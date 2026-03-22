@@ -9149,6 +9149,7 @@ function setupToolbar() {
       const dx = e.clientX - swipeStartX;
       if (Math.abs(dx) >= SWIPE_THRESHOLD) {
         galleryNav(dx < 0 ? 1 : -1);
+        MokuriAudio.playSwipe();
       }
     });
     viewer.addEventListener('pointercancel', () => { swiping = false; });

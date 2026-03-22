@@ -730,6 +730,30 @@ const MokuriAudio = (() => {
     });
   }
 
+  function playSwipe() {
+    playOneShot((c, dest) => {
+      // Soft filtered noise whoosh
+      const len = 0.15;
+      const now = c.currentTime;
+      const buf = c.createBuffer(1, c.sampleRate * len, c.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1);
+      const src = c.createBufferSource();
+      src.buffer = buf;
+      const filt = c.createBiquadFilter();
+      filt.type = 'bandpass';
+      filt.frequency.setValueAtTime(2000, now);
+      filt.frequency.exponentialRampToValueAtTime(800, now + len);
+      filt.Q.value = 1.5;
+      const g = c.createGain();
+      g.gain.setValueAtTime(0.12, now);
+      g.gain.exponentialRampToValueAtTime(0.001, now + len);
+      src.connect(filt).connect(g).connect(dest);
+      src.start(now);
+      src.stop(now + len);
+    });
+  }
+
   // --- Preferences ---
   function loadPrefs() {
     try {
@@ -792,5 +816,6 @@ const MokuriAudio = (() => {
     playFocusExit,
     playSave,
     playFavorite,
+    playSwipe,
   };
 })();
