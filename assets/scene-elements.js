@@ -4,6 +4,7 @@ const MOKURI_SCENE_ELEMENTS = [
     id: 'bamboo-grove',
     name: 'Bamboo Grove',
     category: 'landscape',
+    pack: 'core',
     viewBox: '0 0 200 280',
     suggestedLayer: 'midground',
     colorZones: [
@@ -107,6 +108,7 @@ const MOKURI_SCENE_ELEMENTS = [
     id: 'rock-formation',
     name: 'Rock Formation',
     category: 'landscape',
+    pack: 'core',
     viewBox: '0 0 220 160',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -169,6 +171,7 @@ const MOKURI_SCENE_ELEMENTS = [
     id: 'temple-roof',
     name: 'Temple Roof',
     category: 'landscape',
+    pack: 'core',
     viewBox: '0 0 260 140',
     suggestedLayer: 'midground',
     colorZones: [
@@ -238,6 +241,7 @@ const MOKURI_SCENE_ELEMENTS = [
     id: 'distant-village',
     name: 'Distant Village',
     category: 'landscape',
+    pack: 'core',
     viewBox: '0 0 300 100',
     suggestedLayer: 'background',
     colorZones: [
@@ -327,6 +331,7 @@ const MOKURI_SCENE_ELEMENTS = [
     id: 'stone-path',
     name: 'Stone Path',
     category: 'landscape',
+    pack: 'core',
     viewBox: '0 0 240 80',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -394,6 +399,7 @@ const MOKURI_SCENE_ELEMENTS = [
     id: 'wooden-bridge',
     name: 'Wooden Bridge',
     category: 'landscape',
+    pack: 'core',
     viewBox: '0 0 280 120',
     suggestedLayer: 'midground',
     colorZones: [
@@ -460,6 +466,7 @@ const MOKURI_SCENE_ELEMENTS = [
     id: 'rain-curtain',
     name: 'Rain Curtain',
     category: 'objects & patterns',
+    pack: 'core',
     viewBox: '0 0 200 300',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -585,6 +592,7 @@ const MOKURI_SCENE_ELEMENTS = [
     id: 'snow-fall',
     name: 'Snow Fall',
     category: 'objects & patterns',
+    pack: 'core',
     viewBox: '0 0 200 280',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -681,6 +689,7 @@ const MOKURI_SCENE_ELEMENTS = [
     id: 'cloud-wisp',
     name: 'Cloud Wisp',
     category: 'objects & patterns',
+    pack: 'core',
     viewBox: '0 0 260 80',
     suggestedLayer: 'background',
     colorZones: [
@@ -732,6 +741,7 @@ const MOKURI_SCENE_ELEMENTS = [
     id: 'maple-branch',
     name: 'Maple Branch',
     category: 'flora',
+    pack: 'core',
     viewBox: '0 0 200 180',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -818,6 +828,7 @@ const MOKURI_SCENE_ELEMENTS = [
     id: 'iris-cluster',
     name: 'Iris Cluster',
     category: 'flora',
+    pack: 'core',
     viewBox: '0 0 160 200',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -918,6 +929,7 @@ const MOKURI_SCENE_ELEMENTS = [
     id: 'pagoda',
     name: 'Pagoda',
     category: 'landscape',
+    pack: 'core',
     viewBox: '0 0 130 220',
     suggestedLayer: 'midground',
     colorZones: [
@@ -988,6 +1000,7 @@ const MOKURI_SCENE_ELEMENTS = [
     id: 'tea-house',
     name: 'Tea House',
     category: 'landscape',
+    pack: 'core',
     viewBox: '0 0 200 140',
     suggestedLayer: 'midground',
     colorZones: [
@@ -1052,6 +1065,7 @@ const MOKURI_SCENE_ELEMENTS = [
     id: 'bamboo-fence',
     name: 'Bamboo Fence',
     category: 'landscape',
+    pack: 'core',
     viewBox: '0 0 220 100',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -1118,6 +1132,7 @@ const MOKURI_SCENE_ELEMENTS = [
     id: 'farmhouse',
     name: 'Farmhouse',
     category: 'landscape',
+    pack: 'core',
     viewBox: '0 0 200 160',
     suggestedLayer: 'midground',
     colorZones: [
@@ -1187,6 +1202,7 @@ const MOKURI_SCENE_ELEMENTS = [
     id: 'shore-waves',
     name: 'Shore Waves',
     category: 'landscape',
+    pack: 'core',
     viewBox: '0 0 300 100',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -1241,6 +1257,7 @@ const MOKURI_SCENE_ELEMENTS = [
     id: 'river-rapids',
     name: 'River Rapids',
     category: 'landscape',
+    pack: 'core',
     viewBox: '0 0 260 140',
     suggestedLayer: 'midground',
     colorZones: [
@@ -1311,6 +1328,7 @@ const MOKURI_SCENE_ELEMENTS = [
     id: 'water-ripples',
     name: 'Water Ripples',
     category: 'landscape',
+    pack: 'core',
     viewBox: '0 0 200 120',
     suggestedLayer: 'midground',
     colorZones: [

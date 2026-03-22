@@ -11,6 +11,7 @@ const MOKURI_GALLERY_PRESETS = [
 
     // Cranes at Dawn (600×420)
   {
+  "pack": "core",
   "elements": [
     {
       "id": 7,
@@ -255,6 +256,7 @@ const MOKURI_GALLERY_PRESETS = [
 
   // Bridge in Summer (600×420)
   {
+  "pack": "core",
   "elements": [
     {
       "id": 1,
@@ -503,6 +505,7 @@ const MOKURI_GALLERY_PRESETS = [
 
   // Temple View (500×500)
   {
+  "pack": "core",
   "elements": [
     {
       "id": 2,
@@ -907,6 +910,7 @@ const MOKURI_GALLERY_PRESETS = [
  
   //Koi Fishing (420×280)
   {
+  "pack": "core",
   "elements": [
     {
       "id": 3,
@@ -1643,6 +1647,7 @@ const MOKURI_GALLERY_PRESETS = [
 
   // Farm and Full Moon (600×420)
   {
+  "pack": "core",
   "elements": [
     {
       "id": 1,
@@ -3209,6 +3214,7 @@ const MOKURI_GALLERY_PRESETS = [
  
   // Winter Branches (400×280)
   {
+  "pack": "core",
   "elements": [
     {
       "id": 4,
@@ -3327,6 +3333,7 @@ const MOKURI_GALLERY_PRESETS = [
 
   // Cloud Peak (320×800)
   {
+  "pack": "core",
   "elements": [
     {
       "id": 1,
@@ -3461,6 +3468,7 @@ const MOKURI_GALLERY_PRESETS = [
 
   // Sparrows and Wisps (800×320)
   {
+  "pack": "core",
   "elements": [
     {
       "id": 1,
@@ -3578,6 +3586,7 @@ const MOKURI_GALLERY_PRESETS = [
 
   // Spring (420×280)
   {
+  "pack": "core",
   "elements": [
     {
       "id": 3,

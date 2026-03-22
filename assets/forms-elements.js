@@ -11,6 +11,7 @@ const MOKURI_FORMS_ELEMENTS = [
     id: 'form-circle',
     name: 'Circle',
     category: 'basic forms',
+    pack: 'core',
     viewBox: '0 0 120 120',
     suggestedLayer: 'midground',
     colorZones: [
@@ -37,6 +38,7 @@ const MOKURI_FORMS_ELEMENTS = [
     id: 'form-oval',
     name: 'Oval',
     category: 'basic forms',
+    pack: 'core',
     viewBox: '0 0 160 100',
     suggestedLayer: 'midground',
     colorZones: [
@@ -63,6 +65,7 @@ const MOKURI_FORMS_ELEMENTS = [
     id: 'form-rectangle',
     name: 'Rectangle',
     category: 'basic forms',
+    pack: 'core',
     viewBox: '0 0 140 100',
     suggestedLayer: 'midground',
     colorZones: [
@@ -89,6 +92,7 @@ const MOKURI_FORMS_ELEMENTS = [
     id: 'form-square',
     name: 'Square',
     category: 'basic forms',
+    pack: 'core',
     viewBox: '0 0 120 120',
     suggestedLayer: 'midground',
     colorZones: [
@@ -115,6 +119,7 @@ const MOKURI_FORMS_ELEMENTS = [
     id: 'form-triangle',
     name: 'Triangle',
     category: 'basic forms',
+    pack: 'core',
     viewBox: '0 0 120 110',
     suggestedLayer: 'midground',
     colorZones: [
@@ -141,6 +146,7 @@ const MOKURI_FORMS_ELEMENTS = [
     id: 'form-diamond',
     name: 'Diamond',
     category: 'basic forms',
+    pack: 'core',
     viewBox: '0 0 120 140',
     suggestedLayer: 'midground',
     colorZones: [
@@ -167,6 +173,7 @@ const MOKURI_FORMS_ELEMENTS = [
     id: 'form-arch',
     name: 'Arch',
     category: 'basic forms',
+    pack: 'core',
     viewBox: '0 0 120 140',
     suggestedLayer: 'midground',
     colorZones: [
@@ -193,6 +200,7 @@ const MOKURI_FORMS_ELEMENTS = [
     id: 'form-hexagon',
     name: 'Hexagon',
     category: 'basic forms',
+    pack: 'core',
     viewBox: '0 0 120 110',
     suggestedLayer: 'midground',
     colorZones: [
@@ -221,6 +229,7 @@ const MOKURI_FORMS_ELEMENTS = [
     id: 'form-leaf',
     name: 'Leaf',
     category: 'basic forms',
+    pack: 'core',
     viewBox: '0 0 100 160',
     suggestedLayer: 'midground',
     colorZones: [
@@ -247,6 +256,7 @@ const MOKURI_FORMS_ELEMENTS = [
     id: 'form-cloud',
     name: 'Cloud',
     category: 'basic forms',
+    pack: 'core',
     viewBox: '0 0 180 100',
     suggestedLayer: 'midground',
     colorZones: [
@@ -273,6 +283,7 @@ const MOKURI_FORMS_ELEMENTS = [
     id: 'form-wave-band',
     name: 'Wave Band',
     category: 'basic forms',
+    pack: 'core',
     viewBox: '0 0 200 80',
     suggestedLayer: 'midground',
     colorZones: [
@@ -299,6 +310,7 @@ const MOKURI_FORMS_ELEMENTS = [
     id: 'form-pebble',
     name: 'Pebble',
     category: 'basic forms',
+    pack: 'core',
     viewBox: '0 0 130 110',
     suggestedLayer: 'midground',
     colorZones: [

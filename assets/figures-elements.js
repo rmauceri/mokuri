@@ -10,6 +10,7 @@ const MOKURI_FIGURES_ELEMENTS = [
     id: 'traveler',
     name: 'Traveler',
     category: 'figures',
+    pack: 'core',
     viewBox: '0 0 90 160',
     suggestedLayer: 'midground',
     colorZones: [
@@ -77,6 +78,7 @@ const MOKURI_FIGURES_ELEMENTS = [
     id: 'umbrella-figure',
     name: 'Figure with Umbrella',
     category: 'figures',
+    pack: 'core',
     viewBox: '0 0 110 160',
     suggestedLayer: 'midground',
     colorZones: [
@@ -142,6 +144,7 @@ const MOKURI_FIGURES_ELEMENTS = [
     id: 'fisherman',
     name: 'Fisherman',
     category: 'figures',
+    pack: 'core',
     viewBox: '0 0 130 110',
     suggestedLayer: 'midground',
     colorZones: [
@@ -207,6 +210,7 @@ const MOKURI_FIGURES_ELEMENTS = [
     id: 'field-worker',
     name: 'Field Worker',
     category: 'figures',
+    pack: 'core',
     viewBox: '0 0 100 125',
     suggestedLayer: 'midground',
     colorZones: [
@@ -272,6 +276,7 @@ const MOKURI_FIGURES_ELEMENTS = [
     id: 'two-travelers',
     name: 'Two Travelers',
     category: 'figures',
+    pack: 'core',
     viewBox: '0 0 140 155',
     suggestedLayer: 'midground',
     colorZones: [
@@ -341,6 +346,7 @@ const MOKURI_FIGURES_ELEMENTS = [
     id: 'seated-figure',
     name: 'Seated Figure',
     category: 'figures',
+    pack: 'core',
     viewBox: '0 0 90 105',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -406,6 +412,7 @@ const MOKURI_FIGURES_ELEMENTS = [
     id: 'boatman',
     name: 'Boatman',
     category: 'figures',
+    pack: 'core',
     viewBox: '0 0 80 155',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -471,6 +478,7 @@ const MOKURI_FIGURES_ELEMENTS = [
     id: 'woman-bundle',
     name: 'Woman with Bundle',
     category: 'figures',
+    pack: 'core',
     viewBox: '0 0 80 160',
     suggestedLayer: 'midground',
     colorZones: [

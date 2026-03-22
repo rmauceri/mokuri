@@ -12,6 +12,7 @@ const MOKURI_ELEMENTS = [
     id: 'mountain-distant',
     name: 'Distant Mountain',
     category: 'landscape',
+    pack: 'core',
     viewBox: '0 0 240 140',
     suggestedLayer: 'background',
     colorZones: [
@@ -54,6 +55,7 @@ const MOKURI_ELEMENTS = [
     id: 'mountain-near',
     name: 'Near Mountain',
     category: 'landscape',
+    pack: 'core',
     viewBox: '0 0 260 160',
     suggestedLayer: 'midground',
     colorZones: [
@@ -101,6 +103,7 @@ const MOKURI_ELEMENTS = [
     id: 'mountain-fuji-peak',
     name: 'Great Peak (Fuji style)',
     category: 'landscape',
+    pack: 'core',
     viewBox: '0 0 320 180',
     suggestedLayer: 'background',
     colorZones: [
@@ -149,6 +152,7 @@ const MOKURI_ELEMENTS = [
     id: 'rolling-hills',
     name: 'Rolling Hills',
     category: 'landscape',
+    pack: 'core',
     viewBox: '0 0 300 140',
     suggestedLayer: 'background',
     colorZones: [
@@ -200,6 +204,7 @@ const MOKURI_ELEMENTS = [
     id: 'farmland',
     name: 'Farmland',
     category: 'landscape',
+    pack: 'core',
     viewBox: '0 0 280 160',
     suggestedLayer: 'background',
     colorZones: [
@@ -257,6 +262,7 @@ const MOKURI_ELEMENTS = [
     id: 'tranquil-pond',
     name: 'Tranquil Pond',
     category: 'landscape',
+    pack: 'core',
     viewBox: '0 0 240 140',
     suggestedLayer: 'midground',
     colorZones: [
@@ -308,6 +314,7 @@ const MOKURI_ELEMENTS = [
     id: 'flowing-stream',
     name: 'Flowing Stream',
     category: 'landscape',
+    pack: 'core',
     viewBox: '0 0 280 120',
     suggestedLayer: 'midground',
     colorZones: [
@@ -366,6 +373,7 @@ const MOKURI_ELEMENTS = [
     id: 'gentle-waves',
     name: 'Gentle Waves',
     category: 'landscape',
+    pack: 'core',
     viewBox: '0 0 280 80',
     suggestedLayer: 'midground',
     colorZones: [
@@ -405,6 +413,7 @@ const MOKURI_ELEMENTS = [
     id: 'waterfall',
     name: 'Waterfall',
     category: 'landscape',
+    pack: 'core',
     viewBox: '0 0 140 200',
     suggestedLayer: 'midground',
     colorZones: [
@@ -464,6 +473,7 @@ const MOKURI_ELEMENTS = [
     id: 'full-moon',
     name: 'Full Moon',
     category: 'landscape',
+    pack: 'core',
     viewBox: '0 0 120 120',
     suggestedLayer: 'background',
     colorZones: [
@@ -508,6 +518,7 @@ const MOKURI_ELEMENTS = [
     id: 'cloud-bank',
     name: 'Cloud Bank',
     category: 'landscape',
+    pack: 'core',
     viewBox: '0 0 260 80',
     suggestedLayer: 'midground',
     colorZones: [
@@ -549,6 +560,7 @@ const MOKURI_ELEMENTS = [
     id: 'pine-tree',
     name: 'Pine Tree',
     category: 'flora',
+    pack: 'core',
     viewBox: '0 0 140 200',
     suggestedLayer: 'midground',
     colorZones: [
@@ -599,6 +611,7 @@ const MOKURI_ELEMENTS = [
     id: 'cherry-branch',
     name: 'Cherry Blossom',
     category: 'flora',
+    pack: 'core',
     viewBox: '0 0 220 180',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -664,6 +677,7 @@ const MOKURI_ELEMENTS = [
     id: 'crane',
     name: 'Crane',
     category: 'fauna',
+    pack: 'core',
     viewBox: '0 0 160 200',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -728,6 +742,7 @@ const MOKURI_ELEMENTS = [
     id: 'torii-gate',
     name: 'Torii Gate',
     category: 'objects & patterns',
+    pack: 'core',
     viewBox: '0 0 180 200',
     suggestedLayer: 'midground',
     colorZones: [
@@ -784,6 +799,7 @@ const MOKURI_ELEMENTS = [
     id: 'twisted-pine',
     name: 'Twisted Pine',
     category: 'flora',
+    pack: 'core',
     viewBox: '0 0 200 220',
     suggestedLayer: 'midground',
     colorZones: [
@@ -849,6 +865,7 @@ const MOKURI_ELEMENTS = [
     id: 'weeping-willow',
     name: 'Weeping Willow',
     category: 'flora',
+    pack: 'core',
     viewBox: '0 0 200 240',
     suggestedLayer: 'midground',
     colorZones: [

@@ -273,6 +273,13 @@ html, body {
   color: var(--text-muted);
   padding: 0 4px 4px;
 }
+.pack-sublabel {
+  font-size: 9px;
+  color: var(--accent);
+  opacity: 0.6;
+  padding: 4px 4px 2px;
+  letter-spacing: 0.3px;
+}
 
 .element-grid {
   display: grid;
@@ -682,6 +689,32 @@ html, body {
   gap: 8px;
   margin-bottom: 8px;
 }
+.workshop-prompt-area {
+  margin-bottom: 12px; padding: 10px 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+}
+.workshop-prompt-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 6px;
+}
+.workshop-prompt-label {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px;
+  color: var(--text-muted); font-weight: 600;
+}
+.workshop-prompt-refresh {
+  background: none; border: none; font-size: 14px;
+  cursor: pointer; padding: 2px 4px; border-radius: 4px;
+  transition: background 0.15s;
+}
+.workshop-prompt-refresh:hover { background: var(--selection); }
+.workshop-prompt-text {
+  font-size: 15px; color: var(--text); font-style: italic;
+  line-height: 1.4; cursor: pointer;
+  transition: color 0.15s;
+}
+.workshop-prompt-text:hover { color: var(--accent); }
 .workshop-starter {
   display: flex;
   flex-direction: column;
@@ -2221,6 +2254,14 @@ html, body {
     <div class="workshop-paper-row" id="workshop-paper-row"></div>
     <div class="workshop-starters" id="workshop-starters"></div>
 
+    <div class="workshop-prompt-area" id="workshop-prompt-area">
+      <div class="workshop-prompt-header">
+        <span class="workshop-prompt-label">Inspiration</span>
+        <button class="workshop-prompt-refresh" id="workshop-prompt-refresh" title="New prompt">🎲</button>
+      </div>
+      <div class="workshop-prompt-text" id="workshop-prompt-text"></div>
+    </div>
+
     <div class="workshop-section-title">Return to recent work</div>
     <div class="workshop-toolbar" id="workshop-toolbar">
       <button class="workshop-toolbar-btn" id="workshop-import-btn" title="Import compositions">📂 Import</button>
@@ -2416,6 +2457,7 @@ html, body {
 <script src="assets/forms-elements.js"></script>
 <script src="assets/figures-elements.js"></script>
 <script src="assets/gallery.js"></script>
+<script src="assets/pack-registry.js"></script>
 <script src="print-engine.js"></script>
 <script src="audio-engine.js"></script>
 <script>
@@ -2533,16 +2575,16 @@ const STATE = {
 //  PALETTES (used at print time only)
 // ============================================================
 const PALETTES = {
-  sumi:      { name: 'Sumi 墨',      colors: ['#1a1a1a', '#3d3d3d', '#6b6b6b', '#9e9e9e', '#c8c8c8'] },
-  edo:       { name: 'Edo',           colors: ['#1a3a5c', '#c23b22', '#c49a2a', '#5c7a4a', '#2a2a2a'] },
-  hokusai:   { name: 'Hokusai',       colors: ['#1b3a6b', '#4a90c4', '#f5f0e1', '#8b4513', '#3a3a3a'] },
-  hiroshige: { name: 'Hiroshige',     colors: ['#1b4872', '#8aafc4', '#b8a89a', '#5a7a6a', '#c07a7a'] },
-  sakura:    { name: 'Sakura 桜',     colors: ['#c47a90', '#8fb573', '#f5f0e1', '#7a5c47', '#d4a0a0'] },
-  aki:       { name: 'Aki 秋',        colors: ['#b33a2a', '#d4a030', '#c46a20', '#3a5c3a', '#5c3a2a'] },
-  yoru:      { name: 'Yoru 夜',       colors: ['#1a1a3a', '#8a8aaa', '#c4b870', '#5a4a6a', '#2a2a4a'] },
-  fuyu:      { name: 'Fuyu 冬',       colors: ['#4a6a7a', '#a0b8c4', '#e8e4dc', '#6a5a48', '#2a3a3a'] },
-  beni:      { name: 'Beni 紅',       colors: ['#b83a3a', '#d4826a', '#e8c870', '#f5efe0', '#4a3030'] },
-  matcha:    { name: 'Matcha 抹茶',   colors: ['#5a7a50', '#8aaa6a', '#c4b090', '#7a6a50', '#2a3028'] },
+  sumi:      { name: 'Sumi 墨',      pack: 'core', colors: ['#1a1a1a', '#3d3d3d', '#6b6b6b', '#9e9e9e', '#c8c8c8'] },
+  edo:       { name: 'Edo',           pack: 'core', colors: ['#1a3a5c', '#c23b22', '#c49a2a', '#5c7a4a', '#2a2a2a'] },
+  hokusai:   { name: 'Hokusai',       pack: 'core', colors: ['#1b3a6b', '#4a90c4', '#f5f0e1', '#8b4513', '#3a3a3a'] },
+  hiroshige: { name: 'Hiroshige',     pack: 'core', colors: ['#1b4872', '#8aafc4', '#b8a89a', '#5a7a6a', '#c07a7a'] },
+  sakura:    { name: 'Sakura 桜',     pack: 'core', colors: ['#c47a90', '#8fb573', '#f5f0e1', '#7a5c47', '#d4a0a0'] },
+  aki:       { name: 'Aki 秋',        pack: 'core', colors: ['#b33a2a', '#d4a030', '#c46a20', '#3a5c3a', '#5c3a2a'] },
+  yoru:      { name: 'Yoru 夜',       pack: 'core', colors: ['#1a1a3a', '#8a8aaa', '#c4b870', '#5a4a6a', '#2a2a4a'] },
+  fuyu:      { name: 'Fuyu 冬',       pack: 'core', colors: ['#4a6a7a', '#a0b8c4', '#e8e4dc', '#6a5a48', '#2a3a3a'] },
+  beni:      { name: 'Beni 紅',       pack: 'core', colors: ['#b83a3a', '#d4826a', '#e8c870', '#f5efe0', '#4a3030'] },
+  matcha:    { name: 'Matcha 抹茶',   pack: 'core', colors: ['#5a7a50', '#8aaa6a', '#c4b090', '#7a6a50', '#2a3028'] },
 };
 
 // Color distance helpers for cross-palette accent selection
@@ -4369,6 +4411,48 @@ const MokuriDB = (() => {
       return _req(store.put({ key, value }));
     },
 
+    // ── User progress helpers (pack infrastructure) ──
+
+    async getUserStage() {
+      return (await this.getMeta('userStage')) || 'start';
+    },
+
+    async setUserStage(stage) {
+      return this.setMeta('userStage', stage);
+    },
+
+    async getSessionCount() {
+      return (await this.getMeta('sessionCount')) || 0;
+    },
+
+    async incrementSessionCount() {
+      const count = ((await this.getMeta('sessionCount')) || 0) + 1;
+      await this.setMeta('sessionCount', count);
+      return count;
+    },
+
+    async getJourneyProgress() {
+      return (await this.getMeta('journeyProgress')) || {};
+    },
+
+    async updateJourneyProgress(journeyId, data) {
+      const progress = await this.getJourneyProgress();
+      progress[journeyId] = Object.assign(progress[journeyId] || {}, data);
+      return this.setMeta('journeyProgress', progress);
+    },
+
+    async getPromptHistory() {
+      return (await this.getMeta('promptHistory')) || [];
+    },
+
+    async addPromptToHistory(entry) {
+      const history = await this.getPromptHistory();
+      history.push(Object.assign({ shownAt: new Date().toISOString() }, entry));
+      // Keep last 100 entries
+      if (history.length > 100) history.splice(0, history.length - 100);
+      return this.setMeta('promptHistory', history);
+    },
+
     // Check if IndexedDB is available
     get available() {
       return typeof indexedDB !== 'undefined';
@@ -5072,6 +5156,27 @@ function loadScenePreset(presetId) {
 }
 
 // ============================================================
+//  WORKSHOP PROMPTS (pack-driven inspiration)
+// ============================================================
+let _currentPrompt = null;
+
+function refreshWorkshopPrompt() {
+  const allPrompts = getPackPrompts();
+  if (allPrompts.length === 0) {
+    $('workshop-prompt-area').style.display = 'none';
+    return;
+  }
+  $('workshop-prompt-area').style.display = '';
+  // Pick a random prompt different from current if possible
+  let pick = allPrompts[Math.floor(Math.random() * allPrompts.length)];
+  if (allPrompts.length > 1 && _currentPrompt && pick.id === _currentPrompt.id) {
+    pick = allPrompts[(allPrompts.indexOf(pick) + 1) % allPrompts.length];
+  }
+  _currentPrompt = pick;
+  $('workshop-prompt-text').textContent = '"' + pick.text + '"';
+}
+
+// ============================================================
 //  PAPER SELECTOR
 // ============================================================
 function openPaperSelector() {
@@ -5245,6 +5350,9 @@ async function buildWorkshopUI() {
       starters.appendChild(card);
     });
   }
+
+  // Inspiration prompt from active packs
+  refreshWorkshopPrompt();
 
   // Recent prints
   const recents = $('workshop-recents');
@@ -5831,10 +5939,29 @@ function buildElementPicker() {
     label.textContent = cat;
     section.appendChild(label);
 
-    const grid = document.createElement('div');
-    grid.className = 'element-grid';
-
+    // Sub-group by pack when multiple packs contribute to this category
+    const packs = {};
     defs.forEach(def => {
+      const pk = def.pack || 'core';
+      if (!packs[pk]) packs[pk] = [];
+      packs[pk].push(def);
+    });
+    const packIds = Object.keys(packs);
+    const multiPack = packIds.length > 1;
+
+    packIds.forEach(pk => {
+      if (multiPack) {
+        const packInfo = getPackById(pk);
+        const packLabel = document.createElement('div');
+        packLabel.className = 'pack-sublabel';
+        packLabel.textContent = packInfo ? (packInfo.icon + ' ' + packInfo.name) : pk;
+        section.appendChild(packLabel);
+      }
+
+      const grid = document.createElement('div');
+      grid.className = 'element-grid';
+
+      packs[pk].forEach(def => {
       const thumb = document.createElement('div');
       thumb.className = 'element-thumb';
       thumb.title = def.name;
@@ -5974,7 +6101,8 @@ function buildElementPicker() {
       grid.appendChild(thumb);
     });
 
-    section.appendChild(grid);
+      section.appendChild(grid);
+    }); // end packIds.forEach
 
     // Add "Create Hanko" button for the hanko category
     if (cat === 'hanko') {
@@ -9039,6 +9167,26 @@ function setupToolbar() {
   $('workshop-modal').addEventListener('click', (e) => {
     if (e.target === $('workshop-modal')) closeWorkshop();
   });
+  // Workshop prompt inspiration
+  $('workshop-prompt-refresh').addEventListener('click', (e) => {
+    e.stopPropagation();
+    refreshWorkshopPrompt();
+  });
+  $('workshop-prompt-text').addEventListener('click', () => {
+    if (!_currentPrompt) return;
+    closeWorkshop();
+    const id = generateCompositionId();
+    STATE.activeCompositionId = id;
+    setActiveCompositionId(id);
+    resetToCompose();
+    STATE.compositionName = _currentPrompt.text;
+    autoSave();
+    $('status-hint').textContent = _currentPrompt.text;
+    // Log prompt usage
+    if (!_useLocalStorage) {
+      MokuriDB.addPromptToHistory({ id: _currentPrompt.id, pack: 'core', usedAt: new Date().toISOString() }).catch(() => {});
+    }
+  });
 
   // Print Gallery
   $('btn-print-gallery').addEventListener('click', (e) => {
@@ -9258,6 +9406,11 @@ async function init() {
 
   // Initialize IndexedDB storage and migrate from localStorage
   await initStorage();
+
+  // Track session count for FRE/pack infrastructure
+  if (!_useLocalStorage) {
+    MokuriDB.incrementSessionCount().catch(() => {});
+  }
 
   // Restore previous session from gallery
   if (await autoLoad()) {

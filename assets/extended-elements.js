@@ -12,6 +12,7 @@ const MOKURI_CORE_ELEMENTS = [
     id: 'sakura-blossom',
     name: 'Sakura Blossom',
     category: 'flora',
+    pack: 'core',
     viewBox: '0 0 160 140',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -91,6 +92,7 @@ const MOKURI_CORE_ELEMENTS = [
     id: 'ume-blossom',
     name: 'Ume Blossom',
     category: 'flora',
+    pack: 'core',
     viewBox: '0 0 120 120',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -171,6 +173,7 @@ const MOKURI_CORE_ELEMENTS = [
     id: 'chrysanthemum',
     name: 'Chrysanthemum',
     category: 'flora',
+    pack: 'core',
     viewBox: '0 0 120 130',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -222,6 +225,7 @@ const MOKURI_CORE_ELEMENTS = [
     id: 'susuki-grass',
     name: 'Susuki Grass',
     category: 'flora',
+    pack: 'core',
     viewBox: '0 0 100 160',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -280,6 +284,7 @@ const MOKURI_CORE_ELEMENTS = [
     id: 'asanoha-star',
     name: 'Asanoha Star',
     category: 'objects & patterns',
+    pack: 'core',
     viewBox: '0 0 120 120',
     suggestedLayer: 'midground',
     colorZones: [
@@ -361,6 +366,7 @@ const MOKURI_CORE_ELEMENTS = [
     id: 'seigaiha-tile',
     name: 'Seigaiha Wave Tile',
     category: 'objects & patterns',
+    pack: 'core',
     viewBox: '0 0 120 60',
     suggestedLayer: 'background',
     colorZones: [
@@ -445,6 +451,7 @@ const MOKURI_CORE_ELEMENTS = [
     id: 'sensu-fan',
     name: 'Folding Fan',
     category: 'objects & patterns',
+    pack: 'core',
     viewBox: '0 0 140 80',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -527,6 +534,7 @@ const MOKURI_CORE_ELEMENTS = [
     id: 'paper-lantern',
     name: 'Paper Lantern',
     category: 'objects & patterns',
+    pack: 'core',
     viewBox: '0 0 100 140',
     suggestedLayer: 'midground',
     colorZones: [
@@ -607,6 +615,7 @@ const MOKURI_CORE_ELEMENTS = [
     id: 'lantern-kasuga-premium',
     name: 'Kasuga Grand Lantern',
     category: 'objects & patterns',
+    pack: 'core',
     viewBox: '0 0 160 280',
     suggestedLayer: 'midground',
     colorZones: [
@@ -657,6 +666,7 @@ const MOKURI_CORE_ELEMENTS = [
     id: 'lantern-yukimi-premium',
     name: 'Yukimi Lantern',
     category: 'objects & patterns',
+    pack: 'core',
     viewBox: '0 0 240 200',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -705,6 +715,7 @@ const MOKURI_CORE_ELEMENTS = [
     id: 'lantern-oribe-premium',
     name: 'Oribe Lantern',
     category: 'objects & patterns',
+    pack: 'core',
     viewBox: '0 0 140 240',
     suggestedLayer: 'midground',
     colorZones: [
@@ -752,6 +763,7 @@ const MOKURI_CORE_ELEMENTS = [
     id: 'fishing-boat',
     name: 'Fishing Boat',
     category: 'objects & patterns',
+    pack: 'core',
     viewBox: '0 0 180 100',
     suggestedLayer: 'midground',
     colorZones: [
@@ -809,6 +821,7 @@ const MOKURI_CORE_ELEMENTS = [
     id: 'pine-bough',
     name: 'Pine Bough',
     category: 'flora',
+    pack: 'core',
     viewBox: '0 0 160 80',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -878,6 +891,7 @@ const MOKURI_CORE_ELEMENTS = [
     id: 'woodgrain-knot',
     name: 'Woodgrain Knot',
     category: 'objects & patterns',
+    pack: 'core',
     viewBox: '0 0 120 80',
     suggestedLayer: 'midground',
     colorZones: [
@@ -959,6 +973,7 @@ const MOKURI_CORE_ELEMENTS = [
     id: 'gouge-mark',
     name: 'Gouge Mark',
     category: 'objects & patterns',
+    pack: 'core',
     viewBox: '0 0 120 40',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -1040,6 +1055,7 @@ const MOKURI_CORE_ELEMENTS = [
     id: 'bare-branch',
     name: 'Bare Winter Branch',
     category: 'flora',
+    pack: 'core',
     viewBox: '0 0 160 140',
     suggestedLayer: 'foreground',
     colorZones: [

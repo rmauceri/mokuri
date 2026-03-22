@@ -12,6 +12,7 @@ const MOKURI_FAUNA_ELEMENTS = [
     id: 'koi',
     name: 'Koi',
     category: 'fauna',
+    pack: 'core',
     viewBox: '0 0 200 120',
     suggestedLayer: 'midground',
     colorZones: [
@@ -77,6 +78,7 @@ const MOKURI_FAUNA_ELEMENTS = [
     id: 'dragonfly',
     name: 'Dragonfly',
     category: 'fauna',
+    pack: 'core',
     viewBox: '0 0 180 140',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -150,6 +152,7 @@ const MOKURI_FAUNA_ELEMENTS = [
     id: 'turtle',
     name: 'Turtle',
     category: 'fauna',
+    pack: 'core',
     viewBox: '0 0 160 180',
     suggestedLayer: 'midground',
     colorZones: [
@@ -225,6 +228,7 @@ const MOKURI_FAUNA_ELEMENTS = [
     id: 'crane-flying',
     name: 'Flying Crane',
     category: 'fauna',
+    pack: 'core',
     viewBox: '0 0 240 160',
     suggestedLayer: 'background',
     colorZones: [
@@ -305,6 +309,7 @@ const MOKURI_FAUNA_ELEMENTS = [
     id: 'rabbit',
     name: 'Rabbit',
     category: 'fauna',
+    pack: 'core',
     viewBox: '0 0 140 160',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -375,6 +380,7 @@ const MOKURI_FAUNA_ELEMENTS = [
     id: 'frog',
     name: 'Frog',
     category: 'fauna',
+    pack: 'core',
     viewBox: '0 0 140 120',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -454,6 +460,7 @@ const MOKURI_FAUNA_ELEMENTS = [
     id: 'butterfly',
     name: 'Butterfly',
     category: 'fauna',
+    pack: 'core',
     viewBox: '0 0 160 130',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -535,6 +542,7 @@ const MOKURI_FAUNA_ELEMENTS = [
     id: 'sparrow',
     name: 'Sparrow',
     category: 'fauna',
+    pack: 'core',
     viewBox: '0 0 120 110',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -612,6 +620,7 @@ const MOKURI_FAUNA_ELEMENTS = [
     id: 'koi-leaping',
     name: 'Leaping Koi',
     category: 'fauna',
+    pack: 'core',
     viewBox: '0 0 160 220',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -682,6 +691,7 @@ const MOKURI_FAUNA_ELEMENTS = [
     id: 'koi-overhead',
     name: 'Koi (Overhead)',
     category: 'fauna',
+    pack: 'core',
     viewBox: '0 0 140 220',
     suggestedLayer: 'midground',
     colorZones: [
@@ -762,6 +772,7 @@ const MOKURI_FAUNA_ELEMENTS = [
     id: 'crane-standing',
     name: 'Standing Crane',
     category: 'fauna',
+    pack: 'core',
     viewBox: '0 0 120 260',
     suggestedLayer: 'midground',
     colorZones: [
@@ -845,6 +856,7 @@ const MOKURI_FAUNA_ELEMENTS = [
     id: 'crane-landing',
     name: 'Landing Crane',
     category: 'fauna',
+    pack: 'core',
     viewBox: '0 0 280 200',
     suggestedLayer: 'midground',
     colorZones: [
