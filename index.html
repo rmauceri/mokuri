@@ -946,6 +946,7 @@ html, body {
   max-width: 100%; max-height: calc(100vh - 200px); object-fit: contain;
   border-radius: 2px;
   box-shadow: 0 6px 30px rgba(0,0,0,0.5);
+  -webkit-user-drag: none; user-select: none; touch-action: pan-y;
 }
 .pgallery-info {
   text-align: center; margin-top: 6px; padding-bottom: 4px; flex-shrink: 0;
@@ -9123,6 +9124,35 @@ function setupToolbar() {
       }
     } catch (e) {}
   });
+
+  // Gallery swipe navigation (touch/pen/mouse on viewer area)
+  {
+    let swipeStartX = 0, swipeStartY = 0, swiping = false;
+    const viewer = $('pgallery-viewer');
+    const SWIPE_THRESHOLD = 50;
+    viewer.addEventListener('pointerdown', (e) => {
+      if (e.target.closest('.pgallery-nav') || e.target.closest('.pgallery-strip-wrap')) return;
+      swipeStartX = e.clientX;
+      swipeStartY = e.clientY;
+      swiping = true;
+    });
+    viewer.addEventListener('pointermove', (e) => {
+      if (!swiping) return;
+      // Cancel swipe if vertical movement dominates (scrolling)
+      if (Math.abs(e.clientY - swipeStartY) > Math.abs(e.clientX - swipeStartX)) {
+        swiping = false;
+      }
+    });
+    viewer.addEventListener('pointerup', (e) => {
+      if (!swiping) return;
+      swiping = false;
+      const dx = e.clientX - swipeStartX;
+      if (Math.abs(dx) >= SWIPE_THRESHOLD) {
+        galleryNav(dx < 0 ? 1 : -1);
+      }
+    });
+    viewer.addEventListener('pointercancel', () => { swiping = false; });
+  }
 
   // Audio controls
   function syncAudioUI() {
