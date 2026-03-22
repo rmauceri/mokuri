@@ -193,6 +193,20 @@ Wire-line overlay showing paper boundaries and rule-of-thirds grid. Helps compos
 
 ## Future Work
 
+### Style Packs (Expansion Content)
+Pack infrastructure is in place. Next steps:
+- **Kacho-e (花鳥画)** — Birds & Flowers pack. First expansion: 10-12 close-up nature elements, 2 palettes, 3 presets. Closest to existing content, broadest appeal.
+- **Shin-hanga** — Light & Atmosphere pack. Rain layers, fog banks, lantern glow, moonlit reflections, 2-3 mood palettes. Leverages existing atmosphere system.
+- **Moribana** — Ikebana-inspired still life. Vessels, branches, compositional constraint aids.
+- **Wabi-sabi** — Minimalism mode/preset (not a paid pack). Rougher edges, ink bleed, sparse elements.
+
+### First-Run Experience
+Guided onboarding using the pack journey system. Data model ready; behavior layer needed:
+- Progressive feature disclosure (move → add → palette → carve → print)
+- Prompt-driven session framing ("Your First Print" → "Evening Scene" → "Weather Study")
+- Subtle overlay hints (3-5 word prompts, skippable, visual cues over text)
+- Retention hooks (remix suggestions, "try a night version" after first print)
+
 ### Element Fidelity
 - **Continued SVG refinement** — Mountain and water elements now follow the Element Design Guide. Remaining older elements (particularly some flora and objects predating the guide) could benefit from the same organic Q-curve treatment. Hatching density, form-following texture lines, and zone boundary refinement are ongoing opportunities.
 
@@ -204,7 +218,7 @@ Wire-line overlay showing paper boundaries and rule-of-thirds grid. Helps compos
 - **Composition guide extensions** — Golden ratio overlay, horizon-line guide synced with atmosphere slider, diagonal composition lines.
 
 ### Platform & Polish
-- **Responsive layout** — Further phone refinements (bottom sheet panels, modal panels for very small screens).
+- **Responsive layout** — Two-row mobile toolbar shipped. Further phone refinements needed: bottom sheet panels, modal panels for workbench flyouts on very small screens.
 - **Keyboard shortcuts expansion** — More shortcuts for power users.
 
 ### User Feedback Collection
@@ -261,45 +275,59 @@ Single `.mokuri` JSON file format for both individual and bulk export/import.
 - Group rotation (rotate all selected around group center)
 - Batch ink settings for elements sharing the same definition or color zones
 
-### 12-P1.5: IndexedDB Gallery Migration (Planned)
+### 12-P1.5: IndexedDB Storage Migration ✅
 
-Gallery compositions stored in localStorage (~5MB browser limit). Heavy carving sessions with many strokes can approach this ceiling, risking silent data loss. Migration to IndexedDB removes the storage cap (~hundreds of MB+) and improves reliability on mobile where localStorage can be evicted under storage pressure.
+Migrated all composition and print storage from localStorage to IndexedDB, removing the ~5MB browser cap and enabling the Print Gallery feature.
 
-**What moves to IndexedDB:**
-- `mokuri-gallery` — array of composition objects (elements, carve strokes, atmosphere, materials). This is the only large data blob.
-- `mokuri-active-id` — active composition pointer (small, but logically coupled to gallery).
+- **MokuriDB abstraction layer**: IIFE with lazy-open pattern. Three object stores: `compositions` (keyPath: id, index: updatedAt), `prints` (autoIncrement, indexes: createdAt, compositionId), `meta` (keyPath: key).
+- **Async gallery API**: All ~15 call sites converted to async (autoSave, autoLoad, switchToComposition, deleteComposition, renameComposition, buildWorkshopUI, import/export, etc.).
+- **One-time migration**: Reads existing localStorage `mokuri-gallery`, writes to IDB, verifies round-trip, then removes localStorage keys. Invisible to user.
+- **localStorage fallback**: `_useLocalStorage` flag for private browsing or broken IDB state.
+- **Storage cap removed**: No more MAX_GALLERY_SIZE limit. IndexedDB provides hundreds of MB.
+- **Print storage**: `savePrint`, `getAllPrints`, `getPrint`, `deletePrint`, `updatePrint`, `getPrintCount` methods. Canvas-to-Blob helper, 300px thumbnail generator.
+- **User progress helpers**: `getUserStage`, `setUserStage`, `getSessionCount`, `incrementSessionCount`, `getJourneyProgress`, `updateJourneyProgress`, `getPromptHistory`, `addPromptToHistory` — foundation for FRE and pack system.
 
-**What stays in localStorage (small preferences, synchronous access fine):**
-- `mokuri-pressure`, `mokuri-activePattern`, `mokuri-patternDensity`, `mokuri-patternRotation`
-- `mokuri-visits` (FRE counter)
-- `mokuri-audio` (audio prefs)
+### Print Gallery (画 Gallery) ✅
 
-**Implementation plan:**
+Auto-saved print collection with unified viewer, sharing, and favorites.
 
-1. **IndexedDB abstraction layer** — `MokuriDB` object with async methods: `open()`, `loadGallery()`, `saveGallery(gallery)`, `getActiveId()`, `setActiveId(id)`. Uses a single object store (`gallery`) with a well-known key. Opens database lazily on first access; caches the `db` handle. All errors caught and surfaced via status bar message.
+- **Auto-save on pull**: Every `pullPrint()` saves a full-resolution PNG blob + 300px thumbnail to IndexedDB. Lifetime print counter in meta store.
+- **Unified viewer**: Full-screen dark brown backdrop. Most recent print shown immediately on open — zero extra clicks. Thumbnail strip at bottom for navigation. Arrow keys, ‹/› buttons, and swipe gestures for navigation.
+- **Top bar**: Title, print counter, artist name input, All/★ Favorites filter tabs, action buttons (☆ Keep, ↗ Share, ↓ Save, ✕ Delete), close button.
+- **Favorites**: Toggle via ☆ Keep button. Filter tab shows only favorites. Persisted in IndexedDB.
+- **Sharing**: ↗ Share sub-menu with two options:
+  - **Mounted PNG**: Canvas-rendered mat with noise texture, drop shadow, title/edition/artist text, "Mokuri Studio" mark.
+  - **HTML Viewer**: Self-contained HTML file with base64-embedded print, dark display, responsive layout, metadata.
+- **Delete behavior**: Advances to next print (or previous if at end) instead of returning to empty grid.
+- **Swipe navigation**: Pointer event-based swipe on viewer area for touch/pen/mouse. Vertical-dominant gestures ignored. 50px threshold. Procedural swipe sound (filtered noise whoosh).
+- **Audio cues**: `playSave` (ascending chime), `playFavorite` (two-note sparkle), `playSwipe` (bandpass noise whoosh).
+- **Custom confirmation**: `mokConfirm()` — Promise-based styled dialog replacing browser `confirm()`. Backdrop dismiss, reusable.
+- **Responsive**: Thumbnails scale by breakpoint (60px mobile, 80px default, 96px ≥900px). Short-window adjustments. Action button labels hidden on mobile (icon-only).
+- **Hotkey**: J key toggles gallery. Escape closes.
 
-2. **Async conversion of gallery functions** — `loadGallery()` and `saveGallery()` become async, returning Promises. Callers updated:
-   - `autoSave()` — fire-and-forget (no await), but catches and logs write failures
-   - `autoLoad()` — already runs at startup; await before rendering
-   - `switchToComposition()`, `deleteComposition()`, `renameComposition()` — await save
-   - Gallery UI builders (`buildGalleryUI`) — await load
-   - Export/import functions — await load/save
+### Workshop Rename (作 Workshop) ✅
 
-3. **One-time migration** — On first `open()`, check for existing `mokuri-gallery` in localStorage. If found, read it, write all compositions to IndexedDB, verify round-trip, then delete the localStorage key. Migration runs once and is invisible to the user.
+Renamed the old "Gallery" (composition launcher) to **Workshop** to resolve naming collision with the new Print Gallery.
 
-4. **Storage persistence request** — Call `navigator.storage.persist()` on startup for installed PWA. Prevents iOS Safari / WebKit from evicting IndexedDB under storage pressure. Fails silently if denied (non-critical).
+- ~130 references renamed across CSS classes, HTML IDs, JS functions, variables, and user-visible text.
+- Kanji icon: **作** (saku, create/make). Section headings: "Create a new composition" / "Return to recent work".
+- **Inspiration prompts**: Random creative prompt displayed below presets with 🎲 refresh button. Click prompt to start new composition. Prompts sourced from pack registry.
 
-5. **Error handling & fallback** — If IndexedDB is unavailable (private browsing edge cases, broken browser state), fall back to localStorage with a console warning. Gallery functions detect which backend is active.
+### Pack Infrastructure ✅
 
-6. **Remove MAX_GALLERY_SIZE cap** — Currently 10 compositions. With IndexedDB's generous quota, raise or remove the limit.
+Foundation for style packs and first-run experience — data models and registry without any gating or FRE behavior.
 
-**Risks & mitigations:**
-- **Async ripple**: Contained to ~15 call sites in gallery-related code. No changes to rendering, interaction, or print engine.
-- **iOS storage eviction**: Mitigated by `navigator.storage.persist()`. Installed PWAs almost always get persistent storage.
-- **Migration data loss**: Verify round-trip read before deleting localStorage. Keep localStorage copy for one more session if verification fails.
-- **Private browsing**: IndexedDB works but data is ephemeral — same as localStorage today, no regression.
+- **Pack registry** (`assets/pack-registry.js`): `MOKURI_PACKS` array with `registerPack()`, `getPackById()`, `getAllPacks()`, `getPackForElement()`, `getPackPrompts()`, `getPackJourneys()` helpers.
+- **Core pack manifest**: 90 element IDs, 10 palette IDs, 3 creative journeys (first-print, evening-scene, weather-study), 14 prompts across 4 types (scene, emotion, constraint, transformation).
+- **Element tagging**: `pack: 'core'` added to all 90 element definitions across 7 files, all 10 PALETTES entries, and all 9 gallery presets.
+- **Pack manifest format**: Supports elements, palettes, presets, journeys (with progressive disclosure hints and suggested next), and standalone prompts — designed to support both style packs and FRE without retrofit.
+- **Element picker awareness**: Sub-groups elements by pack within categories when multiple packs contribute (no-op with only core, ready for expansion).
+- **User progress model**: Session count, user stage, journey progress, prompt history — all persisted in IndexedDB meta store.
 
-**Cross-platform support:** IndexedDB is universally supported in all modern browsers (Chrome, Edge, Firefox, Safari 10+), all PWA webviews, and all platforms (Windows, macOS, iOS, Android). No compatibility concerns.
+### Mobile & Interaction Fixes ✅
+
+- **Two-row toolbar** (portrait phone ≤600px): Row 1: brand + phase buttons + Workshop. Row 2: edit tools centered. Touch targets bumped to 36px. No impact on landscape or larger screens.
+- **Multi-selection flip fix**: Flip now mirrors element positions around the group centroid, making the operation visually meaningful even for symmetric shapes (basic forms). Single-element flip unchanged.
 
 #### Memory Bounds
 Carve stroke arrays are unbounded. Heavy sessions could grow to MB, bloating undo snapshots and localStorage.
