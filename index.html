@@ -1864,6 +1864,27 @@ html, body {
   .tool-btn { width: 30px; height: 30px; font-size: 14px; }
 }
 
+/* Portrait phone: two-row toolbar */
+@media (max-width: 600px) {
+  .toolbar {
+    height: auto; flex-wrap: wrap; overflow: visible;
+    padding: 4px 6px; gap: 2px;
+  }
+  /* Row 1: brand + phases + workshop fill full width */
+  .toolbar-title { order: 0; }
+  .toolbar-mode-group { order: 1; }
+  .toolbar > .toolbar-separator:last-of-type { order: 2; }
+  #btn-file { order: 3; }
+  /* Push edit group to row 2 */
+  .toolbar-edit-group { order: 5; width: 100%; justify-content: center; padding: 2px 0; }
+  /* Hide spacers so rows pack tightly */
+  .toolbar-spacer { display: none; }
+  /* Touch-friendly sizes */
+  .tool-btn { width: 36px; height: 36px; font-size: 16px; }
+  .mode-btn { padding: 4px 8px; height: 32px; }
+  .mode-btn .mode-icon { font-size: 15px; }
+}
+
 /* Short windows: compact vertical chrome */
 @media (max-height: 700px) {
   :root { --toolbar-h: 40px; }
