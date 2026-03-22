@@ -695,6 +695,41 @@ const MokuriAudio = (() => {
     });
   }
 
+  function playSave() {
+    playOneShot((c, dest) => {
+      // Soft ascending chime
+      const osc = c.createOscillator();
+      osc.type = 'sine';
+      const now = c.currentTime;
+      osc.frequency.setValueAtTime(520, now);
+      osc.frequency.exponentialRampToValueAtTime(780, now + 0.12);
+      const g = c.createGain();
+      g.gain.setValueAtTime(0.2, now);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+      osc.connect(g).connect(dest);
+      osc.start(now);
+      osc.stop(now + 0.28);
+    });
+  }
+
+  function playFavorite() {
+    playOneShot((c, dest) => {
+      // Two-note sparkle
+      [660, 880].forEach((freq, i) => {
+        const osc = c.createOscillator();
+        osc.type = 'sine';
+        const now = c.currentTime + i * 0.08;
+        osc.frequency.value = freq;
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.18, now);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+        osc.connect(g).connect(dest);
+        osc.start(now);
+        osc.stop(now + 0.22);
+      });
+    });
+  }
+
   // --- Preferences ---
   function loadPrefs() {
     try {
@@ -755,5 +790,7 @@ const MokuriAudio = (() => {
     playPanelToggle,
     playFocusEnter,
     playFocusExit,
+    playSave,
+    playFavorite,
   };
 })();

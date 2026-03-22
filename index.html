@@ -2241,6 +2241,8 @@ html, body {
   </div>
   <div class="pgallery-lb-actions" id="pgallery-lb-actions">
     <button class="pgallery-lb-btn" id="pgallery-lb-fav" title="Favorite">☆</button>
+    <button class="pgallery-lb-btn" id="pgallery-lb-share-png" title="Share as mounted PNG">📤 Share</button>
+    <button class="pgallery-lb-btn" id="pgallery-lb-share-html" title="Share as viewer page">🌐 Viewer</button>
     <button class="pgallery-lb-btn" id="pgallery-lb-save" title="Save PNG">💾</button>
     <button class="pgallery-lb-btn pgallery-lb-btn-danger" id="pgallery-lb-delete" title="Delete">🗑️</button>
   </div>
@@ -5452,7 +5454,9 @@ async function buildPrintGalleryUI() {
     fav.addEventListener('click', async (e) => {
       e.stopPropagation();
       try {
-        await MokuriDB.updatePrint(print.id, { favorite: !print.favorite });
+        const wasFav = print.favorite;
+        await MokuriDB.updatePrint(print.id, { favorite: !wasFav });
+        if (!wasFav) MokuriAudio.playFavorite();
         buildPrintGalleryUI();
       } catch (err) {}
     });
@@ -5513,6 +5517,165 @@ function lightboxNav(dir) {
   if (next < 0 || next >= _pgalleryPrints.length) return;
   _pgalleryLbIndex = next;
   renderLightboxPrint();
+}
+
+// ── Sharing: Mounted PNG ──
+
+async function shareMountedPng(print) {
+  if (!print || !print.imageBlob) return;
+
+  // Load the print image onto a canvas
+  const img = new Image();
+  const url = URL.createObjectURL(print.imageBlob);
+  await new Promise((resolve, reject) => {
+    img.onload = resolve;
+    img.onerror = reject;
+    img.src = url;
+  });
+  URL.revokeObjectURL(url);
+
+  const pw = img.naturalWidth;
+  const ph = img.naturalHeight;
+
+  // Mat proportions — generous margins for presentation
+  const matPad = Math.round(Math.sqrt(pw * ph) * 0.12);
+  const bottomExtra = Math.round(matPad * 1.4); // extra space for text
+  const fullW = pw + matPad * 2;
+  const fullH = ph + matPad + bottomExtra;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = fullW;
+  canvas.height = fullH;
+  const ctx = canvas.getContext('2d');
+
+  // Mat background — warm off-white
+  ctx.fillStyle = '#e8e3da';
+  ctx.fillRect(0, 0, fullW, fullH);
+
+  // Subtle mat texture (fine noise)
+  const id = ctx.getImageData(0, 0, fullW, fullH);
+  const px = id.data;
+  for (let i = 0; i < px.length; i += 4) {
+    const n = (Math.random() - 0.5) * 8;
+    px[i] += n; px[i+1] += n; px[i+2] += n;
+  }
+  ctx.putImageData(id, 0, 0);
+
+  // Drop shadow for print
+  ctx.shadowColor = 'rgba(0,0,0,0.15)';
+  ctx.shadowBlur = Math.round(matPad * 0.2);
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 3;
+
+  // Draw print
+  ctx.drawImage(img, matPad, matPad, pw, ph);
+  ctx.shadowColor = 'transparent';
+
+  // Title text
+  const title = print.title || '';
+  if (title) {
+    const fontSize = Math.max(12, Math.round(Math.sqrt(pw * ph) * 0.028));
+    ctx.font = `${fontSize}px serif`;
+    ctx.fillStyle = '#4a4540';
+    ctx.textAlign = 'center';
+    ctx.fillText(title, fullW / 2, matPad + ph + Math.round(bottomExtra * 0.45));
+  }
+
+  // Edition + artist
+  const subParts = [];
+  if (print.edition) subParts.push(print.edition);
+  if (print.artistName) subParts.push(print.artistName);
+  if (subParts.length) {
+    const subSize = Math.max(10, Math.round(Math.sqrt(pw * ph) * 0.018));
+    ctx.font = `${subSize}px serif`;
+    ctx.fillStyle = '#8a857e';
+    ctx.textAlign = 'center';
+    ctx.fillText(subParts.join('  ·  '), fullW / 2, matPad + ph + Math.round(bottomExtra * 0.7));
+  }
+
+  // "Mokuri Studio" subtle mark
+  const markSize = Math.max(8, Math.round(Math.sqrt(pw * ph) * 0.012));
+  ctx.font = `${markSize}px sans-serif`;
+  ctx.fillStyle = '#c5c0b8';
+  ctx.textAlign = 'right';
+  ctx.fillText('Mokuri Studio', fullW - matPad, fullH - Math.round(matPad * 0.3));
+
+  // Download
+  const blob = await canvasToBlob(canvas);
+  const dlUrl = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const safeName = (title || 'mokuri-print').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  a.href = dlUrl;
+  a.download = safeName + '-mounted.png';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(dlUrl);
+  MokuriAudio.playSave();
+}
+
+// ── Sharing: HTML Viewer ──
+
+async function shareHtmlViewer(print) {
+  if (!print || !print.imageBlob) return;
+
+  // Convert blob to base64 data URL
+  const reader = new FileReader();
+  const dataUrl = await new Promise((resolve) => {
+    reader.onload = () => resolve(reader.result);
+    reader.readAsDataURL(print.imageBlob);
+  });
+
+  const title = print.title || 'Mokuri Print';
+  const edition = print.edition || '';
+  const artist = print.artistName || '';
+  const date = new Date(print.createdAt).toLocaleDateString();
+
+  const metaParts = [date];
+  if (edition) metaParts.push(edition);
+  if (artist) metaParts.push(artist);
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${title.replace(/</g, '&lt;')} — Mokuri Studio</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#1a1714;color:#e8e3da;font-family:Georgia,serif;
+display:flex;flex-direction:column;align-items:center;justify-content:center;
+min-height:100vh;padding:24px}
+img{max-width:90vw;max-height:75vh;object-fit:contain;
+box-shadow:0 8px 40px rgba(0,0,0,0.5);border-radius:2px}
+.title{font-size:clamp(16px,3vw,24px);margin-top:20px;letter-spacing:1px;
+color:rgba(232,227,218,0.85)}
+.meta{font-size:clamp(11px,1.5vw,14px);margin-top:8px;
+color:rgba(232,227,218,0.4)}
+.brand{position:fixed;bottom:12px;right:16px;font-size:11px;
+color:rgba(232,227,218,0.2);font-family:sans-serif;text-decoration:none}
+.brand:hover{color:rgba(232,227,218,0.4)}
+</style>
+</head>
+<body>
+<img src="${dataUrl}" alt="${title.replace(/"/g, '&quot;')}">
+<div class="title">${title.replace(/</g, '&lt;')}</div>
+<div class="meta">${metaParts.join(' · ')}</div>
+<a class="brand" href="https://rmauceri.github.io/mokuri/" target="_blank">Mokuri Studio</a>
+</body>
+</html>`;
+
+  const blob = new Blob([html], { type: 'text/html' });
+  const dlUrl = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const safeName = (title || 'mokuri-print').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  a.href = dlUrl;
+  a.download = safeName + '-viewer.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(dlUrl);
+  MokuriAudio.playSave();
 }
 
 // ============================================================
@@ -8889,7 +9052,16 @@ function setupToolbar() {
       await MokuriDB.updatePrint(print.id, { favorite: !print.favorite });
       print.favorite = !print.favorite;
       renderLightboxPrint();
+      if (print.favorite) MokuriAudio.playFavorite();
     } catch (e) {}
+  });
+  $('pgallery-lb-share-png').addEventListener('click', () => {
+    const print = _pgalleryPrints[_pgalleryLbIndex];
+    if (print) shareMountedPng(print);
+  });
+  $('pgallery-lb-share-html').addEventListener('click', () => {
+    const print = _pgalleryPrints[_pgalleryLbIndex];
+    if (print) shareHtmlViewer(print);
   });
   $('pgallery-lb-save').addEventListener('click', () => {
     const print = _pgalleryPrints[_pgalleryLbIndex];
