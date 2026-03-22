@@ -4118,7 +4118,16 @@ function flipSelectedH() {
   const targets = STATE.elements.filter(e => STATE.selectedIds.has(e.id) && !e.locked);
   if (!targets.length) return;
   pushUndo();
-  targets.forEach(el => el.scaleX *= -1);
+  if (targets.length === 1) {
+    targets[0].scaleX *= -1;
+  } else {
+    // Mirror positions around group center X, and flip each element
+    const centerX = targets.reduce((s, e) => s + e.x, 0) / targets.length;
+    targets.forEach(el => {
+      el.x = centerX - (el.x - centerX);
+      el.scaleX *= -1;
+    });
+  }
   rerenderAll();
 }
 
@@ -4127,7 +4136,16 @@ function flipSelectedV() {
   const targets = STATE.elements.filter(e => STATE.selectedIds.has(e.id) && !e.locked);
   if (!targets.length) return;
   pushUndo();
-  targets.forEach(el => el.scaleY *= -1);
+  if (targets.length === 1) {
+    targets[0].scaleY *= -1;
+  } else {
+    // Mirror positions around group center Y, and flip each element
+    const centerY = targets.reduce((s, e) => s + e.y, 0) / targets.length;
+    targets.forEach(el => {
+      el.y = centerY - (el.y - centerY);
+      el.scaleY *= -1;
+    });
+  }
   rerenderAll();
 }
 
