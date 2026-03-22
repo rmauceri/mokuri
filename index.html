@@ -853,13 +853,13 @@ html, body {
 
 /* ── Top bar ── */
 .pgallery-topbar {
-  display: flex; align-items: center; gap: 12px;
-  padding: 10px 20px; flex-shrink: 0;
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 20px; flex-shrink: 0;
   background: rgba(0,0,0,0.25);
 }
 .pgallery-topbar-title {
   font-size: 15px; font-weight: 600; color: var(--accent);
-  letter-spacing: 0.5px; margin-right: auto;
+  letter-spacing: 0.5px;
 }
 .pgallery-counter {
   font-size: 12px; color: rgba(255,255,255,0.35);
@@ -886,11 +886,39 @@ html, body {
 }
 .pgallery-tab:hover { background: rgba(255,255,255,0.06); }
 .pgallery-tab.active { color: var(--accent); background: rgba(255,255,255,0.06); }
+.pgallery-topbar-spacer { flex: 1; }
+.pgallery-actions {
+  display: flex; gap: 4px; align-items: center;
+}
+.pgallery-act-btn {
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.5); border-radius: 6px;
+  padding: 4px 12px; font-size: 12px; cursor: pointer;
+  transition: background 0.15s, color 0.15s; white-space: nowrap;
+}
+.pgallery-act-btn:hover { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.8); }
+.pgallery-act-btn.favorited { color: #d4a848; }
+.pgallery-act-danger:hover { background: rgba(180,60,50,0.25); color: #c88; }
+/* Share sub-menu */
+.pgallery-share-menu {
+  position: absolute; top: 100%; right: 0;
+  background: var(--panel-bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: 6px 4px; display: none;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  margin-top: 4px; white-space: nowrap; z-index: 10;
+}
+.pgallery-share-menu.visible { display: flex; flex-direction: column; gap: 2px; }
+.pgallery-share-opt {
+  background: none; border: none; color: var(--text);
+  font-size: 12px; padding: 6px 14px; text-align: left;
+  cursor: pointer; border-radius: 4px; transition: background 0.15s;
+}
+.pgallery-share-opt:hover { background: rgba(255,255,255,0.08); }
 .pgallery-close {
   font-size: 22px; color: rgba(255,255,255,0.4); cursor: pointer;
   width: 32px; height: 32px; text-align: center; line-height: 32px;
   border-radius: 50%; transition: color 0.15s;
-  margin-left: 8px; flex-shrink: 0;
+  margin-left: 4px; flex-shrink: 0;
 }
 .pgallery-close:hover { color: rgba(255,255,255,0.8); }
 
@@ -911,65 +939,37 @@ html, body {
 .pgallery-nav-prev { left: 4px; }
 .pgallery-nav-next { right: 4px; }
 .pgallery-image-wrap {
-  max-width: 80vw; max-height: calc(100vh - 220px); display: flex;
+  max-width: 88vw; max-height: calc(100vh - 160px); display: flex;
   align-items: center; justify-content: center;
 }
 .pgallery-image {
-  max-width: 100%; max-height: calc(100vh - 220px); object-fit: contain;
+  max-width: 100%; max-height: calc(100vh - 160px); object-fit: contain;
   border-radius: 2px;
   box-shadow: 0 6px 30px rgba(0,0,0,0.5);
 }
 .pgallery-info {
-  text-align: center; margin-top: 12px; flex-shrink: 0;
+  text-align: center; margin-top: 6px; flex-shrink: 0;
 }
 .pgallery-info-title {
-  font-size: 15px; color: rgba(255,255,255,0.75); letter-spacing: 0.5px;
+  font-size: 14px; color: rgba(255,255,255,0.75); letter-spacing: 0.5px;
 }
 .pgallery-info-meta {
-  font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 3px;
+  font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 2px;
 }
-.pgallery-actions {
-  display: flex; gap: 6px; margin-top: 10px; flex-shrink: 0;
-}
-.pgallery-act-btn {
-  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
-  color: rgba(255,255,255,0.5); border-radius: 6px;
-  padding: 6px 14px; font-size: 13px; cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-}
-.pgallery-act-btn:hover { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.8); }
-.pgallery-act-btn.favorited { color: #d4a848; }
-.pgallery-act-danger:hover { background: rgba(180,60,50,0.25); color: #c88; }
-
-/* Share sub-menu */
-.pgallery-share-menu {
-  position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
-  background: var(--panel-bg); border: 1px solid var(--border);
-  border-radius: 8px; padding: 6px 4px; display: none;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-  margin-bottom: 6px; white-space: nowrap;
-}
-.pgallery-share-menu.visible { display: flex; flex-direction: column; gap: 2px; }
-.pgallery-share-opt {
-  background: none; border: none; color: var(--text);
-  font-size: 12px; padding: 6px 14px; text-align: left;
-  cursor: pointer; border-radius: 4px; transition: background 0.15s;
-}
-.pgallery-share-opt:hover { background: rgba(255,255,255,0.08); }
 
 /* ── Thumbnail strip ── */
 .pgallery-strip-wrap {
   flex-shrink: 0; background: rgba(0,0,0,0.3);
-  padding: 8px 12px; overflow-x: auto;
-  display: flex; gap: 6px; align-items: center;
+  padding: 10px 16px; overflow-x: auto;
+  display: flex; gap: 8px; align-items: center;
   scrollbar-width: thin; scrollbar-color: var(--accent) transparent;
 }
 .pgallery-strip-wrap::-webkit-scrollbar { height: 4px; }
 .pgallery-strip-wrap::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
 .pgallery-strip-thumb {
-  width: 56px; height: 42px; object-fit: cover;
+  width: 80px; height: 60px; object-fit: cover;
   border-radius: 3px; cursor: pointer; flex-shrink: 0;
-  border: 2px solid transparent; opacity: 0.6;
+  border: 2px solid transparent; opacity: 0.65;
   transition: opacity 0.15s, border-color 0.15s;
 }
 .pgallery-strip-thumb:hover { opacity: 0.9; }
@@ -989,12 +989,23 @@ html, body {
   font-size: 13px; color: rgba(255,255,255,0.3); line-height: 1.5;
 }
 
+@media (min-width: 900px) {
+  .pgallery-strip-thumb { width: 96px; height: 72px; }
+}
 @media (max-width: 500px) {
-  .pgallery-topbar { padding: 8px 12px; gap: 8px; flex-wrap: wrap; }
+  .pgallery-topbar { padding: 6px 10px; gap: 6px; flex-wrap: wrap; }
   .pgallery-artist-row { display: none; }
+  .pgallery-act-btn .pgallery-btn-label { display: none; }
   .pgallery-nav { font-size: 28px; padding: 10px; }
   .pgallery-image-wrap { max-width: 95vw; }
-  .pgallery-strip-thumb { width: 44px; height: 33px; }
+  .pgallery-strip-thumb { width: 60px; height: 45px; }
+}
+@media (max-height: 600px) {
+  .pgallery-strip-thumb { width: 60px; height: 45px; }
+  .pgallery-strip-wrap { padding: 6px 12px; }
+  .pgallery-info { margin-top: 4px; }
+  .pgallery-image-wrap { max-height: calc(100vh - 140px); }
+  .pgallery-image { max-height: calc(100vh - 140px); }
 }
 
 /* ── Confirmation Dialog ── */
@@ -2211,6 +2222,19 @@ html, body {
       <button class="pgallery-tab active" id="pgallery-tab-all">All</button>
       <button class="pgallery-tab" id="pgallery-tab-favs">★ Favorites</button>
     </div>
+    <div class="pgallery-topbar-spacer"></div>
+    <div class="pgallery-actions" id="pgallery-actions">
+      <button class="pgallery-act-btn" id="pgallery-btn-fav" title="Favorite">☆ <span class="pgallery-btn-label">Keep</span></button>
+      <div style="position:relative">
+        <button class="pgallery-act-btn" id="pgallery-btn-share" title="Share">↗ <span class="pgallery-btn-label">Share</span></button>
+        <div class="pgallery-share-menu" id="pgallery-share-menu">
+          <button class="pgallery-share-opt" id="pgallery-share-mounted">Mounted PNG</button>
+          <button class="pgallery-share-opt" id="pgallery-share-viewer">HTML Viewer</button>
+        </div>
+      </div>
+      <button class="pgallery-act-btn" id="pgallery-btn-save" title="Save PNG">↓ <span class="pgallery-btn-label">Save</span></button>
+      <button class="pgallery-act-btn pgallery-act-danger" id="pgallery-btn-delete" title="Delete">✕ <span class="pgallery-btn-label">Delete</span></button>
+    </div>
     <div class="pgallery-close" id="pgallery-close">✕</div>
   </div>
 
@@ -2224,18 +2248,6 @@ html, body {
     <div class="pgallery-info" id="pgallery-info">
       <div class="pgallery-info-title" id="pgallery-info-title"></div>
       <div class="pgallery-info-meta" id="pgallery-info-meta"></div>
-    </div>
-    <div class="pgallery-actions" id="pgallery-actions">
-      <button class="pgallery-act-btn" id="pgallery-btn-fav" title="Favorite">☆ Keep</button>
-      <div style="position:relative">
-        <button class="pgallery-act-btn" id="pgallery-btn-share" title="Share">↗ Share</button>
-        <div class="pgallery-share-menu" id="pgallery-share-menu">
-          <button class="pgallery-share-opt" id="pgallery-share-mounted">Mounted PNG</button>
-          <button class="pgallery-share-opt" id="pgallery-share-viewer">HTML Viewer</button>
-        </div>
-      </div>
-      <button class="pgallery-act-btn" id="pgallery-btn-save" title="Save PNG">↓ Save</button>
-      <button class="pgallery-act-btn pgallery-act-danger" id="pgallery-btn-delete" title="Delete">✕ Delete</button>
     </div>
     <!-- Empty state (shown when no prints) -->
     <div class="pgallery-empty" id="pgallery-empty" style="display:none">
