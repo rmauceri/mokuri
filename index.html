@@ -842,165 +842,159 @@ html, body {
 
 
 /* ============================================================
-   PRINT GALLERY MODAL (画 Gallery)
+   PRINT GALLERY (画 Gallery) — unified viewer
    ============================================================ */
 .pgallery-modal {
   position: fixed; inset: 0; z-index: 1100;
-  background: rgba(30,25,22,0.85);
-  display: none; justify-content: center; align-items: flex-start;
-  padding: 40px 16px;
-  overflow-y: auto;
-  backdrop-filter: blur(4px);
+  background: #1e1914 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035' numOctaves='4' seed='3'/%3E%3CfeColorMatrix values='0 0 0 0 0.12 0 0 0 0 0.1 0 0 0 0 0.08 0 0 0 0.4 0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23g)'/%3E%3C/svg%3E");
+  display: none; flex-direction: column;
 }
 .pgallery-modal.visible { display: flex; }
-.pgallery-content {
-  background: var(--panel-bg); border-radius: 14px;
-  padding: 24px; max-width: 720px; width: 100%;
-  box-shadow: 0 12px 48px rgba(0,0,0,0.5);
-  max-height: calc(100vh - 80px); overflow-y: auto;
-}
-.pgallery-content::-webkit-scrollbar { width: 6px; }
-.pgallery-content::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
 
-.pgallery-header { margin-bottom: 16px; }
-.pgallery-title {
-  font-size: 18px; font-weight: 600; color: var(--accent);
-  letter-spacing: 0.5px;
+/* ── Top bar ── */
+.pgallery-topbar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 20px; flex-shrink: 0;
+  background: rgba(0,0,0,0.25);
+}
+.pgallery-topbar-title {
+  font-size: 15px; font-weight: 600; color: var(--accent);
+  letter-spacing: 0.5px; margin-right: auto;
 }
 .pgallery-counter {
-  font-size: 13px; color: var(--text-muted); margin-top: 4px;
+  font-size: 12px; color: rgba(255,255,255,0.35);
 }
 .pgallery-artist-row {
-  display: flex; align-items: center; gap: 8px; margin-top: 10px;
+  display: flex; align-items: center; gap: 6px;
 }
 .pgallery-artist-label {
-  font-size: 12px; color: var(--text-muted); white-space: nowrap;
+  font-size: 11px; color: rgba(255,255,255,0.3);
 }
 .pgallery-artist-input {
-  background: var(--input-bg, rgba(255,255,255,0.06)); border: 1px solid var(--border);
-  border-radius: 6px; padding: 4px 8px; color: var(--text); font-size: 13px;
-  width: 160px; outline: none;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 5px; padding: 3px 8px; color: rgba(255,255,255,0.8);
+  font-size: 12px; width: 120px; outline: none;
 }
 .pgallery-artist-input:focus { border-color: var(--accent); }
-
 .pgallery-tabs {
-  display: flex; gap: 4px; margin-bottom: 16px;
-  border-bottom: 1px solid var(--border); padding-bottom: 8px;
+  display: flex; gap: 2px;
 }
 .pgallery-tab {
-  background: none; border: none; color: var(--text-muted);
-  font-size: 13px; padding: 6px 14px; border-radius: 6px 6px 0 0;
+  background: none; border: none; color: rgba(255,255,255,0.35);
+  font-size: 12px; padding: 4px 10px; border-radius: 4px;
   cursor: pointer; transition: background 0.15s, color 0.15s;
 }
-.pgallery-tab:hover { background: rgba(255,255,255,0.04); }
-.pgallery-tab.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
-
-.pgallery-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 12px;
-}
-.pgallery-card {
-  background: rgba(255,255,255,0.03); border: 1px solid var(--border);
-  border-radius: 8px; overflow: hidden; cursor: pointer;
-  transition: border-color 0.15s, transform 0.12s;
-  position: relative;
-}
-.pgallery-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-.pgallery-card-thumb {
-  width: 100%; aspect-ratio: 4/3; object-fit: cover;
-  background: #1a1714; display: block;
-}
-.pgallery-card-info {
-  padding: 6px 8px;
-}
-.pgallery-card-title {
-  font-size: 11px; color: var(--text); white-space: nowrap;
-  overflow: hidden; text-overflow: ellipsis;
-}
-.pgallery-card-meta {
-  font-size: 10px; color: var(--text-muted); margin-top: 2px;
-}
-.pgallery-card-fav {
-  position: absolute; top: 4px; right: 4px;
-  background: rgba(0,0,0,0.5); border: none; border-radius: 50%;
-  width: 24px; height: 24px; font-size: 14px; line-height: 24px;
-  text-align: center; cursor: pointer; color: var(--text-muted);
-  transition: color 0.15s;
-  padding: 0;
-}
-.pgallery-card-fav.favorited { color: #e8b84b; }
-.pgallery-card-fav:hover { color: #e8b84b; }
-
-.pgallery-empty {
-  text-align: center; padding: 48px 16px; display: none;
-}
-.pgallery-empty.visible { display: block; }
-.pgallery-empty-icon {
-  font-size: 48px; color: var(--accent); opacity: 0.3; margin-bottom: 12px;
-}
-.pgallery-empty-text {
-  font-size: 16px; color: var(--text); margin-bottom: 8px;
-}
-.pgallery-empty-hint {
-  font-size: 13px; color: var(--text-muted); line-height: 1.5;
-}
-
-/* ── Print Gallery Lightbox ── */
-.pgallery-lightbox {
-  position: fixed; inset: 0; z-index: 1200;
-  background: rgba(10,8,6,0.95);
-  display: none; flex-direction: column; align-items: center; justify-content: center;
-  backdrop-filter: blur(8px);
-}
-.pgallery-lightbox.visible { display: flex; }
-.pgallery-lb-close {
-  position: absolute; top: 16px; right: 20px;
-  font-size: 28px; color: rgba(255,255,255,0.5); cursor: pointer;
-  width: 40px; height: 40px; text-align: center; line-height: 40px;
+.pgallery-tab:hover { background: rgba(255,255,255,0.06); }
+.pgallery-tab.active { color: var(--accent); background: rgba(255,255,255,0.06); }
+.pgallery-close {
+  font-size: 22px; color: rgba(255,255,255,0.4); cursor: pointer;
+  width: 32px; height: 32px; text-align: center; line-height: 32px;
   border-radius: 50%; transition: color 0.15s;
+  margin-left: 8px; flex-shrink: 0;
 }
-.pgallery-lb-close:hover { color: #fff; }
-.pgallery-lb-nav {
+.pgallery-close:hover { color: rgba(255,255,255,0.8); }
+
+/* ── Viewer area (main print display) ── */
+.pgallery-viewer {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+  min-height: 0;
+}
+.pgallery-nav {
   position: absolute; top: 50%; transform: translateY(-50%);
-  font-size: 48px; color: rgba(255,255,255,0.3); cursor: pointer;
-  padding: 20px; transition: color 0.15s; user-select: none;
+  font-size: 40px; color: rgba(255,255,255,0.2); cursor: pointer;
+  padding: 16px; transition: color 0.15s; user-select: none;
+  z-index: 2;
 }
-.pgallery-lb-nav:hover { color: rgba(255,255,255,0.7); }
-.pgallery-lb-prev { left: 8px; }
-.pgallery-lb-next { right: 8px; }
-.pgallery-lb-image-wrap {
-  max-width: 85vw; max-height: 70vh; display: flex;
+.pgallery-nav:hover { color: rgba(255,255,255,0.5); }
+.pgallery-nav-prev { left: 4px; }
+.pgallery-nav-next { right: 4px; }
+.pgallery-image-wrap {
+  max-width: 80vw; max-height: calc(100vh - 220px); display: flex;
   align-items: center; justify-content: center;
 }
-.pgallery-lb-image {
-  max-width: 100%; max-height: 70vh; object-fit: contain;
-  border-radius: 2px; box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+.pgallery-image {
+  max-width: 100%; max-height: calc(100vh - 220px); object-fit: contain;
+  border-radius: 2px;
+  box-shadow: 0 6px 30px rgba(0,0,0,0.5);
 }
-.pgallery-lb-info {
-  text-align: center; margin-top: 16px; max-width: 500px;
+.pgallery-info {
+  text-align: center; margin-top: 12px; flex-shrink: 0;
 }
-.pgallery-lb-title {
-  font-size: 16px; color: rgba(255,255,255,0.85); letter-spacing: 0.5px;
+.pgallery-info-title {
+  font-size: 15px; color: rgba(255,255,255,0.75); letter-spacing: 0.5px;
 }
-.pgallery-lb-meta {
-  font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 4px;
+.pgallery-info-meta {
+  font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 3px;
 }
-.pgallery-lb-actions {
-  display: flex; gap: 8px; margin-top: 16px;
+.pgallery-actions {
+  display: flex; gap: 6px; margin-top: 10px; flex-shrink: 0;
 }
-.pgallery-lb-btn {
-  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
-  color: rgba(255,255,255,0.7); border-radius: 8px;
-  padding: 8px 16px; font-size: 16px; cursor: pointer;
+.pgallery-act-btn {
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.5); border-radius: 6px;
+  padding: 6px 14px; font-size: 13px; cursor: pointer;
   transition: background 0.15s, color 0.15s;
 }
-.pgallery-lb-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
-.pgallery-lb-btn-danger:hover { background: rgba(200,60,60,0.3); color: #e88; }
+.pgallery-act-btn:hover { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.8); }
+.pgallery-act-btn.favorited { color: #d4a848; }
+.pgallery-act-danger:hover { background: rgba(180,60,50,0.25); color: #c88; }
+
+/* Share sub-menu */
+.pgallery-share-menu {
+  position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+  background: var(--panel-bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: 6px 4px; display: none;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  margin-bottom: 6px; white-space: nowrap;
+}
+.pgallery-share-menu.visible { display: flex; flex-direction: column; gap: 2px; }
+.pgallery-share-opt {
+  background: none; border: none; color: var(--text);
+  font-size: 12px; padding: 6px 14px; text-align: left;
+  cursor: pointer; border-radius: 4px; transition: background 0.15s;
+}
+.pgallery-share-opt:hover { background: rgba(255,255,255,0.08); }
+
+/* ── Thumbnail strip ── */
+.pgallery-strip-wrap {
+  flex-shrink: 0; background: rgba(0,0,0,0.3);
+  padding: 8px 12px; overflow-x: auto;
+  display: flex; gap: 6px; align-items: center;
+  scrollbar-width: thin; scrollbar-color: var(--accent) transparent;
+}
+.pgallery-strip-wrap::-webkit-scrollbar { height: 4px; }
+.pgallery-strip-wrap::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
+.pgallery-strip-thumb {
+  width: 56px; height: 42px; object-fit: cover;
+  border-radius: 3px; cursor: pointer; flex-shrink: 0;
+  border: 2px solid transparent; opacity: 0.6;
+  transition: opacity 0.15s, border-color 0.15s;
+}
+.pgallery-strip-thumb:hover { opacity: 0.9; }
+.pgallery-strip-thumb.active { border-color: var(--accent); opacity: 1; }
+
+/* ── Empty state ── */
+.pgallery-empty {
+  text-align: center; padding: 48px 16px;
+}
+.pgallery-empty-icon {
+  font-size: 48px; color: var(--accent); opacity: 0.2; margin-bottom: 12px;
+}
+.pgallery-empty-text {
+  font-size: 16px; color: rgba(255,255,255,0.6); margin-bottom: 8px;
+}
+.pgallery-empty-hint {
+  font-size: 13px; color: rgba(255,255,255,0.3); line-height: 1.5;
+}
 
 @media (max-width: 500px) {
-  .pgallery-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
-  .pgallery-lb-nav { font-size: 32px; padding: 12px; }
-  .pgallery-lb-image-wrap { max-width: 95vw; }
+  .pgallery-topbar { padding: 8px 12px; gap: 8px; flex-wrap: wrap; }
+  .pgallery-artist-row { display: none; }
+  .pgallery-nav { font-size: 28px; padding: 10px; }
+  .pgallery-image-wrap { max-width: 95vw; }
+  .pgallery-strip-thumb { width: 44px; height: 33px; }
 }
 
 /* ── Confirmation Dialog ── */
@@ -2203,49 +2197,56 @@ html, body {
   </div>
 </div>
 
-<!-- Print Gallery modal -->
+<!-- Print Gallery — unified viewer -->
 <div class="pgallery-modal" id="pgallery-modal">
-  <div class="pgallery-content">
-    <div class="pgallery-header">
-      <div class="pgallery-title">画 Gallery</div>
-      <div class="pgallery-counter" id="pgallery-counter"></div>
-      <div class="pgallery-artist-row" id="pgallery-artist-row">
-        <label class="pgallery-artist-label">Artist name</label>
-        <input type="text" class="pgallery-artist-input" id="pgallery-artist-input" placeholder="Optional" maxlength="40">
-      </div>
+  <!-- Top bar -->
+  <div class="pgallery-topbar">
+    <div class="pgallery-topbar-title">画 Gallery</div>
+    <div class="pgallery-counter" id="pgallery-counter"></div>
+    <div class="pgallery-artist-row" id="pgallery-artist-row">
+      <label class="pgallery-artist-label">Artist</label>
+      <input type="text" class="pgallery-artist-input" id="pgallery-artist-input" placeholder="Optional" maxlength="40">
     </div>
     <div class="pgallery-tabs">
       <button class="pgallery-tab active" id="pgallery-tab-all">All</button>
-      <button class="pgallery-tab" id="pgallery-tab-favs">⭐ Favorites</button>
+      <button class="pgallery-tab" id="pgallery-tab-favs">★ Favorites</button>
     </div>
-    <div class="pgallery-grid" id="pgallery-grid"></div>
-    <div class="pgallery-empty" id="pgallery-empty">
+    <div class="pgallery-close" id="pgallery-close">✕</div>
+  </div>
+
+  <!-- Viewer area -->
+  <div class="pgallery-viewer" id="pgallery-viewer">
+    <div class="pgallery-nav pgallery-nav-prev" id="pgallery-nav-prev">‹</div>
+    <div class="pgallery-nav pgallery-nav-next" id="pgallery-nav-next">›</div>
+    <div class="pgallery-image-wrap">
+      <img class="pgallery-image" id="pgallery-image" alt="Print">
+    </div>
+    <div class="pgallery-info" id="pgallery-info">
+      <div class="pgallery-info-title" id="pgallery-info-title"></div>
+      <div class="pgallery-info-meta" id="pgallery-info-meta"></div>
+    </div>
+    <div class="pgallery-actions" id="pgallery-actions">
+      <button class="pgallery-act-btn" id="pgallery-btn-fav" title="Favorite">☆ Keep</button>
+      <div style="position:relative">
+        <button class="pgallery-act-btn" id="pgallery-btn-share" title="Share">↗ Share</button>
+        <div class="pgallery-share-menu" id="pgallery-share-menu">
+          <button class="pgallery-share-opt" id="pgallery-share-mounted">Mounted PNG</button>
+          <button class="pgallery-share-opt" id="pgallery-share-viewer">HTML Viewer</button>
+        </div>
+      </div>
+      <button class="pgallery-act-btn" id="pgallery-btn-save" title="Save PNG">↓ Save</button>
+      <button class="pgallery-act-btn pgallery-act-danger" id="pgallery-btn-delete" title="Delete">✕ Delete</button>
+    </div>
+    <!-- Empty state (shown when no prints) -->
+    <div class="pgallery-empty" id="pgallery-empty" style="display:none">
       <div class="pgallery-empty-icon">摺</div>
       <div class="pgallery-empty-text">No prints yet</div>
       <div class="pgallery-empty-hint">Pull a print from the Printing Workbench<br>and it will appear here</div>
     </div>
   </div>
-</div>
 
-<!-- Print Gallery lightbox -->
-<div class="pgallery-lightbox" id="pgallery-lightbox">
-  <div class="pgallery-lb-close" id="pgallery-lb-close">✕</div>
-  <div class="pgallery-lb-nav pgallery-lb-prev" id="pgallery-lb-prev">‹</div>
-  <div class="pgallery-lb-nav pgallery-lb-next" id="pgallery-lb-next">›</div>
-  <div class="pgallery-lb-image-wrap">
-    <img class="pgallery-lb-image" id="pgallery-lb-image" alt="Print">
-  </div>
-  <div class="pgallery-lb-info" id="pgallery-lb-info">
-    <div class="pgallery-lb-title" id="pgallery-lb-title"></div>
-    <div class="pgallery-lb-meta" id="pgallery-lb-meta"></div>
-  </div>
-  <div class="pgallery-lb-actions" id="pgallery-lb-actions">
-    <button class="pgallery-lb-btn" id="pgallery-lb-fav" title="Favorite">☆</button>
-    <button class="pgallery-lb-btn" id="pgallery-lb-share-png" title="Share as mounted PNG">📤 Share</button>
-    <button class="pgallery-lb-btn" id="pgallery-lb-share-html" title="Share as viewer page">🌐 Viewer</button>
-    <button class="pgallery-lb-btn" id="pgallery-lb-save" title="Save PNG">💾</button>
-    <button class="pgallery-lb-btn pgallery-lb-btn-danger" id="pgallery-lb-delete" title="Delete">🗑️</button>
-  </div>
+  <!-- Thumbnail strip -->
+  <div class="pgallery-strip-wrap" id="pgallery-strip"></div>
 </div>
 
 <!-- Confirmation dialog -->
@@ -5343,12 +5344,12 @@ async function buildWorkshopUI() {
 }
 
 // ============================================================
-//  PRINT GALLERY (画 Gallery)
+//  PRINT GALLERY (画 Gallery) — unified viewer
 // ============================================================
 
-let _pgalleryFilter = 'all'; // 'all' | 'favorites'
-let _pgalleryPrints = [];    // cached print list for lightbox navigation
-let _pgalleryLbIndex = -1;   // current lightbox index
+let _pgalleryFilter = 'all';
+let _pgalleryPrints = [];
+let _pgalleryIndex = 0;
 
 function mokConfirm(message, okLabel) {
   return new Promise((resolve) => {
@@ -5377,13 +5378,12 @@ function openPrintGallery() {
 
 function closePrintGallery() {
   $('pgallery-modal').classList.remove('visible');
+  $('pgallery-share-menu').classList.remove('visible');
+  const img = $('pgallery-image');
+  if (img._blobUrl) { URL.revokeObjectURL(img._blobUrl); img._blobUrl = null; }
 }
 
 async function buildPrintGalleryUI() {
-  const grid = $('pgallery-grid');
-  const empty = $('pgallery-empty');
-  grid.innerHTML = '';
-
   // Load prints
   if (_useLocalStorage) {
     _pgalleryPrints = [];
@@ -5396,7 +5396,7 @@ async function buildPrintGalleryUI() {
   // Counter
   try {
     const total = _useLocalStorage ? 0 : ((await MokuriDB.getMeta('printCount')) || 0);
-    $('pgallery-counter').textContent = total > 0 ? '摺 ' + total + ' prints pulled' : '';
+    $('pgallery-counter').textContent = total > 0 ? '摺 ' + total : '';
   } catch (e) { $('pgallery-counter').textContent = ''; }
 
   // Artist name
@@ -5409,85 +5409,68 @@ async function buildPrintGalleryUI() {
   $('pgallery-tab-all').classList.toggle('active', _pgalleryFilter === 'all');
   $('pgallery-tab-favs').classList.toggle('active', _pgalleryFilter === 'favorites');
 
-  // Empty state
   if (_pgalleryPrints.length === 0) {
-    empty.classList.add('visible');
-    grid.style.display = 'none';
+    $('pgallery-empty').style.display = '';
+    $('pgallery-image').style.display = 'none';
+    $('pgallery-info').style.display = 'none';
+    $('pgallery-actions').style.display = 'none';
+    $('pgallery-nav-prev').style.display = 'none';
+    $('pgallery-nav-next').style.display = 'none';
+    $('pgallery-strip').style.display = 'none';
     return;
   }
-  empty.classList.remove('visible');
-  grid.style.display = '';
 
-  // Build cards
+  $('pgallery-empty').style.display = 'none';
+  $('pgallery-image').style.display = '';
+  $('pgallery-info').style.display = '';
+  $('pgallery-actions').style.display = '';
+  $('pgallery-nav-prev').style.display = '';
+  $('pgallery-nav-next').style.display = '';
+  $('pgallery-strip').style.display = '';
+
+  // Clamp index
+  if (_pgalleryIndex >= _pgalleryPrints.length) _pgalleryIndex = _pgalleryPrints.length - 1;
+  if (_pgalleryIndex < 0) _pgalleryIndex = 0;
+
+  // Build thumbnail strip
+  buildThumbnailStrip();
+
+  // Show current print
+  renderCurrentPrint();
+}
+
+function buildThumbnailStrip() {
+  const strip = $('pgallery-strip');
+  strip.innerHTML = '';
   _pgalleryPrints.forEach((print, idx) => {
-    const card = document.createElement('div');
-    card.className = 'pgallery-card';
-
-    // Thumbnail
-    const img = document.createElement('img');
-    img.className = 'pgallery-card-thumb';
+    const thumb = document.createElement('img');
+    thumb.className = 'pgallery-strip-thumb' + (idx === _pgalleryIndex ? ' active' : '');
     if (print.thumbBlob) {
       const url = URL.createObjectURL(print.thumbBlob);
-      img.src = url;
-      img.onload = () => URL.revokeObjectURL(url);
+      thumb.src = url;
+      thumb.onload = () => URL.revokeObjectURL(url);
     }
-    card.appendChild(img);
-
-    // Info
-    const info = document.createElement('div');
-    info.className = 'pgallery-card-info';
-    const title = document.createElement('div');
-    title.className = 'pgallery-card-title';
-    title.textContent = print.title || 'Untitled';
-    info.appendChild(title);
-    const meta = document.createElement('div');
-    meta.className = 'pgallery-card-meta';
-    const d = new Date(print.createdAt);
-    meta.textContent = d.toLocaleDateString();
-    info.appendChild(meta);
-    card.appendChild(info);
-
-    // Favorite button
-    const fav = document.createElement('button');
-    fav.className = 'pgallery-card-fav' + (print.favorite ? ' favorited' : '');
-    fav.textContent = print.favorite ? '★' : '☆';
-    fav.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      try {
-        const wasFav = print.favorite;
-        await MokuriDB.updatePrint(print.id, { favorite: !wasFav });
-        if (!wasFav) MokuriAudio.playFavorite();
-        buildPrintGalleryUI();
-      } catch (err) {}
+    thumb.addEventListener('click', () => {
+      _pgalleryIndex = idx;
+      renderCurrentPrint();
+      updateStripActive();
     });
-    card.appendChild(fav);
-
-    // Click opens lightbox
-    card.addEventListener('click', () => openPrintLightbox(idx));
-
-    grid.appendChild(card);
+    strip.appendChild(thumb);
   });
 }
 
-// ── Lightbox ──
-
-function openPrintLightbox(index) {
-  _pgalleryLbIndex = index;
-  renderLightboxPrint();
-  $('pgallery-lightbox').classList.add('visible');
+function updateStripActive() {
+  const thumbs = $('pgallery-strip').querySelectorAll('.pgallery-strip-thumb');
+  thumbs.forEach((t, i) => t.classList.toggle('active', i === _pgalleryIndex));
+  // Scroll active thumb into view
+  if (thumbs[_pgalleryIndex]) thumbs[_pgalleryIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
 }
 
-function closePrintLightbox() {
-  $('pgallery-lightbox').classList.remove('visible');
-  const img = $('pgallery-lb-image');
-  if (img._blobUrl) { URL.revokeObjectURL(img._blobUrl); img._blobUrl = null; }
-}
-
-function renderLightboxPrint() {
-  const print = _pgalleryPrints[_pgalleryLbIndex];
+function renderCurrentPrint() {
+  const print = _pgalleryPrints[_pgalleryIndex];
   if (!print) return;
 
-  const img = $('pgallery-lb-image');
+  const img = $('pgallery-image');
   if (img._blobUrl) URL.revokeObjectURL(img._blobUrl);
   if (print.imageBlob) {
     const url = URL.createObjectURL(print.imageBlob);
@@ -5495,28 +5478,33 @@ function renderLightboxPrint() {
     img._blobUrl = url;
   }
 
-  $('pgallery-lb-title').textContent = print.title || 'Untitled';
+  $('pgallery-info-title').textContent = print.title || 'Untitled';
   const d = new Date(print.createdAt);
   const parts = [d.toLocaleDateString()];
   if (print.edition) parts.push(print.edition);
   if (print.artistName) parts.push(print.artistName);
-  $('pgallery-lb-meta').textContent = parts.join(' · ');
+  $('pgallery-info-meta').textContent = parts.join(' · ');
 
-  // Favorite button state
-  const favBtn = $('pgallery-lb-fav');
-  favBtn.textContent = print.favorite ? '★' : '☆';
-  favBtn.style.color = print.favorite ? '#e8b84b' : '';
+  // Favorite button
+  const favBtn = $('pgallery-btn-fav');
+  favBtn.textContent = print.favorite ? '★ Kept' : '☆ Keep';
+  favBtn.classList.toggle('favorited', !!print.favorite);
 
-  // Nav visibility
-  $('pgallery-lb-prev').style.visibility = _pgalleryLbIndex > 0 ? 'visible' : 'hidden';
-  $('pgallery-lb-next').style.visibility = _pgalleryLbIndex < _pgalleryPrints.length - 1 ? 'visible' : 'hidden';
+  // Nav
+  $('pgallery-nav-prev').style.visibility = _pgalleryIndex > 0 ? 'visible' : 'hidden';
+  $('pgallery-nav-next').style.visibility = _pgalleryIndex < _pgalleryPrints.length - 1 ? 'visible' : 'hidden';
 }
 
-function lightboxNav(dir) {
-  const next = _pgalleryLbIndex + dir;
+function galleryNav(dir) {
+  const next = _pgalleryIndex + dir;
   if (next < 0 || next >= _pgalleryPrints.length) return;
-  _pgalleryLbIndex = next;
-  renderLightboxPrint();
+  _pgalleryIndex = next;
+  renderCurrentPrint();
+  updateStripActive();
+}
+
+function currentPrint() {
+  return _pgalleryPrints[_pgalleryIndex] || null;
 }
 
 // ── Sharing: Mounted PNG ──
@@ -8828,9 +8816,9 @@ function setupKeyboard() {
       e.preventDefault();
     }
     // Lightbox arrow navigation
-    if ($('pgallery-lightbox').classList.contains('visible')) {
-      if (e.key === 'ArrowLeft') { lightboxNav(-1); e.preventDefault(); }
-      if (e.key === 'ArrowRight') { lightboxNav(1); e.preventDefault(); }
+    if ($('pgallery-modal').classList.contains('visible')) {
+      if (e.key === 'ArrowLeft') { galleryNav(-1); e.preventDefault(); }
+      if (e.key === 'ArrowRight') { galleryNav(1); e.preventDefault(); }
     }
 
     // Dev: Ctrl+Shift+G — export current composition as gallery.js preset to clipboard
@@ -8850,7 +8838,7 @@ function setupKeyboard() {
     }
     if (e.key === 'Escape') {
       if (marquee) { cancelMarquee(); workspaceEl.style.cursor = ''; }
-      else if ($('pgallery-lightbox').classList.contains('visible')) { closePrintLightbox(); }
+      else if ($('pgallery-modal').classList.contains('visible')) { closePrintGallery(); }
       else if ($('pgallery-modal').classList.contains('visible')) { closePrintGallery(); }
       else if ($('makimono').classList.contains('visible')) { hideMakimono(); }
       else if ($('workshop-modal').classList.contains('visible')) { closeWorkshop(); }
@@ -9024,15 +9012,15 @@ function setupToolbar() {
     e.stopPropagation();
     openPrintGallery();
   });
-  $('pgallery-modal').addEventListener('click', (e) => {
-    if (e.target === $('pgallery-modal')) closePrintGallery();
-  });
+  $('pgallery-close').addEventListener('click', closePrintGallery);
   $('pgallery-tab-all').addEventListener('click', () => {
     _pgalleryFilter = 'all';
+    _pgalleryIndex = 0;
     buildPrintGalleryUI();
   });
   $('pgallery-tab-favs').addEventListener('click', () => {
     _pgalleryFilter = 'favorites';
+    _pgalleryIndex = 0;
     buildPrintGalleryUI();
   });
   $('pgallery-artist-input').addEventListener('change', async () => {
@@ -9041,30 +9029,41 @@ function setupToolbar() {
       try { await MokuriDB.setMeta('artistName', name); } catch (e) {}
     }
   });
-  // Lightbox controls
-  $('pgallery-lb-close').addEventListener('click', closePrintLightbox);
-  $('pgallery-lb-prev').addEventListener('click', () => lightboxNav(-1));
-  $('pgallery-lb-next').addEventListener('click', () => lightboxNav(1));
-  $('pgallery-lb-fav').addEventListener('click', async () => {
-    const print = _pgalleryPrints[_pgalleryLbIndex];
+  // Viewer controls
+  $('pgallery-nav-prev').addEventListener('click', () => galleryNav(-1));
+  $('pgallery-nav-next').addEventListener('click', () => galleryNav(1));
+  $('pgallery-btn-fav').addEventListener('click', async () => {
+    const print = currentPrint();
     if (!print) return;
     try {
       await MokuriDB.updatePrint(print.id, { favorite: !print.favorite });
       print.favorite = !print.favorite;
-      renderLightboxPrint();
+      renderCurrentPrint();
       if (print.favorite) MokuriAudio.playFavorite();
     } catch (e) {}
   });
-  $('pgallery-lb-share-png').addEventListener('click', () => {
-    const print = _pgalleryPrints[_pgalleryLbIndex];
+  $('pgallery-btn-share').addEventListener('click', (e) => {
+    e.stopPropagation();
+    $('pgallery-share-menu').classList.toggle('visible');
+  });
+  $('pgallery-share-mounted').addEventListener('click', () => {
+    $('pgallery-share-menu').classList.remove('visible');
+    const print = currentPrint();
     if (print) shareMountedPng(print);
   });
-  $('pgallery-lb-share-html').addEventListener('click', () => {
-    const print = _pgalleryPrints[_pgalleryLbIndex];
+  $('pgallery-share-viewer').addEventListener('click', () => {
+    $('pgallery-share-menu').classList.remove('visible');
+    const print = currentPrint();
     if (print) shareHtmlViewer(print);
   });
-  $('pgallery-lb-save').addEventListener('click', () => {
-    const print = _pgalleryPrints[_pgalleryLbIndex];
+  // Dismiss share menu on outside click
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#pgallery-btn-share') && !e.target.closest('#pgallery-share-menu')) {
+      $('pgallery-share-menu').classList.remove('visible');
+    }
+  });
+  $('pgallery-btn-save').addEventListener('click', () => {
+    const print = currentPrint();
     if (!print || !print.imageBlob) return;
     const url = URL.createObjectURL(print.imageBlob);
     const a = document.createElement('a');
@@ -9072,20 +9071,25 @@ function setupToolbar() {
     a.href = url; a.download = safeName + '.png';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    MokuriAudio.playSave();
   });
-  $('pgallery-lb-delete').addEventListener('click', async () => {
-    const print = _pgalleryPrints[_pgalleryLbIndex];
+  $('pgallery-btn-delete').addEventListener('click', async () => {
+    const print = currentPrint();
     if (!print) return;
     const ok = await mokConfirm('Delete this print?', 'Delete');
     if (!ok) return;
     try {
       await MokuriDB.deletePrint(print.id);
-      closePrintLightbox();
-      buildPrintGalleryUI();
+      // Advance to next print (or previous, or empty)
+      _pgalleryPrints.splice(_pgalleryIndex, 1);
+      if (_pgalleryPrints.length === 0) {
+        buildPrintGalleryUI();
+      } else {
+        if (_pgalleryIndex >= _pgalleryPrints.length) _pgalleryIndex = _pgalleryPrints.length - 1;
+        buildThumbnailStrip();
+        renderCurrentPrint();
+      }
     } catch (e) {}
-  });
-  $('pgallery-lightbox').addEventListener('click', (e) => {
-    if (e.target === $('pgallery-lightbox')) closePrintLightbox();
   });
 
   // Audio controls
