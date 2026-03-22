@@ -616,9 +616,9 @@ html, body {
 .paper-modal-btn:hover { border-color: var(--accent); color: var(--text); }
 
 /* ============================================================
-   COMPOSITION GALLERY MODAL
+   COMPOSITION WORKSHOP MODAL
    ============================================================ */
-.gallery-modal {
+.workshop-modal {
   position: fixed;
   inset: 0;
   background: rgba(30, 25, 18, 0.75);
@@ -627,8 +627,8 @@ html, body {
   align-items: center;
   justify-content: center;
 }
-.gallery-modal.visible { display: flex; }
-.gallery-content {
+.workshop-modal.visible { display: flex; }
+.workshop-content {
   background: var(--panel-bg);
   border-radius: 14px;
   padding: 28px 32px;
@@ -638,9 +638,9 @@ html, body {
   overflow-y: auto;
   box-shadow: 0 12px 48px rgba(0,0,0,0.4);
 }
-.gallery-content::-webkit-scrollbar { width: 6px; }
-.gallery-content::-webkit-scrollbar-thumb { background: var(--panel-border); border-radius: 3px; }
-.gallery-section-title {
+.workshop-content::-webkit-scrollbar { width: 6px; }
+.workshop-content::-webkit-scrollbar-thumb { background: var(--panel-border); border-radius: 3px; }
+.workshop-section-title {
   font-size: 13px;
   font-weight: 600;
   color: var(--text-muted);
@@ -648,16 +648,16 @@ html, body {
   letter-spacing: 0.6px;
   margin-bottom: 10px;
 }
-.gallery-section-title:not(:first-child) { margin-top: 22px; }
+.workshop-section-title:not(:first-child) { margin-top: 22px; }
 
 /* Paper size selector row */
-.gallery-paper-row {
+.workshop-paper-row {
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
   margin-bottom: 16px;
 }
-.gallery-paper-chip {
+.workshop-paper-chip {
   padding: 5px 12px;
   border: 1.5px solid var(--panel-border);
   border-radius: 5px;
@@ -671,18 +671,18 @@ html, body {
   align-items: center;
   line-height: 1.3;
 }
-.gallery-chip-dims { font-size: 9px; opacity: 0.7; }
-.gallery-paper-chip:hover { border-color: var(--accent); color: var(--text); }
-.gallery-paper-chip.active { border-color: var(--accent); background: var(--accent); color: #fff; }
+.workshop-chip-dims { font-size: 9px; opacity: 0.7; }
+.workshop-paper-chip:hover { border-color: var(--accent); color: var(--text); }
+.workshop-paper-chip.active { border-color: var(--accent); background: var(--accent); color: #fff; }
 
 /* Starter cards (blank + presets) */
-.gallery-starters {
+.workshop-starters {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
   gap: 8px;
   margin-bottom: 8px;
 }
-.gallery-starter {
+.workshop-starter {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -694,8 +694,8 @@ html, body {
   cursor: pointer;
   transition: all 0.15s;
 }
-.gallery-starter:hover { border-color: var(--accent); background: var(--selection); }
-.gallery-starter-thumb {
+.workshop-starter:hover { border-color: var(--accent); background: var(--selection); }
+.workshop-starter-thumb {
   width: 64px;
   height: 44px;
   border-radius: 3px;
@@ -706,15 +706,15 @@ html, body {
   background: #f5f0e6;
   border: 1px solid rgba(0,0,0,0.08);
 }
-.gallery-starter-thumb svg { display: block; width: 100%; height: 100%; }
-.gallery-starter-name {
+.workshop-starter-thumb svg { display: block; width: 100%; height: 100%; }
+.workshop-starter-name {
   font-size: 10px;
   font-weight: 600;
   color: var(--text);
   text-align: center;
   line-height: 1.2;
 }
-.gallery-starter-dims {
+.workshop-starter-dims {
   font-size: 9px;
   font-weight: 400;
   color: var(--text-muted);
@@ -722,12 +722,12 @@ html, body {
 }
 
 /* Recent prints grid */
-.gallery-recents {
+.workshop-recents {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 10px;
 }
-.gallery-recent {
+.workshop-recent {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -738,9 +738,9 @@ html, body {
   transition: all 0.15s;
   overflow: hidden;
 }
-.gallery-recent:hover { border-color: var(--accent); background: var(--selection); }
-.gallery-recent.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-.gallery-recent-thumb {
+.workshop-recent:hover { border-color: var(--accent); background: var(--selection); }
+.workshop-recent.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.workshop-recent-thumb {
   width: 100%;
   aspect-ratio: 3/2;
   overflow: hidden;
@@ -749,11 +749,11 @@ html, body {
   justify-content: center;
   background: #f5f0e6;
 }
-.gallery-recent-thumb svg { display: block; width: 100%; height: 100%; }
-.gallery-recent-info {
+.workshop-recent-thumb svg { display: block; width: 100%; height: 100%; }
+.workshop-recent-info {
   padding: 6px 8px;
 }
-.gallery-recent-name {
+.workshop-recent-name {
   font-size: 11px;
   font-weight: 600;
   color: var(--text);
@@ -761,7 +761,7 @@ html, body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.gallery-recent-name-input {
+.workshop-recent-name-input {
   font-size: 11px;
   font-weight: 600;
   color: var(--text);
@@ -772,12 +772,12 @@ html, body {
   width: 100%;
   outline: none;
 }
-.gallery-recent-meta {
+.workshop-recent-meta {
   font-size: 9px;
   color: var(--text-muted);
   margin-top: 2px;
 }
-.gallery-recent-delete {
+.workshop-recent-delete {
   position: absolute;
   top: 4px;
   right: 4px;
@@ -794,9 +794,9 @@ html, body {
   justify-content: center;
   transition: background 0.15s;
 }
-.gallery-recent:hover .gallery-recent-delete { display: flex; }
-.gallery-recent-delete:hover { background: #c23b22; }
-.gallery-empty {
+.workshop-recent:hover .workshop-recent-delete { display: flex; }
+.workshop-recent-delete:hover { background: #c23b22; }
+.workshop-empty {
   grid-column: 1 / -1;
   text-align: center;
   padding: 20px;
@@ -804,12 +804,12 @@ html, body {
   font-size: 12px;
   font-style: italic;
 }
-.gallery-toolbar {
+.workshop-toolbar {
   display: flex;
   gap: 8px;
   margin-bottom: 10px;
 }
-.gallery-toolbar-btn {
+.workshop-toolbar-btn {
   padding: 5px 12px;
   border: 1px solid var(--panel-border);
   border-radius: 6px;
@@ -819,8 +819,8 @@ html, body {
   cursor: pointer;
   transition: all 0.15s;
 }
-.gallery-toolbar-btn:hover { border-color: var(--accent); background: var(--selection); }
-.gallery-recent-export {
+.workshop-toolbar-btn:hover { border-color: var(--accent); background: var(--selection); }
+.workshop-recent-export {
   position: absolute;
   top: 4px;
   right: 28px;
@@ -837,8 +837,171 @@ html, body {
   justify-content: center;
   transition: background 0.15s;
 }
-.gallery-recent:hover .gallery-recent-export { display: flex; }
-.gallery-recent-export:hover { background: var(--accent); }
+.workshop-recent:hover .workshop-recent-export { display: flex; }
+.workshop-recent-export:hover { background: var(--accent); }
+
+
+/* ============================================================
+   PRINT GALLERY MODAL (画 Gallery)
+   ============================================================ */
+.pgallery-modal {
+  position: fixed; inset: 0; z-index: 1100;
+  background: rgba(30,25,22,0.85);
+  display: none; justify-content: center; align-items: flex-start;
+  padding: 40px 16px;
+  overflow-y: auto;
+  backdrop-filter: blur(4px);
+}
+.pgallery-modal.visible { display: flex; }
+.pgallery-content {
+  background: var(--panel-bg); border-radius: 14px;
+  padding: 24px; max-width: 720px; width: 100%;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.5);
+  max-height: calc(100vh - 80px); overflow-y: auto;
+}
+.pgallery-content::-webkit-scrollbar { width: 6px; }
+.pgallery-content::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+
+.pgallery-header { margin-bottom: 16px; }
+.pgallery-title {
+  font-size: 18px; font-weight: 600; color: var(--accent);
+  letter-spacing: 0.5px;
+}
+.pgallery-counter {
+  font-size: 13px; color: var(--text-muted); margin-top: 4px;
+}
+.pgallery-artist-row {
+  display: flex; align-items: center; gap: 8px; margin-top: 10px;
+}
+.pgallery-artist-label {
+  font-size: 12px; color: var(--text-muted); white-space: nowrap;
+}
+.pgallery-artist-input {
+  background: var(--input-bg, rgba(255,255,255,0.06)); border: 1px solid var(--border);
+  border-radius: 6px; padding: 4px 8px; color: var(--text); font-size: 13px;
+  width: 160px; outline: none;
+}
+.pgallery-artist-input:focus { border-color: var(--accent); }
+
+.pgallery-tabs {
+  display: flex; gap: 4px; margin-bottom: 16px;
+  border-bottom: 1px solid var(--border); padding-bottom: 8px;
+}
+.pgallery-tab {
+  background: none; border: none; color: var(--text-muted);
+  font-size: 13px; padding: 6px 14px; border-radius: 6px 6px 0 0;
+  cursor: pointer; transition: background 0.15s, color 0.15s;
+}
+.pgallery-tab:hover { background: rgba(255,255,255,0.04); }
+.pgallery-tab.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
+
+.pgallery-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+.pgallery-card {
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+  border-radius: 8px; overflow: hidden; cursor: pointer;
+  transition: border-color 0.15s, transform 0.12s;
+  position: relative;
+}
+.pgallery-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.pgallery-card-thumb {
+  width: 100%; aspect-ratio: 4/3; object-fit: cover;
+  background: #1a1714; display: block;
+}
+.pgallery-card-info {
+  padding: 6px 8px;
+}
+.pgallery-card-title {
+  font-size: 11px; color: var(--text); white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.pgallery-card-meta {
+  font-size: 10px; color: var(--text-muted); margin-top: 2px;
+}
+.pgallery-card-fav {
+  position: absolute; top: 4px; right: 4px;
+  background: rgba(0,0,0,0.5); border: none; border-radius: 50%;
+  width: 24px; height: 24px; font-size: 14px; line-height: 24px;
+  text-align: center; cursor: pointer; color: var(--text-muted);
+  transition: color 0.15s;
+  padding: 0;
+}
+.pgallery-card-fav.favorited { color: #e8b84b; }
+.pgallery-card-fav:hover { color: #e8b84b; }
+
+.pgallery-empty {
+  text-align: center; padding: 48px 16px; display: none;
+}
+.pgallery-empty.visible { display: block; }
+.pgallery-empty-icon {
+  font-size: 48px; color: var(--accent); opacity: 0.3; margin-bottom: 12px;
+}
+.pgallery-empty-text {
+  font-size: 16px; color: var(--text); margin-bottom: 8px;
+}
+.pgallery-empty-hint {
+  font-size: 13px; color: var(--text-muted); line-height: 1.5;
+}
+
+/* ── Print Gallery Lightbox ── */
+.pgallery-lightbox {
+  position: fixed; inset: 0; z-index: 1200;
+  background: rgba(10,8,6,0.95);
+  display: none; flex-direction: column; align-items: center; justify-content: center;
+  backdrop-filter: blur(8px);
+}
+.pgallery-lightbox.visible { display: flex; }
+.pgallery-lb-close {
+  position: absolute; top: 16px; right: 20px;
+  font-size: 28px; color: rgba(255,255,255,0.5); cursor: pointer;
+  width: 40px; height: 40px; text-align: center; line-height: 40px;
+  border-radius: 50%; transition: color 0.15s;
+}
+.pgallery-lb-close:hover { color: #fff; }
+.pgallery-lb-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  font-size: 48px; color: rgba(255,255,255,0.3); cursor: pointer;
+  padding: 20px; transition: color 0.15s; user-select: none;
+}
+.pgallery-lb-nav:hover { color: rgba(255,255,255,0.7); }
+.pgallery-lb-prev { left: 8px; }
+.pgallery-lb-next { right: 8px; }
+.pgallery-lb-image-wrap {
+  max-width: 85vw; max-height: 70vh; display: flex;
+  align-items: center; justify-content: center;
+}
+.pgallery-lb-image {
+  max-width: 100%; max-height: 70vh; object-fit: contain;
+  border-radius: 2px; box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+}
+.pgallery-lb-info {
+  text-align: center; margin-top: 16px; max-width: 500px;
+}
+.pgallery-lb-title {
+  font-size: 16px; color: rgba(255,255,255,0.85); letter-spacing: 0.5px;
+}
+.pgallery-lb-meta {
+  font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 4px;
+}
+.pgallery-lb-actions {
+  display: flex; gap: 8px; margin-top: 16px;
+}
+.pgallery-lb-btn {
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.7); border-radius: 8px;
+  padding: 8px 16px; font-size: 16px; cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.pgallery-lb-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+.pgallery-lb-btn-danger:hover { background: rgba(200,60,60,0.3); color: #e88; }
+
+@media (max-width: 500px) {
+  .pgallery-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
+  .pgallery-lb-nav { font-size: 32px; padding: 12px; }
+  .pgallery-lb-image-wrap { max-width: 95vw; }
+}
 
 
 /* ============================================================
@@ -1643,7 +1806,7 @@ html, body {
   .mode-btn { padding: 4px 10px; }
 }
 
-/* Hide zoom controls before Gallery clips — zoom is redundant with mouse/keyboard/touch */
+/* Hide zoom controls before Workshop clips — zoom is redundant with mouse/keyboard/touch */
 @media (max-width: 1200px) {
   .toolbar-zoom-group { display: none; }
   .toolbar-zoom-group + .toolbar-separator { display: none; }
@@ -1709,6 +1872,10 @@ html, body {
         <span class="mode-icon">摺</span>
         <span class="mode-label">Make Print</span>
       </button>
+      <button class="mode-btn" id="btn-print-gallery" title="Print Gallery — view saved prints (J)">
+        <span class="mode-icon">画</span>
+        <span class="mode-label">Gallery</span>
+      </button>
     </div>
 
     <div class="toolbar-spacer"></div>
@@ -1721,9 +1888,9 @@ html, body {
       <button class="tool-btn" id="btn-guides" title="Composition Guides (G)">⊞</button>
     </div>
     <div class="toolbar-separator"></div>
-    <button class="mode-btn" id="btn-file" title="Gallery — compositions & presets">
-      <span class="mode-icon">帖</span>
-      <span class="mode-label">Gallery</span>
+    <button class="mode-btn" id="btn-file" title="Workshop — compositions & presets">
+      <span class="mode-icon">工</span>
+      <span class="mode-label">Workshop</span>
     </button>
   </div>
 
@@ -1983,19 +2150,62 @@ html, body {
   </div>
 </div>
 
-<!-- Composition Gallery modal -->
-<div class="gallery-modal" id="gallery-modal">
-  <div class="gallery-content">
-    <div class="gallery-section-title">New Print</div>
-    <div class="gallery-paper-row" id="gallery-paper-row"></div>
-    <div class="gallery-starters" id="gallery-starters"></div>
+<!-- Composition Workshop modal -->
+<div class="workshop-modal" id="workshop-modal">
+  <div class="workshop-content">
+    <div class="workshop-section-title">Create a new composition</div>
+    <div class="workshop-paper-row" id="workshop-paper-row"></div>
+    <div class="workshop-starters" id="workshop-starters"></div>
 
-    <div class="gallery-section-title">Recent Prints</div>
-    <div class="gallery-toolbar" id="gallery-toolbar">
-      <button class="gallery-toolbar-btn" id="gallery-import-btn" title="Import compositions">📂 Import</button>
-      <button class="gallery-toolbar-btn" id="gallery-export-all-btn" title="Export all compositions">📦 Export All</button>
+    <div class="workshop-section-title">Return to recent work</div>
+    <div class="workshop-toolbar" id="workshop-toolbar">
+      <button class="workshop-toolbar-btn" id="workshop-import-btn" title="Import compositions">📂 Import</button>
+      <button class="workshop-toolbar-btn" id="workshop-export-all-btn" title="Export all compositions">📦 Export All</button>
     </div>
-    <div class="gallery-recents" id="gallery-recents"></div>
+    <div class="workshop-recents" id="workshop-recents"></div>
+  </div>
+</div>
+
+<!-- Print Gallery modal -->
+<div class="pgallery-modal" id="pgallery-modal">
+  <div class="pgallery-content">
+    <div class="pgallery-header">
+      <div class="pgallery-title">画 Gallery</div>
+      <div class="pgallery-counter" id="pgallery-counter"></div>
+      <div class="pgallery-artist-row" id="pgallery-artist-row">
+        <label class="pgallery-artist-label">Artist name</label>
+        <input type="text" class="pgallery-artist-input" id="pgallery-artist-input" placeholder="Optional" maxlength="40">
+      </div>
+    </div>
+    <div class="pgallery-tabs">
+      <button class="pgallery-tab active" id="pgallery-tab-all">All</button>
+      <button class="pgallery-tab" id="pgallery-tab-favs">⭐ Favorites</button>
+    </div>
+    <div class="pgallery-grid" id="pgallery-grid"></div>
+    <div class="pgallery-empty" id="pgallery-empty">
+      <div class="pgallery-empty-icon">摺</div>
+      <div class="pgallery-empty-text">No prints yet</div>
+      <div class="pgallery-empty-hint">Pull a print from the Printing Workbench<br>and it will appear here</div>
+    </div>
+  </div>
+</div>
+
+<!-- Print Gallery lightbox -->
+<div class="pgallery-lightbox" id="pgallery-lightbox">
+  <div class="pgallery-lb-close" id="pgallery-lb-close">✕</div>
+  <div class="pgallery-lb-nav pgallery-lb-prev" id="pgallery-lb-prev">‹</div>
+  <div class="pgallery-lb-nav pgallery-lb-next" id="pgallery-lb-next">›</div>
+  <div class="pgallery-lb-image-wrap">
+    <img class="pgallery-lb-image" id="pgallery-lb-image" alt="Print">
+  </div>
+  <div class="pgallery-lb-info" id="pgallery-lb-info">
+    <div class="pgallery-lb-title" id="pgallery-lb-title"></div>
+    <div class="pgallery-lb-meta" id="pgallery-lb-meta"></div>
+  </div>
+  <div class="pgallery-lb-actions" id="pgallery-lb-actions">
+    <button class="pgallery-lb-btn" id="pgallery-lb-fav" title="Favorite">☆</button>
+    <button class="pgallery-lb-btn" id="pgallery-lb-save" title="Save PNG">💾</button>
+    <button class="pgallery-lb-btn pgallery-lb-btn-danger" id="pgallery-lb-delete" title="Delete">🗑️</button>
   </div>
 </div>
 
@@ -3905,7 +4115,7 @@ function redo() {
 }
 
 // ============================================================
-//  SAVE / LOAD — Composition Gallery (IndexedDB)
+//  SAVE / LOAD — Composition Workshop (IndexedDB)
 // ============================================================
 
 // ── MokuriDB — IndexedDB abstraction layer ──
@@ -4019,6 +4229,59 @@ const MokuriDB = (() => {
       } else {
         return _req(store.delete('activeCompositionId'));
       }
+    },
+
+    // ── Print methods ──
+
+    async savePrint(record) {
+      const store = await _tx('prints', 'readwrite');
+      return _req(store.put(record));
+    },
+
+    async getAllPrints(favoritesOnly) {
+      const store = await _tx('prints', 'readonly');
+      const all = await _req(store.index('createdAt').getAll());
+      all.reverse();
+      if (favoritesOnly) return all.filter(p => p.favorite);
+      return all;
+    },
+
+    async getPrint(id) {
+      const store = await _tx('prints', 'readonly');
+      return _req(store.get(id));
+    },
+
+    async deletePrint(id) {
+      const store = await _tx('prints', 'readwrite');
+      return _req(store.delete(id));
+    },
+
+    async updatePrint(id, fields) {
+      const store = await _tx('prints', 'readwrite');
+      const rec = await _req(store.get(id));
+      if (!rec) return;
+      Object.assign(rec, fields);
+      return _req(store.put(rec));
+    },
+
+    async getPrintCount() {
+      const store = await _tx('prints', 'readonly');
+      return _req(store.count());
+    },
+
+    // ── Meta helpers ──
+
+    async getMeta(key) {
+      try {
+        const store = await _tx('meta', 'readonly');
+        const rec = await _req(store.get(key));
+        return rec ? rec.value : null;
+      } catch (e) { return null; }
+    },
+
+    async setMeta(key, value) {
+      const store = await _tx('meta', 'readwrite');
+      return _req(store.put({ key, value }));
     },
 
     // Check if IndexedDB is available
@@ -4167,6 +4430,65 @@ async function initStorage() {
   }
 }
 
+// ── Print storage helpers ──
+
+const MAX_SAVED_PRINTS = 50;
+
+function canvasToBlob(canvas, type, quality) {
+  return new Promise((resolve) => {
+    canvas.toBlob(blob => resolve(blob), type || 'image/png', quality);
+  });
+}
+
+function generatePrintThumbnail(canvas, maxWidth) {
+  maxWidth = maxWidth || 300;
+  const scale = Math.min(1, maxWidth / canvas.width);
+  const tw = Math.round(canvas.width * scale);
+  const th = Math.round(canvas.height * scale);
+  const tc = document.createElement('canvas');
+  tc.width = tw;
+  tc.height = th;
+  const tctx = tc.getContext('2d');
+  tctx.drawImage(canvas, 0, 0, tw, th);
+  return canvasToBlob(tc, 'image/png');
+}
+
+async function savePrintToGallery(canvas, opts) {
+  if (_useLocalStorage) return; // prints need IndexedDB for blob storage
+  try {
+    const count = await MokuriDB.getPrintCount();
+    if (count >= MAX_SAVED_PRINTS) {
+      $('status-hint').textContent = 'Print gallery full (' + MAX_SAVED_PRINTS + ') — delete prints to make room';
+      return;
+    }
+    const imageBlob = await canvasToBlob(canvas);
+    const thumbBlob = await generatePrintThumbnail(canvas);
+    const artistName = await MokuriDB.getMeta('artistName') || '';
+    const record = {
+      compositionId: opts.compositionId || STATE.activeCompositionId || '',
+      imageBlob: imageBlob,
+      thumbBlob: thumbBlob,
+      title: opts.title || '',
+      edition: opts.edition || '',
+      artistName: artistName,
+      paperType: opts.paperType || STATE.paperType,
+      paletteId: opts.paletteId || STATE.paletteId,
+      inkLoad: opts.inkLoad || STATE.inkLoad,
+      impressions: opts.impressions || STATE.impressions,
+      paperW: opts.paperW || STATE.paperW,
+      paperH: opts.paperH || STATE.paperH,
+      favorite: false,
+      createdAt: Date.now(),
+    };
+    await MokuriDB.savePrint(record);
+    // Increment lifetime print counter
+    const totalPulls = (await MokuriDB.getMeta('printCount')) || 0;
+    await MokuriDB.setMeta('printCount', totalPulls + 1);
+  } catch (e) {
+    console.warn('Failed to save print:', e);
+  }
+}
+
 // ── Export / Import (.mokuri file format) ──
 
 function serializeMokuriFile(galleryEntries) {
@@ -4219,7 +4541,7 @@ function exportComposition(galleryEntry) {
 async function exportAllCompositions() {
   const gallery = await getGallery();
   if (!gallery.length) {
-    $('status-hint').textContent = 'Nothing to export — gallery is empty';
+    $('status-hint').textContent = 'Nothing to export — no compositions saved';
     return;
   }
   const json = serializeMokuriFile(gallery);
@@ -4259,7 +4581,7 @@ function importCompositions() {
           await saveComposition(entry);
           imported++;
         }
-        await buildGalleryUI();
+        await buildWorkshopUI();
         $('status-hint').textContent = 'Imported ' + imported + ' composition' + (imported !== 1 ? 's' : '');
         MokuriAudio.playPlace();
       } catch (e) {
@@ -4721,54 +5043,54 @@ function setPaperSize(w, h) {
 // ============================================================
 //  COMPOSITION GALLERY
 // ============================================================
-let galleryPaperW = 600, galleryPaperH = 420;
+let workshopPaperW = 600, workshopPaperH = 420;
 
-function openGallery() {
-  galleryPaperW = STATE.paperW;
-  galleryPaperH = STATE.paperH;
-  buildGalleryUI();
-  $('gallery-modal').classList.add('visible');
+function openWorkshop() {
+  workshopPaperW = STATE.paperW;
+  workshopPaperH = STATE.paperH;
+  buildWorkshopUI();
+  $('workshop-modal').classList.add('visible');
 }
 
-function closeGallery() {
-  $('gallery-modal').classList.remove('visible');
+function closeWorkshop() {
+  $('workshop-modal').classList.remove('visible');
 }
 
-async function buildGalleryUI() {
+async function buildWorkshopUI() {
   // Paper size chips
-  const paperRow = $('gallery-paper-row');
+  const paperRow = $('workshop-paper-row');
   paperRow.innerHTML = '';
   PAPER_PRESETS.forEach(p => {
     const chip = document.createElement('button');
-    chip.className = 'gallery-paper-chip' + (galleryPaperW === p.w && galleryPaperH === p.h ? ' active' : '');
-    chip.innerHTML = `${p.name}<span class="gallery-chip-dims">${p.dims}</span>`;
+    chip.className = 'workshop-paper-chip' + (workshopPaperW === p.w && workshopPaperH === p.h ? ' active' : '');
+    chip.innerHTML = `${p.name}<span class="workshop-chip-dims">${p.dims}</span>`;
     chip.addEventListener('click', () => {
-      galleryPaperW = p.w;
-      galleryPaperH = p.h;
-      buildGalleryUI();
+      workshopPaperW = p.w;
+      workshopPaperH = p.h;
+      buildWorkshopUI();
     });
     paperRow.appendChild(chip);
   });
 
   // Starter cards: blank + presets
-  const starters = $('gallery-starters');
+  const starters = $('workshop-starters');
   starters.innerHTML = '';
 
   // Blank card
   const blankCard = document.createElement('div');
-  blankCard.className = 'gallery-starter';
+  blankCard.className = 'workshop-starter';
   const blankThumb = document.createElement('div');
-  blankThumb.className = 'gallery-starter-thumb';
+  blankThumb.className = 'workshop-starter-thumb';
   const pt = PAPER_TYPES[STATE.paperType || 'kozo'];
   blankThumb.innerHTML = `<svg viewBox="0 0 64 44"><rect width="64" height="44" fill="${pt.base}"/><text x="32" y="24" text-anchor="middle" fill="#c8c0b0" font-size="8" font-weight="600">+</text></svg>`;
   const blankName = document.createElement('div');
-  blankName.className = 'gallery-starter-name';
+  blankName.className = 'workshop-starter-name';
   blankName.textContent = 'Blank';
   blankCard.appendChild(blankThumb);
   blankCard.appendChild(blankName);
   blankCard.addEventListener('click', () => {
-    closeGallery();
-    newComposition(galleryPaperW, galleryPaperH);
+    closeWorkshop();
+    newComposition(workshopPaperW, workshopPaperH);
   });
   starters.appendChild(blankCard);
 
@@ -4778,23 +5100,23 @@ async function buildGalleryUI() {
   if (hasCurated) {
     MOKURI_GALLERY_PRESETS.forEach((preset, idx) => {
       const card = document.createElement('div');
-      card.className = 'gallery-starter';
+      card.className = 'workshop-starter';
       const thumb = document.createElement('div');
-      thumb.className = 'gallery-starter-thumb';
+      thumb.className = 'workshop-starter-thumb';
       thumb.innerHTML = generateThumbnailSvg(preset);
       const name = document.createElement('div');
-      name.className = 'gallery-starter-name';
+      name.className = 'workshop-starter-name';
       name.textContent = preset.presentationTitle || preset.compositionName || `Curated ${idx + 1}`;
       card.appendChild(thumb);
       card.appendChild(name);
       if (preset.paperW && preset.paperH) {
         const dims = document.createElement('div');
-        dims.className = 'gallery-starter-dims';
+        dims.className = 'workshop-starter-dims';
         dims.textContent = `${preset.paperW} × ${preset.paperH}`;
         card.appendChild(dims);
       }
       card.addEventListener('click', () => {
-        closeGallery();
+        closeWorkshop();
         const id = generateCompositionId();
         STATE.activeCompositionId = id;
         setActiveCompositionId(id);
@@ -4810,50 +5132,50 @@ async function buildGalleryUI() {
     // Fallback: generated scene presets (used until curated presets are added)
     Object.entries(SCENE_PRESETS).forEach(([pid, preset]) => {
       const card = document.createElement('div');
-      card.className = 'gallery-starter';
+      card.className = 'workshop-starter';
       const thumb = document.createElement('div');
-      thumb.className = 'gallery-starter-thumb';
+      thumb.className = 'workshop-starter-thumb';
       const previewData = {
-        paperW: galleryPaperW, paperH: galleryPaperH,
+        paperW: workshopPaperW, paperH: workshopPaperH,
         paperType: preset.paperType || 'kozo',
         paletteId: preset.palette,
         sky: preset.sky, ground: preset.ground,
         horizon: preset.horizon, mist: preset.mist || 0,
-        elements: preset.elements(galleryPaperW, galleryPaperH),
+        elements: preset.elements(workshopPaperW, workshopPaperH),
       };
       thumb.innerHTML = generateThumbnailSvg(previewData);
       const name = document.createElement('div');
-      name.className = 'gallery-starter-name';
+      name.className = 'workshop-starter-name';
       name.textContent = preset.name;
       card.appendChild(thumb);
       card.appendChild(name);
       const dims = document.createElement('div');
-      dims.className = 'gallery-starter-dims';
-      dims.textContent = `${galleryPaperW} × ${galleryPaperH}`;
+      dims.className = 'workshop-starter-dims';
+      dims.textContent = `${workshopPaperW} × ${workshopPaperH}`;
       card.appendChild(dims);
       card.addEventListener('click', () => {
-        closeGallery();
-        newComposition(galleryPaperW, galleryPaperH, pid);
+        closeWorkshop();
+        newComposition(workshopPaperW, workshopPaperH, pid);
       });
       starters.appendChild(card);
     });
   }
 
   // Recent prints
-  const recents = $('gallery-recents');
+  const recents = $('workshop-recents');
   recents.innerHTML = '';
   const gallery = await getGallery();
 
   // Wire toolbar buttons
-  const importBtn = $('gallery-import-btn');
-  const exportAllBtn = $('gallery-export-all-btn');
+  const importBtn = $('workshop-import-btn');
+  const exportAllBtn = $('workshop-export-all-btn');
   importBtn.onclick = (e) => { e.stopPropagation(); importCompositions(); };
   exportAllBtn.onclick = (e) => { e.stopPropagation(); exportAllCompositions(); };
   exportAllBtn.disabled = gallery.length === 0;
 
   if (gallery.length === 0) {
     const empty = document.createElement('div');
-    empty.className = 'gallery-empty';
+    empty.className = 'workshop-empty';
     empty.textContent = 'No recent prints yet. Create one above!';
     recents.appendChild(empty);
     return;
@@ -4864,11 +5186,11 @@ async function buildGalleryUI() {
 
   gallery.forEach(entry => {
     const card = document.createElement('div');
-    card.className = 'gallery-recent' + (entry.id === STATE.activeCompositionId ? ' active' : '');
+    card.className = 'workshop-recent' + (entry.id === STATE.activeCompositionId ? ' active' : '');
 
     // Thumbnail
     const thumbDiv = document.createElement('div');
-    thumbDiv.className = 'gallery-recent-thumb';
+    thumbDiv.className = 'workshop-recent-thumb';
     if (entry.thumbnail) {
       thumbDiv.innerHTML = entry.thumbnail;
     } else {
@@ -4878,17 +5200,17 @@ async function buildGalleryUI() {
 
     // Info
     const infoDiv = document.createElement('div');
-    infoDiv.className = 'gallery-recent-info';
+    infoDiv.className = 'workshop-recent-info';
 
     const nameDiv = document.createElement('div');
-    nameDiv.className = 'gallery-recent-name';
+    nameDiv.className = 'workshop-recent-name';
     nameDiv.textContent = entry.name || 'Untitled Print';
     nameDiv.title = 'Click to rename';
     nameDiv.addEventListener('click', (e) => {
       e.stopPropagation();
       // Inline rename
       const input = document.createElement('input');
-      input.className = 'gallery-recent-name-input';
+      input.className = 'workshop-recent-name-input';
       input.value = entry.name || '';
       input.maxLength = 40;
       nameDiv.replaceWith(input);
@@ -4910,7 +5232,7 @@ async function buildGalleryUI() {
     infoDiv.appendChild(nameDiv);
 
     const metaDiv = document.createElement('div');
-    metaDiv.className = 'gallery-recent-meta';
+    metaDiv.className = 'workshop-recent-meta';
     const elCount = (entry.data && entry.data.elements) ? entry.data.elements.length : 0;
     metaDiv.textContent = `${elCount} element${elCount !== 1 ? 's' : ''} · ${relativeTime(entry.updatedAt || entry.createdAt)}`;
     infoDiv.appendChild(metaDiv);
@@ -4918,7 +5240,7 @@ async function buildGalleryUI() {
 
     // Export button
     const expBtn = document.createElement('button');
-    expBtn.className = 'gallery-recent-export';
+    expBtn.className = 'workshop-recent-export';
     expBtn.textContent = '↓';
     expBtn.title = 'Export this composition';
     expBtn.addEventListener('click', (e) => {
@@ -4929,7 +5251,7 @@ async function buildGalleryUI() {
 
     // Delete button with confirmation
     const delBtn = document.createElement('button');
-    delBtn.className = 'gallery-recent-delete';
+    delBtn.className = 'workshop-recent-delete';
     delBtn.textContent = '✕';
     delBtn.title = 'Delete this print';
     let confirmTimer = null;
@@ -4938,7 +5260,7 @@ async function buildGalleryUI() {
       if (delBtn.dataset.confirm === 'true') {
         clearTimeout(confirmTimer);
         deleteComposition(entry.id);
-        buildGalleryUI();
+        buildWorkshopUI();
       } else {
         delBtn.dataset.confirm = 'true';
         delBtn.textContent = '?';
@@ -4959,15 +5281,170 @@ async function buildGalleryUI() {
     // Click to switch
     card.addEventListener('click', () => {
       if (entry.id === STATE.activeCompositionId) {
-        closeGallery();
+        closeWorkshop();
         return;
       }
       switchToComposition(entry.id);
-      closeGallery();
+      closeWorkshop();
     });
 
     recents.appendChild(card);
   });
+}
+
+// ============================================================
+//  PRINT GALLERY (画 Gallery)
+// ============================================================
+
+let _pgalleryFilter = 'all'; // 'all' | 'favorites'
+let _pgalleryPrints = [];    // cached print list for lightbox navigation
+let _pgalleryLbIndex = -1;   // current lightbox index
+
+function openPrintGallery() {
+  buildPrintGalleryUI();
+  $('pgallery-modal').classList.add('visible');
+}
+
+function closePrintGallery() {
+  $('pgallery-modal').classList.remove('visible');
+}
+
+async function buildPrintGalleryUI() {
+  const grid = $('pgallery-grid');
+  const empty = $('pgallery-empty');
+  grid.innerHTML = '';
+
+  // Load prints
+  if (_useLocalStorage) {
+    _pgalleryPrints = [];
+  } else {
+    try {
+      _pgalleryPrints = await MokuriDB.getAllPrints(_pgalleryFilter === 'favorites');
+    } catch (e) { _pgalleryPrints = []; }
+  }
+
+  // Counter
+  try {
+    const total = _useLocalStorage ? 0 : ((await MokuriDB.getMeta('printCount')) || 0);
+    $('pgallery-counter').textContent = total > 0 ? '摺 ' + total + ' prints pulled' : '';
+  } catch (e) { $('pgallery-counter').textContent = ''; }
+
+  // Artist name
+  try {
+    const name = _useLocalStorage ? '' : ((await MokuriDB.getMeta('artistName')) || '');
+    $('pgallery-artist-input').value = name;
+  } catch (e) {}
+
+  // Tab state
+  $('pgallery-tab-all').classList.toggle('active', _pgalleryFilter === 'all');
+  $('pgallery-tab-favs').classList.toggle('active', _pgalleryFilter === 'favorites');
+
+  // Empty state
+  if (_pgalleryPrints.length === 0) {
+    empty.classList.add('visible');
+    grid.style.display = 'none';
+    return;
+  }
+  empty.classList.remove('visible');
+  grid.style.display = '';
+
+  // Build cards
+  _pgalleryPrints.forEach((print, idx) => {
+    const card = document.createElement('div');
+    card.className = 'pgallery-card';
+
+    // Thumbnail
+    const img = document.createElement('img');
+    img.className = 'pgallery-card-thumb';
+    if (print.thumbBlob) {
+      const url = URL.createObjectURL(print.thumbBlob);
+      img.src = url;
+      img.onload = () => URL.revokeObjectURL(url);
+    }
+    card.appendChild(img);
+
+    // Info
+    const info = document.createElement('div');
+    info.className = 'pgallery-card-info';
+    const title = document.createElement('div');
+    title.className = 'pgallery-card-title';
+    title.textContent = print.title || 'Untitled';
+    info.appendChild(title);
+    const meta = document.createElement('div');
+    meta.className = 'pgallery-card-meta';
+    const d = new Date(print.createdAt);
+    meta.textContent = d.toLocaleDateString();
+    info.appendChild(meta);
+    card.appendChild(info);
+
+    // Favorite button
+    const fav = document.createElement('button');
+    fav.className = 'pgallery-card-fav' + (print.favorite ? ' favorited' : '');
+    fav.textContent = print.favorite ? '★' : '☆';
+    fav.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      try {
+        await MokuriDB.updatePrint(print.id, { favorite: !print.favorite });
+        buildPrintGalleryUI();
+      } catch (err) {}
+    });
+    card.appendChild(fav);
+
+    // Click opens lightbox
+    card.addEventListener('click', () => openPrintLightbox(idx));
+
+    grid.appendChild(card);
+  });
+}
+
+// ── Lightbox ──
+
+function openPrintLightbox(index) {
+  _pgalleryLbIndex = index;
+  renderLightboxPrint();
+  $('pgallery-lightbox').classList.add('visible');
+}
+
+function closePrintLightbox() {
+  $('pgallery-lightbox').classList.remove('visible');
+  const img = $('pgallery-lb-image');
+  if (img._blobUrl) { URL.revokeObjectURL(img._blobUrl); img._blobUrl = null; }
+}
+
+function renderLightboxPrint() {
+  const print = _pgalleryPrints[_pgalleryLbIndex];
+  if (!print) return;
+
+  const img = $('pgallery-lb-image');
+  if (img._blobUrl) URL.revokeObjectURL(img._blobUrl);
+  if (print.imageBlob) {
+    const url = URL.createObjectURL(print.imageBlob);
+    img.src = url;
+    img._blobUrl = url;
+  }
+
+  $('pgallery-lb-title').textContent = print.title || 'Untitled';
+  const d = new Date(print.createdAt);
+  const parts = [d.toLocaleDateString()];
+  if (print.edition) parts.push(print.edition);
+  if (print.artistName) parts.push(print.artistName);
+  $('pgallery-lb-meta').textContent = parts.join(' · ');
+
+  // Favorite button state
+  const favBtn = $('pgallery-lb-fav');
+  favBtn.textContent = print.favorite ? '★' : '☆';
+  favBtn.style.color = print.favorite ? '#e8b84b' : '';
+
+  // Nav visibility
+  $('pgallery-lb-prev').style.visibility = _pgalleryLbIndex > 0 ? 'visible' : 'hidden';
+  $('pgallery-lb-next').style.visibility = _pgalleryLbIndex < _pgalleryPrints.length - 1 ? 'visible' : 'hidden';
+}
+
+function lightboxNav(dir) {
+  const next = _pgalleryLbIndex + dir;
+  if (next < 0 || next >= _pgalleryPrints.length) return;
+  _pgalleryLbIndex = next;
+  renderLightboxPrint();
 }
 
 // ============================================================
@@ -7216,7 +7693,26 @@ async function pullPrint() {
   $('print-mirror-label').classList.add('visible');
 
   pullBtn.disabled = false;
-  $('status-hint').textContent = 'Print complete — scroll to zoom, alt+drag to pan · Save PNG or Esc to exit';
+  $('status-hint').textContent = 'Print saved · scroll to zoom, alt+drag to pan';
+
+  // Auto-save print to gallery (fire-and-forget)
+  // Save the mirrored version (what user sees)
+  const mirrorCanvas = document.createElement('canvas');
+  mirrorCanvas.width = c.width;
+  mirrorCanvas.height = c.height;
+  const mctx = mirrorCanvas.getContext('2d');
+  mctx.drawImage(c, 0, 0);
+  savePrintToGallery(mirrorCanvas, {
+    compositionId: STATE.activeCompositionId,
+    title: STATE.presentationTitle || STATE.compositionName || '',
+    edition: STATE.presentationEdition || '',
+    paperType: STATE.paperType,
+    paletteId: STATE.paletteId,
+    inkLoad: STATE.inkLoad,
+    impressions: STATE.impressions,
+    paperW: STATE.paperW,
+    paperH: STATE.paperH,
+  });
 
   } catch (err) {
     console.error('Print failed:', err);
@@ -8095,6 +8591,16 @@ function setupKeyboard() {
       }
       e.preventDefault();
     }
+    if (e.key === 'j' && !e.ctrlKey && !e.metaKey) {
+      if ($('pgallery-modal').classList.contains('visible')) closePrintGallery();
+      else openPrintGallery();
+      e.preventDefault();
+    }
+    // Lightbox arrow navigation
+    if ($('pgallery-lightbox').classList.contains('visible')) {
+      if (e.key === 'ArrowLeft') { lightboxNav(-1); e.preventDefault(); }
+      if (e.key === 'ArrowRight') { lightboxNav(1); e.preventDefault(); }
+    }
 
     // Dev: Ctrl+Shift+G — export current composition as gallery.js preset to clipboard
     if (e.key === 'G' && (e.ctrlKey || e.metaKey) && e.shiftKey) {
@@ -8113,8 +8619,10 @@ function setupKeyboard() {
     }
     if (e.key === 'Escape') {
       if (marquee) { cancelMarquee(); workspaceEl.style.cursor = ''; }
+      else if ($('pgallery-lightbox').classList.contains('visible')) { closePrintLightbox(); }
+      else if ($('pgallery-modal').classList.contains('visible')) { closePrintGallery(); }
       else if ($('makimono').classList.contains('visible')) { hideMakimono(); }
-      else if ($('gallery-modal').classList.contains('visible')) { closeGallery(); }
+      else if ($('workshop-modal').classList.contains('visible')) { closeWorkshop(); }
       else if (STATE.carveFocus) { exitCarveFocus(); }
       else if (STATE.carveStudioOpen) { closeCarveStudio(); }
       else if (STATE.inkStudioOpen) { closeInkStudio(); }
@@ -8259,7 +8767,7 @@ function setupToolbar() {
     if (e.target.closest('.carve-studio') || e.target.closest('.ink-studio') || e.target.closest('.print-studio') || e.target.closest('.panel')) return;
     // Don't dismiss if clicking a toolbar button (they have their own handlers)
     if (e.target.closest('.tool-btn') || e.target.closest('.mode-btn')) return;
-    if (e.target.closest('.gallery-modal')) return;
+    if (e.target.closest('.workshop-modal')) return;
     if (e.target.closest('.audio-controls')) return;
 
     if (STATE.inkStudioOpen) { closeInkStudio(); return; }
@@ -8273,11 +8781,70 @@ function setupToolbar() {
   // Composition Gallery
   $('btn-file').addEventListener('click', (e) => {
     e.stopPropagation();
-    openGallery();
+    openWorkshop();
   });
   // Gallery modal dismiss
-  $('gallery-modal').addEventListener('click', (e) => {
-    if (e.target === $('gallery-modal')) closeGallery();
+  $('workshop-modal').addEventListener('click', (e) => {
+    if (e.target === $('workshop-modal')) closeWorkshop();
+  });
+
+  // Print Gallery
+  $('btn-print-gallery').addEventListener('click', (e) => {
+    e.stopPropagation();
+    openPrintGallery();
+  });
+  $('pgallery-modal').addEventListener('click', (e) => {
+    if (e.target === $('pgallery-modal')) closePrintGallery();
+  });
+  $('pgallery-tab-all').addEventListener('click', () => {
+    _pgalleryFilter = 'all';
+    buildPrintGalleryUI();
+  });
+  $('pgallery-tab-favs').addEventListener('click', () => {
+    _pgalleryFilter = 'favorites';
+    buildPrintGalleryUI();
+  });
+  $('pgallery-artist-input').addEventListener('change', async () => {
+    const name = $('pgallery-artist-input').value.trim();
+    if (!_useLocalStorage) {
+      try { await MokuriDB.setMeta('artistName', name); } catch (e) {}
+    }
+  });
+  // Lightbox controls
+  $('pgallery-lb-close').addEventListener('click', closePrintLightbox);
+  $('pgallery-lb-prev').addEventListener('click', () => lightboxNav(-1));
+  $('pgallery-lb-next').addEventListener('click', () => lightboxNav(1));
+  $('pgallery-lb-fav').addEventListener('click', async () => {
+    const print = _pgalleryPrints[_pgalleryLbIndex];
+    if (!print) return;
+    try {
+      await MokuriDB.updatePrint(print.id, { favorite: !print.favorite });
+      print.favorite = !print.favorite;
+      renderLightboxPrint();
+    } catch (e) {}
+  });
+  $('pgallery-lb-save').addEventListener('click', () => {
+    const print = _pgalleryPrints[_pgalleryLbIndex];
+    if (!print || !print.imageBlob) return;
+    const url = URL.createObjectURL(print.imageBlob);
+    const a = document.createElement('a');
+    const safeName = (print.title || 'mokuri-print').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    a.href = url; a.download = safeName + '.png';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+  $('pgallery-lb-delete').addEventListener('click', async () => {
+    const print = _pgalleryPrints[_pgalleryLbIndex];
+    if (!print) return;
+    if (!confirm('Delete this print?')) return;
+    try {
+      await MokuriDB.deletePrint(print.id);
+      closePrintLightbox();
+      buildPrintGalleryUI();
+    } catch (e) {}
+  });
+  $('pgallery-lightbox').addEventListener('click', (e) => {
+    if (e.target === $('pgallery-lightbox')) closePrintLightbox();
   });
 
   // Audio controls
