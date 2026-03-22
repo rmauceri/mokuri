@@ -1003,6 +1003,43 @@ html, body {
   .pgallery-lb-image-wrap { max-width: 95vw; }
 }
 
+/* ── Confirmation Dialog ── */
+.mokuri-confirm {
+  position: fixed; inset: 0; z-index: 2000;
+  background: rgba(10,8,6,0.7);
+  display: none; align-items: center; justify-content: center;
+  backdrop-filter: blur(3px);
+}
+.mokuri-confirm.visible { display: flex; }
+.mokuri-confirm-card {
+  background: var(--panel-bg); border: 1px solid var(--border);
+  border-radius: 12px; padding: 24px 28px;
+  max-width: 320px; width: 90%;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  text-align: center;
+}
+.mokuri-confirm-text {
+  font-size: 14px; color: var(--text); line-height: 1.5;
+  margin-bottom: 20px;
+}
+.mokuri-confirm-actions {
+  display: flex; gap: 10px; justify-content: center;
+}
+.mokuri-confirm-btn {
+  padding: 8px 20px; border-radius: 8px; font-size: 13px;
+  cursor: pointer; border: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.mokuri-confirm-cancel {
+  background: rgba(255,255,255,0.06); color: var(--text);
+}
+.mokuri-confirm-cancel:hover { background: rgba(255,255,255,0.12); }
+.mokuri-confirm-ok {
+  background: rgba(180,60,50,0.25); color: #e88;
+  border-color: rgba(180,60,50,0.4);
+}
+.mokuri-confirm-ok:hover { background: rgba(180,60,50,0.4); }
+
 
 /* ============================================================
    MAKIMONO (巻物) — Welcome Scroll / About / FRE
@@ -1889,7 +1926,7 @@ html, body {
     </div>
     <div class="toolbar-separator"></div>
     <button class="mode-btn" id="btn-file" title="Workshop — compositions & presets">
-      <span class="mode-icon">工</span>
+      <span class="mode-icon">作</span>
       <span class="mode-label">Workshop</span>
     </button>
   </div>
@@ -2206,6 +2243,17 @@ html, body {
     <button class="pgallery-lb-btn" id="pgallery-lb-fav" title="Favorite">☆</button>
     <button class="pgallery-lb-btn" id="pgallery-lb-save" title="Save PNG">💾</button>
     <button class="pgallery-lb-btn pgallery-lb-btn-danger" id="pgallery-lb-delete" title="Delete">🗑️</button>
+  </div>
+</div>
+
+<!-- Confirmation dialog -->
+<div class="mokuri-confirm" id="mokuri-confirm">
+  <div class="mokuri-confirm-card">
+    <div class="mokuri-confirm-text" id="mokuri-confirm-text"></div>
+    <div class="mokuri-confirm-actions">
+      <button class="mokuri-confirm-btn mokuri-confirm-cancel" id="mokuri-confirm-cancel">Cancel</button>
+      <button class="mokuri-confirm-btn mokuri-confirm-ok" id="mokuri-confirm-ok">Delete</button>
+    </div>
   </div>
 </div>
 
@@ -5299,6 +5347,26 @@ async function buildWorkshopUI() {
 let _pgalleryFilter = 'all'; // 'all' | 'favorites'
 let _pgalleryPrints = [];    // cached print list for lightbox navigation
 let _pgalleryLbIndex = -1;   // current lightbox index
+
+function mokConfirm(message, okLabel) {
+  return new Promise((resolve) => {
+    $('mokuri-confirm-text').textContent = message;
+    $('mokuri-confirm-ok').textContent = okLabel || 'Delete';
+    $('mokuri-confirm').classList.add('visible');
+    function cleanup() {
+      $('mokuri-confirm').classList.remove('visible');
+      $('mokuri-confirm-ok').removeEventListener('click', onOk);
+      $('mokuri-confirm-cancel').removeEventListener('click', onCancel);
+      $('mokuri-confirm').removeEventListener('click', onBackdrop);
+    }
+    function onOk() { cleanup(); resolve(true); }
+    function onCancel() { cleanup(); resolve(false); }
+    function onBackdrop(e) { if (e.target === $('mokuri-confirm')) { cleanup(); resolve(false); } }
+    $('mokuri-confirm-ok').addEventListener('click', onOk);
+    $('mokuri-confirm-cancel').addEventListener('click', onCancel);
+    $('mokuri-confirm').addEventListener('click', onBackdrop);
+  });
+}
 
 function openPrintGallery() {
   buildPrintGalleryUI();
@@ -8836,7 +8904,8 @@ function setupToolbar() {
   $('pgallery-lb-delete').addEventListener('click', async () => {
     const print = _pgalleryPrints[_pgalleryLbIndex];
     if (!print) return;
-    if (!confirm('Delete this print?')) return;
+    const ok = await mokConfirm('Delete this print?', 'Delete');
+    if (!ok) return;
     try {
       await MokuriDB.deletePrint(print.id);
       closePrintLightbox();
