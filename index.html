@@ -2458,6 +2458,8 @@ html, body {
 <script src="assets/figures-elements.js"></script>
 <script src="assets/gallery.js"></script>
 <script src="assets/pack-registry.js"></script>
+<script src="assets/kacho-elements.js"></script>
+<script src="assets/kacho-pack.js"></script>
 <script src="print-engine.js"></script>
 <script src="audio-engine.js"></script>
 <script>
@@ -2493,6 +2495,14 @@ if (typeof MOKURI_FORMS_ELEMENTS !== 'undefined') {
 }
 if (typeof MOKURI_FIGURES_ELEMENTS !== 'undefined') {
   MOKURI_ELEMENTS.push(...MOKURI_FIGURES_ELEMENTS);
+}
+if (typeof MOKURI_KACHOE_ELEMENTS !== 'undefined') {
+  MOKURI_ELEMENTS.push(...MOKURI_KACHOE_ELEMENTS);
+}
+
+// Merge expansion pack gallery presets
+if (typeof MOKURI_KACHOE_PRESETS !== 'undefined' && typeof MOKURI_GALLERY_PRESETS !== 'undefined') {
+  MOKURI_GALLERY_PRESETS.push(...MOKURI_KACHOE_PRESETS);
 }
 
 // ============================================================
@@ -2586,6 +2596,11 @@ const PALETTES = {
   beni:      { name: 'Beni 紅',       pack: 'core', colors: ['#b83a3a', '#d4826a', '#e8c870', '#f5efe0', '#4a3030'] },
   matcha:    { name: 'Matcha 抹茶',   pack: 'core', colors: ['#5a7a50', '#8aaa6a', '#c4b090', '#7a6a50', '#2a3028'] },
 };
+
+// Merge expansion pack palettes
+if (typeof MOKURI_KACHOE_PALETTES !== 'undefined') {
+  Object.assign(PALETTES, MOKURI_KACHOE_PALETTES);
+}
 
 // Color distance helpers for cross-palette accent selection
 function hexToRgb(hex) {

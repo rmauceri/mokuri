@@ -1,5 +1,5 @@
 // Mokuri Studio — Service Worker (cache-first with background update)
-const CACHE_NAME = 'mokuri-v29';
+const CACHE_NAME = 'mokuri-v30';
 const APP_SHELL = [
   './',
   './index.html',
@@ -15,6 +15,8 @@ const APP_SHELL = [
   './assets/figures-elements.js',
   './assets/gallery.js',
   './assets/pack-registry.js',
+  './assets/kacho-elements.js',
+  './assets/kacho-pack.js',
   './assets/icon-192.png',
   './assets/icon-512.png',
 ];
