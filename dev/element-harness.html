@@ -519,14 +519,32 @@ or a single object:
     </aside>
   </div>
 
-  <script src="../assets/elements.js"></script>
-  <script src="../assets/extended-elements.js"></script>
-  <script src="../assets/fauna-elements.js"></script>
-  <script src="../assets/scene-elements.js"></script>
-  <script src="../assets/hanko-elements.js"></script>
-  <script src="../assets/forms-elements.js"></script>
-  <script src="../assets/figures-elements.js"></script>
-  <script src="../assets/kacho-elements.js"></script>
+  <!-- Element pack scripts — to add a new pack, add ONE script tag with data attributes -->
+  <script src="../assets/elements.js" data-pack-label="Base" data-pack-global="MOKURI_ELEMENTS"></script>
+  <script src="../assets/extended-elements.js" data-pack-label="Extended" data-pack-global="MOKURI_CORE_ELEMENTS"></script>
+  <script src="../assets/fauna-elements.js" data-pack-label="Fauna" data-pack-global="MOKURI_FAUNA_ELEMENTS"></script>
+  <script src="../assets/scene-elements.js" data-pack-label="Scene" data-pack-global="MOKURI_SCENE_ELEMENTS"></script>
+  <script src="../assets/hanko-elements.js" data-pack-label="Hanko" data-pack-global="MOKURI_HANKO_ELEMENTS"></script>
+  <script src="../assets/forms-elements.js" data-pack-label="Forms" data-pack-global="MOKURI_FORMS_ELEMENTS"></script>
+  <script src="../assets/figures-elements.js" data-pack-label="Figures" data-pack-global="MOKURI_FIGURES_ELEMENTS"></script>
+  <script src="../assets/kacho-elements.js" data-pack-label="Kacho-e" data-pack-global="MOKURI_KACHOE_ELEMENTS"></script>
+
+  <!-- Auto-discover loaded element packs from data attributes above -->
+  <script>
+    window.HARNESS_PACKS = [];
+    document.querySelectorAll('script[data-pack-label]').forEach(function(script) {
+      var label = script.getAttribute('data-pack-label');
+      var globalName = script.getAttribute('data-pack-global');
+      if (!globalName) return;
+      try {
+        var arr = eval(globalName);
+        if (Array.isArray(arr) && arr.length > 0) {
+          window.HARNESS_PACKS.push({ id: globalName, label: label, elements: arr });
+        }
+      } catch(e) {}
+    });
+  </script>
+
   <script src="element-harness.js"></script>
 </body>
 </html>

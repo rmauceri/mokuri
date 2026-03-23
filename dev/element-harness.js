@@ -11,17 +11,15 @@
     validations: new Map(),
   };
 
-  const builtinConfigs = [
-    { id: 'all', label: 'All built-ins', getElements: getAllBuiltInElements },
-    { id: 'base', label: 'Base library', getElements: function () { return safeArray(function () { return MOKURI_ELEMENTS; }); } },
-    { id: 'extended', label: 'Extended', getElements: function () { return safeArray(function () { return MOKURI_CORE_ELEMENTS; }); } },
-    { id: 'fauna', label: 'Fauna', getElements: function () { return safeArray(function () { return MOKURI_FAUNA_ELEMENTS; }); } },
-    { id: 'scene', label: 'Scene', getElements: function () { return safeArray(function () { return MOKURI_SCENE_ELEMENTS; }); } },
-    { id: 'forms', label: 'Forms', getElements: function () { return safeArray(function () { return MOKURI_FORMS_ELEMENTS; }); } },
-    { id: 'hanko', label: 'Hanko', getElements: function () { return safeArray(function () { return MOKURI_HANKO_ELEMENTS; }); } },
-    { id: 'figures', label: 'Figures', getElements: function () { return safeArray(function () { return MOKURI_FIGURES_ELEMENTS; }); } },
-    { id: 'kacho-e', label: 'Kacho-e', getElements: function () { return safeArray(function () { return MOKURI_KACHOE_ELEMENTS; }); } },
-  ];
+  // Built-in packs are auto-discovered from data attributes on <script> tags
+  // in element-harness.html. No changes needed here when adding new packs.
+  const builtinConfigs = (function () {
+    var packs = (window.HARNESS_PACKS || []).map(function (p) {
+      return { id: p.id, label: p.label, getElements: function () { return p.elements; } };
+    });
+    packs.unshift({ id: 'all', label: 'All built-ins', getElements: getAllBuiltInElements });
+    return packs;
+  })();
 
   const els = {
     builtinButtons: document.getElementById('builtin-buttons'),
@@ -583,15 +581,17 @@
   }
 
   function getAllBuiltInElements() {
-    return []
-      .concat(safeArray(function () { return MOKURI_ELEMENTS; }))
-      .concat(safeArray(function () { return MOKURI_CORE_ELEMENTS; }))
-      .concat(safeArray(function () { return MOKURI_FAUNA_ELEMENTS; }))
-      .concat(safeArray(function () { return MOKURI_SCENE_ELEMENTS; }))
-      .concat(safeArray(function () { return MOKURI_HANKO_ELEMENTS; }))
-      .concat(safeArray(function () { return MOKURI_FORMS_ELEMENTS; }))
-      .concat(safeArray(function () { return MOKURI_FIGURES_ELEMENTS; }))
-      .concat(safeArray(function () { return MOKURI_KACHOE_ELEMENTS; }));
+    var all = [];
+    (window.HARNESS_PACKS || []).forEach(function (p) {
+      if (Array.isArray(p.elements)) all = all.concat(p.elements);
+    });
+    // Deduplicate by element id
+    var seen = {};
+    return all.filter(function (el) {
+      if (seen[el.id]) return false;
+      seen[el.id] = true;
+      return true;
+    });
   }
 
   function safeArray(getter) {
