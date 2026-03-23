@@ -695,6 +695,43 @@ const MokuriAudio = (() => {
     });
   }
 
+  function playModalOpen() {
+    playOneShot((c, dest) => {
+      const now = c.currentTime;
+      // Two-note ascending chime — warm triangle tones
+      [392, 523].forEach((freq, i) => {
+        const osc = c.createOscillator();
+        osc.type = 'triangle';
+        osc.frequency.value = freq;
+        const g = c.createGain();
+        const t = now + i * 0.07;
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(0.08, t + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+        osc.connect(g).connect(dest);
+        osc.start(t);
+        osc.stop(t + 0.15);
+      });
+    });
+  }
+
+  function playModalClose() {
+    playOneShot((c, dest) => {
+      const now = c.currentTime;
+      // Single descending tone — brief, soft
+      const osc = c.createOscillator();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(523, now);
+      osc.frequency.exponentialRampToValueAtTime(330, now + 0.1);
+      const g = c.createGain();
+      g.gain.setValueAtTime(0.06, now);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+      osc.connect(g).connect(dest);
+      osc.start(now);
+      osc.stop(now + 0.12);
+    });
+  }
+
   function playSave() {
     playOneShot((c, dest) => {
       // Soft ascending chime
@@ -814,6 +851,8 @@ const MokuriAudio = (() => {
     playPanelToggle,
     playFocusEnter,
     playFocusExit,
+    playModalOpen,
+    playModalClose,
     playSave,
     playFavorite,
     playSwipe,

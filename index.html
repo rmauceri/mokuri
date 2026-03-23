@@ -141,9 +141,11 @@ html, body {
   transition: background 0.15s, border-color 0.15s;
 }
 .tool-btn:hover { background: var(--selection); border-color: var(--panel-border); }
+.tool-btn:focus, .tool-btn:focus-visible { outline: none; }
 .tool-btn.active { background: var(--selection); border-color: var(--accent); }
 .tool-btn:disabled { opacity: 0.35; cursor: default; }
 .tool-btn.active-mode { background: rgba(255,255,255,0.15); box-shadow: inset 0 0 0 1.5px var(--accent); }
+#btn-lock { filter: grayscale(1); }
 /* Tool-specific cursors — SVG data URIs with gouge profile shapes (only over paper) */
 .workspace.carve-mode { cursor: crosshair; }
 .workspace.carve-mode [data-id],
@@ -207,6 +209,7 @@ html, body {
 #btn-phase-print .mode-icon, #btn-phase-print .mode-label { color: #9b7065; }
 #btn-file .mode-icon, #btn-file .mode-label { color: #7a8b6a; }
 .mode-btn:hover { background: var(--selection); }
+.mode-btn:focus, .mode-btn:focus-visible { outline: none; }
 .mode-btn.active {
   background: rgba(255,255,255,0.10);
   border-color: var(--accent);
@@ -521,16 +524,36 @@ html, body {
   font-size: 13px;
   padding: 0 2px;
   line-height: 1;
-  transition: color 0.15s;
+  transition: filter 0.15s, opacity 0.15s;
+  filter: grayscale(1) brightness(0.7);
+  opacity: 0.5;
 }
-.audio-btn:hover { color: var(--text); }
-.audio-btn.active { color: var(--accent); }
+.audio-btn:hover { opacity: 0.8; }
+.audio-btn.active { filter: grayscale(1) brightness(0.5); opacity: 0.85; }
 .audio-slider {
   width: 48px;
   height: 3px;
   accent-color: var(--accent);
   cursor: pointer;
   opacity: 0.7;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+}
+.audio-slider::-webkit-slider-runnable-track {
+  height: 3px; background: var(--panel-border); border-radius: 2px;
+}
+.audio-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--accent); margin-top: -3px; cursor: pointer;
+}
+.audio-slider::-moz-range-track {
+  height: 3px; background: var(--panel-border); border-radius: 2px; border: none;
+}
+.audio-slider::-moz-range-thumb {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--accent); border: none; cursor: pointer;
 }
 .audio-slider:hover { opacity: 1; }
 .audio-sep {
@@ -948,12 +971,12 @@ html, body {
 }
 .pgallery-share-opt:hover { background: rgba(255,255,255,0.08); }
 .pgallery-close {
-  font-size: 22px; color: rgba(255,255,255,0.4); cursor: pointer;
-  width: 32px; height: 32px; text-align: center; line-height: 32px;
-  border-radius: 50%; transition: color 0.15s;
-  margin-left: 4px; flex-shrink: 0;
+  font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.4); cursor: pointer;
+  padding: 4px 12px; text-align: center; line-height: 24px;
+  border-radius: 4px; transition: color 0.15s, background 0.15s;
+  margin-left: 4px; flex-shrink: 0; letter-spacing: 0.3px;
 }
-.pgallery-close:hover { color: rgba(255,255,255,0.8); }
+.pgallery-close:hover { color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.08); }
 
 /* ── Viewer area (main print display) ── */
 .pgallery-viewer {
@@ -1001,7 +1024,8 @@ html, body {
 .pgallery-strip-wrap::-webkit-scrollbar { height: 4px; }
 .pgallery-strip-wrap::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
 .pgallery-strip-thumb {
-  width: 80px; height: 60px; object-fit: cover;
+  width: 80px; height: 60px; object-fit: contain;
+  background: rgba(0,0,0,0.3);
   border-radius: 3px; cursor: pointer; flex-shrink: 0;
   border: 2px solid transparent; opacity: 0.65;
   transition: opacity 0.15s, border-color 0.15s;
@@ -1937,11 +1961,11 @@ html, body {
 
     <!-- Left group: Editing commands -->
     <div class="toolbar-group toolbar-edit-group">
-      <button class="tool-btn" id="btn-undo" title="Undo (Ctrl+Z)" disabled>↩</button>
-      <button class="tool-btn" id="btn-redo" title="Redo (Ctrl+Y)" disabled>↪</button>
+      <button class="tool-btn" id="btn-undo" title="Undo (Ctrl+Z)" disabled style="transform:scaleY(-1)">↩</button>
+      <button class="tool-btn" id="btn-redo" title="Redo (Ctrl+Y)" disabled style="transform:scaleY(-1)">↪</button>
       <div class="toolbar-separator"></div>
       <button class="tool-btn" id="btn-layer-up" title="Bring Forward (])" disabled>⬆</button>
-      <button class="tool-btn" id="btn-layer-down" title="Send Back ([)" disabled>⬇</button>
+      <button class="tool-btn" id="btn-layer-down" title="Send Backward ([)" disabled>⬇</button>
       <button class="tool-btn" id="btn-flip-h" title="Flip Horizontal (H)" disabled>⇄</button>
       <button class="tool-btn" id="btn-flip-v" title="Flip Vertical (F)" disabled>⇅</button>
       <button class="tool-btn" id="btn-duplicate" title="Duplicate (Ctrl+D)" disabled>⧉</button>
@@ -1953,11 +1977,11 @@ html, body {
 
     <!-- Center group: Phase mode buttons -->
     <div class="toolbar-group toolbar-mode-group">
-      <button class="mode-btn active" id="btn-phase-compose" title="Compose — select and arrange elements">
+      <button class="mode-btn active" id="btn-phase-compose" title="Compose — select and arrange elements (C)">
         <span class="mode-icon">景</span>
         <span class="mode-label">Compose</span>
       </button>
-      <button class="mode-btn" id="btn-phase-carve" title="Carve — carve elements and background (C)">
+      <button class="mode-btn" id="btn-phase-carve" title="Carve — carve elements and background (V)">
         <span class="mode-icon">彫</span>
         <span class="mode-label">Carve</span>
       </button>
@@ -1965,11 +1989,11 @@ html, body {
         <span class="mode-icon">墨</span>
         <span class="mode-label">Ink</span>
       </button>
-      <button class="mode-btn" id="btn-phase-print" title="Make Print — choose paper and pull a print (P)">
+      <button class="mode-btn" id="btn-phase-print" title="Print — choose paper and pull a print (P)">
         <span class="mode-icon">摺</span>
-        <span class="mode-label">Make Print</span>
+        <span class="mode-label">Print</span>
       </button>
-      <button class="mode-btn" id="btn-print-gallery" title="Print Gallery — view saved prints (J)">
+      <button class="mode-btn" id="btn-print-gallery" title="Print Gallery — view saved prints (G)">
         <span class="mode-icon">画</span>
         <span class="mode-label">Gallery</span>
       </button>
@@ -1982,10 +2006,10 @@ html, body {
       <button class="tool-btn" id="btn-zoom-in" title="Zoom In (+)">+</button>
       <button class="tool-btn" id="btn-zoom-out" title="Zoom Out (−)">−</button>
       <button class="tool-btn" id="btn-zoom-fit" title="Fit to View (0)">⊡</button>
-      <button class="tool-btn" id="btn-guides" title="Composition Guides (G)">⊞</button>
+      <button class="tool-btn" id="btn-guides" title="Composition Guides (D)">⊞</button>
     </div>
     <div class="toolbar-separator"></div>
-    <button class="mode-btn" id="btn-file" title="Workshop — compositions & presets">
+    <button class="mode-btn" id="btn-file" title="Workshop — compositions & presets (W)">
       <span class="mode-icon">作</span>
       <span class="mode-label">Workshop</span>
     </button>
@@ -2237,7 +2261,7 @@ html, body {
   <div class="status-bar">
     <span id="status-elements">0 elements</span>
     <span id="status-zoom">100%</span>
-    <span id="status-hint">Place elements · Select + 彫 or C to carve · Print when ready</span>
+    <span id="status-hint">Place elements · Select + V to carve · P to print</span>
     <div class="audio-controls">
       <button class="audio-btn" id="audio-ambient-btn" title="Ambient sound">🔇</button>
       <input type="range" class="audio-slider" id="audio-ambient-vol" min="0" max="100" value="15" title="Ambient volume">
@@ -2288,6 +2312,7 @@ html, body {
     <div class="pgallery-topbar-spacer"></div>
     <div class="pgallery-actions" id="pgallery-actions">
       <button class="pgallery-act-btn" id="pgallery-btn-fav" title="Favorite">☆ <span class="pgallery-btn-label">Keep</span></button>
+      <button class="pgallery-act-btn pgallery-act-danger" id="pgallery-btn-delete" title="Delete">✕ <span class="pgallery-btn-label">Delete</span></button>
       <div style="position:relative">
         <button class="pgallery-act-btn" id="pgallery-btn-share" title="Share">↗ <span class="pgallery-btn-label">Share</span></button>
         <div class="pgallery-share-menu" id="pgallery-share-menu">
@@ -2296,9 +2321,8 @@ html, body {
         </div>
       </div>
       <button class="pgallery-act-btn" id="pgallery-btn-save" title="Save PNG">↓ <span class="pgallery-btn-label">Save</span></button>
-      <button class="pgallery-act-btn pgallery-act-danger" id="pgallery-btn-delete" title="Delete">✕ <span class="pgallery-btn-label">Delete</span></button>
     </div>
-    <div class="pgallery-close" id="pgallery-close">✕</div>
+    <div class="pgallery-close" id="pgallery-close">Exit</div>
   </div>
 
   <!-- Viewer area -->
@@ -2398,7 +2422,7 @@ html, body {
         <div class="maki-step">
           <div class="maki-step-heading">
             <span class="maki-step-icon" style="color:#9b7065">摺</span>
-            <span class="maki-step-name" style="color:#9b7065">Make Print</span>
+            <span class="maki-step-name" style="color:#9b7065">Print</span>
           </div>
           <div class="maki-step-desc">
             Six washi papers — Hosho, Kozo, Gampi, and more. Choose
@@ -5273,10 +5297,12 @@ function openWorkshop() {
   workshopPaperH = STATE.paperH;
   buildWorkshopUI();
   $('workshop-modal').classList.add('visible');
+  MokuriAudio.playModalOpen();
 }
 
 function closeWorkshop() {
   $('workshop-modal').classList.remove('visible');
+  MokuriAudio.playModalClose();
 }
 
 async function buildWorkshopUI() {
@@ -5549,6 +5575,7 @@ function mokConfirm(message, okLabel) {
 function openPrintGallery() {
   buildPrintGalleryUI();
   $('pgallery-modal').classList.add('visible');
+  MokuriAudio.playModalOpen();
 }
 
 function closePrintGallery() {
@@ -5556,6 +5583,7 @@ function closePrintGallery() {
   $('pgallery-share-menu').classList.remove('visible');
   const img = $('pgallery-image');
   if (img._blobUrl) { URL.revokeObjectURL(img._blobUrl); img._blobUrl = null; }
+  MokuriAudio.playModalClose();
 }
 
 async function buildPrintGalleryUI() {
@@ -5662,7 +5690,7 @@ function renderCurrentPrint() {
 
   // Favorite button
   const favBtn = $('pgallery-btn-fav');
-  favBtn.textContent = print.favorite ? '★ Kept' : '☆ Keep';
+  favBtn.innerHTML = print.favorite ? '★ <span class="pgallery-btn-label">Favorite</span>' : '☆ <span class="pgallery-btn-label">Keep</span>';
   favBtn.classList.toggle('favorited', !!print.favorite);
 
   // Nav
@@ -6552,7 +6580,7 @@ function setMode(mode) {
   } else {
     hint = mode === 'carve' ? 'Draw on elements or paper to carve · Alt+click to pan'
          : mode === 'erase' ? 'Click near a carve stroke to remove it'
-         : 'Place elements · C to Carve · I for Ink · P to Print';
+         : 'Place elements · V to Carve · I for Ink · P to Print';
   }
   $('status-hint').textContent = hint;
 }
@@ -7538,8 +7566,8 @@ function buildInkStudioUI() {
 
 function openPrintStudio() {
   if (STATE.printStudioOpen) return;
-  // Auto-close elements panel on narrow screens
-  if (window.innerWidth < 850) closeComposePanel();
+  // Close elements panel — prevent accidental element placement over print
+  closeComposePanel();
   // Save which panel was open before (to restore on close)
   STATE._prePrintPanel = STATE.carveStudioOpen ? 'carve' : STATE.inkStudioOpen ? 'ink' : null;
   // Close other right panels without resetting view mode
@@ -8950,15 +8978,16 @@ function setupKeyboard() {
 
     if (e.key === 'Delete' || e.key === 'Backspace') { deleteSelected(); e.preventDefault(); }
     if (e.key === 'c' && !e.ctrlKey && !e.metaKey) {
-      // C key: if an element is selected, carve it (cycle level) and open Carving Workbench
-      if (STATE.selectedIds.size === 1) {
-        carveSelected();
-        if (!STATE.carveStudioOpen) openCarveStudio();
-      } else if (STATE.selectedIds.size > 1) {
-        if (!STATE.carveStudioOpen) openCarveStudio();
-        else closeCarveStudio();
-      } else if (STATE.carveStudioOpen) {
-        openCarveStudio();
+      // C key: open Compose (close any workbench, open compose panel)
+      const hasWorkbench = STATE.carveStudioOpen || STATE.inkStudioOpen || STATE.printStudioOpen;
+      if (hasWorkbench) {
+        if (STATE.printStudioOpen) closePrintStudio(false);
+        if (STATE.carveStudioOpen) closeCarveStudio();
+        if (STATE.inkStudioOpen) closeInkStudio();
+        openComposePanel();
+      } else {
+        if (STATE.composePanelOpen) closeComposePanel();
+        else openComposePanel();
       }
       e.preventDefault();
     }
@@ -8969,7 +8998,12 @@ function setupKeyboard() {
     if (e.key === '=' || e.key === '+') { zoomBy(0.15, workspaceEl.clientWidth / 2, workspaceEl.clientHeight / 2); e.preventDefault(); }
     if (e.key === '-') { zoomBy(-0.15, workspaceEl.clientWidth / 2, workspaceEl.clientHeight / 2); e.preventDefault(); }
     if (e.key === '0') { fitPaperToView(); e.preventDefault(); }
-    if (e.key === 'g' && !e.ctrlKey && !e.metaKey) { toggleGuides(); e.preventDefault(); }
+    if (e.key === 'g' && !e.ctrlKey && !e.metaKey) {
+      if ($('pgallery-modal').classList.contains('visible')) closePrintGallery();
+      else openPrintGallery();
+      e.preventDefault();
+    }
+    if (e.key === 'd' && !e.ctrlKey && !e.metaKey) { toggleGuides(); e.preventDefault(); }
 
     // Flip, duplicate, lock
     if (e.key === 'h' && !e.ctrlKey && !e.metaKey) { flipSelectedH(); e.preventDefault(); }
@@ -8987,7 +9021,11 @@ function setupKeyboard() {
     if (e.key === 'l' && !e.ctrlKey && !e.metaKey) { toggleLockSelected(); e.preventDefault(); }
 
     // Mode shortcuts
-    if (e.key === 'v' && !e.ctrlKey && !e.metaKey) { setMode(STATE.mode === 'select' ? 'carve' : 'select'); e.preventDefault(); }
+    if (e.key === 'v' && !e.ctrlKey && !e.metaKey) {
+      if (STATE.carveStudioOpen) closeCarveStudio();
+      else openCarveStudio();
+      e.preventDefault();
+    }
     if (e.key === 'e' && !e.ctrlKey && !e.metaKey) { setMode(STATE.mode === 'erase' ? 'select' : 'erase'); e.preventDefault(); }
     if (e.key === 'i' && !e.ctrlKey && !e.metaKey) {
       if (STATE.inkStudioOpen) closeInkStudio();
@@ -8995,19 +9033,12 @@ function setupKeyboard() {
       e.preventDefault();
     }
     if (e.key === 'p' && !e.ctrlKey && !e.metaKey) {
-      if (STATE.mode === 'carve') {
-        // In carve mode, P selects pattern tool
-        STATE.carveTool = 'pattern'; updateToolButtons(); updateToolCursorClass();
-        if (STATE.carveStudioOpen) buildCarveStudioUI();
-      } else {
-        if (STATE.printStudioOpen) closePrintStudio();
-        else openPrintStudio();
-      }
+      if (STATE.printStudioOpen) closePrintStudio();
+      else openPrintStudio();
       e.preventDefault();
     }
-    if (e.key === 'j' && !e.ctrlKey && !e.metaKey) {
-      if ($('pgallery-modal').classList.contains('visible')) closePrintGallery();
-      else openPrintGallery();
+    if (e.key === 'w' && !e.ctrlKey && !e.metaKey) {
+      openWorkshop();
       e.preventDefault();
     }
     // Lightbox arrow navigation
