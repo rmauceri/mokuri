@@ -19,6 +19,8 @@
     { id: 'scene', label: 'Scene', getElements: function () { return safeArray(function () { return MOKURI_SCENE_ELEMENTS; }); } },
     { id: 'forms', label: 'Forms', getElements: function () { return safeArray(function () { return MOKURI_FORMS_ELEMENTS; }); } },
     { id: 'hanko', label: 'Hanko', getElements: function () { return safeArray(function () { return MOKURI_HANKO_ELEMENTS; }); } },
+    { id: 'figures', label: 'Figures', getElements: function () { return safeArray(function () { return MOKURI_FIGURES_ELEMENTS; }); } },
+    { id: 'kacho-e', label: 'Kacho-e', getElements: function () { return safeArray(function () { return MOKURI_KACHOE_ELEMENTS; }); } },
   ];
 
   const els = {
@@ -587,7 +589,9 @@
       .concat(safeArray(function () { return MOKURI_FAUNA_ELEMENTS; }))
       .concat(safeArray(function () { return MOKURI_SCENE_ELEMENTS; }))
       .concat(safeArray(function () { return MOKURI_HANKO_ELEMENTS; }))
-      .concat(safeArray(function () { return MOKURI_FORMS_ELEMENTS; }));
+      .concat(safeArray(function () { return MOKURI_FORMS_ELEMENTS; }))
+      .concat(safeArray(function () { return MOKURI_FIGURES_ELEMENTS; }))
+      .concat(safeArray(function () { return MOKURI_KACHOE_ELEMENTS; }));
   }
 
   function safeArray(getter) {
