@@ -549,6 +549,93 @@ const MOKURI_KACHOE_ELEMENTS = [
     ],
   },
 
+  // Lily Cluster — water lily blossom with floating pads and bud
+  // Star-shaped petals radiate flat on water, pads with V-notch
+  {
+    id: 'lily-cluster',
+    name: 'Lily Cluster',
+    category: 'flora',
+    pack: 'kacho-e',
+    viewBox: '0 0 160 130',
+    suggestedLayer: 'foreground',
+    colorZones: [
+      { id: 'petal', defaultPaletteSlot: 1 },
+      { id: 'center', defaultPaletteSlot: 3 },
+      { id: 'pad', defaultPaletteSlot: 2 },
+      { id: 'bud', defaultPaletteSlot: 4 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          // Outer petals: top + bottom (long pointed, radiating)
+          { d: 'M57 40 Q54 28 56 16 Q58 8 63 10 Q68 14 66 26 Q64 36 63 42 Z M63 48 Q66 58 66 70 Q64 76 60 74 Q56 68 56 58 Q56 50 57 48 Z', type: 'fill', zone: 'petal' },
+          // Outer petals: right + left
+          { d: 'M66 40 Q76 34 88 36 Q96 40 94 46 Q90 52 80 50 Q72 48 66 46 Z M54 46 Q44 50 34 46 Q26 40 30 36 Q36 32 46 34 Q54 38 54 42 Z', type: 'fill', zone: 'petal' },
+          // Inner petals: NE + SE + SW + NW (shorter, between outer)
+          { d: 'M64 38 Q70 30 76 28 Q80 30 78 36 Q74 42 68 42 Z M66 46 Q74 50 78 58 Q76 64 70 60 Q66 54 64 48 Z M58 48 Q50 54 44 58 Q40 54 44 48 Q50 42 56 44 Z M56 40 Q50 34 48 28 Q50 26 54 30 Q58 36 58 40 Z', type: 'fill', zone: 'petal' },
+          // Golden center
+          { d: 'M58 40 Q60 36 64 38 Q68 42 66 46 Q62 48 58 46 Q56 42 58 40 Z', type: 'fill', zone: 'center' },
+          // Large pad (round, V-notch implied)
+          { d: 'M56 78 Q68 74 78 84 Q86 96 82 108 Q76 118 62 122 Q48 124 36 118 Q26 110 24 98 Q24 88 32 80 Q42 74 56 78 Z', type: 'fill', zone: 'pad' },
+          // Medium pad
+          { d: 'M126 68 Q136 66 142 74 Q148 84 146 94 Q140 102 130 104 Q120 104 112 98 Q106 90 108 82 Q112 74 120 68 Q124 66 126 68 Z', type: 'fill', zone: 'pad' },
+          // Small pad
+          { d: 'M26 42 Q34 40 40 46 Q44 54 42 62 Q36 68 28 68 Q20 66 16 60 Q12 52 16 46 Q20 42 26 42 Z', type: 'fill', zone: 'pad' },
+          // Closed bud
+          { d: 'M128 40 Q126 32 128 22 Q130 14 134 16 Q136 22 136 32 Q134 40 132 42 Z', type: 'fill', zone: 'bud' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M57 40 Q54 28 56 16 Q58 8 63 10 Q68 14 66 26 Q64 36 63 42 Z M63 48 Q66 58 66 70 Q64 76 60 74 Q56 68 56 58 Q56 50 57 48 Z', type: 'fill', zone: 'petal' },
+          { d: 'M66 40 Q76 34 88 36 Q96 40 94 46 Q90 52 80 50 Q72 48 66 46 Z M54 46 Q44 50 34 46 Q26 40 30 36 Q36 32 46 34 Q54 38 54 42 Z', type: 'fill', zone: 'petal' },
+          { d: 'M64 38 Q70 30 76 28 Q80 30 78 36 Q74 42 68 42 Z M66 46 Q74 50 78 58 Q76 64 70 60 Q66 54 64 48 Z M58 48 Q50 54 44 58 Q40 54 44 48 Q50 42 56 44 Z M56 40 Q50 34 48 28 Q50 26 54 30 Q58 36 58 40 Z', type: 'fill', zone: 'petal' },
+          { d: 'M58 40 Q60 36 64 38 Q68 42 66 46 Q62 48 58 46 Q56 42 58 40 Z', type: 'fill', zone: 'center' },
+          { d: 'M56 78 Q68 74 78 84 Q86 96 82 108 Q76 118 62 122 Q48 124 36 118 Q26 110 24 98 Q24 88 32 80 Q42 74 56 78 Z', type: 'fill', zone: 'pad' },
+          { d: 'M126 68 Q136 66 142 74 Q148 84 146 94 Q140 102 130 104 Q120 104 112 98 Q106 90 108 82 Q112 74 120 68 Q124 66 126 68 Z', type: 'fill', zone: 'pad' },
+          { d: 'M26 42 Q34 40 40 46 Q44 54 42 62 Q36 68 28 68 Q20 66 16 60 Q12 52 16 46 Q20 42 26 42 Z', type: 'fill', zone: 'pad' },
+          { d: 'M128 40 Q126 32 128 22 Q130 14 134 16 Q136 22 136 32 Q134 40 132 42 Z', type: 'fill', zone: 'bud' },
+          // Outer petal edges
+          { d: 'M57 40 Q54 28 56 16 Q58 8 63 10 M63 48 Q66 58 66 70 Q64 76 60 74', type: 'stroke', zone: 'petal', strokeWidth: 0.8 },
+          { d: 'M66 40 Q76 34 88 36 Q96 40 94 46 M54 46 Q44 50 34 46 Q26 40 30 36', type: 'stroke', zone: 'petal', strokeWidth: 0.8 },
+          // Large pad edge
+          { d: 'M56 78 Q68 74 78 84 Q86 96 82 108 Q76 118 62 122', type: 'stroke', zone: 'pad', strokeWidth: 1.0 },
+          // Pad V-notch line
+          { d: 'M56 78 Q54 88 52 98', type: 'stroke', zone: 'pad', strokeWidth: 0.6 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M57 40 Q54 28 56 16 Q58 8 63 10 Q68 14 66 26 Q64 36 63 42 Z M63 48 Q66 58 66 70 Q64 76 60 74 Q56 68 56 58 Q56 50 57 48 Z', type: 'fill', zone: 'petal' },
+          { d: 'M66 40 Q76 34 88 36 Q96 40 94 46 Q90 52 80 50 Q72 48 66 46 Z M54 46 Q44 50 34 46 Q26 40 30 36 Q36 32 46 34 Q54 38 54 42 Z', type: 'fill', zone: 'petal' },
+          { d: 'M64 38 Q70 30 76 28 Q80 30 78 36 Q74 42 68 42 Z M66 46 Q74 50 78 58 Q76 64 70 60 Q66 54 64 48 Z M58 48 Q50 54 44 58 Q40 54 44 48 Q50 42 56 44 Z M56 40 Q50 34 48 28 Q50 26 54 30 Q58 36 58 40 Z', type: 'fill', zone: 'petal' },
+          { d: 'M58 40 Q60 36 64 38 Q68 42 66 46 Q62 48 58 46 Q56 42 58 40 Z', type: 'fill', zone: 'center' },
+          { d: 'M56 78 Q68 74 78 84 Q86 96 82 108 Q76 118 62 122 Q48 124 36 118 Q26 110 24 98 Q24 88 32 80 Q42 74 56 78 Z', type: 'fill', zone: 'pad' },
+          { d: 'M126 68 Q136 66 142 74 Q148 84 146 94 Q140 102 130 104 Q120 104 112 98 Q106 90 108 82 Q112 74 120 68 Q124 66 126 68 Z', type: 'fill', zone: 'pad' },
+          { d: 'M26 42 Q34 40 40 46 Q44 54 42 62 Q36 68 28 68 Q20 66 16 60 Q12 52 16 46 Q20 42 26 42 Z', type: 'fill', zone: 'pad' },
+          { d: 'M128 40 Q126 32 128 22 Q130 14 134 16 Q136 22 136 32 Q134 40 132 42 Z', type: 'fill', zone: 'bud' },
+          { d: 'M57 40 Q54 28 56 16 Q58 8 63 10 M63 48 Q66 58 66 70 Q64 76 60 74', type: 'stroke', zone: 'petal', strokeWidth: 0.8 },
+          { d: 'M66 40 Q76 34 88 36 Q96 40 94 46 M54 46 Q44 50 34 46 Q26 40 30 36', type: 'stroke', zone: 'petal', strokeWidth: 0.8 },
+          { d: 'M56 78 Q68 74 78 84 Q86 96 82 108 Q76 118 62 122', type: 'stroke', zone: 'pad', strokeWidth: 1.0 },
+          { d: 'M56 78 Q54 88 52 98', type: 'stroke', zone: 'pad', strokeWidth: 0.6 },
+          // Petal vein lines
+          { d: 'M59 40 Q56 30 58 20 M62 42 Q62 32 64 24 M68 42 Q76 38 86 38 M66 44 Q74 42 82 42', type: 'stroke', zone: 'petal', strokeWidth: 0.3 },
+          // Center stamen dots
+          { d: 'M60 42 A1.5 1.5 0 1 1 59.99 42 Z M64 40 A1.5 1.5 0 1 1 63.99 40 Z M62 46 A1.5 1.5 0 1 1 61.99 46 Z M66 44 A1.5 1.5 0 1 1 65.99 44 Z', type: 'stroke', zone: 'center', strokeWidth: 0.5 },
+          // Large pad radial veins from center
+          { d: 'M52 98 Q44 88 36 82 M52 98 Q42 100 32 100 M52 98 Q44 108 38 116 M52 98 Q58 106 64 114 M52 98 Q60 94 68 86', type: 'stroke', zone: 'pad', strokeWidth: 0.4 },
+          // Medium pad V-notch
+          { d: 'M126 68 Q124 78 122 86', type: 'stroke', zone: 'pad', strokeWidth: 0.5 },
+          // Bud sepal lines
+          { d: 'M130 38 Q128 30 130 24 M134 40 Q134 32 134 26', type: 'stroke', zone: 'bud', strokeWidth: 0.4 },
+        ],
+      },
+    ],
+  },
+
   // Morning Glory (asagao) — trumpet flower on curling vine
   {
     id: 'morning-glory',
