@@ -173,11 +173,33 @@ Or teardrop shapes for buds:
 
 ### Flora (branches, blossoms, leaves)
 
-- **2–4 zones**: typically `branch`, `petal`/`leaf`/`needle`, `center`/`detail`/`bud`
+- **2–4 zones**: typically `branch`/`stem`, `petal`/`leaf`/`needle`, `center`/`detail`/`bud`
 - **Block**: branch fill(s) as tapered shapes + blossom/leaf silhouette fills + center dot fills
 - **Shape**: + petal division strokes (radiating from center), calyx connections, secondary twig strokes
 - **Detail**: + fine petal veins (thinner parallel to divisions), bark hatching, stamen accents, bud fills at tips
 - Branch should feel like it grew — asymmetric, gently curving, thicker near base
+
+#### Distinguishing Similar Subjects
+
+When a pack has related elements (e.g., lotus AND lily), differentiate them by their natural behavior:
+
+| Subject | Behavior | Visual Approach |
+|---------|----------|----------------|
+| Lotus | Rises above water | Cup-shaped upward petals, round seed pod center, single large pad, tall curved stem |
+| Water Lily | Sits flat on water | Star-shaped radiating petals, small golden center, multiple pads with V-notch |
+| Cherry | Spring canopy | Branch structure with clustered 5-petal blossoms |
+| Wisteria | Hanging cascades | Vine with dangling flower clusters, compound leaves |
+
+#### Cluster/Compound Elements
+
+Some flora work best as **multi-part compositions** combining several sub-elements into one placement:
+
+- **Vary sizes** — large, medium, and small versions of repeated parts (e.g., 3 lily pads of different sizes)
+- **Overlap naturally** — sub-elements should partially overlap, not be arranged in a grid
+- **Include lifecycle** — open blossom + closed bud + spent flower tells a story
+- **Distinct from solo version** — if a solo flower exists, the cluster should differ in character (e.g., lily cluster vs lotus single bloom)
+
+Reference: `lily-cluster` in `kacho-elements.js` — star blossom + 3 pads + bud (8 block fills, 4 zones).
 
 ### Landscape (hills, water, terrain)
 
@@ -189,11 +211,70 @@ Or teardrop shapes for buds:
 
 ### Fauna (birds, fish, insects)
 
-- **3–4 zones**: `body`, `wing`/`fin`/`shell`, `accent`/`eye`/`detail`
-- **Block**: body silhouette + wing/fin silhouettes (separate fills per zone)
-- **Shape**: + body outline, wing divisions, major feature lines (beak, legs, tail fork)
-- **Detail**: + feather marks, scale patterns, eye detail, fine leg segments
-- Capture the animal's characteristic gesture — a crane's curve, a koi's arc, a dragonfly's hover
+#### The Sparrow Pattern (Critical for Birds)
+
+Study `sparrow` in `assets/fauna-elements.js` (lines 542–614). This is the gold standard for bird design. The key breakthrough: every bird must have **separate fill paths for each anatomical part** at block level. A single amorphous body blob creates an unrecognizable shape. Separate parts create recognizable bird anatomy even at block level.
+
+**Block fills for a typical bird (6–10 fills):**
+
+| Part | Zone | Notes |
+|------|------|-------|
+| Body (torso) | body | Core mass — oval, torpedo, or S-curved depending on species |
+| Head | body | Round/oval, overlaps body at neck junction (same zone = same color) |
+| Beak | detail or accent | Species-defining triangle — **always separate, always distinct color** |
+| Wing (folded or swept) | wing | On the back or extended — different shade from body |
+| Tail | body or wing | Species-specific: fan, fork, cocked-up, stubby |
+| Breast | breast | Pale belly overlay (lighter tone, optional) |
+| Legs | detail | Thin triangle fills using M-move sub-paths |
+
+Additional species-specific fills as needed: crown patch (accent), occipital plumes (detail), hackle plumage (body), throat patch (accent), trailing plumes (plume).
+
+#### Beak as Species Identifier
+
+The beak is the most important detail for bird identification. It MUST be:
+- A **separate fill path** (never merged with head)
+- In a **contrasting color zone** (detail or accent — gets a different color)
+- **Proportionally accurate** to the species:
+
+| Species Type | Beak Shape | Proportion (relative to head) |
+|-------------|-----------|-------------------------------|
+| Wader (heron, egret) | Long sharp dagger | 1.0–1.5× head width |
+| Songbird (warbler) | Tiny stub | 0.3× head width |
+| Aerial hunter (swallow) | Very short point | 0.2× head width |
+| Fisher (kingfisher) | Massive dagger | 1.0× head diameter |
+| Seed eater (sparrow) | Small conical triangle | 0.4× head width |
+
+#### Species-Specific Signature Features
+
+Each bird should have 1–2 features that make it instantly recognizable at block level:
+
+- **Heron**: S-curved neck+body, occipital plumes swept back from crown, hackle feathers drooping from lower neck, long dagger beak
+- **Egret**: Trailing aigrette plumes (3 wisps), yellow beak in accent zone, S-neck
+- **Swallow**: Forked tail (2 separate prong fills), scythe wings, torpedo body
+- **Kingfisher**: Oversized head (~equal to body size!), massive beak (1× head)
+- **Warbler**: Plump round body, cocked-up tail, tiny stub beak
+- **Sparrow**: Separate head+body+wing+tail+beak+breast+legs (7 fills)
+- **Crane**: Tall wading posture, long legs, red crown accent
+
+#### Proportional Accuracy
+
+Wings, tails, and beaks must be proportionally correct relative to the body:
+
+- **Measure the body** first (length × width), then size other parts as ratios
+- **Wings**: for perching birds, roughly body length; for in-flight birds, just slightly longer than the tail (not 5× longer)
+- **Beaks**: refer to the proportion table above — undersized beaks make species unrecognizable
+- **Legs**: wading birds (heron, egret) need long legs reaching ~40% of total element height
+- **ViewBox**: fit the content with 2–4px padding — don't leave large empty areas (e.g., a 200px viewBox for content that only reaches 125px)
+
+#### Reference Elements for Fauna
+
+| Element | File | Lines | Key Learning |
+|---------|------|-------|-------------|
+| sparrow | fauna-elements.js | 542–614 | 7 block fills, the anatomy template for all birds |
+| heron-standing | kacho-elements.js | 15–100 | 10 block fills, S-neck, hackle + occipital plumes, long beak |
+| kingfisher | kacho-elements.js | 266–340 | Oversized head, massive beak ratio |
+| koi | fauna-elements.js | 1–80 | Flowing body curve, fin separation |
+| crane | fauna-elements.js | 300–400 | Tall wading posture, minimal but expressive |
 
 ### Objects & Structures (lanterns, boats, buildings)
 
@@ -243,6 +324,18 @@ Every `zone` value in every path must match an `id` in `colorZones`. This is a h
 
 ### ❌ Symmetric mirror copies
 Don't make left and right perfectly mirrored. Vary sizes, angles, and curve control points slightly. Nature doesn't mirror.
+
+### ❌ Single amorphous body blob (fauna)
+Don't create one big fill for the entire body of a bird or animal. Split into anatomically distinct parts: head, body, wing, tail, beak. The sparrow has 7 block fills, not 1. Separate parts = recognizable anatomy.
+
+### ❌ Merged beak
+The beak must always be a **separate fill path** in a **contrasting color zone**. Never merge it into the head fill. The beak shape and color are the primary species identifier.
+
+### ❌ Disproportionate anatomy
+Wings, beaks, and tails must be proportionally accurate to the species. A heron's beak should be ~1.2× head width, not 0.3×. A swallow's wings should be just past the tail, not 5× longer. Reference real proportions.
+
+### ❌ Oversized viewBox
+The viewBox should fit the actual element content with 2–4px padding. A 200px-wide viewBox for content that only reaches 125px wastes space and makes the element look tiny when placed.
 
 ---
 
@@ -459,4 +552,81 @@ Economy                  | block 3–9, shape 5–11, detail 8–16 paths
 Zone separation          | Each zone = one visual role
 Valid references         | Every path.zone ∈ colorZones[].id
 Implied texture          | Suggest, don't cover. 3–6 hatch marks.
+Sparrow pattern (fauna)  | Separate fills: head, body, beak, wing, tail
+Beak = species ID        | Separate fill, contrasting zone, correct proportion
+ViewBox fit              | Fit content with 2–4px padding, no excess
 ```
+
+---
+
+## 11. Designing Elements for Expansion Packs
+
+This section captures process lessons from the Kacho-e (花鳥画) pack development for AI-assisted element creation across future sessions and style pack domains.
+
+### Reference Study First
+
+Before designing any element in a new session:
+
+1. **Read this guide** — especially §2 (Accumulation Rule), §5 (Designing by Subject), and §6 (Anti-Patterns).
+2. **Study 2–3 successful elements** in the same category from `assets/`. Open the JS file and read the actual path data — understand the coordinate space, how many fills, which zones.
+3. **Identify the structural pattern** — for birds, it's the sparrow pattern (separate head/body/beak/wing/tail fills). For flora, it's the cherry-branch pattern (tapered branch fills + separate blossom fills). For clusters, study lily-cluster.
+4. **Follow the pattern**, don't reinvent. Base your new element's structure on the closest successful reference.
+
+### Key Reference Elements by Category
+
+| Category | Gold Standard | File | Key Insight |
+|----------|--------------|------|-------------|
+| Small birds | sparrow | fauna-elements.js:542 | 7 separate fills: head, body, wing, tail, beak, breast, legs |
+| Wading birds | heron-standing | kacho-elements.js | 10 fills: S-neck body, head, long beak, crown, occipital plumes, wing, legs, hackle |
+| Large-beak birds | kingfisher | kacho-elements.js | Oversized head (~equal to body), beak = 1× head diameter |
+| Flora (single) | lotus | kacho-elements.js | Rising petals, seed pod center, round pad leaf, tapered stem |
+| Flora (cluster) | lily-cluster | kacho-elements.js | Star blossom + 3 pads + bud, 8 block fills, 4 zones |
+| Flora (branch) | cherry-branch | elements.js | Tapered branch fill + individual blossom fills |
+| Landscape | hills | elements.js | Overlapping terrain silhouettes by depth |
+| Structures | lantern | elements.js | Separate fills per structural section |
+
+### The Blind SVG Challenge
+
+Generating SVG path coordinates without visual rendering feedback is difficult. Expect 2–3 rounds of refinement. To mitigate:
+
+1. **Base proportions on existing elements** — if the sparrow body is a ~35×30px oval, a warbler body should be similar scale. Don't guess at proportions.
+2. **Use the viewBox as your canvas** — sketch mentally where major parts sit relative to viewBox center and edges before writing paths.
+3. **Test with the element harness** — `dev/element-harness.html` renders elements in-browser for visual inspection. Use it between iterations.
+4. **Proportions are the #1 issue** — beaks too short, wings too long, bodies too narrow. When the user says something is "off," it's almost always a proportion problem.
+
+### Common Proportion Mistakes
+
+| Issue | Symptom | Fix |
+|-------|---------|-----|
+| Wings too long | Bird looks like a plane | Scale wing x-extent to just past tail tip |
+| Beak too short | Species unrecognizable | Reference the beak proportion table in §5 |
+| Single body blob | Amorphous unidentifiable shape | Split into separate head + body + wing + tail fills |
+| Empty viewBox space | Element looks tiny when placed | Shrink viewBox to fit content with 2–4px padding |
+| Perfectly symmetric | Looks computer-generated | Vary petal sizes, wing angles, branch curves |
+
+### Iterative Refinement Workflow
+
+This is the workflow that produces good results:
+
+1. **Draft v1** following a reference pattern — get the basic anatomy right with correct fill separation and zones
+2. **Validate** — run the Node.js validation script (§7). Fix any accumulation or zone errors.
+3. **User tests in browser** — the user places the element and evaluates visually
+4. **Refine proportions** — adjust beak length, wing span, body shape based on feedback. This is surgical: change specific `d` values, update the same path at all 3 carve levels (verbatim accumulation!).
+5. **Add species-specific features** — hackle plumage, occipital plumes, forked tail, etc.
+6. **Re-validate and commit**
+
+### Expansion Pack File Structure
+
+Each expansion pack creates two files in `assets/`:
+
+```
+assets/
+  {pack}-elements.js  — Element definitions (array: MOKURI_{PACK}_ELEMENTS)
+  {pack}-pack.js       — Pack manifest (palettes, journeys, prompts, presets)
+```
+
+Both are wired into `index.html` via `<script>` tags and merged at startup. Elements use `pack: '{pack-id}'` to identify their source pack. See `kacho-elements.js` and `kacho-pack.js` as the template.
+
+### Writing JS Element Files
+
+**Use the `create` or `edit` tools** — never write element JS via PowerShell echo/redirection. Template literals, backticks, and `${}` in JavaScript cause escaping nightmares in shell commands. The file editing tools handle this correctly.
