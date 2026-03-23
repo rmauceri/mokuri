@@ -16,7 +16,7 @@ const MOKURI_KACHOE_ELEMENTS = [
     name: 'Heron',
     category: 'fauna',
     pack: 'kacho-e',
-    viewBox: '-16 0 116 210',
+    viewBox: '0 0 116 210',
     suggestedLayer: 'foreground',
     colorZones: [
       { id: 'body', defaultPaletteSlot: 2 },
@@ -29,75 +29,75 @@ const MOKURI_KACHOE_ELEMENTS = [
         name: 'block',
         paths: [
           // Body: S-curved neck + compact torso + rump (no head, no legs)
-          { d: 'M42 32 Q50 40 48 54 Q44 68 38 80 Q34 92 40 102 Q48 110 56 120 Q62 132 60 144 Q56 152 50 156 Q42 156 34 148 Q26 138 22 124 Q18 108 22 96 Q28 82 34 68 Q40 54 44 42 Q46 34 42 32 Z', type: 'fill', zone: 'body' },
+          { d: 'M58 32 Q66 40 64 54 Q60 68 54 80 Q50 92 56 102 Q64 110 72 120 Q78 132 76 144 Q72 152 66 156 Q58 156 50 148 Q42 138 38 124 Q34 108 38 96 Q44 82 50 68 Q56 54 60 42 Q62 34 58 32 Z', type: 'fill', zone: 'body' },
           // Head: round shape at top, overlaps body at neck
-          { d: 'M24 18 Q24 10 34 8 Q44 8 50 16 Q54 24 48 32 Q40 38 32 36 Q22 32 20 24 Q20 18 24 18 Z', type: 'fill', zone: 'body' },
+          { d: 'M40 18 Q40 10 50 8 Q60 8 66 16 Q70 24 64 32 Q56 38 48 36 Q38 32 36 24 Q36 18 40 18 Z', type: 'fill', zone: 'body' },
           // Beak: long sharp dagger, detail zone — THE signature
-          { d: 'M-13 24 L22 19 L22 29 Z', type: 'fill', zone: 'detail' },
+          { d: 'M3 24 L38 19 L38 29 Z', type: 'fill', zone: 'detail' },
           // Folded wing
-          { d: 'M42 102 Q54 96 62 106 Q68 118 66 132 Q62 144 54 148 Q46 148 40 140 Q36 130 38 116 Q40 106 42 102 Z', type: 'fill', zone: 'wing' },
+          { d: 'M58 102 Q70 96 78 106 Q84 118 82 132 Q78 144 70 148 Q62 148 56 140 Q52 130 54 116 Q56 106 58 102 Z', type: 'fill', zone: 'wing' },
           // Legs: two thin triangles from rump to feet
-          { d: 'M48 154 L46 190 L40 200 M48 154 L52 190 L46 200 M46 190 L42 202 M52 190 L48 202', type: 'fill', zone: 'detail' },
+          { d: 'M64 154 L62 190 L56 200 M64 154 L68 190 L62 200 M62 190 L58 202 M68 190 L64 202', type: 'fill', zone: 'detail' },
           // Crown patch (red/accent dot)
-          { d: 'M32 10 Q38 6 42 10 Q40 16 34 16 Q30 14 32 10 Z', type: 'fill', zone: 'accent' },
+          { d: 'M48 10 Q54 6 58 10 Q56 16 50 16 Q46 14 48 10 Z', type: 'fill', zone: 'accent' },
           // Occipital plumes — swept-back head feathers
-          { d: 'M40 10 Q50 6 62 2 Q62 6 52 10 Q46 12 40 10 Z', type: 'fill', zone: 'detail' },
-          { d: 'M42 14 Q52 10 64 8 Q64 12 54 14 Q48 16 42 14 Z', type: 'fill', zone: 'detail' },
+          { d: 'M56 10 Q66 6 78 2 Q78 6 68 10 Q62 12 56 10 Z', type: 'fill', zone: 'detail' },
+          { d: 'M58 14 Q68 10 80 8 Q80 12 70 14 Q64 16 58 14 Z', type: 'fill', zone: 'detail' },
           // Lower neck hackle plumage — shaggy draping feathers
-          { d: 'M34 62 Q30 70 26 80 Q24 84 28 82 Q32 74 36 66 Z', type: 'fill', zone: 'body' },
-          { d: 'M30 70 Q26 78 22 88 Q20 92 24 90 Q28 82 32 74 Z', type: 'fill', zone: 'body' },
+          { d: 'M50 62 Q46 70 42 80 Q40 84 44 82 Q48 74 52 66 Z', type: 'fill', zone: 'body' },
+          { d: 'M46 70 Q42 78 38 88 Q36 92 40 90 Q44 82 48 74 Z', type: 'fill', zone: 'body' },
         ],
       },
       {
         name: 'shape',
         paths: [
-          { d: 'M42 32 Q50 40 48 54 Q44 68 38 80 Q34 92 40 102 Q48 110 56 120 Q62 132 60 144 Q56 152 50 156 Q42 156 34 148 Q26 138 22 124 Q18 108 22 96 Q28 82 34 68 Q40 54 44 42 Q46 34 42 32 Z', type: 'fill', zone: 'body' },
-          { d: 'M24 18 Q24 10 34 8 Q44 8 50 16 Q54 24 48 32 Q40 38 32 36 Q22 32 20 24 Q20 18 24 18 Z', type: 'fill', zone: 'body' },
-          { d: 'M-13 24 L22 19 L22 29 Z', type: 'fill', zone: 'detail' },
-          { d: 'M42 102 Q54 96 62 106 Q68 118 66 132 Q62 144 54 148 Q46 148 40 140 Q36 130 38 116 Q40 106 42 102 Z', type: 'fill', zone: 'wing' },
-          { d: 'M48 154 L46 190 L40 200 M48 154 L52 190 L46 200 M46 190 L42 202 M52 190 L48 202', type: 'fill', zone: 'detail' },
-          { d: 'M32 10 Q38 6 42 10 Q40 16 34 16 Q30 14 32 10 Z', type: 'fill', zone: 'accent' },
-          { d: 'M40 10 Q50 6 62 2 Q62 6 52 10 Q46 12 40 10 Z', type: 'fill', zone: 'detail' },
-          { d: 'M42 14 Q52 10 64 8 Q64 12 54 14 Q48 16 42 14 Z', type: 'fill', zone: 'detail' },
-          { d: 'M34 62 Q30 70 26 80 Q24 84 28 82 Q32 74 36 66 Z', type: 'fill', zone: 'body' },
-          { d: 'M30 70 Q26 78 22 88 Q20 92 24 90 Q28 82 32 74 Z', type: 'fill', zone: 'body' },
+          { d: 'M58 32 Q66 40 64 54 Q60 68 54 80 Q50 92 56 102 Q64 110 72 120 Q78 132 76 144 Q72 152 66 156 Q58 156 50 148 Q42 138 38 124 Q34 108 38 96 Q44 82 50 68 Q56 54 60 42 Q62 34 58 32 Z', type: 'fill', zone: 'body' },
+          { d: 'M40 18 Q40 10 50 8 Q60 8 66 16 Q70 24 64 32 Q56 38 48 36 Q38 32 36 24 Q36 18 40 18 Z', type: 'fill', zone: 'body' },
+          { d: 'M3 24 L38 19 L38 29 Z', type: 'fill', zone: 'detail' },
+          { d: 'M58 102 Q70 96 78 106 Q84 118 82 132 Q78 144 70 148 Q62 148 56 140 Q52 130 54 116 Q56 106 58 102 Z', type: 'fill', zone: 'wing' },
+          { d: 'M64 154 L62 190 L56 200 M64 154 L68 190 L62 200 M62 190 L58 202 M68 190 L64 202', type: 'fill', zone: 'detail' },
+          { d: 'M48 10 Q54 6 58 10 Q56 16 50 16 Q46 14 48 10 Z', type: 'fill', zone: 'accent' },
+          { d: 'M56 10 Q66 6 78 2 Q78 6 68 10 Q62 12 56 10 Z', type: 'fill', zone: 'detail' },
+          { d: 'M58 14 Q68 10 80 8 Q80 12 70 14 Q64 16 58 14 Z', type: 'fill', zone: 'detail' },
+          { d: 'M50 62 Q46 70 42 80 Q40 84 44 82 Q48 74 52 66 Z', type: 'fill', zone: 'body' },
+          { d: 'M46 70 Q42 78 38 88 Q36 92 40 90 Q44 82 48 74 Z', type: 'fill', zone: 'body' },
           // Eye
-          { d: 'M36 22 A3 3 0 1 1 35.99 22 Z', type: 'fill', zone: 'detail' },
+          { d: 'M52 22 A3 3 0 1 1 51.99 22 Z', type: 'fill', zone: 'detail' },
           // Head outline
-          { d: 'M24 18 Q24 10 34 8 Q44 8 50 16 Q54 24 48 32', type: 'stroke', zone: 'detail', strokeWidth: 1.2 },
+          { d: 'M40 18 Q40 10 50 8 Q60 8 66 16 Q70 24 64 32', type: 'stroke', zone: 'detail', strokeWidth: 1.2 },
           // S-neck contour (back)
-          { d: 'M42 32 Q50 40 48 54 Q44 68 38 80 Q34 92 40 102', type: 'stroke', zone: 'body', strokeWidth: 1.0 },
+          { d: 'M58 32 Q66 40 64 54 Q60 68 54 80 Q50 92 56 102', type: 'stroke', zone: 'body', strokeWidth: 1.0 },
           // Wing edge
-          { d: 'M42 102 Q54 96 62 106 Q68 118 66 132', type: 'stroke', zone: 'wing', strokeWidth: 0.8 },
+          { d: 'M58 102 Q70 96 78 106 Q84 118 82 132', type: 'stroke', zone: 'wing', strokeWidth: 0.8 },
         ],
       },
       {
         name: 'detail',
         paths: [
-          { d: 'M42 32 Q50 40 48 54 Q44 68 38 80 Q34 92 40 102 Q48 110 56 120 Q62 132 60 144 Q56 152 50 156 Q42 156 34 148 Q26 138 22 124 Q18 108 22 96 Q28 82 34 68 Q40 54 44 42 Q46 34 42 32 Z', type: 'fill', zone: 'body' },
-          { d: 'M24 18 Q24 10 34 8 Q44 8 50 16 Q54 24 48 32 Q40 38 32 36 Q22 32 20 24 Q20 18 24 18 Z', type: 'fill', zone: 'body' },
-          { d: 'M-13 24 L22 19 L22 29 Z', type: 'fill', zone: 'detail' },
-          { d: 'M42 102 Q54 96 62 106 Q68 118 66 132 Q62 144 54 148 Q46 148 40 140 Q36 130 38 116 Q40 106 42 102 Z', type: 'fill', zone: 'wing' },
-          { d: 'M48 154 L46 190 L40 200 M48 154 L52 190 L46 200 M46 190 L42 202 M52 190 L48 202', type: 'fill', zone: 'detail' },
-          { d: 'M32 10 Q38 6 42 10 Q40 16 34 16 Q30 14 32 10 Z', type: 'fill', zone: 'accent' },
-          { d: 'M40 10 Q50 6 62 2 Q62 6 52 10 Q46 12 40 10 Z', type: 'fill', zone: 'detail' },
-          { d: 'M42 14 Q52 10 64 8 Q64 12 54 14 Q48 16 42 14 Z', type: 'fill', zone: 'detail' },
-          { d: 'M34 62 Q30 70 26 80 Q24 84 28 82 Q32 74 36 66 Z', type: 'fill', zone: 'body' },
-          { d: 'M30 70 Q26 78 22 88 Q20 92 24 90 Q28 82 32 74 Z', type: 'fill', zone: 'body' },
-          { d: 'M36 22 A3 3 0 1 1 35.99 22 Z', type: 'fill', zone: 'detail' },
-          { d: 'M24 18 Q24 10 34 8 Q44 8 50 16 Q54 24 48 32', type: 'stroke', zone: 'detail', strokeWidth: 1.2 },
-          { d: 'M42 32 Q50 40 48 54 Q44 68 38 80 Q34 92 40 102', type: 'stroke', zone: 'body', strokeWidth: 1.0 },
-          { d: 'M42 102 Q54 96 62 106 Q68 118 66 132', type: 'stroke', zone: 'wing', strokeWidth: 0.8 },
+          { d: 'M58 32 Q66 40 64 54 Q60 68 54 80 Q50 92 56 102 Q64 110 72 120 Q78 132 76 144 Q72 152 66 156 Q58 156 50 148 Q42 138 38 124 Q34 108 38 96 Q44 82 50 68 Q56 54 60 42 Q62 34 58 32 Z', type: 'fill', zone: 'body' },
+          { d: 'M40 18 Q40 10 50 8 Q60 8 66 16 Q70 24 64 32 Q56 38 48 36 Q38 32 36 24 Q36 18 40 18 Z', type: 'fill', zone: 'body' },
+          { d: 'M3 24 L38 19 L38 29 Z', type: 'fill', zone: 'detail' },
+          { d: 'M58 102 Q70 96 78 106 Q84 118 82 132 Q78 144 70 148 Q62 148 56 140 Q52 130 54 116 Q56 106 58 102 Z', type: 'fill', zone: 'wing' },
+          { d: 'M64 154 L62 190 L56 200 M64 154 L68 190 L62 200 M62 190 L58 202 M68 190 L64 202', type: 'fill', zone: 'detail' },
+          { d: 'M48 10 Q54 6 58 10 Q56 16 50 16 Q46 14 48 10 Z', type: 'fill', zone: 'accent' },
+          { d: 'M56 10 Q66 6 78 2 Q78 6 68 10 Q62 12 56 10 Z', type: 'fill', zone: 'detail' },
+          { d: 'M58 14 Q68 10 80 8 Q80 12 70 14 Q64 16 58 14 Z', type: 'fill', zone: 'detail' },
+          { d: 'M50 62 Q46 70 42 80 Q40 84 44 82 Q48 74 52 66 Z', type: 'fill', zone: 'body' },
+          { d: 'M46 70 Q42 78 38 88 Q36 92 40 90 Q44 82 48 74 Z', type: 'fill', zone: 'body' },
+          { d: 'M52 22 A3 3 0 1 1 51.99 22 Z', type: 'fill', zone: 'detail' },
+          { d: 'M40 18 Q40 10 50 8 Q60 8 66 16 Q70 24 64 32', type: 'stroke', zone: 'detail', strokeWidth: 1.2 },
+          { d: 'M58 32 Q66 40 64 54 Q60 68 54 80 Q50 92 56 102', type: 'stroke', zone: 'body', strokeWidth: 1.0 },
+          { d: 'M58 102 Q70 96 78 106 Q84 118 82 132', type: 'stroke', zone: 'wing', strokeWidth: 0.8 },
           // Breast feather marks
-          { d: 'M26 108 L30 104 M24 116 L28 112 M22 124 L26 120 M28 100 L32 96', type: 'stroke', zone: 'body', strokeWidth: 0.6 },
+          { d: 'M42 108 L46 104 M40 116 L44 112 M38 124 L42 120 M44 100 L48 96', type: 'stroke', zone: 'body', strokeWidth: 0.6 },
           // Wing feather lines
-          { d: 'M46 108 Q52 114 54 122 M48 114 Q54 120 56 128 M44 120 Q50 126 52 134', type: 'stroke', zone: 'wing', strokeWidth: 0.5 },
+          { d: 'M62 108 Q68 114 70 122 M64 114 Q70 120 72 128 M60 120 Q66 126 68 134', type: 'stroke', zone: 'wing', strokeWidth: 0.5 },
           // Beak ridge
-          { d: 'M-13 24 L22 24', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
+          { d: 'M3 24 L38 24', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
           // Neck hackle wisps
-          { d: 'M36 58 Q32 66 28 74 M32 64 Q28 72 24 80 M28 72 Q24 80 20 88', type: 'stroke', zone: 'body', strokeWidth: 0.4 },
+          { d: 'M52 58 Q48 66 44 74 M48 64 Q44 72 40 80 M44 72 Q40 80 36 88', type: 'stroke', zone: 'body', strokeWidth: 0.4 },
           // Foot toes
-          { d: 'M40 200 L36 206 L44 206 M46 200 L42 206 L50 206', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
+          { d: 'M56 200 L52 206 L60 206 M62 200 L58 206 L66 206', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
         ],
       },
     ],
@@ -352,7 +352,7 @@ const MOKURI_KACHOE_ELEMENTS = [
     name: 'Egret',
     category: 'fauna',
     pack: 'kacho-e',
-    viewBox: '-22 0 132 230',
+    viewBox: '0 0 132 230',
     suggestedLayer: 'foreground',
     colorZones: [
       { id: 'body', defaultPaletteSlot: 4 },
@@ -365,67 +365,67 @@ const MOKURI_KACHOE_ELEMENTS = [
         name: 'block',
         paths: [
           // Body: S-curved neck + slender torso
-          { d: 'M46 32 Q54 40 52 54 Q48 68 42 80 Q38 92 42 102 Q50 110 58 120 Q64 132 62 144 Q58 152 52 158 Q44 160 36 152 Q28 142 24 128 Q20 112 24 98 Q30 84 36 70 Q42 54 46 42 Q48 34 46 32 Z', type: 'fill', zone: 'body' },
+          { d: 'M68 32 Q76 40 74 54 Q70 68 64 80 Q60 92 64 102 Q72 110 80 120 Q86 132 84 144 Q80 152 74 158 Q66 160 58 152 Q50 142 46 128 Q42 112 46 98 Q52 84 58 70 Q64 54 68 42 Q70 34 68 32 Z', type: 'fill', zone: 'body' },
           // Head
-          { d: 'M26 18 Q28 10 38 8 Q48 8 54 16 Q58 24 52 32 Q44 38 34 36 Q24 30 22 24 Q22 18 26 18 Z', type: 'fill', zone: 'body' },
+          { d: 'M48 18 Q50 10 60 8 Q70 8 76 16 Q80 24 74 32 Q66 38 56 36 Q46 30 44 24 Q44 18 48 18 Z', type: 'fill', zone: 'body' },
           // Beak: long thin needle, accent color (yellow for egret)
-          { d: 'M-20 22 L24 18 L24 26 Z', type: 'fill', zone: 'accent' },
+          { d: 'M2 22 L46 18 L46 26 Z', type: 'fill', zone: 'accent' },
           // Trailing plume 1 (the aigrette — signature breeding plumage)
-          { d: 'M60 118 Q70 114 80 106 Q88 98 94 92 Q90 100 82 108 Q74 116 64 122 Z', type: 'fill', zone: 'plume' },
+          { d: 'M82 118 Q92 114 102 106 Q110 98 116 92 Q112 100 104 108 Q96 116 86 122 Z', type: 'fill', zone: 'plume' },
           // Trailing plume 2
-          { d: 'M58 128 Q68 124 78 116 Q86 108 92 102 Q88 110 80 118 Q72 128 62 132 Z', type: 'fill', zone: 'plume' },
+          { d: 'M80 128 Q90 124 100 116 Q108 108 114 102 Q110 110 102 118 Q94 128 84 132 Z', type: 'fill', zone: 'plume' },
           // Trailing plume 3
-          { d: 'M56 136 Q66 132 74 126 Q82 118 88 112 Q84 120 76 128 Q68 136 60 140 Z', type: 'fill', zone: 'plume' },
+          { d: 'M78 136 Q88 132 96 126 Q104 118 110 112 Q106 120 98 128 Q90 136 82 140 Z', type: 'fill', zone: 'plume' },
           // Folded wing
-          { d: 'M44 102 Q56 96 64 106 Q70 118 68 132 Q64 144 56 148 Q48 150 42 142 Q38 132 40 118 Q42 106 44 102 Z', type: 'fill', zone: 'body' },
+          { d: 'M66 102 Q78 96 86 106 Q92 118 90 132 Q86 144 78 148 Q70 150 64 142 Q60 132 62 118 Q64 106 66 102 Z', type: 'fill', zone: 'body' },
           // Long legs
-          { d: 'M50 156 L48 200 L42 210 M46 156 L44 200 L38 210 M48 200 L44 214 M44 200 L40 214', type: 'fill', zone: 'detail' },
+          { d: 'M72 156 L70 200 L64 210 M68 156 L66 200 L60 210 M70 200 L66 214 M66 200 L62 214', type: 'fill', zone: 'detail' },
         ],
       },
       {
         name: 'shape',
         paths: [
-          { d: 'M46 32 Q54 40 52 54 Q48 68 42 80 Q38 92 42 102 Q50 110 58 120 Q64 132 62 144 Q58 152 52 158 Q44 160 36 152 Q28 142 24 128 Q20 112 24 98 Q30 84 36 70 Q42 54 46 42 Q48 34 46 32 Z', type: 'fill', zone: 'body' },
-          { d: 'M26 18 Q28 10 38 8 Q48 8 54 16 Q58 24 52 32 Q44 38 34 36 Q24 30 22 24 Q22 18 26 18 Z', type: 'fill', zone: 'body' },
-          { d: 'M-20 22 L24 18 L24 26 Z', type: 'fill', zone: 'accent' },
-          { d: 'M60 118 Q70 114 80 106 Q88 98 94 92 Q90 100 82 108 Q74 116 64 122 Z', type: 'fill', zone: 'plume' },
-          { d: 'M58 128 Q68 124 78 116 Q86 108 92 102 Q88 110 80 118 Q72 128 62 132 Z', type: 'fill', zone: 'plume' },
-          { d: 'M56 136 Q66 132 74 126 Q82 118 88 112 Q84 120 76 128 Q68 136 60 140 Z', type: 'fill', zone: 'plume' },
-          { d: 'M44 102 Q56 96 64 106 Q70 118 68 132 Q64 144 56 148 Q48 150 42 142 Q38 132 40 118 Q42 106 44 102 Z', type: 'fill', zone: 'body' },
-          { d: 'M50 156 L48 200 L42 210 M46 156 L44 200 L38 210 M48 200 L44 214 M44 200 L40 214', type: 'fill', zone: 'detail' },
+          { d: 'M68 32 Q76 40 74 54 Q70 68 64 80 Q60 92 64 102 Q72 110 80 120 Q86 132 84 144 Q80 152 74 158 Q66 160 58 152 Q50 142 46 128 Q42 112 46 98 Q52 84 58 70 Q64 54 68 42 Q70 34 68 32 Z', type: 'fill', zone: 'body' },
+          { d: 'M48 18 Q50 10 60 8 Q70 8 76 16 Q80 24 74 32 Q66 38 56 36 Q46 30 44 24 Q44 18 48 18 Z', type: 'fill', zone: 'body' },
+          { d: 'M2 22 L46 18 L46 26 Z', type: 'fill', zone: 'accent' },
+          { d: 'M82 118 Q92 114 102 106 Q110 98 116 92 Q112 100 104 108 Q96 116 86 122 Z', type: 'fill', zone: 'plume' },
+          { d: 'M80 128 Q90 124 100 116 Q108 108 114 102 Q110 110 102 118 Q94 128 84 132 Z', type: 'fill', zone: 'plume' },
+          { d: 'M78 136 Q88 132 96 126 Q104 118 110 112 Q106 120 98 128 Q90 136 82 140 Z', type: 'fill', zone: 'plume' },
+          { d: 'M66 102 Q78 96 86 106 Q92 118 90 132 Q86 144 78 148 Q70 150 64 142 Q60 132 62 118 Q64 106 66 102 Z', type: 'fill', zone: 'body' },
+          { d: 'M72 156 L70 200 L64 210 M68 156 L66 200 L60 210 M70 200 L66 214 M66 200 L62 214', type: 'fill', zone: 'detail' },
           // Eye
-          { d: 'M38 22 A2.5 2.5 0 1 1 37.99 22 Z', type: 'fill', zone: 'detail' },
+          { d: 'M60 22 A2.5 2.5 0 1 1 59.99 22 Z', type: 'fill', zone: 'detail' },
           // Head outline
-          { d: 'M26 18 Q28 10 38 8 Q48 8 54 16 Q58 24 52 32', type: 'stroke', zone: 'detail', strokeWidth: 1.2 },
+          { d: 'M48 18 Q50 10 60 8 Q70 8 76 16 Q80 24 74 32', type: 'stroke', zone: 'detail', strokeWidth: 1.2 },
           // S-neck contour
-          { d: 'M46 32 Q54 40 52 54 Q48 68 42 80 Q38 92 42 102', type: 'stroke', zone: 'body', strokeWidth: 1.0 },
+          { d: 'M68 32 Q76 40 74 54 Q70 68 64 80 Q60 92 64 102', type: 'stroke', zone: 'body', strokeWidth: 1.0 },
           // Plume trailing edges
-          { d: 'M60 118 Q70 114 80 106 Q88 98 94 92 M58 128 Q68 124 78 116 M56 136 Q66 132 74 126', type: 'stroke', zone: 'plume', strokeWidth: 0.5 },
+          { d: 'M82 118 Q92 114 102 106 Q110 98 116 92 M80 128 Q90 124 100 116 M78 136 Q88 132 96 126', type: 'stroke', zone: 'plume', strokeWidth: 0.5 },
         ],
       },
       {
         name: 'detail',
         paths: [
-          { d: 'M46 32 Q54 40 52 54 Q48 68 42 80 Q38 92 42 102 Q50 110 58 120 Q64 132 62 144 Q58 152 52 158 Q44 160 36 152 Q28 142 24 128 Q20 112 24 98 Q30 84 36 70 Q42 54 46 42 Q48 34 46 32 Z', type: 'fill', zone: 'body' },
-          { d: 'M26 18 Q28 10 38 8 Q48 8 54 16 Q58 24 52 32 Q44 38 34 36 Q24 30 22 24 Q22 18 26 18 Z', type: 'fill', zone: 'body' },
-          { d: 'M-20 22 L24 18 L24 26 Z', type: 'fill', zone: 'accent' },
-          { d: 'M60 118 Q70 114 80 106 Q88 98 94 92 Q90 100 82 108 Q74 116 64 122 Z', type: 'fill', zone: 'plume' },
-          { d: 'M58 128 Q68 124 78 116 Q86 108 92 102 Q88 110 80 118 Q72 128 62 132 Z', type: 'fill', zone: 'plume' },
-          { d: 'M56 136 Q66 132 74 126 Q82 118 88 112 Q84 120 76 128 Q68 136 60 140 Z', type: 'fill', zone: 'plume' },
-          { d: 'M44 102 Q56 96 64 106 Q70 118 68 132 Q64 144 56 148 Q48 150 42 142 Q38 132 40 118 Q42 106 44 102 Z', type: 'fill', zone: 'body' },
-          { d: 'M50 156 L48 200 L42 210 M46 156 L44 200 L38 210 M48 200 L44 214 M44 200 L40 214', type: 'fill', zone: 'detail' },
-          { d: 'M38 22 A2.5 2.5 0 1 1 37.99 22 Z', type: 'fill', zone: 'detail' },
-          { d: 'M26 18 Q28 10 38 8 Q48 8 54 16 Q58 24 52 32', type: 'stroke', zone: 'detail', strokeWidth: 1.2 },
-          { d: 'M46 32 Q54 40 52 54 Q48 68 42 80 Q38 92 42 102', type: 'stroke', zone: 'body', strokeWidth: 1.0 },
-          { d: 'M60 118 Q70 114 80 106 Q88 98 94 92 M58 128 Q68 124 78 116 M56 136 Q66 132 74 126', type: 'stroke', zone: 'plume', strokeWidth: 0.5 },
+          { d: 'M68 32 Q76 40 74 54 Q70 68 64 80 Q60 92 64 102 Q72 110 80 120 Q86 132 84 144 Q80 152 74 158 Q66 160 58 152 Q50 142 46 128 Q42 112 46 98 Q52 84 58 70 Q64 54 68 42 Q70 34 68 32 Z', type: 'fill', zone: 'body' },
+          { d: 'M48 18 Q50 10 60 8 Q70 8 76 16 Q80 24 74 32 Q66 38 56 36 Q46 30 44 24 Q44 18 48 18 Z', type: 'fill', zone: 'body' },
+          { d: 'M2 22 L46 18 L46 26 Z', type: 'fill', zone: 'accent' },
+          { d: 'M82 118 Q92 114 102 106 Q110 98 116 92 Q112 100 104 108 Q96 116 86 122 Z', type: 'fill', zone: 'plume' },
+          { d: 'M80 128 Q90 124 100 116 Q108 108 114 102 Q110 110 102 118 Q94 128 84 132 Z', type: 'fill', zone: 'plume' },
+          { d: 'M78 136 Q88 132 96 126 Q104 118 110 112 Q106 120 98 128 Q90 136 82 140 Z', type: 'fill', zone: 'plume' },
+          { d: 'M66 102 Q78 96 86 106 Q92 118 90 132 Q86 144 78 148 Q70 150 64 142 Q60 132 62 118 Q64 106 66 102 Z', type: 'fill', zone: 'body' },
+          { d: 'M72 156 L70 200 L64 210 M68 156 L66 200 L60 210 M70 200 L66 214 M66 200 L62 214', type: 'fill', zone: 'detail' },
+          { d: 'M60 22 A2.5 2.5 0 1 1 59.99 22 Z', type: 'fill', zone: 'detail' },
+          { d: 'M48 18 Q50 10 60 8 Q70 8 76 16 Q80 24 74 32', type: 'stroke', zone: 'detail', strokeWidth: 1.2 },
+          { d: 'M68 32 Q76 40 74 54 Q70 68 64 80 Q60 92 64 102', type: 'stroke', zone: 'body', strokeWidth: 1.0 },
+          { d: 'M82 118 Q92 114 102 106 Q110 98 116 92 M80 128 Q90 124 100 116 M78 136 Q88 132 96 126', type: 'stroke', zone: 'plume', strokeWidth: 0.5 },
           // Breast feather marks
-          { d: 'M28 108 L32 104 M26 116 L30 112 M24 124 L28 120 M30 100 L34 96', type: 'stroke', zone: 'body', strokeWidth: 0.5 },
+          { d: 'M50 108 L54 104 M48 116 L52 112 M46 124 L50 120 M52 100 L56 96', type: 'stroke', zone: 'body', strokeWidth: 0.5 },
           // Plume wisps
-          { d: 'M76 102 Q82 96 88 92 M72 112 Q78 106 84 102 M68 122 Q74 116 80 112', type: 'stroke', zone: 'plume', strokeWidth: 0.3 },
+          { d: 'M98 102 Q104 96 110 92 M94 112 Q100 106 106 102 M90 122 Q96 116 102 112', type: 'stroke', zone: 'plume', strokeWidth: 0.3 },
           // Beak ridge
-          { d: 'M-20 22 L24 22', type: 'stroke', zone: 'accent', strokeWidth: 0.5 },
+          { d: 'M2 22 L46 22', type: 'stroke', zone: 'accent', strokeWidth: 0.5 },
           // Foot toes
-          { d: 'M42 210 L38 218 L46 218 M38 210 L34 218 L42 218', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
+          { d: 'M64 210 L60 218 L68 218 M60 210 L56 218 L64 218', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
         ],
       },
     ],
