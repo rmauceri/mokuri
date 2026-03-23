@@ -562,7 +562,7 @@ const MOKURI_FAUNA_ELEMENTS = [
           // Head
           { d: 'M55 35 Q50 25 45 20 Q38 15 32 18 Q28 22 30 30 Q32 35 38 38 Q45 40 55 38 Z', type: 'fill', zone: 'body' },
           // Wing
-          { d: 'M60 42 Q75 38 88 42 Q98 48 100 55 Q95 60 85 58 Q72 55 62 50 Q58 48 60 42 Z', type: 'fill', zone: 'wing' },
+          { d: 'M60 42 Q72 38 82 42 Q90 48 92 55 Q88 60 80 58 Q70 55 62 50 Q58 48 60 42 Z', type: 'fill', zone: 'wing' },
           // Tail
           { d: 'M85 55 Q100 50 110 48 Q115 50 112 55 Q105 58 92 60 Z', type: 'fill', zone: 'wing' },
           // Beak
@@ -577,14 +577,14 @@ const MOKURI_FAUNA_ELEMENTS = [
           { d: 'M55 35 Q75 30 85 40 Q95 50 92 65 Q90 78 80 85 Q65 92 50 88 Q35 82 30 68 Q28 55 35 42 Q42 35 55 35 Z', type: 'fill', zone: 'body' },
           { d: 'M50 55 Q58 50 68 52 Q78 56 80 68 Q80 78 72 85 Q62 90 52 85 Q42 78 40 68 Q40 58 50 55 Z', type: 'fill', zone: 'breast' },
           { d: 'M55 35 Q50 25 45 20 Q38 15 32 18 Q28 22 30 30 Q32 35 38 38 Q45 40 55 38 Z', type: 'fill', zone: 'body' },
-          { d: 'M60 42 Q75 38 88 42 Q98 48 100 55 Q95 60 85 58 Q72 55 62 50 Q58 48 60 42 Z', type: 'fill', zone: 'wing' },
+          { d: 'M60 42 Q72 38 82 42 Q90 48 92 55 Q88 60 80 58 Q70 55 62 50 Q58 48 60 42 Z', type: 'fill', zone: 'wing' },
           { d: 'M85 55 Q100 50 110 48 Q115 50 112 55 Q105 58 92 60 Z', type: 'fill', zone: 'wing' },
           { d: 'M30 25 L18 22 L28 28 Z', type: 'fill', zone: 'detail' },
           { d: 'M55 88 L52 100 L48 105 M55 88 L58 100 L62 105 M58 100 L55 105', type: 'stroke', zone: 'detail', strokeWidth: 1.2 },
           // Eye
           { d: 'M38 25 A2.5 2.5 0 1 1 37.99 25 Z', type: 'fill', zone: 'detail' },
           // Wing edge
-          { d: 'M60 42 Q75 38 88 42 Q98 48 100 55 Q95 60 85 58', type: 'stroke', zone: 'detail', strokeWidth: 1.2 },
+          { d: 'M60 42 Q72 38 82 42 Q90 48 92 55 Q88 60 80 58', type: 'stroke', zone: 'detail', strokeWidth: 1.2 },
         ],
       },
       {
@@ -593,16 +593,16 @@ const MOKURI_FAUNA_ELEMENTS = [
           { d: 'M55 35 Q75 30 85 40 Q95 50 92 65 Q90 78 80 85 Q65 92 50 88 Q35 82 30 68 Q28 55 35 42 Q42 35 55 35 Z', type: 'fill', zone: 'body' },
           { d: 'M50 55 Q58 50 68 52 Q78 56 80 68 Q80 78 72 85 Q62 90 52 85 Q42 78 40 68 Q40 58 50 55 Z', type: 'fill', zone: 'breast' },
           { d: 'M55 35 Q50 25 45 20 Q38 15 32 18 Q28 22 30 30 Q32 35 38 38 Q45 40 55 38 Z', type: 'fill', zone: 'body' },
-          { d: 'M60 42 Q75 38 88 42 Q98 48 100 55 Q95 60 85 58 Q72 55 62 50 Q58 48 60 42 Z', type: 'fill', zone: 'wing' },
+          { d: 'M60 42 Q72 38 82 42 Q90 48 92 55 Q88 60 80 58 Q70 55 62 50 Q58 48 60 42 Z', type: 'fill', zone: 'wing' },
           { d: 'M85 55 Q100 50 110 48 Q115 50 112 55 Q105 58 92 60 Z', type: 'fill', zone: 'wing' },
           { d: 'M30 25 L18 22 L28 28 Z', type: 'fill', zone: 'detail' },
           { d: 'M55 88 L52 100 L48 105 M55 88 L58 100 L62 105 M58 100 L55 105', type: 'stroke', zone: 'detail', strokeWidth: 1.2 },
           { d: 'M38 25 A2.5 2.5 0 1 1 37.99 25 Z', type: 'fill', zone: 'detail' },
-          { d: 'M60 42 Q75 38 88 42 Q98 48 100 55 Q95 60 85 58', type: 'stroke', zone: 'detail', strokeWidth: 1.2 },
+          { d: 'M60 42 Q72 38 82 42 Q90 48 92 55 Q88 60 80 58', type: 'stroke', zone: 'detail', strokeWidth: 1.2 },
           // Cheek patch
           { d: 'M34 30 Q38 32 40 35 Q36 36 32 34 Q30 32 34 30 Z', type: 'fill', zone: 'breast' },
           // Wing feather lines
-          { d: 'M65 44 L82 42 M66 47 L85 45 M68 50 L88 48 M70 53 L90 52', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
+          { d: 'M64 44 L78 42 M65 47 L80 45 M66 50 L82 48 M68 53 L84 52', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
           // Tail feathers
           { d: 'M88 54 L108 49 M90 56 L110 52 M89 58 L108 56', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
           // Breast feather texture
