@@ -188,7 +188,7 @@ const MOKURI_KACHOE_ELEMENTS = [
     name: 'Swallow',
     category: 'fauna',
     pack: 'kacho-e',
-    viewBox: '0 0 200 110',
+    viewBox: '0 0 125 110',
     suggestedLayer: 'foreground',
     colorZones: [
       { id: 'body', defaultPaletteSlot: 0 },
@@ -206,10 +206,10 @@ const MOKURI_KACHOE_ELEMENTS = [
           { d: 'M22 48 Q18 42 14 44 Q8 48 10 52 Q14 56 18 58 Q22 56 22 52 L22 48 Z', type: 'fill', zone: 'body' },
           // Tiny beak
           { d: 'M4 50 L10 46 L10 54 Z', type: 'fill', zone: 'accent' },
-          // Upper wing — long swept scythe
-          { d: 'M38 40 Q58 26 84 14 Q114 4 148 4 Q172 6 184 12 Q174 16 148 18 Q114 20 84 30 Q58 38 38 40 Z', type: 'fill', zone: 'wing' },
+          // Upper wing — swept scythe
+          { d: 'M38 40 Q50 28 65 18 Q82 10 100 10 Q110 12 116 16 Q112 18 100 20 Q82 24 65 30 Q50 36 38 40 Z', type: 'fill', zone: 'wing' },
           // Lower wing
-          { d: 'M38 62 Q58 76 84 88 Q114 98 148 98 Q172 96 184 90 Q174 86 148 84 Q114 82 84 72 Q58 64 38 62 Z', type: 'fill', zone: 'wing' },
+          { d: 'M38 62 Q50 74 65 84 Q82 92 100 92 Q110 90 116 86 Q112 84 100 82 Q82 78 65 72 Q50 66 38 62 Z', type: 'fill', zone: 'wing' },
           // Forked tail — two separate prongs
           { d: 'M82 44 Q90 36 100 28 Q108 22 112 26 Q106 32 96 38 Z M82 58 Q90 66 100 74 Q108 80 112 76 Q106 70 96 64 Z', type: 'fill', zone: 'body' },
           // Pale breast
@@ -224,16 +224,16 @@ const MOKURI_KACHOE_ELEMENTS = [
           { d: 'M22 48 Q30 40 42 38 Q56 36 68 40 Q80 44 86 50 Q80 56 68 60 Q56 64 42 62 Q30 60 22 56 L22 48 Z', type: 'fill', zone: 'body' },
           { d: 'M22 48 Q18 42 14 44 Q8 48 10 52 Q14 56 18 58 Q22 56 22 52 L22 48 Z', type: 'fill', zone: 'body' },
           { d: 'M4 50 L10 46 L10 54 Z', type: 'fill', zone: 'accent' },
-          { d: 'M38 40 Q58 26 84 14 Q114 4 148 4 Q172 6 184 12 Q174 16 148 18 Q114 20 84 30 Q58 38 38 40 Z', type: 'fill', zone: 'wing' },
-          { d: 'M38 62 Q58 76 84 88 Q114 98 148 98 Q172 96 184 90 Q174 86 148 84 Q114 82 84 72 Q58 64 38 62 Z', type: 'fill', zone: 'wing' },
+          { d: 'M38 40 Q50 28 65 18 Q82 10 100 10 Q110 12 116 16 Q112 18 100 20 Q82 24 65 30 Q50 36 38 40 Z', type: 'fill', zone: 'wing' },
+          { d: 'M38 62 Q50 74 65 84 Q82 92 100 92 Q110 90 116 86 Q112 84 100 82 Q82 78 65 72 Q50 66 38 62 Z', type: 'fill', zone: 'wing' },
           { d: 'M82 44 Q90 36 100 28 Q108 22 112 26 Q106 32 96 38 Z M82 58 Q90 66 100 74 Q108 80 112 76 Q106 70 96 64 Z', type: 'fill', zone: 'body' },
           { d: 'M28 46 Q34 52 46 56 Q56 58 64 54 Q60 48 52 44 Q42 40 34 42 L28 46 Z', type: 'fill', zone: 'breast' },
           { d: 'M16 46 Q20 42 26 42 Q28 46 26 50 Q22 52 18 52 Q14 50 16 46 Z', type: 'fill', zone: 'accent' },
           // Eye
           { d: 'M14 48 A2 2 0 1 1 13.99 48 Z', type: 'fill', zone: 'accent' },
           // Wing leading edges
-          { d: 'M38 40 Q58 26 84 14 Q114 4 148 4 Q172 6 184 12', type: 'stroke', zone: 'wing', strokeWidth: 1.0 },
-          { d: 'M38 62 Q58 76 84 88 Q114 98 148 98 Q172 96 184 90', type: 'stroke', zone: 'wing', strokeWidth: 1.0 },
+          { d: 'M38 40 Q50 28 65 18 Q82 10 100 10 Q110 12 116 16', type: 'stroke', zone: 'wing', strokeWidth: 1.0 },
+          { d: 'M38 62 Q50 74 65 84 Q82 92 100 92 Q110 90 116 86', type: 'stroke', zone: 'wing', strokeWidth: 1.0 },
         ],
       },
       {
@@ -242,18 +242,18 @@ const MOKURI_KACHOE_ELEMENTS = [
           { d: 'M22 48 Q30 40 42 38 Q56 36 68 40 Q80 44 86 50 Q80 56 68 60 Q56 64 42 62 Q30 60 22 56 L22 48 Z', type: 'fill', zone: 'body' },
           { d: 'M22 48 Q18 42 14 44 Q8 48 10 52 Q14 56 18 58 Q22 56 22 52 L22 48 Z', type: 'fill', zone: 'body' },
           { d: 'M4 50 L10 46 L10 54 Z', type: 'fill', zone: 'accent' },
-          { d: 'M38 40 Q58 26 84 14 Q114 4 148 4 Q172 6 184 12 Q174 16 148 18 Q114 20 84 30 Q58 38 38 40 Z', type: 'fill', zone: 'wing' },
-          { d: 'M38 62 Q58 76 84 88 Q114 98 148 98 Q172 96 184 90 Q174 86 148 84 Q114 82 84 72 Q58 64 38 62 Z', type: 'fill', zone: 'wing' },
+          { d: 'M38 40 Q50 28 65 18 Q82 10 100 10 Q110 12 116 16 Q112 18 100 20 Q82 24 65 30 Q50 36 38 40 Z', type: 'fill', zone: 'wing' },
+          { d: 'M38 62 Q50 74 65 84 Q82 92 100 92 Q110 90 116 86 Q112 84 100 82 Q82 78 65 72 Q50 66 38 62 Z', type: 'fill', zone: 'wing' },
           { d: 'M82 44 Q90 36 100 28 Q108 22 112 26 Q106 32 96 38 Z M82 58 Q90 66 100 74 Q108 80 112 76 Q106 70 96 64 Z', type: 'fill', zone: 'body' },
           { d: 'M28 46 Q34 52 46 56 Q56 58 64 54 Q60 48 52 44 Q42 40 34 42 L28 46 Z', type: 'fill', zone: 'breast' },
           { d: 'M16 46 Q20 42 26 42 Q28 46 26 50 Q22 52 18 52 Q14 50 16 46 Z', type: 'fill', zone: 'accent' },
           { d: 'M14 48 A2 2 0 1 1 13.99 48 Z', type: 'fill', zone: 'accent' },
-          { d: 'M38 40 Q58 26 84 14 Q114 4 148 4 Q172 6 184 12', type: 'stroke', zone: 'wing', strokeWidth: 1.0 },
-          { d: 'M38 62 Q58 76 84 88 Q114 98 148 98 Q172 96 184 90', type: 'stroke', zone: 'wing', strokeWidth: 1.0 },
+          { d: 'M38 40 Q50 28 65 18 Q82 10 100 10 Q110 12 116 16', type: 'stroke', zone: 'wing', strokeWidth: 1.0 },
+          { d: 'M38 62 Q50 74 65 84 Q82 92 100 92 Q110 90 116 86', type: 'stroke', zone: 'wing', strokeWidth: 1.0 },
           // Primary feather lines (upper)
-          { d: 'M54 30 Q78 18 108 8 M64 34 Q88 22 120 10 M74 36 Q98 26 132 14', type: 'stroke', zone: 'wing', strokeWidth: 0.4 },
+          { d: 'M47 32 Q59 22 75 14 M52 34 Q65 24 82 16 M57 36 Q70 28 88 20', type: 'stroke', zone: 'wing', strokeWidth: 0.4 },
           // Primary feather lines (lower)
-          { d: 'M54 72 Q78 84 108 94 M64 68 Q88 80 120 92 M74 66 Q98 76 132 88', type: 'stroke', zone: 'wing', strokeWidth: 0.4 },
+          { d: 'M47 70 Q59 80 75 88 M52 68 Q65 78 82 86 M57 66 Q70 74 88 82', type: 'stroke', zone: 'wing', strokeWidth: 0.4 },
           // Tail fork detail
           { d: 'M86 42 Q94 34 102 28 M86 60 Q94 68 102 74', type: 'stroke', zone: 'body', strokeWidth: 0.4 },
           // Breast texture
