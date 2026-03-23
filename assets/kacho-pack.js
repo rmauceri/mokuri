@@ -19,41 +19,8 @@ const MOKURI_KACHOE_PALETTES = {
   }
 };
 
-// Define gallery presets for the Kacho-e collection
-const MOKURI_KACHOE_PRESETS = [
-  {
-    pack: 'kacho-e',
-    compositionName: 'Heron at Lotus Pond',
-    paperW: 500,
-    paperH: 650,
-    paletteId: 'natsu',
-    elements: [
-      { defId: 'lotus', x: 180, y: 380, scale: 1.6, rotation: 0, carveLevel: 2 },
-      { defId: 'heron-standing', x: 280, y: 280, scale: 1.3, rotation: -5, carveLevel: 2 },
-      { defId: 'egret', x: 420, y: 150, scale: 0.8, rotation: 15, carveLevel: 1 }
-    ],
-    sky: 'day',
-    ground: 'water',
-    horizon: 0.55,
-    mist: 1
-  },
-  {
-    pack: 'kacho-e',
-    compositionName: 'Garden in Bloom',
-    paperW: 680,
-    paperH: 480,
-    paletteId: 'haru',
-    elements: [
-      { defId: 'peony', x: 150, y: 280, scale: 1.5, rotation: 0, carveLevel: 2 },
-      { defId: 'morning-glory', x: 420, y: 180, scale: 1.2, rotation: -10, carveLevel: 2 },
-      { defId: 'bush-warbler', x: 550, y: 120, scale: 0.9, rotation: 25, carveLevel: 1 }
-    ],
-    sky: 'dawn',
-    ground: 'grass',
-    horizon: 0.5,
-    mist: 0.5
-  }
-];
+// Presets: hand-curated by the user (none yet)
+const MOKURI_KACHOE_PRESETS = [];
 
 // Register the Kacho-e pack
 registerPack({
