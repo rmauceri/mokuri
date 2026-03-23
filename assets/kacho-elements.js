@@ -16,7 +16,7 @@ const MOKURI_KACHOE_ELEMENTS = [
     name: 'Heron',
     category: 'fauna',
     pack: 'kacho-e',
-    viewBox: '0 0 100 210',
+    viewBox: '-16 0 116 210',
     suggestedLayer: 'foreground',
     colorZones: [
       { id: 'body', defaultPaletteSlot: 2 },
@@ -33,13 +33,16 @@ const MOKURI_KACHOE_ELEMENTS = [
           // Head: round shape at top, overlaps body at neck
           { d: 'M24 18 Q24 10 34 8 Q44 8 50 16 Q54 24 48 32 Q40 38 32 36 Q22 32 20 24 Q20 18 24 18 Z', type: 'fill', zone: 'body' },
           // Beak: long sharp dagger, detail zone — THE signature
-          { d: 'M0 24 L22 19 L22 29 Z', type: 'fill', zone: 'detail' },
+          { d: 'M-13 24 L22 19 L22 29 Z', type: 'fill', zone: 'detail' },
           // Folded wing
           { d: 'M42 102 Q54 96 62 106 Q68 118 66 132 Q62 144 54 148 Q46 148 40 140 Q36 130 38 116 Q40 106 42 102 Z', type: 'fill', zone: 'wing' },
           // Legs: two thin triangles from rump to feet
           { d: 'M48 154 L46 190 L40 200 M48 154 L52 190 L46 200 M46 190 L42 202 M52 190 L48 202', type: 'fill', zone: 'detail' },
           // Crown patch (red/accent dot)
           { d: 'M32 10 Q38 6 42 10 Q40 16 34 16 Q30 14 32 10 Z', type: 'fill', zone: 'accent' },
+          // Occipital plumes — swept-back head feathers
+          { d: 'M40 10 Q50 6 62 2 Q62 6 52 10 Q46 12 40 10 Z', type: 'fill', zone: 'detail' },
+          { d: 'M42 14 Q52 10 64 8 Q64 12 54 14 Q48 16 42 14 Z', type: 'fill', zone: 'detail' },
           // Lower neck hackle plumage — shaggy draping feathers
           { d: 'M34 62 Q30 70 26 80 Q24 84 28 82 Q32 74 36 66 Z', type: 'fill', zone: 'body' },
           { d: 'M30 70 Q26 78 22 88 Q20 92 24 90 Q28 82 32 74 Z', type: 'fill', zone: 'body' },
@@ -50,10 +53,12 @@ const MOKURI_KACHOE_ELEMENTS = [
         paths: [
           { d: 'M42 32 Q50 40 48 54 Q44 68 38 80 Q34 92 40 102 Q48 110 56 120 Q62 132 60 144 Q56 152 50 156 Q42 156 34 148 Q26 138 22 124 Q18 108 22 96 Q28 82 34 68 Q40 54 44 42 Q46 34 42 32 Z', type: 'fill', zone: 'body' },
           { d: 'M24 18 Q24 10 34 8 Q44 8 50 16 Q54 24 48 32 Q40 38 32 36 Q22 32 20 24 Q20 18 24 18 Z', type: 'fill', zone: 'body' },
-          { d: 'M0 24 L22 19 L22 29 Z', type: 'fill', zone: 'detail' },
+          { d: 'M-13 24 L22 19 L22 29 Z', type: 'fill', zone: 'detail' },
           { d: 'M42 102 Q54 96 62 106 Q68 118 66 132 Q62 144 54 148 Q46 148 40 140 Q36 130 38 116 Q40 106 42 102 Z', type: 'fill', zone: 'wing' },
           { d: 'M48 154 L46 190 L40 200 M48 154 L52 190 L46 200 M46 190 L42 202 M52 190 L48 202', type: 'fill', zone: 'detail' },
           { d: 'M32 10 Q38 6 42 10 Q40 16 34 16 Q30 14 32 10 Z', type: 'fill', zone: 'accent' },
+          { d: 'M40 10 Q50 6 62 2 Q62 6 52 10 Q46 12 40 10 Z', type: 'fill', zone: 'detail' },
+          { d: 'M42 14 Q52 10 64 8 Q64 12 54 14 Q48 16 42 14 Z', type: 'fill', zone: 'detail' },
           { d: 'M34 62 Q30 70 26 80 Q24 84 28 82 Q32 74 36 66 Z', type: 'fill', zone: 'body' },
           { d: 'M30 70 Q26 78 22 88 Q20 92 24 90 Q28 82 32 74 Z', type: 'fill', zone: 'body' },
           // Eye
@@ -71,10 +76,12 @@ const MOKURI_KACHOE_ELEMENTS = [
         paths: [
           { d: 'M42 32 Q50 40 48 54 Q44 68 38 80 Q34 92 40 102 Q48 110 56 120 Q62 132 60 144 Q56 152 50 156 Q42 156 34 148 Q26 138 22 124 Q18 108 22 96 Q28 82 34 68 Q40 54 44 42 Q46 34 42 32 Z', type: 'fill', zone: 'body' },
           { d: 'M24 18 Q24 10 34 8 Q44 8 50 16 Q54 24 48 32 Q40 38 32 36 Q22 32 20 24 Q20 18 24 18 Z', type: 'fill', zone: 'body' },
-          { d: 'M0 24 L22 19 L22 29 Z', type: 'fill', zone: 'detail' },
+          { d: 'M-13 24 L22 19 L22 29 Z', type: 'fill', zone: 'detail' },
           { d: 'M42 102 Q54 96 62 106 Q68 118 66 132 Q62 144 54 148 Q46 148 40 140 Q36 130 38 116 Q40 106 42 102 Z', type: 'fill', zone: 'wing' },
           { d: 'M48 154 L46 190 L40 200 M48 154 L52 190 L46 200 M46 190 L42 202 M52 190 L48 202', type: 'fill', zone: 'detail' },
           { d: 'M32 10 Q38 6 42 10 Q40 16 34 16 Q30 14 32 10 Z', type: 'fill', zone: 'accent' },
+          { d: 'M40 10 Q50 6 62 2 Q62 6 52 10 Q46 12 40 10 Z', type: 'fill', zone: 'detail' },
+          { d: 'M42 14 Q52 10 64 8 Q64 12 54 14 Q48 16 42 14 Z', type: 'fill', zone: 'detail' },
           { d: 'M34 62 Q30 70 26 80 Q24 84 28 82 Q32 74 36 66 Z', type: 'fill', zone: 'body' },
           { d: 'M30 70 Q26 78 22 88 Q20 92 24 90 Q28 82 32 74 Z', type: 'fill', zone: 'body' },
           { d: 'M36 22 A3 3 0 1 1 35.99 22 Z', type: 'fill', zone: 'detail' },
@@ -86,7 +93,7 @@ const MOKURI_KACHOE_ELEMENTS = [
           // Wing feather lines
           { d: 'M46 108 Q52 114 54 122 M48 114 Q54 120 56 128 M44 120 Q50 126 52 134', type: 'stroke', zone: 'wing', strokeWidth: 0.5 },
           // Beak ridge
-          { d: 'M0 24 L22 24', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
+          { d: 'M-13 24 L22 24', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
           // Neck hackle wisps
           { d: 'M36 58 Q32 66 28 74 M32 64 Q28 72 24 80 M28 72 Q24 80 20 88', type: 'stroke', zone: 'body', strokeWidth: 0.4 },
           // Foot toes
@@ -345,7 +352,7 @@ const MOKURI_KACHOE_ELEMENTS = [
     name: 'Egret',
     category: 'fauna',
     pack: 'kacho-e',
-    viewBox: '-4 0 114 230',
+    viewBox: '-22 0 132 230',
     suggestedLayer: 'foreground',
     colorZones: [
       { id: 'body', defaultPaletteSlot: 4 },
@@ -362,7 +369,7 @@ const MOKURI_KACHOE_ELEMENTS = [
           // Head
           { d: 'M26 18 Q28 10 38 8 Q48 8 54 16 Q58 24 52 32 Q44 38 34 36 Q24 30 22 24 Q22 18 26 18 Z', type: 'fill', zone: 'body' },
           // Beak: long thin needle, accent color (yellow for egret)
-          { d: 'M-2 22 L24 18 L24 26 Z', type: 'fill', zone: 'accent' },
+          { d: 'M-20 22 L24 18 L24 26 Z', type: 'fill', zone: 'accent' },
           // Trailing plume 1 (the aigrette — signature breeding plumage)
           { d: 'M60 118 Q70 114 80 106 Q88 98 94 92 Q90 100 82 108 Q74 116 64 122 Z', type: 'fill', zone: 'plume' },
           // Trailing plume 2
@@ -380,7 +387,7 @@ const MOKURI_KACHOE_ELEMENTS = [
         paths: [
           { d: 'M46 32 Q54 40 52 54 Q48 68 42 80 Q38 92 42 102 Q50 110 58 120 Q64 132 62 144 Q58 152 52 158 Q44 160 36 152 Q28 142 24 128 Q20 112 24 98 Q30 84 36 70 Q42 54 46 42 Q48 34 46 32 Z', type: 'fill', zone: 'body' },
           { d: 'M26 18 Q28 10 38 8 Q48 8 54 16 Q58 24 52 32 Q44 38 34 36 Q24 30 22 24 Q22 18 26 18 Z', type: 'fill', zone: 'body' },
-          { d: 'M-2 22 L24 18 L24 26 Z', type: 'fill', zone: 'accent' },
+          { d: 'M-20 22 L24 18 L24 26 Z', type: 'fill', zone: 'accent' },
           { d: 'M60 118 Q70 114 80 106 Q88 98 94 92 Q90 100 82 108 Q74 116 64 122 Z', type: 'fill', zone: 'plume' },
           { d: 'M58 128 Q68 124 78 116 Q86 108 92 102 Q88 110 80 118 Q72 128 62 132 Z', type: 'fill', zone: 'plume' },
           { d: 'M56 136 Q66 132 74 126 Q82 118 88 112 Q84 120 76 128 Q68 136 60 140 Z', type: 'fill', zone: 'plume' },
@@ -401,7 +408,7 @@ const MOKURI_KACHOE_ELEMENTS = [
         paths: [
           { d: 'M46 32 Q54 40 52 54 Q48 68 42 80 Q38 92 42 102 Q50 110 58 120 Q64 132 62 144 Q58 152 52 158 Q44 160 36 152 Q28 142 24 128 Q20 112 24 98 Q30 84 36 70 Q42 54 46 42 Q48 34 46 32 Z', type: 'fill', zone: 'body' },
           { d: 'M26 18 Q28 10 38 8 Q48 8 54 16 Q58 24 52 32 Q44 38 34 36 Q24 30 22 24 Q22 18 26 18 Z', type: 'fill', zone: 'body' },
-          { d: 'M-2 22 L24 18 L24 26 Z', type: 'fill', zone: 'accent' },
+          { d: 'M-20 22 L24 18 L24 26 Z', type: 'fill', zone: 'accent' },
           { d: 'M60 118 Q70 114 80 106 Q88 98 94 92 Q90 100 82 108 Q74 116 64 122 Z', type: 'fill', zone: 'plume' },
           { d: 'M58 128 Q68 124 78 116 Q86 108 92 102 Q88 110 80 118 Q72 128 62 132 Z', type: 'fill', zone: 'plume' },
           { d: 'M56 136 Q66 132 74 126 Q82 118 88 112 Q84 120 76 128 Q68 136 60 140 Z', type: 'fill', zone: 'plume' },
@@ -416,7 +423,7 @@ const MOKURI_KACHOE_ELEMENTS = [
           // Plume wisps
           { d: 'M76 102 Q82 96 88 92 M72 112 Q78 106 84 102 M68 122 Q74 116 80 112', type: 'stroke', zone: 'plume', strokeWidth: 0.3 },
           // Beak ridge
-          { d: 'M-2 22 L24 22', type: 'stroke', zone: 'accent', strokeWidth: 0.5 },
+          { d: 'M-20 22 L24 22', type: 'stroke', zone: 'accent', strokeWidth: 0.5 },
           // Foot toes
           { d: 'M42 210 L38 218 L46 218 M38 210 L34 218 L42 218', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
         ],
