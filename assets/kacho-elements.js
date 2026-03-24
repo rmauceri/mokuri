@@ -568,7 +568,7 @@ const MOKURI_KACHOE_ELEMENTS = [
     ],
   },
 
-  // Lotus Cluster — 2 lotus blossoms (inverse teardrop petals) on short stems, 3 lily pads
+  // Lotus Cluster — 2 lotus blossoms (sharp pointed petals) on short stems, 3 lily pads
   {
     id: 'lotus-cluster',
     name: 'Lotus Cluster',
@@ -586,65 +586,71 @@ const MOKURI_KACHOE_ELEMENTS = [
       {
         name: 'block',
         paths: [
-          // === Large bloom (left) — inverse teardrop petals (wide base, pointed tip) ===
-          // Back petals (wider, behind)
-          { d: 'M44 38 Q36 28 30 10 Q32 6 36 10 Q44 24 50 34 Z', type: 'fill', zone: 'petal' },
-          { d: 'M64 38 Q72 28 78 10 Q76 6 72 10 Q64 24 58 34 Z', type: 'fill', zone: 'petal' },
-          // Outer ring — 5 inverse teardrops radiating up and sideways
-          { d: 'M50 36 Q44 22 48 6 Q52 2 56 6 Q60 22 54 36 Z', type: 'fill', zone: 'petal' },
-          { d: 'M38 46 Q24 42 16 36 Q16 32 20 34 Q28 38 42 42 Z', type: 'fill', zone: 'petal' },
-          { d: 'M66 46 Q80 42 88 36 Q88 32 84 34 Q76 38 62 42 Z', type: 'fill', zone: 'petal' },
-          // Inner ring — 3 shorter inverse teardrops
-          { d: 'M48 40 Q46 32 48 22 Q50 18 52 22 Q54 32 52 40 Z', type: 'fill', zone: 'petal' },
-          { d: 'M42 48 Q34 46 30 42 Q30 40 34 42 Q40 44 44 46 Z', type: 'fill', zone: 'petal' },
-          { d: 'M62 48 Q70 46 74 42 Q74 40 70 42 Q64 44 60 46 Z', type: 'fill', zone: 'petal' },
+          // === Large bloom — densely packed sharp pointed petals ===
+          // Back row (7 petals, tallest, visible behind)
+          { d: 'M46 40 Q40 28 38 14 L40 4 L42 14 Q44 28 48 38 Z', type: 'fill', zone: 'petal' },
+          { d: 'M58 40 Q54 26 54 12 L56 2 L58 12 Q58 26 60 38 Z', type: 'fill', zone: 'petal' },
+          { d: 'M36 44 Q26 36 18 24 L16 16 L22 22 Q30 34 38 42 Z', type: 'fill', zone: 'petal' },
+          { d: 'M68 44 Q78 36 86 24 L88 16 L82 22 Q74 34 66 42 Z', type: 'fill', zone: 'petal' },
+          { d: 'M32 50 Q20 48 10 42 L6 36 L12 40 Q22 46 34 48 Z', type: 'fill', zone: 'petal' },
+          { d: 'M72 50 Q84 48 94 42 L98 36 L92 40 Q82 46 70 48 Z', type: 'fill', zone: 'petal' },
+          { d: 'M52 38 Q48 24 50 10 L52 2 L54 10 Q56 24 54 38 Z', type: 'fill', zone: 'petal' },
+          // Middle row (5 petals, slightly shorter, tightly packed)
+          { d: 'M48 42 Q44 32 44 18 L46 10 L48 18 Q48 32 50 40 Z', type: 'fill', zone: 'petal' },
+          { d: 'M56 42 Q58 32 60 18 L60 10 L62 18 Q62 32 58 40 Z', type: 'fill', zone: 'petal' },
+          { d: 'M40 48 Q32 44 24 36 L20 30 L26 34 Q34 42 42 46 Z', type: 'fill', zone: 'petal' },
+          { d: 'M64 48 Q72 44 80 36 L84 30 L78 34 Q70 42 62 46 Z', type: 'fill', zone: 'petal' },
+          { d: 'M52 42 Q50 30 52 16 L54 10 L56 16 Q56 30 54 40 Z', type: 'fill', zone: 'petal' },
           // Golden center
-          { d: 'M46 46 Q50 42 58 42 Q62 46 60 50 Q56 54 50 52 Q44 50 46 46 Z', type: 'fill', zone: 'center' },
-          // === Small bloom (right) — fewer petals, partly open ===
-          { d: 'M130 48 Q126 38 130 26 Q132 22 134 26 Q138 38 134 48 Z', type: 'fill', zone: 'petal' },
-          { d: 'M122 54 Q114 52 110 48 Q110 44 114 48 Q120 50 124 52 Z', type: 'fill', zone: 'petal' },
-          { d: 'M142 54 Q150 52 154 48 Q154 44 150 48 Q144 50 140 52 Z', type: 'fill', zone: 'petal' },
-          { d: 'M126 54 Q130 50 138 50 Q142 54 140 58 Q136 60 132 58 Q126 56 126 54 Z', type: 'fill', zone: 'center' },
+          { d: 'M46 48 Q50 44 58 44 Q62 48 60 52 Q56 56 50 54 Q44 52 46 48 Z', type: 'fill', zone: 'center' },
+          // === Small bloom (right) — 5 sharp pointed petals ===
+          { d: 'M130 50 Q128 40 130 28 L132 20 L134 28 Q136 40 134 50 Z', type: 'fill', zone: 'petal' },
+          { d: 'M122 54 Q114 52 108 46 L104 40 L110 44 Q118 50 124 52 Z', type: 'fill', zone: 'petal' },
+          { d: 'M142 54 Q150 52 156 46 L160 40 L154 44 Q146 50 140 52 Z', type: 'fill', zone: 'petal' },
+          { d: 'M126 52 Q122 44 124 34 L126 28 L128 34 Q130 44 128 50 Z', type: 'fill', zone: 'petal' },
+          { d: 'M138 52 Q142 44 140 34 L138 28 L136 34 Q134 44 136 50 Z', type: 'fill', zone: 'petal' },
+          { d: 'M126 56 Q130 52 138 52 Q142 56 140 60 Q136 62 132 60 Q126 58 126 56 Z', type: 'fill', zone: 'center' },
           // === 3 Lily pads ===
-          // Large pad (left-center)
           { d: 'M56 100 Q28 96 16 108 Q8 120 20 132 Q32 140 56 140 Q80 140 92 132 Q104 120 96 108 Q84 96 56 100 Z', type: 'fill', zone: 'pad' },
-          // Medium pad (right)
           { d: 'M130 104 Q114 102 106 112 Q102 120 110 128 Q118 132 134 132 Q148 130 152 122 Q154 112 146 106 Q138 102 130 104 Z', type: 'fill', zone: 'pad' },
-          // Small pad (far right)
           { d: 'M152 86 Q144 84 140 90 Q138 96 142 100 Q148 102 154 100 Q158 96 158 90 Q156 86 152 86 Z', type: 'fill', zone: 'pad' },
           // === Short slim stems ===
-          // Large bloom stem
-          { d: 'M50 52 Q48 64 48 78 Q46 88 48 98 L52 98 Q54 88 52 78 Q52 64 54 52 Z', type: 'fill', zone: 'stem' },
-          // Small bloom stem
-          { d: 'M130 58 Q128 68 128 80 Q126 90 128 102 L132 102 Q134 90 132 80 Q132 68 134 58 Z', type: 'fill', zone: 'stem' },
+          { d: 'M50 54 Q48 66 48 78 Q46 88 48 98 L52 98 Q54 88 52 78 Q52 66 54 54 Z', type: 'fill', zone: 'stem' },
+          { d: 'M130 60 Q128 70 128 82 Q126 92 128 102 L132 102 Q134 92 132 82 Q132 70 134 60 Z', type: 'fill', zone: 'stem' },
         ],
       },
       {
         name: 'shape',
         paths: [
           // All block fills verbatim
-          { d: 'M44 38 Q36 28 30 10 Q32 6 36 10 Q44 24 50 34 Z', type: 'fill', zone: 'petal' },
-          { d: 'M64 38 Q72 28 78 10 Q76 6 72 10 Q64 24 58 34 Z', type: 'fill', zone: 'petal' },
-          { d: 'M50 36 Q44 22 48 6 Q52 2 56 6 Q60 22 54 36 Z', type: 'fill', zone: 'petal' },
-          { d: 'M38 46 Q24 42 16 36 Q16 32 20 34 Q28 38 42 42 Z', type: 'fill', zone: 'petal' },
-          { d: 'M66 46 Q80 42 88 36 Q88 32 84 34 Q76 38 62 42 Z', type: 'fill', zone: 'petal' },
-          { d: 'M48 40 Q46 32 48 22 Q50 18 52 22 Q54 32 52 40 Z', type: 'fill', zone: 'petal' },
-          { d: 'M42 48 Q34 46 30 42 Q30 40 34 42 Q40 44 44 46 Z', type: 'fill', zone: 'petal' },
-          { d: 'M62 48 Q70 46 74 42 Q74 40 70 42 Q64 44 60 46 Z', type: 'fill', zone: 'petal' },
-          { d: 'M46 46 Q50 42 58 42 Q62 46 60 50 Q56 54 50 52 Q44 50 46 46 Z', type: 'fill', zone: 'center' },
-          { d: 'M130 48 Q126 38 130 26 Q132 22 134 26 Q138 38 134 48 Z', type: 'fill', zone: 'petal' },
-          { d: 'M122 54 Q114 52 110 48 Q110 44 114 48 Q120 50 124 52 Z', type: 'fill', zone: 'petal' },
-          { d: 'M142 54 Q150 52 154 48 Q154 44 150 48 Q144 50 140 52 Z', type: 'fill', zone: 'petal' },
-          { d: 'M126 54 Q130 50 138 50 Q142 54 140 58 Q136 60 132 58 Q126 56 126 54 Z', type: 'fill', zone: 'center' },
+          { d: 'M46 40 Q40 28 38 14 L40 4 L42 14 Q44 28 48 38 Z', type: 'fill', zone: 'petal' },
+          { d: 'M58 40 Q54 26 54 12 L56 2 L58 12 Q58 26 60 38 Z', type: 'fill', zone: 'petal' },
+          { d: 'M36 44 Q26 36 18 24 L16 16 L22 22 Q30 34 38 42 Z', type: 'fill', zone: 'petal' },
+          { d: 'M68 44 Q78 36 86 24 L88 16 L82 22 Q74 34 66 42 Z', type: 'fill', zone: 'petal' },
+          { d: 'M32 50 Q20 48 10 42 L6 36 L12 40 Q22 46 34 48 Z', type: 'fill', zone: 'petal' },
+          { d: 'M72 50 Q84 48 94 42 L98 36 L92 40 Q82 46 70 48 Z', type: 'fill', zone: 'petal' },
+          { d: 'M52 38 Q48 24 50 10 L52 2 L54 10 Q56 24 54 38 Z', type: 'fill', zone: 'petal' },
+          { d: 'M48 42 Q44 32 44 18 L46 10 L48 18 Q48 32 50 40 Z', type: 'fill', zone: 'petal' },
+          { d: 'M56 42 Q58 32 60 18 L60 10 L62 18 Q62 32 58 40 Z', type: 'fill', zone: 'petal' },
+          { d: 'M40 48 Q32 44 24 36 L20 30 L26 34 Q34 42 42 46 Z', type: 'fill', zone: 'petal' },
+          { d: 'M64 48 Q72 44 80 36 L84 30 L78 34 Q70 42 62 46 Z', type: 'fill', zone: 'petal' },
+          { d: 'M52 42 Q50 30 52 16 L54 10 L56 16 Q56 30 54 40 Z', type: 'fill', zone: 'petal' },
+          { d: 'M46 48 Q50 44 58 44 Q62 48 60 52 Q56 56 50 54 Q44 52 46 48 Z', type: 'fill', zone: 'center' },
+          { d: 'M130 50 Q128 40 130 28 L132 20 L134 28 Q136 40 134 50 Z', type: 'fill', zone: 'petal' },
+          { d: 'M122 54 Q114 52 108 46 L104 40 L110 44 Q118 50 124 52 Z', type: 'fill', zone: 'petal' },
+          { d: 'M142 54 Q150 52 156 46 L160 40 L154 44 Q146 50 140 52 Z', type: 'fill', zone: 'petal' },
+          { d: 'M126 52 Q122 44 124 34 L126 28 L128 34 Q130 44 128 50 Z', type: 'fill', zone: 'petal' },
+          { d: 'M138 52 Q142 44 140 34 L138 28 L136 34 Q134 44 136 50 Z', type: 'fill', zone: 'petal' },
+          { d: 'M126 56 Q130 52 138 52 Q142 56 140 60 Q136 62 132 60 Q126 58 126 56 Z', type: 'fill', zone: 'center' },
           { d: 'M56 100 Q28 96 16 108 Q8 120 20 132 Q32 140 56 140 Q80 140 92 132 Q104 120 96 108 Q84 96 56 100 Z', type: 'fill', zone: 'pad' },
           { d: 'M130 104 Q114 102 106 112 Q102 120 110 128 Q118 132 134 132 Q148 130 152 122 Q154 112 146 106 Q138 102 130 104 Z', type: 'fill', zone: 'pad' },
           { d: 'M152 86 Q144 84 140 90 Q138 96 142 100 Q148 102 154 100 Q158 96 158 90 Q156 86 152 86 Z', type: 'fill', zone: 'pad' },
-          { d: 'M50 52 Q48 64 48 78 Q46 88 48 98 L52 98 Q54 88 52 78 Q52 64 54 52 Z', type: 'fill', zone: 'stem' },
-          { d: 'M130 58 Q128 68 128 80 Q126 90 128 102 L132 102 Q134 90 132 80 Q132 68 134 58 Z', type: 'fill', zone: 'stem' },
-          // Petal edge strokes
-          { d: 'M50 36 Q44 22 48 6 Q52 2 56 6 Q60 22 54 36', type: 'stroke', zone: 'petal', strokeWidth: 0.8 },
-          { d: 'M44 38 Q36 28 30 10 M64 38 Q72 28 78 10', type: 'stroke', zone: 'petal', strokeWidth: 0.6 },
-          { d: 'M38 46 Q24 42 16 36 M66 46 Q80 42 88 36', type: 'stroke', zone: 'petal', strokeWidth: 0.6 },
+          { d: 'M50 54 Q48 66 48 78 Q46 88 48 98 L52 98 Q54 88 52 78 Q52 66 54 54 Z', type: 'fill', zone: 'stem' },
+          { d: 'M130 60 Q128 70 128 82 Q126 92 128 102 L132 102 Q134 92 132 82 Q132 70 134 60 Z', type: 'fill', zone: 'stem' },
+          // Shape strokes — petal edges, pad outlines
+          { d: 'M52 38 Q48 24 50 10 L52 2 M46 40 Q40 28 38 14 L40 4 M58 40 Q54 26 54 12 L56 2', type: 'stroke', zone: 'petal', strokeWidth: 0.8 },
+          { d: 'M36 44 Q26 36 18 24 L16 16 M68 44 Q78 36 86 24 L88 16', type: 'stroke', zone: 'petal', strokeWidth: 0.6 },
+          { d: 'M32 50 Q20 48 10 42 L6 36 M72 50 Q84 48 94 42 L98 36', type: 'stroke', zone: 'petal', strokeWidth: 0.6 },
           // Large pad V-notch + outline
           { d: 'M56 100 L54 120 M56 100 L58 120', type: 'stroke', zone: 'pad', strokeWidth: 1.0 },
           { d: 'M56 100 Q28 96 16 108 Q8 120 20 132 Q32 140 56 140', type: 'stroke', zone: 'pad', strokeWidth: 0.8 },
@@ -658,39 +664,45 @@ const MOKURI_KACHOE_ELEMENTS = [
         name: 'detail',
         paths: [
           // All block fills verbatim
-          { d: 'M44 38 Q36 28 30 10 Q32 6 36 10 Q44 24 50 34 Z', type: 'fill', zone: 'petal' },
-          { d: 'M64 38 Q72 28 78 10 Q76 6 72 10 Q64 24 58 34 Z', type: 'fill', zone: 'petal' },
-          { d: 'M50 36 Q44 22 48 6 Q52 2 56 6 Q60 22 54 36 Z', type: 'fill', zone: 'petal' },
-          { d: 'M38 46 Q24 42 16 36 Q16 32 20 34 Q28 38 42 42 Z', type: 'fill', zone: 'petal' },
-          { d: 'M66 46 Q80 42 88 36 Q88 32 84 34 Q76 38 62 42 Z', type: 'fill', zone: 'petal' },
-          { d: 'M48 40 Q46 32 48 22 Q50 18 52 22 Q54 32 52 40 Z', type: 'fill', zone: 'petal' },
-          { d: 'M42 48 Q34 46 30 42 Q30 40 34 42 Q40 44 44 46 Z', type: 'fill', zone: 'petal' },
-          { d: 'M62 48 Q70 46 74 42 Q74 40 70 42 Q64 44 60 46 Z', type: 'fill', zone: 'petal' },
-          { d: 'M46 46 Q50 42 58 42 Q62 46 60 50 Q56 54 50 52 Q44 50 46 46 Z', type: 'fill', zone: 'center' },
-          { d: 'M130 48 Q126 38 130 26 Q132 22 134 26 Q138 38 134 48 Z', type: 'fill', zone: 'petal' },
-          { d: 'M122 54 Q114 52 110 48 Q110 44 114 48 Q120 50 124 52 Z', type: 'fill', zone: 'petal' },
-          { d: 'M142 54 Q150 52 154 48 Q154 44 150 48 Q144 50 140 52 Z', type: 'fill', zone: 'petal' },
-          { d: 'M126 54 Q130 50 138 50 Q142 54 140 58 Q136 60 132 58 Q126 56 126 54 Z', type: 'fill', zone: 'center' },
+          { d: 'M46 40 Q40 28 38 14 L40 4 L42 14 Q44 28 48 38 Z', type: 'fill', zone: 'petal' },
+          { d: 'M58 40 Q54 26 54 12 L56 2 L58 12 Q58 26 60 38 Z', type: 'fill', zone: 'petal' },
+          { d: 'M36 44 Q26 36 18 24 L16 16 L22 22 Q30 34 38 42 Z', type: 'fill', zone: 'petal' },
+          { d: 'M68 44 Q78 36 86 24 L88 16 L82 22 Q74 34 66 42 Z', type: 'fill', zone: 'petal' },
+          { d: 'M32 50 Q20 48 10 42 L6 36 L12 40 Q22 46 34 48 Z', type: 'fill', zone: 'petal' },
+          { d: 'M72 50 Q84 48 94 42 L98 36 L92 40 Q82 46 70 48 Z', type: 'fill', zone: 'petal' },
+          { d: 'M52 38 Q48 24 50 10 L52 2 L54 10 Q56 24 54 38 Z', type: 'fill', zone: 'petal' },
+          { d: 'M48 42 Q44 32 44 18 L46 10 L48 18 Q48 32 50 40 Z', type: 'fill', zone: 'petal' },
+          { d: 'M56 42 Q58 32 60 18 L60 10 L62 18 Q62 32 58 40 Z', type: 'fill', zone: 'petal' },
+          { d: 'M40 48 Q32 44 24 36 L20 30 L26 34 Q34 42 42 46 Z', type: 'fill', zone: 'petal' },
+          { d: 'M64 48 Q72 44 80 36 L84 30 L78 34 Q70 42 62 46 Z', type: 'fill', zone: 'petal' },
+          { d: 'M52 42 Q50 30 52 16 L54 10 L56 16 Q56 30 54 40 Z', type: 'fill', zone: 'petal' },
+          { d: 'M46 48 Q50 44 58 44 Q62 48 60 52 Q56 56 50 54 Q44 52 46 48 Z', type: 'fill', zone: 'center' },
+          { d: 'M130 50 Q128 40 130 28 L132 20 L134 28 Q136 40 134 50 Z', type: 'fill', zone: 'petal' },
+          { d: 'M122 54 Q114 52 108 46 L104 40 L110 44 Q118 50 124 52 Z', type: 'fill', zone: 'petal' },
+          { d: 'M142 54 Q150 52 156 46 L160 40 L154 44 Q146 50 140 52 Z', type: 'fill', zone: 'petal' },
+          { d: 'M126 52 Q122 44 124 34 L126 28 L128 34 Q130 44 128 50 Z', type: 'fill', zone: 'petal' },
+          { d: 'M138 52 Q142 44 140 34 L138 28 L136 34 Q134 44 136 50 Z', type: 'fill', zone: 'petal' },
+          { d: 'M126 56 Q130 52 138 52 Q142 56 140 60 Q136 62 132 60 Q126 58 126 56 Z', type: 'fill', zone: 'center' },
           { d: 'M56 100 Q28 96 16 108 Q8 120 20 132 Q32 140 56 140 Q80 140 92 132 Q104 120 96 108 Q84 96 56 100 Z', type: 'fill', zone: 'pad' },
           { d: 'M130 104 Q114 102 106 112 Q102 120 110 128 Q118 132 134 132 Q148 130 152 122 Q154 112 146 106 Q138 102 130 104 Z', type: 'fill', zone: 'pad' },
           { d: 'M152 86 Q144 84 140 90 Q138 96 142 100 Q148 102 154 100 Q158 96 158 90 Q156 86 152 86 Z', type: 'fill', zone: 'pad' },
-          { d: 'M50 52 Q48 64 48 78 Q46 88 48 98 L52 98 Q54 88 52 78 Q52 64 54 52 Z', type: 'fill', zone: 'stem' },
-          { d: 'M130 58 Q128 68 128 80 Q126 90 128 102 L132 102 Q134 90 132 80 Q132 68 134 58 Z', type: 'fill', zone: 'stem' },
+          { d: 'M50 54 Q48 66 48 78 Q46 88 48 98 L52 98 Q54 88 52 78 Q52 66 54 54 Z', type: 'fill', zone: 'stem' },
+          { d: 'M130 60 Q128 70 128 82 Q126 92 128 102 L132 102 Q134 92 132 82 Q132 70 134 60 Z', type: 'fill', zone: 'stem' },
           // All shape strokes verbatim
-          { d: 'M50 36 Q44 22 48 6 Q52 2 56 6 Q60 22 54 36', type: 'stroke', zone: 'petal', strokeWidth: 0.8 },
-          { d: 'M44 38 Q36 28 30 10 M64 38 Q72 28 78 10', type: 'stroke', zone: 'petal', strokeWidth: 0.6 },
-          { d: 'M38 46 Q24 42 16 36 M66 46 Q80 42 88 36', type: 'stroke', zone: 'petal', strokeWidth: 0.6 },
+          { d: 'M52 38 Q48 24 50 10 L52 2 M46 40 Q40 28 38 14 L40 4 M58 40 Q54 26 54 12 L56 2', type: 'stroke', zone: 'petal', strokeWidth: 0.8 },
+          { d: 'M36 44 Q26 36 18 24 L16 16 M68 44 Q78 36 86 24 L88 16', type: 'stroke', zone: 'petal', strokeWidth: 0.6 },
+          { d: 'M32 50 Q20 48 10 42 L6 36 M72 50 Q84 48 94 42 L98 36', type: 'stroke', zone: 'petal', strokeWidth: 0.6 },
           { d: 'M56 100 L54 120 M56 100 L58 120', type: 'stroke', zone: 'pad', strokeWidth: 1.0 },
           { d: 'M56 100 Q28 96 16 108 Q8 120 20 132 Q32 140 56 140', type: 'stroke', zone: 'pad', strokeWidth: 0.8 },
           { d: 'M130 104 L128 118 M130 104 L132 118', type: 'stroke', zone: 'pad', strokeWidth: 0.8 },
           { d: 'M152 86 L150 94 M152 86 L154 94', type: 'stroke', zone: 'pad', strokeWidth: 0.6 },
-          // Detail — petal veins (center line of each inverse teardrop)
-          { d: 'M52 32 Q50 22 52 10 M46 40 Q38 36 28 28 M58 40 Q66 36 76 28', type: 'stroke', zone: 'petal', strokeWidth: 0.3 },
-          { d: 'M40 46 Q30 44 22 38 M64 46 Q74 44 82 38', type: 'stroke', zone: 'petal', strokeWidth: 0.3 },
+          // Detail — petal center veins
+          { d: 'M47 38 Q42 26 40 10 M57 38 Q56 26 56 10 M37 42 Q28 36 20 22 M67 42 Q76 36 84 22', type: 'stroke', zone: 'petal', strokeWidth: 0.3 },
+          { d: 'M34 48 Q24 46 14 40 M70 48 Q80 46 90 40', type: 'stroke', zone: 'petal', strokeWidth: 0.3 },
           // Detail — center stamens
-          { d: 'M50 46 L48 42 M54 44 L54 40 M58 46 L60 42 M52 50 L50 52', type: 'stroke', zone: 'center', strokeWidth: 0.4 },
+          { d: 'M50 48 L48 44 M54 46 L54 42 M58 48 L60 44 M52 52 L50 54', type: 'stroke', zone: 'center', strokeWidth: 0.4 },
           // Detail — small bloom petal veins
-          { d: 'M132 44 Q130 36 132 28 M126 54 Q118 50 114 48 M138 54 Q146 50 150 48', type: 'stroke', zone: 'petal', strokeWidth: 0.3 },
+          { d: 'M132 46 Q130 38 132 26 M124 54 Q118 50 110 44 M140 54 Q146 50 154 44', type: 'stroke', zone: 'petal', strokeWidth: 0.3 },
           // Detail — large pad radial veins
           { d: 'M56 120 L36 132 M56 120 L76 132 M56 120 L28 116 M56 120 L84 116 M56 120 L46 136 M56 120 L66 136', type: 'stroke', zone: 'pad', strokeWidth: 0.4 },
           // Medium pad veins
@@ -698,7 +710,7 @@ const MOKURI_KACHOE_ELEMENTS = [
           // Small pad veins
           { d: 'M150 94 L146 98 M150 94 L154 98', type: 'stroke', zone: 'pad', strokeWidth: 0.3 },
           // Stem fiber
-          { d: 'M50 62 Q48 72 48 84 M130 66 Q128 76 128 88', type: 'stroke', zone: 'stem', strokeWidth: 0.3 },
+          { d: 'M50 64 Q48 74 48 86 M130 68 Q128 78 128 90', type: 'stroke', zone: 'stem', strokeWidth: 0.3 },
         ],
       },
     ],
