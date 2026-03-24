@@ -29,7 +29,7 @@ registerPack({
   nameJa: '花鳥画',
   icon: '花',
   description: 'Birds and flowers in the intimate kacho-e tradition',
-  elementIds: ['heron-standing', 'bush-warbler', 'swallow-flight', 'kingfisher', 'egret', 'peony', 'lotus', 'morning-glory', 'wisteria'],
+  elementIds: ['heron-standing', 'bush-warbler', 'swallow-flight', 'kingfisher', 'egret', 'peony', 'lotus-pod', 'lotus-cluster', 'morning-glory', 'wisteria'],
   paletteIds: ['haru', 'natsu'],
   presetIds: null,
   journeys: [
