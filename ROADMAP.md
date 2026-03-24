@@ -191,13 +191,34 @@ Wire-line overlay showing paper boundaries and rule-of-thirds grid. Helps compos
 
 ---
 
+### Kacho-e Style Pack (花鳥画) ✅
+
+First expansion pack — birds and flowers in the intimate kacho-e tradition.
+
+- **9 elements** in `assets/kacho-elements.js`: Heron Standing, Bush Warbler, Swallow in Flight, Kingfisher, Egret, Peony, Lotus, Morning Glory, Wisteria. Close-up nature subjects with 3-level carve accumulation and rich zone coloring.
+- **2 palettes**: Haru 春 (spring pastels), Natsu 夏 (deep summer tones).
+- **Pack manifest** (`assets/kacho-pack.js`): 2 journeys (Your First Kacho-e, Seasonal Pairing), 10 creative prompts across scene/constraint/transformation/emotion types.
+- **Pack registry integration**: Elements tagged `pack: 'kacho-e'`, palettes merged into PALETTES at startup.
+
+### Moribana Style Pack (盛花) ✅
+
+Ikebana-inspired still-life — vessels, refined florals, and structural branches for arrangement compositions.
+
+- **11 elements** in `assets/moribana-elements.js`:
+  - **4 vessels**: Suiban (shallow basin), Tsubo (ceramic vase), Hanaire (bamboo vase), Chawan (tea bowl)
+  - **4 flowers**: Kiku (chrysanthemum), Tsubaki (camellia), Ran (orchid spray), Suisen (narcissus)
+  - **3 branches/accents**: Ume Branch (angular plum with blossoms), Matsu Branch (pine with needle clusters), Kenzan (pin frog holder)
+- **3 palettes** inspired by Japanese ceramic glazes: Seiji 青磁 (celadon cool), Shino 志野 (autumn warm), Raku 楽 (dramatic black/vermillion).
+- **Pack manifest** (`assets/moribana-pack.js`): 2 journeys (Your First Arrangement, Seasonal Harmony), 10 creative prompts, 11 companion element references to core/Kacho-e packs.
+- **Design document**: `docs/moribana_style_pack.md` — element specs, scale relationships, atmosphere pairings, companion strategy.
+
+---
+
 ## Future Work
 
 ### Style Packs (Expansion Content)
-Pack infrastructure is in place. Next steps:
-- **Kacho-e (花鳥画)** — Birds & Flowers pack. First expansion: 10-12 close-up nature elements, 2 palettes, 3 presets. Closest to existing content, broadest appeal.
+Pack infrastructure is in place with two packs shipped. Next candidates:
 - **Shin-hanga** — Light & Atmosphere pack. Rain layers, fog banks, lantern glow, moonlit reflections, 2-3 mood palettes. Leverages existing atmosphere system.
-- **Moribana** — Ikebana-inspired still life. Vessels, branches, compositional constraint aids.
 - **Wabi-sabi** — Minimalism mode/preset (not a paid pack). Rougher edges, ink bleed, sparse elements.
 
 ### First-Run Experience

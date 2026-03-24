@@ -2484,6 +2484,8 @@ html, body {
 <script src="assets/pack-registry.js"></script>
 <script src="assets/kacho-elements.js"></script>
 <script src="assets/kacho-pack.js"></script>
+<script src="assets/moribana-elements.js"></script>
+<script src="assets/moribana-pack.js"></script>
 <script src="print-engine.js"></script>
 <script src="audio-engine.js"></script>
 <script>
@@ -2522,6 +2524,9 @@ if (typeof MOKURI_FIGURES_ELEMENTS !== 'undefined') {
 }
 if (typeof MOKURI_KACHOE_ELEMENTS !== 'undefined') {
   MOKURI_ELEMENTS.push(...MOKURI_KACHOE_ELEMENTS);
+}
+if (typeof MOKURI_MORIBANA_ELEMENTS !== 'undefined') {
+  MOKURI_ELEMENTS.push(...MOKURI_MORIBANA_ELEMENTS);
 }
 
 // Merge expansion pack gallery presets
@@ -2624,6 +2629,9 @@ const PALETTES = {
 // Merge expansion pack palettes
 if (typeof MOKURI_KACHOE_PALETTES !== 'undefined') {
   Object.assign(PALETTES, MOKURI_KACHOE_PALETTES);
+}
+if (typeof MOKURI_MORIBANA_PALETTES !== 'undefined') {
+  Object.assign(PALETTES, MOKURI_MORIBANA_PALETTES);
 }
 
 // Color distance helpers for cross-palette accent selection
