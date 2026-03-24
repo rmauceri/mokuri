@@ -13,6 +13,7 @@ const MOKURI_FAUNA_ELEMENTS = [
     name: 'Koi',
     category: 'fauna',
     pack: 'core',
+    tags: ['fauna', 'organic', 'water', 'intimate'],
     viewBox: '0 0 200 120',
     suggestedLayer: 'midground',
     colorZones: [
@@ -79,6 +80,7 @@ const MOKURI_FAUNA_ELEMENTS = [
     name: 'Dragonfly',
     category: 'fauna',
     pack: 'core',
+    tags: ['fauna', 'organic', 'water', 'intimate', 'minimal'],
     viewBox: '0 0 180 140',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -153,6 +155,7 @@ const MOKURI_FAUNA_ELEMENTS = [
     name: 'Turtle',
     category: 'fauna',
     pack: 'core',
+    tags: ['fauna', 'organic', 'water'],
     viewBox: '0 0 160 180',
     suggestedLayer: 'midground',
     colorZones: [
@@ -229,6 +232,7 @@ const MOKURI_FAUNA_ELEMENTS = [
     name: 'Flying Crane',
     category: 'fauna',
     pack: 'core',
+    tags: ['fauna', 'organic', 'landscape'],
     viewBox: '0 0 240 160',
     suggestedLayer: 'background',
     colorZones: [
@@ -310,6 +314,7 @@ const MOKURI_FAUNA_ELEMENTS = [
     name: 'Rabbit',
     category: 'fauna',
     pack: 'core',
+    tags: ['fauna', 'organic', 'landscape'],
     viewBox: '0 0 140 160',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -381,6 +386,7 @@ const MOKURI_FAUNA_ELEMENTS = [
     name: 'Frog',
     category: 'fauna',
     pack: 'core',
+    tags: ['fauna', 'organic', 'water', 'intimate'],
     viewBox: '0 0 140 120',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -461,6 +467,7 @@ const MOKURI_FAUNA_ELEMENTS = [
     name: 'Butterfly',
     category: 'fauna',
     pack: 'core',
+    tags: ['fauna', 'organic', 'intimate', 'minimal'],
     viewBox: '0 0 160 130',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -543,6 +550,7 @@ const MOKURI_FAUNA_ELEMENTS = [
     name: 'Sparrow',
     category: 'fauna',
     pack: 'core',
+    tags: ['fauna', 'organic', 'intimate'],
     viewBox: '0 0 120 110',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -621,6 +629,7 @@ const MOKURI_FAUNA_ELEMENTS = [
     name: 'Leaping Koi',
     category: 'fauna',
     pack: 'core',
+    tags: ['fauna', 'organic', 'water', 'intimate'],
     viewBox: '0 0 160 220',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -692,6 +701,7 @@ const MOKURI_FAUNA_ELEMENTS = [
     name: 'Koi (Overhead)',
     category: 'fauna',
     pack: 'core',
+    tags: ['fauna', 'organic', 'water', 'intimate'],
     viewBox: '0 0 140 220',
     suggestedLayer: 'midground',
     colorZones: [
@@ -773,6 +783,7 @@ const MOKURI_FAUNA_ELEMENTS = [
     name: 'Standing Crane',
     category: 'fauna',
     pack: 'core',
+    tags: ['fauna', 'organic', 'water', 'landscape'],
     viewBox: '0 0 120 260',
     suggestedLayer: 'midground',
     colorZones: [
@@ -857,6 +868,7 @@ const MOKURI_FAUNA_ELEMENTS = [
     name: 'Landing Crane',
     category: 'fauna',
     pack: 'core',
+    tags: ['fauna', 'organic', 'landscape'],
     viewBox: '0 0 280 200',
     suggestedLayer: 'midground',
     colorZones: [

@@ -5,6 +5,7 @@ const MOKURI_SCENE_ELEMENTS = [
     name: 'Bamboo Grove',
     category: 'landscape',
     pack: 'core',
+    tags: ['flora', 'organic', 'landscape'],
     viewBox: '0 0 200 280',
     suggestedLayer: 'midground',
     colorZones: [
@@ -109,6 +110,7 @@ const MOKURI_SCENE_ELEMENTS = [
     name: 'Rock Formation',
     category: 'landscape',
     pack: 'core',
+    tags: ['landscape', 'organic', 'minimal'],
     viewBox: '0 0 220 160',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -172,6 +174,7 @@ const MOKURI_SCENE_ELEMENTS = [
     name: 'Temple Roof',
     category: 'landscape',
     pack: 'core',
+    tags: ['structural', 'landscape'],
     viewBox: '0 0 260 140',
     suggestedLayer: 'midground',
     colorZones: [
@@ -242,6 +245,7 @@ const MOKURI_SCENE_ELEMENTS = [
     name: 'Distant Village',
     category: 'landscape',
     pack: 'core',
+    tags: ['structural', 'landscape'],
     viewBox: '0 0 300 100',
     suggestedLayer: 'background',
     colorZones: [
@@ -332,6 +336,7 @@ const MOKURI_SCENE_ELEMENTS = [
     name: 'Stone Path',
     category: 'landscape',
     pack: 'core',
+    tags: ['structural', 'landscape'],
     viewBox: '0 0 240 80',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -400,6 +405,7 @@ const MOKURI_SCENE_ELEMENTS = [
     name: 'Wooden Bridge',
     category: 'landscape',
     pack: 'core',
+    tags: ['structural', 'landscape', 'water'],
     viewBox: '0 0 280 120',
     suggestedLayer: 'midground',
     colorZones: [
@@ -467,6 +473,7 @@ const MOKURI_SCENE_ELEMENTS = [
     name: 'Rain Curtain',
     category: 'objects & patterns',
     pack: 'core',
+    tags: ['atmospheric', 'organic', 'landscape'],
     viewBox: '0 0 200 300',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -593,6 +600,7 @@ const MOKURI_SCENE_ELEMENTS = [
     name: 'Snow Fall',
     category: 'objects & patterns',
     pack: 'core',
+    tags: ['atmospheric', 'seasonal-winter', 'landscape'],
     viewBox: '0 0 200 280',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -690,6 +698,7 @@ const MOKURI_SCENE_ELEMENTS = [
     name: 'Cloud Wisp',
     category: 'objects & patterns',
     pack: 'core',
+    tags: ['atmospheric', 'organic', 'minimal'],
     viewBox: '0 0 260 80',
     suggestedLayer: 'background',
     colorZones: [
@@ -742,6 +751,7 @@ const MOKURI_SCENE_ELEMENTS = [
     name: 'Maple Branch',
     category: 'flora',
     pack: 'core',
+    tags: ['flora', 'organic', 'seasonal-autumn', 'intimate'],
     viewBox: '0 0 200 180',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -829,6 +839,7 @@ const MOKURI_SCENE_ELEMENTS = [
     name: 'Iris Cluster',
     category: 'flora',
     pack: 'core',
+    tags: ['flora', 'organic', 'water', 'intimate', 'seasonal-spring'],
     viewBox: '0 0 160 200',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -930,6 +941,7 @@ const MOKURI_SCENE_ELEMENTS = [
     name: 'Pagoda',
     category: 'landscape',
     pack: 'core',
+    tags: ['structural', 'landscape'],
     viewBox: '0 0 130 220',
     suggestedLayer: 'midground',
     colorZones: [
@@ -1001,6 +1013,7 @@ const MOKURI_SCENE_ELEMENTS = [
     name: 'Tea House',
     category: 'landscape',
     pack: 'core',
+    tags: ['structural', 'landscape'],
     viewBox: '0 0 200 140',
     suggestedLayer: 'midground',
     colorZones: [
@@ -1066,6 +1079,7 @@ const MOKURI_SCENE_ELEMENTS = [
     name: 'Bamboo Fence',
     category: 'landscape',
     pack: 'core',
+    tags: ['structural', 'landscape', 'minimal'],
     viewBox: '0 0 220 100',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -1133,6 +1147,7 @@ const MOKURI_SCENE_ELEMENTS = [
     name: 'Farmhouse',
     category: 'landscape',
     pack: 'core',
+    tags: ['structural', 'landscape'],
     viewBox: '0 0 200 160',
     suggestedLayer: 'midground',
     colorZones: [
@@ -1203,6 +1218,7 @@ const MOKURI_SCENE_ELEMENTS = [
     name: 'Shore Waves',
     category: 'landscape',
     pack: 'core',
+    tags: ['landscape', 'water', 'organic'],
     viewBox: '0 0 300 100',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -1258,6 +1274,7 @@ const MOKURI_SCENE_ELEMENTS = [
     name: 'River Rapids',
     category: 'landscape',
     pack: 'core',
+    tags: ['landscape', 'water', 'organic'],
     viewBox: '0 0 260 140',
     suggestedLayer: 'midground',
     colorZones: [
@@ -1329,6 +1346,7 @@ const MOKURI_SCENE_ELEMENTS = [
     name: 'Water Ripples',
     category: 'landscape',
     pack: 'core',
+    tags: ['landscape', 'water', 'organic', 'minimal'],
     viewBox: '0 0 200 120',
     suggestedLayer: 'midground',
     colorZones: [

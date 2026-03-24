@@ -17,6 +17,7 @@ const MOKURI_MORIBANA_ELEMENTS = [
     name: 'Suiban',
     category: 'objects & patterns',
     pack: 'moribana',
+    tags: ['vessel', 'structural', 'minimal'],
     viewBox: '0 0 200 80',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -77,6 +78,7 @@ const MOKURI_MORIBANA_ELEMENTS = [
     name: 'Tsubo',
     category: 'objects & patterns',
     pack: 'moribana',
+    tags: ['vessel', 'structural', 'minimal'],
     viewBox: '0 0 100 160',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -142,6 +144,7 @@ const MOKURI_MORIBANA_ELEMENTS = [
     name: 'Hanaire',
     category: 'objects & patterns',
     pack: 'moribana',
+    tags: ['vessel', 'structural', 'minimal'],
     viewBox: '0 0 70 150',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -207,6 +210,7 @@ const MOKURI_MORIBANA_ELEMENTS = [
     name: 'Chawan',
     category: 'objects & patterns',
     pack: 'moribana',
+    tags: ['vessel', 'structural', 'minimal'],
     viewBox: '0 0 140 90',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -273,6 +277,7 @@ const MOKURI_MORIBANA_ELEMENTS = [
     name: 'Kiku',
     category: 'flora',
     pack: 'moribana',
+    tags: ['flora', 'organic', 'intimate', 'seasonal-autumn'],
     viewBox: '0 0 120 190',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -347,6 +352,7 @@ const MOKURI_MORIBANA_ELEMENTS = [
     name: 'Tsubaki',
     category: 'flora',
     pack: 'moribana',
+    tags: ['flora', 'organic', 'intimate', 'seasonal-winter'],
     viewBox: '0 0 120 165',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -427,6 +433,7 @@ const MOKURI_MORIBANA_ELEMENTS = [
     name: 'Ran',
     category: 'flora',
     pack: 'moribana',
+    tags: ['flora', 'organic', 'intimate', 'minimal'],
     viewBox: '0 0 180 150',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -513,6 +520,7 @@ const MOKURI_MORIBANA_ELEMENTS = [
     name: 'Suisen',
     category: 'flora',
     pack: 'moribana',
+    tags: ['flora', 'organic', 'intimate', 'seasonal-winter'],
     viewBox: '0 0 120 160',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -599,6 +607,7 @@ const MOKURI_MORIBANA_ELEMENTS = [
     name: 'Ume Branch',
     category: 'flora',
     pack: 'moribana',
+    tags: ['flora', 'organic', 'intimate', 'seasonal-spring', 'minimal'],
     viewBox: '0 0 200 170',
     suggestedLayer: 'midground',
     colorZones: [
@@ -688,6 +697,7 @@ const MOKURI_MORIBANA_ELEMENTS = [
     name: 'Matsu Branch',
     category: 'flora',
     pack: 'moribana',
+    tags: ['flora', 'organic', 'intimate', 'minimal'],
     viewBox: '0 -6 200 126',
     suggestedLayer: 'midground',
     colorZones: [
@@ -770,6 +780,7 @@ const MOKURI_MORIBANA_ELEMENTS = [
     name: 'Kenzan',
     category: 'objects & patterns',
     pack: 'moribana',
+    tags: ['vessel', 'structural', 'minimal'],
     viewBox: '0 0 60 30',
     suggestedLayer: 'foreground',
     colorZones: [

@@ -46,6 +46,59 @@ function getPackJourneys(packId) {
   return MOKURI_PACKS.flatMap(p => p.journeys || []);
 }
 
+/**
+ * Get elements with affinity to a pack, sorted by match strength.
+ * Returns pack's own elements first, then core elements whose tags
+ * overlap with the pack's affinity list (highest overlap first).
+ * Elements with no tag overlap are excluded from the affinity set.
+ * @param {string} packId - Pack to compute affinity for
+ * @param {Array} allElements - Full MOKURI_ELEMENTS array
+ * @returns {{ featured: Array, rest: Array }} featured = pack + affinity matches; rest = everything else
+ */
+function getAffinityElements(packId, allElements) {
+  const pack = getPackById(packId);
+  if (!pack) return { featured: allElements.slice(), rest: [] };
+
+  const packElIds = new Set(pack.elementIds || []);
+  const affinity = pack.affinity || [];
+
+  const featured = [];
+  const rest = [];
+
+  // Pack's own elements first (preserve original order)
+  const ownEls = [];
+  const coreEls = [];
+  for (const el of allElements) {
+    if (packElIds.has(el.id)) {
+      ownEls.push(el);
+    } else {
+      coreEls.push(el);
+    }
+  }
+
+  // Score core elements by tag overlap with pack affinity
+  const scored = coreEls.map(el => {
+    const tags = el.tags || [];
+    const overlap = tags.filter(t => affinity.includes(t)).length;
+    return { el, overlap };
+  });
+
+  // Sort by overlap descending
+  scored.sort((a, b) => b.overlap - a.overlap);
+
+  // Featured: own elements + core with any overlap
+  featured.push(...ownEls);
+  for (const { el, overlap } of scored) {
+    if (overlap > 0) {
+      featured.push(el);
+    } else {
+      rest.push(el);
+    }
+  }
+
+  return { featured, rest };
+}
+
 // --- Core Pack ---
 
 registerPack({
@@ -54,6 +107,7 @@ registerPack({
   nameJa: '基本',
   icon: '墨',
   description: 'Landscapes, flora, fauna, figures, and essential tools',
+  affinity: ['landscape', 'structural', 'atmospheric', 'figure', 'water'],
 
   elementIds: [
     'mountain-distant', 'mountain-near', 'mountain-fuji-peak', 'rolling-hills',

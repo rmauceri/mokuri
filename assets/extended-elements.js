@@ -13,6 +13,7 @@ const MOKURI_CORE_ELEMENTS = [
     name: 'Sakura Blossom',
     category: 'flora',
     pack: 'core',
+    tags: ['flora', 'organic', 'seasonal-spring', 'intimate'],
     viewBox: '0 0 160 140',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -93,6 +94,7 @@ const MOKURI_CORE_ELEMENTS = [
     name: 'Ume Blossom',
     category: 'flora',
     pack: 'core',
+    tags: ['flora', 'organic', 'seasonal-spring', 'intimate', 'minimal'],
     viewBox: '0 0 120 120',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -174,6 +176,7 @@ const MOKURI_CORE_ELEMENTS = [
     name: 'Chrysanthemum',
     category: 'flora',
     pack: 'core',
+    tags: ['flora', 'organic', 'seasonal-autumn', 'intimate'],
     viewBox: '0 0 120 130',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -226,6 +229,7 @@ const MOKURI_CORE_ELEMENTS = [
     name: 'Susuki Grass',
     category: 'flora',
     pack: 'core',
+    tags: ['flora', 'organic', 'seasonal-autumn', 'minimal', 'landscape'],
     viewBox: '0 0 100 160',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -285,6 +289,7 @@ const MOKURI_CORE_ELEMENTS = [
     name: 'Asanoha Star',
     category: 'objects & patterns',
     pack: 'core',
+    tags: ['decorative', 'geometric', 'minimal'],
     viewBox: '0 0 120 120',
     suggestedLayer: 'midground',
     colorZones: [
@@ -367,6 +372,7 @@ const MOKURI_CORE_ELEMENTS = [
     name: 'Seigaiha Wave Tile',
     category: 'objects & patterns',
     pack: 'core',
+    tags: ['decorative', 'geometric', 'water'],
     viewBox: '0 0 120 60',
     suggestedLayer: 'background',
     colorZones: [
@@ -452,6 +458,7 @@ const MOKURI_CORE_ELEMENTS = [
     name: 'Folding Fan',
     category: 'objects & patterns',
     pack: 'core',
+    tags: ['decorative', 'structural', 'intimate'],
     viewBox: '0 0 140 80',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -535,6 +542,7 @@ const MOKURI_CORE_ELEMENTS = [
     name: 'Paper Lantern',
     category: 'objects & patterns',
     pack: 'core',
+    tags: ['structural', 'atmospheric', 'intimate'],
     viewBox: '0 0 100 140',
     suggestedLayer: 'midground',
     colorZones: [
@@ -616,6 +624,7 @@ const MOKURI_CORE_ELEMENTS = [
     name: 'Kasuga Grand Lantern',
     category: 'objects & patterns',
     pack: 'core',
+    tags: ['structural', 'landscape'],
     viewBox: '0 0 160 280',
     suggestedLayer: 'midground',
     colorZones: [
@@ -667,6 +676,7 @@ const MOKURI_CORE_ELEMENTS = [
     name: 'Yukimi Lantern',
     category: 'objects & patterns',
     pack: 'core',
+    tags: ['structural', 'landscape', 'seasonal-winter'],
     viewBox: '0 0 240 200',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -716,6 +726,7 @@ const MOKURI_CORE_ELEMENTS = [
     name: 'Oribe Lantern',
     category: 'objects & patterns',
     pack: 'core',
+    tags: ['structural', 'landscape', 'minimal'],
     viewBox: '0 0 140 240',
     suggestedLayer: 'midground',
     colorZones: [
@@ -764,6 +775,7 @@ const MOKURI_CORE_ELEMENTS = [
     name: 'Fishing Boat',
     category: 'objects & patterns',
     pack: 'core',
+    tags: ['structural', 'water', 'landscape'],
     viewBox: '0 0 180 100',
     suggestedLayer: 'midground',
     colorZones: [
@@ -822,6 +834,7 @@ const MOKURI_CORE_ELEMENTS = [
     name: 'Pine Bough',
     category: 'flora',
     pack: 'core',
+    tags: ['flora', 'organic', 'intimate', 'minimal'],
     viewBox: '0 0 160 80',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -892,6 +905,7 @@ const MOKURI_CORE_ELEMENTS = [
     name: 'Woodgrain Knot',
     category: 'objects & patterns',
     pack: 'core',
+    tags: ['decorative', 'organic'],
     viewBox: '0 0 120 80',
     suggestedLayer: 'midground',
     colorZones: [
@@ -974,6 +988,7 @@ const MOKURI_CORE_ELEMENTS = [
     name: 'Gouge Mark',
     category: 'objects & patterns',
     pack: 'core',
+    tags: ['decorative', 'minimal'],
     viewBox: '0 0 120 40',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -1056,6 +1071,7 @@ const MOKURI_CORE_ELEMENTS = [
     name: 'Bare Winter Branch',
     category: 'flora',
     pack: 'core',
+    tags: ['flora', 'organic', 'seasonal-winter', 'minimal', 'intimate'],
     viewBox: '0 0 160 140',
     suggestedLayer: 'foreground',
     colorZones: [

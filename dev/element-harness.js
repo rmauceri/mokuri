@@ -261,6 +261,8 @@
       factRow('Effective paths', String(pathCount)),
       factRow('ViewBox', viewBox.join(' ')),
       factRow('Layer', element.suggestedLayer || 'missing'),
+      factRow('Pack', element.pack || 'core'),
+      factRow('Tags', Array.isArray(element.tags) && element.tags.length ? element.tags.join(', ') : '<em>none</em>'),
       factRow('Zones', Array.isArray(element.colorZones) ? element.colorZones.map(function (zone) { return zone.id; }).join(', ') : 'missing'),
       '</div>',
       '<div class="issue-block"><h3>Zone swatches</h3><div class="zone-list">' + renderZonePills(element.colorZones) + '</div></div>',
@@ -458,6 +460,10 @@
 
     if (!VALID_LAYERS.has(element.suggestedLayer)) {
       warnings.push('suggestedLayer should be background, midground, or foreground.');
+    }
+
+    if (!Array.isArray(element.tags) || !element.tags.length) {
+      warnings.push('Element has no tags. Add tags for style pack affinity.');
     }
 
     const parsedViewBox = parseViewBox(element.viewBox);

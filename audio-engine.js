@@ -37,7 +37,7 @@ const MokuriAudio = (() => {
 
   // Atmosphere state (affects chime register, spacing, wind character)
   let atmo = {
-    sky: 'none', ground: 'none',
+    sky: 'none', foreground: 'none',
     notePool: SCALE_MID,
     chimeMin: 3, chimeMax: 8,     // seconds between chimes
     chimeVol: 0.09,
@@ -323,7 +323,7 @@ const MokuriAudio = (() => {
   // --- Atmosphere Influence ---
   function setAmbienceForAtmosphere(sky, ground) {
     atmo.sky = sky || 'none';
-    atmo.ground = ground || 'none';
+    atmo.foreground = ground || 'none';
 
     // Determine chime register and spacing based on sky
     switch (atmo.sky) {
@@ -365,15 +365,15 @@ const MokuriAudio = (() => {
 
     // Ground influence
     const wasWater = atmo.waterActive;
-    atmo.waterActive = (atmo.ground === 'water');
+    atmo.waterActive = (atmo.foreground === 'water');
 
-    if (atmo.ground === 'snow') {
+    if (atmo.foreground === 'snow') {
       // Crystalline: shift to higher notes, sparser
       atmo.notePool = [...SCALE_HIGH];
       atmo.chimeMin += 2; atmo.chimeMax += 3;
       atmo.chimeVol = 0.06;
       atmo.windBase += 200; atmo.windQ = 0.5; atmo.windVol = 0.015;
-    } else if (atmo.ground === 'water') {
+    } else if (atmo.foreground === 'water') {
       atmo.windBase += 80; atmo.windVol += 0.01;
     }
 

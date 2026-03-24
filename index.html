@@ -393,6 +393,33 @@ html, body {
 .palette-swatch:hover { transform: scale(1.1); }
 .palette-swatch.active { border-color: var(--text); }
 
+/* Pack picker chips */
+.pack-picker-row {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 3px;
+}
+.pack-picker-chip {
+  padding: 2px 6px;
+  font-size: 9px;
+  white-space: nowrap;
+  border-radius: 3px;
+  border: 1px solid var(--panel-border);
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  opacity: 0.4;
+  transition: opacity 0.15s, border-color 0.15s, background 0.15s;
+  line-height: 1.3;
+}
+.pack-picker-chip:hover { opacity: 0.7; border-color: var(--text-muted); }
+.pack-picker-chip.active {
+  opacity: 1;
+  border-color: var(--accent);
+  background: rgba(139, 115, 85, 0.08);
+}
+.pack-picker-icon { font-size: 11px; }
+
 .zone-selector { min-height: 0; }
 .zone-selector:empty { display: none; }
 
@@ -514,7 +541,6 @@ html, body {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-left: auto;
 }
 .audio-btn {
   background: none;
@@ -562,6 +588,32 @@ html, body {
   background: var(--panel-border);
   margin: 0 2px;
 }
+
+/* Zoom & guide controls in status bar */
+.status-view-controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+}
+.status-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 12px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  transition: background 0.15s, color 0.15s;
+  opacity: 0.6;
+}
+.status-btn:hover { background: var(--panel-border); opacity: 1; }
+.status-btn.active { opacity: 1; color: var(--accent); }
 
 /* Inline print preview */
 .workspace.print-preview-active .workspace-svg { opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
@@ -1906,11 +1958,6 @@ html, body {
   .mode-btn { padding: 4px 10px; }
 }
 
-/* Hide zoom controls before Workshop clips — zoom is redundant with mouse/keyboard/touch */
-@media (max-width: 1200px) {
-  .toolbar-zoom-group { display: none; }
-  .toolbar-zoom-group + .toolbar-separator { display: none; }
-}
 
 /* Narrow windows: hide low-priority toolbar items */
 @media (max-width: 850px) {
@@ -1941,6 +1988,8 @@ html, body {
   .tool-btn { width: 36px; height: 36px; font-size: 16px; }
   .mode-btn { padding: 4px 8px; height: 32px; }
   .mode-btn .mode-icon { font-size: 15px; }
+  .status-view-controls { display: none; }
+  .status-view-controls + .audio-sep { display: none; }
 }
 
 /* Short windows: compact vertical chrome */
@@ -1948,6 +1997,7 @@ html, body {
   :root { --toolbar-h: 40px; }
   .toolbar { gap: 4px; padding: 0 8px; }
   .status-bar { height: 20px; font-size: 10px; }
+  .status-btn { width: 18px; height: 18px; font-size: 10px; }
 }
 </style>
 </head>
@@ -2001,13 +2051,6 @@ html, body {
 
     <div class="toolbar-spacer"></div>
 
-    <!-- Right group: Zoom + File -->
-    <div class="toolbar-group toolbar-zoom-group">
-      <button class="tool-btn" id="btn-zoom-in" title="Zoom In (+)">+</button>
-      <button class="tool-btn" id="btn-zoom-out" title="Zoom Out (−)">−</button>
-      <button class="tool-btn" id="btn-zoom-fit" title="Fit to View (0)">⊡</button>
-      <button class="tool-btn" id="btn-guides" title="Composition Guides (D)">⊞</button>
-    </div>
     <div class="toolbar-separator"></div>
     <button class="mode-btn" id="btn-file" title="Workshop — compositions & presets (W)">
       <span class="mode-icon">作</span>
@@ -2262,6 +2305,14 @@ html, body {
     <span id="status-elements">0 elements</span>
     <span id="status-zoom">100%</span>
     <span id="status-hint">Place elements · Select + V to carve · P to print</span>
+    <div class="status-view-controls">
+      <button class="status-btn" id="btn-zoom-in" title="Zoom In (+)">+</button>
+      <button class="status-btn" id="btn-zoom-out" title="Zoom Out (−)">−</button>
+      <button class="status-btn" id="btn-zoom-fit" title="Fit to View (0)">⊡</button>
+      <div class="audio-sep"></div>
+      <button class="status-btn" id="btn-guides" title="Composition Guides (G)">⊞</button>
+    </div>
+    <div class="audio-sep"></div>
     <div class="audio-controls">
       <button class="audio-btn" id="audio-ambient-btn" title="Ambient sound">🔇</button>
       <input type="range" class="audio-slider" id="audio-ambient-vol" min="0" max="100" value="15" title="Ambient volume">
@@ -2585,13 +2636,20 @@ const STATE = {
   impressions: 1,       // 1-3
 
   // Atmosphere
-  sky: 'none',          // 'none' | 'dawn' | 'day' | 'dusk' | 'night' | 'overcast'
-  ground: 'none',       // 'none' | 'earth' | 'grass' | 'snow' | 'sand' | 'water'
+  background: 'none',   // 'none' | 'dawn' | 'day' | 'dusk' | 'night' | 'overcast' | 'golden' | 'pink'
+  foreground: 'none',   // 'none' | 'earth' | 'grass' | 'snow' | 'sand' | 'water'
   horizon: 0.62,        // 0-1, fraction from top (0.62 = 62% down)
   mist: 0,              // 0-3 mist bands
 
   // Composition guides
   guides: localStorage.getItem('mokuri-guides') === 'true',
+
+  // Active style packs (which packs' elements appear in the gallery)
+  activePacks: (() => {
+    const saved = localStorage.getItem('mokuri-activePacks');
+    if (saved) { try { return new Set(JSON.parse(saved)); } catch(e) {} }
+    return new Set(getAllPacks().map(p => p.id));
+  })(),
 
   // Composition identity (set at runtime, not serialized)
   activeCompositionId: null,
@@ -2746,9 +2804,9 @@ const MARGIN_PRESETS = {
 const MAT_COLOR = '#d8d3cb';
 
 // ============================================================
-//  ATMOSPHERE — Sky & Ground types for scene backgrounds
+//  ATMOSPHERE — Background & Foreground types
 // ============================================================
-const SKY_TYPES = {
+const BACKGROUND_TYPES = {
   none:     { name: 'None', stops: null },
   dawn:     { name: '暁 Dawn',     stops: [
     { offset: 0, color: '#2a3a5c', opacity: 0.85 },
@@ -2797,7 +2855,7 @@ const SKY_TYPES = {
   ]},
 };
 
-const GROUND_TYPES = {
+const FOREGROUND_TYPES = {
   none:  { name: 'None', stops: null },
   earth: { name: '土 Earth', stops: [
     { offset: 0, color: '#6a5a40', opacity: 0.5 },
@@ -2833,7 +2891,7 @@ const SCENE_PRESETS = {
     name: 'Mountain Shrine',
     palette: 'hokusai',
     paperType: 'kozo',
-    sky: 'dawn', ground: 'earth', horizon: 0.55, mist: 1,
+    background: 'dawn', foreground: 'earth', horizon: 0.55, mist: 1,
     // Thirds: torii at left-lower power point, crane at upper-right, twisted pine at right-third
     // Eye flow: crane (upper right) → mountains → torii gate (lower left) → pine (right) — Z pattern
     elements(W, H) {
@@ -2853,7 +2911,7 @@ const SCENE_PRESETS = {
     name: 'Koi Pond',
     palette: 'beni',
     paperType: 'hosho',
-    sky: 'day', ground: 'water', horizon: 0.6, mist: 0,
+    background: 'day', foreground: 'water', horizon: 0.6, mist: 0,
     elements(W, H) {
       return [
         { id: 1, defId: 'cherry-branch', x: W * 0.22, y: H * 0.15, scaleX: 1.4, scaleY: 1.3, rotation: 12, carveLevel: 2, colorOverrides: {}, variationSeed: 17382 },
@@ -2871,7 +2929,7 @@ const SCENE_PRESETS = {
     name: 'Moonlit Shore',
     palette: 'yoru',
     paperType: 'gampi',
-    sky: 'night', ground: 'water', horizon: 0.48, mist: 0,
+    background: 'night', foreground: 'water', horizon: 0.48, mist: 0,
     // Thirds: moon at upper-right power point, crane at left-third, rock at lower-right power point
     // Eye flow: moon (upper right) → crane silhouette (left third) → water → turtle → rock — triangle
     elements(W, H) {
@@ -2891,7 +2949,7 @@ const SCENE_PRESETS = {
     name: 'Snow Rabbit',
     palette: 'fuyu',
     paperType: 'torinoko',
-    sky: 'overcast', ground: 'snow', horizon: 0.48, mist: 2,
+    background: 'overcast', foreground: 'snow', horizon: 0.48, mist: 2,
     // Thirds: rabbit at right-lower power point, village along upper-third, pine/ume bracket the third-lines
     // Eye flow: village (top) → pine (right third) → rabbit (lower right) → stone path → rock (lower left) — descending arc
     elements(W, H) {
@@ -2911,7 +2969,7 @@ const SCENE_PRESETS = {
     name: 'Lantern Garden',
     palette: 'matcha',
     paperType: 'kozo',
-    sky: 'dusk', ground: 'grass', horizon: 0.75, mist: 1,
+    background: 'dusk', foreground: 'grass', horizon: 0.75, mist: 1,
     elements(W, H) {
       return [
         { id: 1, defId: 'bamboo-grove', x: W * 0.2, y: H * 0.42, scaleX: 1.4, scaleY: 1.5, rotation: 0, carveLevel: 2, colorOverrides: {}, variationSeed: 43821 },
@@ -2928,7 +2986,7 @@ const SCENE_PRESETS = {
     name: 'Autumn Crossing',
     palette: 'aki',
     paperType: 'kozo',
-    sky: 'dusk', ground: 'earth', horizon: 0.52, mist: 1,
+    background: 'dusk', foreground: 'earth', horizon: 0.52, mist: 1,
     // Thirds: bridge spans lower-third line, crane at left-lower power point, willow at right-third
     // Eye flow: maple frame (upper left) → butterfly (upper right) → willow (right) → bridge & crane (lower third) — circular
     elements(W, H) {
@@ -3350,14 +3408,14 @@ function renderAtmosphere() {
   const H = STATE.paperH;
   const horizonY = H * STATE.horizon;
 
-  const skyType = SKY_TYPES[STATE.sky];
-  const groundType = GROUND_TYPES[STATE.ground];
+  const skyType = BACKGROUND_TYPES[STATE.background];
+  const groundType = FOREGROUND_TYPES[STATE.foreground];
 
   // Generate unique gradient IDs
   let defsSvg = '';
   let bodySvg = '';
 
-  // Sky gradient — fills from top to horizon
+  // Background gradient — fills from top to horizon
   if (skyType && skyType.stops) {
     const gid = 'atmo-sky-grad';
     defsSvg += `<linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">`;
@@ -3377,7 +3435,7 @@ function renderAtmosphere() {
     bodySvg += `<path d="${skyPath}" fill="url(#${gid})"/>`;
   }
 
-  // Ground gradient — fills from horizon to bottom
+  // Foreground gradient — fills from horizon to bottom
   if (groundType && groundType.stops) {
     const gid = 'atmo-ground-grad';
     defsSvg += `<linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">`;
@@ -3397,7 +3455,7 @@ function renderAtmosphere() {
     bodySvg += `<path d="${groundPath}" fill="url(#${gid})"/>`;
 
     // Water ripple lines
-    if (STATE.ground === 'water') {
+    if (STATE.foreground === 'water') {
       for (let i = 0; i < 6; i++) {
         const ry = horizonY + (H - horizonY) * (0.1 + i * 0.15) + Math.sin(i * 2.3) * 4;
         const len = W * (0.3 + Math.random() * 0.5);
@@ -4837,8 +4895,9 @@ function generateCompositionId() {
 
 function generateCompositionName(data) {
   const parts = [];
-  const skyNames = { dawn: 'Dawn', day: 'Daylight', dusk: 'Dusk', night: 'Night', overcast: 'Overcast' };
-  if (data.sky && data.sky !== 'none' && skyNames[data.sky]) parts.push(skyNames[data.sky]);
+  const bg = data.background || data.sky;
+  const skyNames = { dawn: 'Dawn', day: 'Daylight', dusk: 'Dusk', night: 'Night', overcast: 'Overcast', golden: 'Golden', pink: 'Pink' };
+  if (bg && bg !== 'none' && skyNames[bg]) parts.push(skyNames[bg]);
 
   if (data.elements && data.elements.length) {
     const names = [];
@@ -4852,9 +4911,10 @@ function generateCompositionName(data) {
     if (names.length) parts.push(names.join(' & '));
   }
 
-  if (!parts.length && data.ground && data.ground !== 'none') {
+  const fg = data.foreground || data.ground;
+  if (!parts.length && fg && fg !== 'none') {
     const groundNames = { earth: 'Earth', grass: 'Meadow', snow: 'Snow', sand: 'Sand', water: 'Water' };
-    if (groundNames[data.ground]) parts.push(groundNames[data.ground]);
+    if (groundNames[fg]) parts.push(groundNames[fg]);
   }
 
   return parts.join(' ') || 'Untitled Print';
@@ -4870,15 +4930,17 @@ function generateThumbnailSvg(data) {
   s += `<rect width="${vw}" height="${vh}" fill="${pt ? pt.base : '#f5f0e6'}"/>`;
 
   // Atmosphere
-  if (data.sky && data.sky !== 'none') {
-    const cols = { dawn: '#e8a87c', day: '#87ceeb', dusk: '#c47a90', night: '#1a1a3a', overcast: '#8a8a98' };
+  const bgType = data.background || data.sky;
+  if (bgType && bgType !== 'none') {
+    const cols = { dawn: '#e8a87c', day: '#87ceeb', dusk: '#c47a90', night: '#1a1a3a', overcast: '#8a8a98', golden: '#c9a84c', pink: '#e8a0b8' };
     const hy = Math.round((data.horizon || 0.62) * vh);
-    s += `<rect width="${vw}" height="${hy}" fill="${cols[data.sky] || '#87ceeb'}" opacity="0.3"/>`;
+    s += `<rect width="${vw}" height="${hy}" fill="${cols[bgType] || '#87ceeb'}" opacity="0.3"/>`;
   }
-  if (data.ground && data.ground !== 'none') {
+  const fgType = data.foreground || data.ground;
+  if (fgType && fgType !== 'none') {
     const cols = { earth: '#8b6b4a', grass: '#4a6a3a', snow: '#d8dce8', sand: '#c4a868', water: '#2a5a7a' };
     const hy = Math.round((data.horizon || 0.62) * vh);
-    s += `<rect y="${hy}" width="${vw}" height="${vh - hy}" fill="${cols[data.ground] || '#8b6b4a'}" opacity="0.3"/>`;
+    s += `<rect y="${hy}" width="${vw}" height="${vh - hy}" fill="${cols[fgType] || '#8b6b4a'}" opacity="0.3"/>`;
   }
 
   // Element silhouettes using actual SVG paths
@@ -4941,8 +5003,8 @@ function getCompositionData() {
     paperType: STATE.paperType,
     inkLoad: STATE.inkLoad,
     impressions: STATE.impressions,
-    sky: STATE.sky,
-    ground: STATE.ground,
+    background: STATE.background,
+    foreground: STATE.foreground,
     horizon: STATE.horizon,
     mist: STATE.mist,
     backgroundCarveStrokes: STATE.backgroundCarveStrokes,
@@ -4965,8 +5027,8 @@ function applyCompositionData(data) {
   STATE.paperType = data.paperType || 'kozo';
   STATE.inkLoad = data.inkLoad || 'standard';
   STATE.impressions = data.impressions || 1;
-  STATE.sky = data.sky || 'none';
-  STATE.ground = data.ground || 'none';
+  STATE.background = data.sky || data.background || 'none';
+  STATE.foreground = data.ground || data.foreground || 'none';
   STATE.horizon = data.horizon ?? 0.62;
   STATE.mist = data.mist || 0;
   STATE.backgroundCarveStrokes = data.backgroundCarveStrokes || [];
@@ -5126,7 +5188,7 @@ async function newComposition(paperW, paperH, presetId) {
       paperW: W, paperH: H,
       paperType: preset.paperType || 'kozo',
       inkLoad: 'standard', impressions: 1,
-      sky: preset.sky, ground: preset.ground,
+      background: preset.background || preset.sky, foreground: preset.foreground || preset.ground,
       horizon: preset.horizon, mist: preset.mist || 0,
     });
     STATE.compositionName = preset.name;
@@ -5136,8 +5198,8 @@ async function newComposition(paperW, paperH, presetId) {
     STATE.selectedIds.clear();
     if (paperW) STATE.paperW = paperW;
     if (paperH) STATE.paperH = paperH;
-    STATE.sky = 'none';
-    STATE.ground = 'none';
+    STATE.background = 'none';
+    STATE.foreground = 'none';
     STATE.horizon = 0.62;
     STATE.mist = 0;
     STATE.backgroundCarveStrokes = [];
@@ -5226,7 +5288,11 @@ function loadScenePreset(presetId) {
 let _currentPrompt = null;
 
 function refreshWorkshopPrompt() {
-  const allPrompts = getPackPrompts();
+  const allPrompts = getPackPrompts().filter(p => {
+    // Match prompt to its pack via id prefix or include all core prompts
+    const pack = MOKURI_PACKS.find(pk => (pk.prompts || []).some(pp => pp.id === p.id));
+    return !pack || STATE.activePacks.has(pack.id);
+  });
   if (allPrompts.length === 0) {
     $('workshop-prompt-area').style.display = 'none';
     return;
@@ -5396,7 +5462,7 @@ async function buildWorkshopUI() {
         paperW: workshopPaperW, paperH: workshopPaperH,
         paperType: preset.paperType || 'kozo',
         paletteId: preset.palette,
-        sky: preset.sky, ground: preset.ground,
+        background: preset.background || preset.sky, foreground: preset.foreground || preset.ground,
         horizon: preset.horizon, mist: preset.mist || 0,
         elements: preset.elements(workshopPaperW, workshopPaperH),
       };
@@ -5982,9 +6048,11 @@ function buildElementPicker() {
   const list = $('element-list');
   list.innerHTML = '';
 
-  // Group by category
+  // Group by category, filtering by active packs
   const cats = {};
   MOKURI_ELEMENTS.forEach(def => {
+    const pk = def.pack || 'core';
+    if (!STATE.activePacks.has(pk)) return;
     if (!cats[def.category]) cats[def.category] = [];
     cats[def.category].push(def);
   });
@@ -6418,12 +6486,11 @@ function updateHankoPreview() {
 }
 
 // ============================================================
-//  PANEL BOTTOM — Carve Info + Palette + Zone Editor
+//  PANEL BOTTOM — Carve Info + Style Pack Picker
 // ============================================================
 function buildPaletteUI() {
   const bar = $('palette-bar');
   bar.innerHTML = '';
-  const palette = PALETTES[STATE.paletteId];
 
   // Carve info for selected element
   if (STATE.selectedIds.size === 1) {
@@ -6431,7 +6498,6 @@ function buildPaletteUI() {
     if (el) {
       const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
       if (def) {
-        const carve = def.carveLevels[el.carveLevel];
         const infoLabel = document.createElement('div');
         infoLabel.className = 'palette-label';
         infoLabel.textContent = 'Carve Level';
@@ -6460,21 +6526,50 @@ function buildPaletteUI() {
     }
   }
 
-  // Show a small palette reference strip (non-interactive — use Inking Workbench for changes)
-  const palLabel = document.createElement('div');
-  palLabel.className = 'palette-label';
-  palLabel.style.marginTop = '8px';
-  palLabel.textContent = palette.name;
-  bar.appendChild(palLabel);
+  // Style pack picker — toggle which packs' elements appear in gallery
+  const packs = getAllPacks();
+  if (packs.length > 1) {
+    const packLabel = document.createElement('div');
+    packLabel.className = 'palette-label';
+    packLabel.style.marginTop = '8px';
+    packLabel.textContent = 'Style Packs';
+    bar.appendChild(packLabel);
 
-  const swatchRow = document.createElement('div');
-  swatchRow.style.cssText = 'display:flex;gap:3px;';
-  palette.colors.forEach(c => {
-    const s = document.createElement('div');
-    s.style.cssText = `width:24px;height:18px;border-radius:3px;background:${c};border:1px solid var(--panel-border);`;
-    swatchRow.appendChild(s);
-  });
-  bar.appendChild(swatchRow);
+    const packRow = document.createElement('div');
+    packRow.className = 'pack-picker-row';
+    packs.forEach(pack => {
+      const chip = document.createElement('button');
+      chip.className = 'pack-picker-chip' + (STATE.activePacks.has(pack.id) ? ' active' : '');
+      chip.title = pack.description || pack.name;
+      const displayName = pack.id === 'core' ? 'Mokuri' : pack.id === 'moribana' ? 'Ikebana' : pack.name.replace(' Collection', '');
+      chip.innerHTML = '<span class="pack-picker-icon">' + (pack.icon || '◆') + '</span> ' + displayName;
+      chip.addEventListener('click', () => {
+        if (STATE.activePacks.has(pack.id)) {
+          // Don't allow deactivating all packs
+          if (STATE.activePacks.size <= 1) return;
+          STATE.activePacks.delete(pack.id);
+        } else {
+          STATE.activePacks.add(pack.id);
+        }
+        localStorage.setItem('mokuri-activePacks', JSON.stringify([...STATE.activePacks]));
+        // If current palette belongs to a deactivated pack, switch to first available
+        const curPal = PALETTES[STATE.paletteId];
+        const curPack = (curPal && curPal.pack) || 'core';
+        if (!STATE.activePacks.has(curPack)) {
+          const fallback = Object.entries(PALETTES).find(([, p]) => STATE.activePacks.has(p.pack || 'core'));
+          if (fallback) {
+            STATE.paletteId = fallback[0];
+            rerenderAll();
+          }
+        }
+        buildElementPicker();
+        buildPaletteUI();
+        if (STATE.inkStudioOpen) buildInkStudioUI();
+      });
+      packRow.appendChild(chip);
+    });
+    bar.appendChild(packRow);
+  }
 }
 
 // ============================================================
@@ -7271,6 +7366,9 @@ function buildInkStudioUI() {
     chipContainer.innerHTML = '';
     if (expanded) {
       Object.entries(PALETTES).forEach(([pid, pal]) => {
+        // Filter palettes by active packs
+        const palPack = pal.pack || 'core';
+        if (!STATE.activePacks.has(palPack)) return;
         const chip = document.createElement('div');
         chip.className = 'is-palette-chip' + (pid === STATE.paletteId ? ' active' : '');
         chip.title = pal.name;
@@ -7485,20 +7583,20 @@ function buildInkStudioUI() {
     // Sky
     const skyLabel = document.createElement('label');
     skyLabel.className = 'is-atmo-label';
-    skyLabel.textContent = 'Sky';
+    skyLabel.textContent = 'Background';
     atmoContent.appendChild(skyLabel);
     const skyRow = document.createElement('div');
     skyRow.className = 'is-atmo-chips';
-    Object.entries(SKY_TYPES).forEach(([id, s]) => {
+    Object.entries(BACKGROUND_TYPES).forEach(([id, s]) => {
       const chip = document.createElement('button');
-      chip.className = 'is-atmo-chip' + (STATE.sky === id ? ' active' : '');
+      chip.className = 'is-atmo-chip' + (STATE.background === id ? ' active' : '');
       chip.textContent = s.name;
       chip.addEventListener('click', () => {
-        STATE.sky = id;
+        STATE.background = id;
         rerenderAll();
         buildInkStudioUI();
         autoSave();
-        MokuriAudio.setAmbienceForAtmosphere(STATE.sky, STATE.ground);
+        MokuriAudio.setAmbienceForAtmosphere(STATE.background, STATE.foreground);
       });
       skyRow.appendChild(chip);
     });
@@ -7507,20 +7605,20 @@ function buildInkStudioUI() {
     // Ground
     const groundLabel = document.createElement('label');
     groundLabel.className = 'is-atmo-label';
-    groundLabel.textContent = 'Ground';
+    groundLabel.textContent = 'Foreground';
     atmoContent.appendChild(groundLabel);
     const groundRow = document.createElement('div');
     groundRow.className = 'is-atmo-chips';
-    Object.entries(GROUND_TYPES).forEach(([id, g]) => {
+    Object.entries(FOREGROUND_TYPES).forEach(([id, g]) => {
       const chip = document.createElement('button');
-      chip.className = 'is-atmo-chip' + (STATE.ground === id ? ' active' : '');
+      chip.className = 'is-atmo-chip' + (STATE.foreground === id ? ' active' : '');
       chip.textContent = g.name;
       chip.addEventListener('click', () => {
-        STATE.ground = id;
+        STATE.foreground = id;
         rerenderAll();
         buildInkStudioUI();
         autoSave();
-        MokuriAudio.setAmbienceForAtmosphere(STATE.sky, STATE.ground);
+        MokuriAudio.setAmbienceForAtmosphere(STATE.background, STATE.foreground);
       });
       groundRow.appendChild(chip);
     });
@@ -7924,8 +8022,8 @@ async function pullPrint() {
       inkLoad: INK_LOADS[STATE.inkLoad],
       impressions: STATE.impressions,
       atmosphere: {
-        sky: SKY_TYPES[STATE.sky]?.stops ? SKY_TYPES[STATE.sky] : null,
-        ground: GROUND_TYPES[STATE.ground]?.stops ? GROUND_TYPES[STATE.ground] : null,
+        sky: BACKGROUND_TYPES[STATE.background]?.stops ? BACKGROUND_TYPES[STATE.background] : null,
+        ground: FOREGROUND_TYPES[STATE.foreground]?.stops ? FOREGROUND_TYPES[STATE.foreground] : null,
         horizon: STATE.horizon,
         mist: STATE.mist,
         paperBase: PAPER_TYPES[STATE.paperType].base,
@@ -9495,7 +9593,7 @@ async function init() {
     await setActiveCompositionId(id);
   }
   // Sync ambient tone to current atmosphere
-  MokuriAudio.setAmbienceForAtmosphere(STATE.sky, STATE.ground);
+  MokuriAudio.setAmbienceForAtmosphere(STATE.background, STATE.foreground);
 
   // Makimono: first run / splash / about wiring
   handleFirstRun();

@@ -16,6 +16,7 @@ const MOKURI_KACHOE_ELEMENTS = [
     name: 'Heron',
     category: 'fauna',
     pack: 'kacho-e',
+    tags: ['fauna', 'organic', 'water', 'intimate'],
     viewBox: '0 0 116 210',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -110,6 +111,7 @@ const MOKURI_KACHOE_ELEMENTS = [
     name: 'Bush Warbler',
     category: 'fauna',
     pack: 'kacho-e',
+    tags: ['fauna', 'organic', 'intimate', 'seasonal-spring'],
     viewBox: '0 0 100 80',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -188,6 +190,7 @@ const MOKURI_KACHOE_ELEMENTS = [
     name: 'Swallow',
     category: 'fauna',
     pack: 'kacho-e',
+    tags: ['fauna', 'organic', 'intimate'],
     viewBox: '0 0 125 110',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -270,6 +273,7 @@ const MOKURI_KACHOE_ELEMENTS = [
     name: 'Kingfisher',
     category: 'fauna',
     pack: 'kacho-e',
+    tags: ['fauna', 'organic', 'water', 'intimate'],
     viewBox: '0 0 120 100',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -354,6 +358,7 @@ const MOKURI_KACHOE_ELEMENTS = [
     name: 'Egret',
     category: 'fauna',
     pack: 'kacho-e',
+    tags: ['fauna', 'organic', 'water', 'intimate'],
     viewBox: '0 0 132 230',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -443,6 +448,7 @@ const MOKURI_KACHOE_ELEMENTS = [
     name: 'Peony',
     category: 'flora',
     pack: 'kacho-e',
+    tags: ['flora', 'organic', 'intimate'],
     viewBox: '0 0 140 200',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -515,6 +521,7 @@ const MOKURI_KACHOE_ELEMENTS = [
     name: 'Lotus Pod',
     category: 'flora',
     pack: 'kacho-e',
+    tags: ['flora', 'organic', 'water', 'intimate', 'minimal'],
     viewBox: '0 0 80 200',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -574,6 +581,7 @@ const MOKURI_KACHOE_ELEMENTS = [
     name: 'Lotus Cluster',
     category: 'flora',
     pack: 'kacho-e',
+    tags: ['flora', 'organic', 'water', 'intimate'],
     viewBox: '0 0 170 150',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -723,6 +731,7 @@ const MOKURI_KACHOE_ELEMENTS = [
     name: 'Morning Glory',
     category: 'flora',
     pack: 'kacho-e',
+    tags: ['flora', 'organic', 'intimate'],
     viewBox: '0 0 130 160',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -781,6 +790,7 @@ const MOKURI_KACHOE_ELEMENTS = [
     name: 'Wisteria',
     category: 'flora',
     pack: 'kacho-e',
+    tags: ['flora', 'organic', 'intimate', 'seasonal-spring'],
     viewBox: '0 0 150 220',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -899,6 +909,7 @@ const MOKURI_KACHOE_ELEMENTS = [
     name: 'Lily Pad',
     category: 'flora',
     pack: 'kacho-e',
+    tags: ['flora', 'organic', 'water', 'intimate', 'minimal'],
     viewBox: '0 0 100 80',
     suggestedLayer: 'foreground',
     colorZones: [

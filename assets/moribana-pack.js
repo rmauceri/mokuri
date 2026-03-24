@@ -30,8 +30,9 @@ registerPack({
   id: 'moribana',
   name: 'Moribana Collection',
   nameJa: '盛花',
-  icon: '花',
+  icon: '器',
   description: 'Ikebana-inspired still-life — vessels, refined florals, structural branches',
+  affinity: ['flora', 'vessel', 'minimal', 'structural', 'organic', 'intimate'],
   elementIds: [
     'suiban', 'tsubo', 'hanaire', 'chawan',
     'kiku', 'tsubaki', 'ran', 'suisen',

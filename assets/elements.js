@@ -13,6 +13,7 @@ const MOKURI_ELEMENTS = [
     name: 'Distant Mountain',
     category: 'landscape',
     pack: 'core',
+    tags: ['landscape', 'organic'],
     viewBox: '0 0 240 140',
     suggestedLayer: 'background',
     colorZones: [
@@ -56,6 +57,7 @@ const MOKURI_ELEMENTS = [
     name: 'Near Mountain',
     category: 'landscape',
     pack: 'core',
+    tags: ['landscape', 'organic'],
     viewBox: '0 0 260 160',
     suggestedLayer: 'midground',
     colorZones: [
@@ -104,6 +106,7 @@ const MOKURI_ELEMENTS = [
     name: 'Great Peak (Fuji style)',
     category: 'landscape',
     pack: 'core',
+    tags: ['landscape', 'organic', 'seasonal-winter'],
     viewBox: '0 0 320 180',
     suggestedLayer: 'background',
     colorZones: [
@@ -153,6 +156,7 @@ const MOKURI_ELEMENTS = [
     name: 'Rolling Hills',
     category: 'landscape',
     pack: 'core',
+    tags: ['landscape', 'organic'],
     viewBox: '0 0 300 140',
     suggestedLayer: 'background',
     colorZones: [
@@ -205,6 +209,7 @@ const MOKURI_ELEMENTS = [
     name: 'Farmland',
     category: 'landscape',
     pack: 'core',
+    tags: ['landscape', 'structural'],
     viewBox: '0 0 280 160',
     suggestedLayer: 'background',
     colorZones: [
@@ -263,6 +268,7 @@ const MOKURI_ELEMENTS = [
     name: 'Tranquil Pond',
     category: 'landscape',
     pack: 'core',
+    tags: ['landscape', 'water', 'organic', 'minimal'],
     viewBox: '0 0 240 140',
     suggestedLayer: 'midground',
     colorZones: [
@@ -315,6 +321,7 @@ const MOKURI_ELEMENTS = [
     name: 'Flowing Stream',
     category: 'landscape',
     pack: 'core',
+    tags: ['landscape', 'water', 'organic'],
     viewBox: '0 0 280 120',
     suggestedLayer: 'midground',
     colorZones: [
@@ -374,6 +381,7 @@ const MOKURI_ELEMENTS = [
     name: 'Gentle Waves',
     category: 'landscape',
     pack: 'core',
+    tags: ['landscape', 'water', 'organic'],
     viewBox: '0 0 280 80',
     suggestedLayer: 'midground',
     colorZones: [
@@ -414,6 +422,7 @@ const MOKURI_ELEMENTS = [
     name: 'Waterfall',
     category: 'landscape',
     pack: 'core',
+    tags: ['landscape', 'water', 'organic'],
     viewBox: '0 0 140 200',
     suggestedLayer: 'midground',
     colorZones: [
@@ -474,6 +483,7 @@ const MOKURI_ELEMENTS = [
     name: 'Full Moon',
     category: 'landscape',
     pack: 'core',
+    tags: ['landscape', 'atmospheric', 'minimal'],
     viewBox: '0 0 120 120',
     suggestedLayer: 'background',
     colorZones: [
@@ -519,6 +529,7 @@ const MOKURI_ELEMENTS = [
     name: 'Cloud Bank',
     category: 'landscape',
     pack: 'core',
+    tags: ['landscape', 'atmospheric', 'organic'],
     viewBox: '0 0 260 80',
     suggestedLayer: 'midground',
     colorZones: [
@@ -561,6 +572,7 @@ const MOKURI_ELEMENTS = [
     name: 'Pine Tree',
     category: 'flora',
     pack: 'core',
+    tags: ['flora', 'organic', 'landscape'],
     viewBox: '0 0 140 200',
     suggestedLayer: 'midground',
     colorZones: [
@@ -612,6 +624,7 @@ const MOKURI_ELEMENTS = [
     name: 'Cherry Blossom',
     category: 'flora',
     pack: 'core',
+    tags: ['flora', 'organic', 'seasonal-spring', 'intimate'],
     viewBox: '0 0 220 180',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -678,6 +691,7 @@ const MOKURI_ELEMENTS = [
     name: 'Crane',
     category: 'fauna',
     pack: 'core',
+    tags: ['fauna', 'organic', 'water'],
     viewBox: '0 0 160 200',
     suggestedLayer: 'foreground',
     colorZones: [
@@ -743,6 +757,7 @@ const MOKURI_ELEMENTS = [
     name: 'Torii Gate',
     category: 'objects & patterns',
     pack: 'core',
+    tags: ['structural', 'landscape'],
     viewBox: '0 0 180 200',
     suggestedLayer: 'midground',
     colorZones: [
@@ -800,6 +815,7 @@ const MOKURI_ELEMENTS = [
     name: 'Twisted Pine',
     category: 'flora',
     pack: 'core',
+    tags: ['flora', 'organic', 'landscape', 'minimal'],
     viewBox: '0 0 200 220',
     suggestedLayer: 'midground',
     colorZones: [
@@ -866,6 +882,7 @@ const MOKURI_ELEMENTS = [
     name: 'Weeping Willow',
     category: 'flora',
     pack: 'core',
+    tags: ['flora', 'organic', 'water', 'landscape'],
     viewBox: '0 0 200 240',
     suggestedLayer: 'midground',
     colorZones: [
