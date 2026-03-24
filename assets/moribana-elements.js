@@ -688,7 +688,7 @@ const MOKURI_MORIBANA_ELEMENTS = [
     name: 'Matsu Branch',
     category: 'flora',
     pack: 'moribana',
-    viewBox: '0 0 200 120',
+    viewBox: '0 -6 200 126',
     suggestedLayer: 'midground',
     colorZones: [
       { id: 'branch', defaultPaletteSlot: 4 },

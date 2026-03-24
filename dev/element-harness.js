@@ -461,9 +461,6 @@
     }
 
     const parsedViewBox = parseViewBox(element.viewBox);
-    if (parsedViewBox[0] !== 0 || parsedViewBox[1] !== 0) {
-      errors.push('viewBox should start at 0 0.');
-    }
 
     if (!Array.isArray(element.colorZones) || !element.colorZones.length) {
       errors.push('colorZones must be a non-empty array.');
@@ -515,6 +512,40 @@
             warnings.push('Stroke path ' + (pathIndex + 1) + ' in carve level ' + (level.name || '#' + (levelIndex + 1)) + ' is missing a numeric strokeWidth.');
           }
         }
+      }
+    }
+
+    // Check all path coordinates against viewBox bounds
+    var vbX = parsedViewBox[0];
+    var vbY = parsedViewBox[1];
+    var vbW = parsedViewBox[2];
+    var vbH = parsedViewBox[3];
+    if (Array.isArray(element.carveLevels)) {
+      var boundsMinX = Infinity, boundsMinY = Infinity;
+      var boundsMaxX = -Infinity, boundsMaxY = -Infinity;
+      for (var li = 0; li < element.carveLevels.length; li++) {
+        var lvl = element.carveLevels[li];
+        if (!Array.isArray(lvl && lvl.paths)) continue;
+        for (var pi = 0; pi < lvl.paths.length; pi++) {
+          var pathObj = lvl.paths[pi];
+          if (!pathObj || typeof pathObj.d !== 'string') continue;
+          var coords = extractPathCoords(pathObj.d);
+          for (var ci = 0; ci < coords.length; ci++) {
+            if (coords[ci].x < boundsMinX) boundsMinX = coords[ci].x;
+            if (coords[ci].x > boundsMaxX) boundsMaxX = coords[ci].x;
+            if (coords[ci].y < boundsMinY) boundsMinY = coords[ci].y;
+            if (coords[ci].y > boundsMaxY) boundsMaxY = coords[ci].y;
+          }
+        }
+      }
+      if (boundsMinX < vbX || boundsMinY < vbY ||
+          boundsMaxX > vbX + vbW || boundsMaxY > vbY + vbH) {
+        var overflows = [];
+        if (boundsMinX < vbX) overflows.push('left by ' + (vbX - boundsMinX).toFixed(1));
+        if (boundsMinY < vbY) overflows.push('top by ' + (vbY - boundsMinY).toFixed(1));
+        if (boundsMaxX > vbX + vbW) overflows.push('right by ' + (boundsMaxX - vbX - vbW).toFixed(1));
+        if (boundsMaxY > vbY + vbH) overflows.push('bottom by ' + (boundsMaxY - vbY - vbH).toFixed(1));
+        warnings.push('Path coordinates overflow viewBox (' + overflows.join(', ') + '). Element will be clipped.');
       }
     }
 
@@ -614,6 +645,47 @@
     }
 
     return parts;
+  }
+
+  // Extract all x,y coordinate points from an SVG path d-string
+  function extractPathCoords(d) {
+    var tokens = d.match(/[MLQACSTZmlqacstz]|[-+]?\d*\.?\d+/g);
+    if (!tokens) return [];
+    var coords = [];
+    var i = 0;
+    while (i < tokens.length) {
+      var cmd = tokens[i]; i++;
+      if (cmd === 'Z' || cmd === 'z') continue;
+      if (cmd === 'M' || cmd === 'L' || cmd === 'm' || cmd === 'l' ||
+          cmd === 'T' || cmd === 't') {
+        while (i < tokens.length && /^[-+]?\d/.test(tokens[i])) {
+          coords.push({ x: parseFloat(tokens[i]), y: parseFloat(tokens[i + 1]) });
+          i += 2;
+        }
+      } else if (cmd === 'Q' || cmd === 'q' || cmd === 'S' || cmd === 's') {
+        while (i < tokens.length && /^[-+]?\d/.test(tokens[i])) {
+          coords.push({ x: parseFloat(tokens[i]), y: parseFloat(tokens[i + 1]) });
+          coords.push({ x: parseFloat(tokens[i + 2]), y: parseFloat(tokens[i + 3]) });
+          i += 4;
+        }
+      } else if (cmd === 'C' || cmd === 'c') {
+        while (i < tokens.length && /^[-+]?\d/.test(tokens[i])) {
+          coords.push({ x: parseFloat(tokens[i]), y: parseFloat(tokens[i + 1]) });
+          coords.push({ x: parseFloat(tokens[i + 2]), y: parseFloat(tokens[i + 3]) });
+          coords.push({ x: parseFloat(tokens[i + 4]), y: parseFloat(tokens[i + 5]) });
+          i += 6;
+        }
+      } else if (cmd === 'A' || cmd === 'a') {
+        while (i < tokens.length && /^[-+]?\d/.test(tokens[i])) {
+          i += 5; // skip rx, ry, rotation, large-arc, sweep
+          coords.push({ x: parseFloat(tokens[i]), y: parseFloat(tokens[i + 1]) });
+          i += 2;
+        }
+      } else if (/^[-+]?\d/.test(cmd)) {
+        // bare number — skip (shouldn't happen with well-formed d)
+      }
+    }
+    return coords;
   }
 
   function slotColor(slot) {
