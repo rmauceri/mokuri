@@ -6232,7 +6232,17 @@ function buildElementThumb(def) {
   // Drag-to-place
   // Mouse: immediate drag on threshold
   // Pen & touch: long-press (400ms) then drag; swipe before long-press = scroll
+  // Apple Pencil: touchstart.preventDefault() blocks WebKit compositor from handling gesture
   let lastTapTime = 0;
+
+  // Apple Pencil: prevent browser gesture handling at compositor level (before pointerdown)
+  // Safari exposes Touch.touchType === 'stylus' for Apple Pencil
+  thumb.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 1 && e.touches[0].touchType === 'stylus') {
+      e.preventDefault();
+    }
+  }, { passive: false });
+
   thumb.addEventListener('pointerdown', (e) => {
     if (e.button !== 0) return;
     const startX = e.clientX, startY = e.clientY;
@@ -6261,9 +6271,21 @@ function buildElementThumb(def) {
       longPressTimer = setTimeout(() => {
         longPressTimer = null;
         longPressReady = true;
-        thumb.classList.add('long-press-active');
-        try { thumb.setPointerCapture(pointerId); } catch (ex) {}
-        // Prevent browser scrolling via touchmove (WebKit compositor insurance)
+        dragging = true;
+
+        // Create ghost on <body> (outside scroll container) — "drag layer" pattern
+        ghost = document.createElement('div');
+        ghost.className = 'drag-ghost drag-ghost-touch';
+        ghost.style.touchAction = 'none';
+        ghost.appendChild(thumb.querySelector('svg').cloneNode(true));
+        document.body.appendChild(ghost);
+        ghost.style.left = startX + 'px';
+        ghost.style.top = (startY + TOUCH_OFFSET_Y) + 'px';
+
+        // Capture pointer on ghost (outside scroll container) — compositor sees non-scrollable context
+        try { ghost.setPointerCapture(pointerId); } catch (ex) {}
+
+        // Prevent browser scrolling via touchmove (extra insurance)
         preventScrollHandler = (te) => { te.preventDefault(); };
         document.addEventListener('touchmove', preventScrollHandler, { passive: false });
       }, LONG_PRESS_MS);
@@ -6287,18 +6309,18 @@ function buildElementThumb(def) {
         return;
       }
 
+      // Mouse: create ghost on drag threshold
       if (!dragging) {
         if (dist2 < DRAG_THRESHOLD * DRAG_THRESHOLD) return;
         dragging = true;
         me.preventDefault();
-        if (!needsCapture) { try { thumb.setPointerCapture(pointerId); } catch (ex) {} }
-        thumb.classList.remove('long-press-active');
+        try { thumb.setPointerCapture(pointerId); } catch (ex) {}
         ghost = document.createElement('div');
         ghost.className = 'drag-ghost';
-        if (needsCapture) ghost.classList.add('drag-ghost-touch');
         ghost.appendChild(thumb.querySelector('svg').cloneNode(true));
         document.body.appendChild(ghost);
       }
+
       if (dragging) me.preventDefault();
       if (ghost) {
         ghost.style.left = me.clientX + 'px';
@@ -6358,8 +6380,12 @@ function buildElementThumb(def) {
         document.removeEventListener('touchmove', preventScrollHandler);
         preventScrollHandler = null;
       }
+      if (ghost) {
+        try { ghost.releasePointerCapture(pointerId); } catch (ex) {}
+        ghost.remove();
+        ghost = null;
+      }
       try { thumb.releasePointerCapture(pointerId); } catch (ex) {}
-      if (ghost) { ghost.remove(); ghost = null; }
     }
 
     document.addEventListener('pointermove', onMove);
