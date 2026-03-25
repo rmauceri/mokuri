@@ -6229,42 +6229,43 @@ function buildElementThumb(def) {
   lbl.textContent = def.name;
   thumb.appendChild(lbl);
 
-  // Drag-to-place (mouse/pen: immediate drag; touch: long-press to initiate drag)
-  let lastTapTime = 0; // double-tap detection for touch/pen (click synthesis blocked by preventDefault)
+  // Drag-to-place
+  // Mouse: immediate drag on threshold
+  // Pen & touch: long-press (400ms) then drag; swipe before long-press = scroll
+  let lastTapTime = 0;
   thumb.addEventListener('pointerdown', (e) => {
     if (e.button !== 0) return;
     const startX = e.clientX, startY = e.clientY;
     const pointerId = e.pointerId;
     const isTouch = e.pointerType === 'touch';
     const isPen = e.pointerType === 'pen';
-    const isFinger = isTouch;
+    const needsLongPress = isTouch || isPen;
     const needsCapture = isTouch || isPen;
-    const DRAG_THRESHOLD = isFinger ? 8 : 4;
-    const TOUCH_OFFSET_Y = (isTouch || isPen) ? -72 : 0;
+    const DRAG_THRESHOLD = needsLongPress ? 8 : 4;
+    const TOUCH_OFFSET_Y = needsCapture ? -72 : 0;
     const LONG_PRESS_MS = 400;
     let ghost = null;
     let dragging = false;
     let done = false;
-    let longPressReady = !isFinger;
+    let longPressReady = !needsLongPress;
     let longPressTimer = null;
     let scrollingProxy = false;
     let lastMoveY = startY;
+    let preventScrollHandler = null;
     const scrollContainer = needsCapture ? thumb.closest('.panel-scroll') : null;
 
-    // Prevent browser from handling touch/pen as scroll/pan gesture
+    // Prevent browser from initiating scroll/pan gesture
     if (needsCapture) e.preventDefault();
 
-    // Pen: capture pointer immediately so drag survives leaving the thumb
-    if (isPen) {
-      try { thumb.setPointerCapture(pointerId); } catch (ex) {}
-    }
-
-    if (isFinger) {
+    if (needsLongPress) {
       longPressTimer = setTimeout(() => {
         longPressTimer = null;
         longPressReady = true;
         thumb.classList.add('long-press-active');
         try { thumb.setPointerCapture(pointerId); } catch (ex) {}
+        // Prevent browser scrolling via touchmove (WebKit compositor insurance)
+        preventScrollHandler = (te) => { te.preventDefault(); };
+        document.addEventListener('touchmove', preventScrollHandler, { passive: false });
       }, LONG_PRESS_MS);
     }
 
@@ -6273,8 +6274,8 @@ function buildElementThumb(def) {
       const dx = me.clientX - startX, dy = me.clientY - startY;
       const dist2 = dx * dx + dy * dy;
 
-      // Finger before long-press: proxy vertical movement to panel scroll
-      if (isFinger && !longPressReady) {
+      // Before long-press: proxy movement to panel scroll
+      if (needsLongPress && !longPressReady) {
         if (!scrollingProxy && dist2 > 36) {
           scrollingProxy = true;
           if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
@@ -6294,7 +6295,7 @@ function buildElementThumb(def) {
         thumb.classList.remove('long-press-active');
         ghost = document.createElement('div');
         ghost.className = 'drag-ghost';
-        if (isTouch || isPen) ghost.classList.add('drag-ghost-touch');
+        if (needsCapture) ghost.classList.add('drag-ghost-touch');
         ghost.appendChild(thumb.querySelector('svg').cloneNode(true));
         document.body.appendChild(ghost);
       }
@@ -6353,6 +6354,10 @@ function buildElementThumb(def) {
       document.removeEventListener('pointermove', onMove);
       document.removeEventListener('pointerup', onUp);
       document.removeEventListener('pointercancel', onCancel);
+      if (preventScrollHandler) {
+        document.removeEventListener('touchmove', preventScrollHandler);
+        preventScrollHandler = null;
+      }
       try { thumb.releasePointerCapture(pointerId); } catch (ex) {}
       if (ghost) { ghost.remove(); ghost = null; }
     }
