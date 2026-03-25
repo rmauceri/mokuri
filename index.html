@@ -2681,6 +2681,10 @@ const STATE = {
   redoStack: [],
 };
 
+// iOS/iPadOS detection — tap-to-place instead of drag on these platforms
+const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+               (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
 // ============================================================
 //  PALETTES (used at print time only)
 // ============================================================
@@ -6267,22 +6271,23 @@ function buildElementThumb(def) {
   lbl.textContent = def.name;
   thumb.appendChild(lbl);
 
-  // Drag-to-place (mouse) / tap-to-place (touch & pen)
-  // Mouse: drag with ghost after 4px threshold
-  // Touch/pen: single tap arms element, then tap workspace to place
+  // Drag-to-place (all platforms) + tap-to-place (iOS touch/pen only)
+  // iOS WebKit compositor fires pointercancel for touch/pen drag in scrollable
+  // containers, so those use tap-to-arm then tap-workspace-to-place instead.
   thumb.addEventListener('pointerdown', (e) => {
     if (e.button !== 0) return;
     const isMouse = e.pointerType === 'mouse';
+    const useTapToPlace = IS_IOS && !isMouse;
 
-    if (!isMouse) {
-      // Touch/pen: track for tap detection (no drag attempt)
+    if (useTapToPlace) {
+      // iOS touch/pen: track for tap detection (no drag attempt)
       const startX = e.clientX, startY = e.clientY;
       const pointerId = e.pointerId;
       let moved = false;
       function onMove(me) {
         if (me.pointerId !== pointerId) return;
         const dx = me.clientX - startX, dy = me.clientY - startY;
-        if (dx * dx + dy * dy > 64) moved = true;  // 8px threshold
+        if (dx * dx + dy * dy > 64) moved = true;
       }
       function onUp(ue) {
         if (ue.pointerId !== pointerId) return;
@@ -6290,9 +6295,8 @@ function buildElementThumb(def) {
         document.removeEventListener('pointerup', onUp);
         document.removeEventListener('pointercancel', onEnd);
         if (!moved) {
-          // It was a tap — arm this element
           if (_armedElementDef === def) {
-            clearArmedElement();  // tap again to deselect
+            clearArmedElement();
           } else {
             armElement(def, thumb);
           }
@@ -6309,10 +6313,12 @@ function buildElementThumb(def) {
       return;
     }
 
-    // Mouse: drag with ghost
+    // Mouse + non-iOS touch/pen: drag with ghost
     const startX = e.clientX, startY = e.clientY;
     const pointerId = e.pointerId;
-    const DRAG_THRESHOLD = 4;
+    const isTouch = e.pointerType === 'touch';
+    const DRAG_THRESHOLD = isTouch ? 12 : 4;
+    const TOUCH_OFFSET_Y = isTouch ? -72 : 0;
     let ghost = null;
     let dragging = false;
     let done = false;
@@ -6321,19 +6327,21 @@ function buildElementThumb(def) {
       if (done || me.pointerId !== pointerId) return;
       const dx = me.clientX - startX, dy = me.clientY - startY;
       if (!dragging) {
+        if (isTouch && Math.abs(dy) > Math.abs(dx) + 6) { cleanup(); return; }
         if (dx * dx + dy * dy < DRAG_THRESHOLD * DRAG_THRESHOLD) return;
         dragging = true;
         me.preventDefault();
         try { thumb.setPointerCapture(pointerId); } catch (ex) {}
         ghost = document.createElement('div');
         ghost.className = 'drag-ghost';
+        if (isTouch) ghost.classList.add('drag-ghost-touch');
         ghost.appendChild(thumb.querySelector('svg').cloneNode(true));
         document.body.appendChild(ghost);
       }
       if (dragging) me.preventDefault();
       if (ghost) {
         ghost.style.left = me.clientX + 'px';
-        ghost.style.top = me.clientY + 'px';
+        ghost.style.top = (me.clientY + TOUCH_OFFSET_Y) + 'px';
       }
     }
 
@@ -6343,7 +6351,7 @@ function buildElementThumb(def) {
       cleanup();
       if (!wasDragging) return;
       const dropX = ue.clientX;
-      const dropY = ue.clientY;
+      const dropY = ue.clientY + TOUCH_OFFSET_Y;
       const wsRect = workspaceEl.getBoundingClientRect();
       if (dropX >= wsRect.left && dropX <= wsRect.right &&
           dropY >= wsRect.top && dropY <= wsRect.bottom) {
