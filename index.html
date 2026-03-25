@@ -303,7 +303,7 @@ html, body {
   transition: border-color 0.15s, box-shadow 0.15s;
   overflow: hidden;
   position: relative;
-  touch-action: manipulation;
+  touch-action: none;
 }
 .element-thumb:hover {
   border-color: var(--accent);
@@ -6235,11 +6235,8 @@ function buildElementThumb(def) {
     let dragging = false;
     let done = false;
 
-    // Prevent Safari/WebKit from claiming the touch as a scroll gesture
-    if (isTouch) {
-      thumb.style.touchAction = 'none';
-      e.preventDefault();
-    }
+    // Lock the panel scroll container during touch drag to prevent scroll-while-dragging
+    const scrollContainer = isTouch ? thumb.closest('.panel-scroll') : null;
 
     function onMove(me) {
       if (done || me.pointerId !== pointerId) return;
@@ -6249,6 +6246,7 @@ function buildElementThumb(def) {
         dragging = true;
         me.preventDefault();
         try { thumb.setPointerCapture(pointerId); } catch (ex) {}
+        if (scrollContainer) scrollContainer.style.overflow = 'hidden';
         ghost = document.createElement('div');
         ghost.className = 'drag-ghost';
         if (isTouch) ghost.classList.add('drag-ghost-touch');
@@ -6292,7 +6290,7 @@ function buildElementThumb(def) {
       document.removeEventListener('pointercancel', onCancel);
       try { thumb.releasePointerCapture(pointerId); } catch (ex) {}
       if (ghost) { ghost.remove(); ghost = null; }
-      if (isTouch) thumb.style.touchAction = '';
+      if (scrollContainer) scrollContainer.style.overflow = '';
     }
 
     document.addEventListener('pointermove', onMove);
