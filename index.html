@@ -6295,8 +6295,8 @@ function buildElementThumb(def) {
   thumb.appendChild(lbl);
 
   // Drag-to-place
-  // Mouse: immediate drag on threshold
-  // Pen & touch: long-press (400ms) then drag; swipe before long-press = scroll
+  // Mouse & pen: immediate drag on movement threshold (pen is a precision tool)
+  // Touch: long-press (400ms) then drag; swipe before long-press = scroll
   // iOS: scroll container uses overflow:hidden to prevent compositor interference (see setupIOSPanelScroll)
   let lastTapTime = 0;
 
@@ -6306,7 +6306,7 @@ function buildElementThumb(def) {
     const pointerId = e.pointerId;
     const isTouch = e.pointerType === 'touch';
     const isPen = e.pointerType === 'pen';
-    const needsLongPress = isTouch || isPen;
+    const needsLongPress = isTouch;  // only finger needs long-press; pen drags immediately
     const needsCapture = isTouch || isPen;
     const DRAG_THRESHOLD = needsLongPress ? 8 : 4;
     const TOUCH_OFFSET_Y = needsCapture ? -72 : 0;
@@ -6366,16 +6366,22 @@ function buildElementThumb(def) {
         return;
       }
 
-      // Mouse: create ghost on drag threshold
+      // Mouse/pen: create ghost on drag threshold
       if (!dragging) {
         if (dist2 < DRAG_THRESHOLD * DRAG_THRESHOLD) return;
         dragging = true;
         me.preventDefault();
-        try { thumb.setPointerCapture(pointerId); } catch (ex) {}
         ghost = document.createElement('div');
         ghost.className = 'drag-ghost';
+        if (needsCapture) {
+          ghost.classList.add('drag-ghost-touch');
+          ghost.style.touchAction = 'none';
+        }
         ghost.appendChild(thumb.querySelector('svg').cloneNode(true));
         document.body.appendChild(ghost);
+        // Pen: capture on ghost (on body, outside scroll container) for iOS
+        // Mouse: capture on thumb (works fine on desktop)
+        try { (needsCapture ? ghost : thumb).setPointerCapture(pointerId); } catch (ex) {}
       }
 
       if (dragging) me.preventDefault();
