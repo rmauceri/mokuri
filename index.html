@@ -394,31 +394,41 @@ html, body {
 .palette-swatch.active { border-color: var(--text); }
 
 /* Pack picker chips */
-.pack-picker-row {
+.style-selector {
   display: flex;
-  flex-wrap: nowrap;
-  gap: 3px;
+  gap: 2px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--panel-border);
+  background: rgba(0,0,0,0.04);
 }
-.pack-picker-chip {
-  padding: 2px 6px;
-  font-size: 9px;
+.style-chip {
+  flex: 1;
+  padding: 4px 2px;
+  font-size: 10px;
   white-space: nowrap;
-  border-radius: 3px;
-  border: 1px solid var(--panel-border);
+  border-radius: 4px;
+  border: 1px solid transparent;
   background: none;
   color: var(--text-muted);
   cursor: pointer;
-  opacity: 0.4;
+  opacity: 0.5;
   transition: opacity 0.15s, border-color 0.15s, background 0.15s;
+  text-align: center;
   line-height: 1.3;
 }
-.pack-picker-chip:hover { opacity: 0.7; border-color: var(--text-muted); }
-.pack-picker-chip.active {
+.style-chip:hover { opacity: 0.8; }
+.style-chip.active {
   opacity: 1;
   border-color: var(--accent);
-  background: rgba(139, 115, 85, 0.08);
+  background: rgba(139, 115, 85, 0.1);
+  color: var(--text);
+  font-weight: 600;
 }
-.pack-picker-icon { font-size: 11px; }
+.style-chip-icon { font-size: 12px; margin-right: 2px; }
+.status-style-badge {
+  font-size: 11px;
+  opacity: 0.6;
+}
 
 .zone-selector { min-height: 0; }
 .zone-selector:empty { display: none; }
@@ -2064,6 +2074,7 @@ html, body {
     <div class="panel open" id="panel">
       <div class="panel-inner">
         <div class="panel-header">Elements</div>
+        <div class="style-selector" id="style-selector"></div>
         <div class="panel-scroll" id="element-list"></div>
         <div class="palette-bar" id="palette-bar"></div>
       </div>
@@ -2303,6 +2314,7 @@ html, body {
   <!-- Status bar -->
   <div class="status-bar">
     <span id="status-elements">0 elements</span>
+    <span id="status-style" class="status-style-badge" title="Active style"></span>
     <span id="status-zoom">100%</span>
     <span id="status-hint">Place elements · Select + V to carve · P to print</span>
     <div class="status-view-controls">
@@ -2644,12 +2656,8 @@ const STATE = {
   // Composition guides
   guides: localStorage.getItem('mokuri-guides') === 'true',
 
-  // Active style packs (which packs' elements appear in the gallery)
-  activePacks: (() => {
-    const saved = localStorage.getItem('mokuri-activePacks');
-    if (saved) { try { return new Set(JSON.parse(saved)); } catch(e) {} }
-    return new Set(getAllPacks().map(p => p.id));
-  })(),
+  // Active style — which pack sets the creative context
+  activeStyle: localStorage.getItem('mokuri-activeStyle') || 'core',
 
   // Composition identity (set at runtime, not serialized)
   activeCompositionId: null,
@@ -5289,9 +5297,9 @@ let _currentPrompt = null;
 
 function refreshWorkshopPrompt() {
   const allPrompts = getPackPrompts().filter(p => {
-    // Match prompt to its pack via id prefix or include all core prompts
     const pack = MOKURI_PACKS.find(pk => (pk.prompts || []).some(pp => pp.id === p.id));
-    return !pack || STATE.activePacks.has(pack.id);
+    if (!pack) return true;
+    return pack.id === 'core' || pack.id === STATE.activeStyle;
   });
   if (allPrompts.length === 0) {
     $('workshop-prompt-area').style.display = 'none';
@@ -6044,216 +6052,261 @@ function updateStatus() {
 // ============================================================
 //  ELEMENT PICKER
 // ============================================================
+
+function buildStyleSelector() {
+  const container = $('style-selector');
+  container.innerHTML = '';
+  const packs = getAllPacks();
+  if (packs.length <= 1) { container.style.display = 'none'; return; }
+
+  packs.forEach(pack => {
+    const chip = document.createElement('button');
+    chip.className = 'style-chip' + (STATE.activeStyle === pack.id ? ' active' : '');
+    chip.title = pack.description || pack.name;
+    const displayName = pack.id === 'core' ? 'Mokuri' : pack.id === 'moribana' ? 'Ikebana' : pack.name.replace(' Collection', '');
+    chip.innerHTML = '<span class="style-chip-icon">' + (pack.icon || '◆') + '</span>' + displayName;
+    chip.addEventListener('click', () => {
+      if (STATE.activeStyle === pack.id) return;
+      switchActiveStyle(pack.id);
+    });
+    container.appendChild(chip);
+  });
+}
+
+function switchActiveStyle(packId) {
+  const prevStyle = STATE.activeStyle;
+  STATE.activeStyle = packId;
+  localStorage.setItem('mokuri-activeStyle', packId);
+
+  // Smart defaults on style switch (not on reload)
+  if (prevStyle !== packId) {
+    const pack = getPackById(packId);
+    if (pack && pack.paletteIds && pack.paletteIds.length) {
+      STATE.paletteId = pack.paletteIds[0];
+    } else if (packId === 'core') {
+      STATE.paletteId = 'sumi';
+    }
+    rerenderAll();
+  }
+
+  buildStyleSelector();
+  buildElementPicker();
+  buildPaletteUI();
+  updateStyleBadge();
+  if (STATE.inkStudioOpen) buildInkStudioUI();
+  refreshWorkshopPrompt();
+}
+
+function updateStyleBadge() {
+  const badge = $('status-style');
+  if (!badge) return;
+  const pack = getPackById(STATE.activeStyle);
+  if (pack) {
+    const displayName = pack.id === 'core' ? 'Mokuri' : pack.id === 'moribana' ? 'Ikebana' : pack.name.replace(' Collection', '');
+    badge.textContent = (pack.icon || '◆') + ' ' + displayName;
+  }
+}
+
 function buildElementPicker() {
   const list = $('element-list');
   list.innerHTML = '';
 
-  // Group by category, filtering by active packs
-  const cats = {};
-  MOKURI_ELEMENTS.forEach(def => {
-    const pk = def.pack || 'core';
-    if (!STATE.activePacks.has(pk)) return;
-    if (!cats[def.category]) cats[def.category] = [];
-    cats[def.category].push(def);
-  });
+  // Two-tier: featured (pack + affinity) vs rest
+  const { featured, rest } = getAffinityElements(STATE.activeStyle, MOKURI_ELEMENTS);
 
-  // Display order
-  const catOrder = ['landscape', 'flora', 'fauna', 'figures', 'objects & patterns', 'basic forms', 'hanko'];
-  const orderedCats = catOrder
-    .filter(c => cats[c])
-    .map(c => [c, cats[c]]);
-  // Append any categories not in the order list
-  Object.entries(cats).forEach(([c, defs]) => {
-    if (!catOrder.includes(c)) orderedCats.push([c, defs]);
-  });
-
-  orderedCats.forEach(([cat, defs]) => {
-    const section = document.createElement('div');
-    section.className = 'element-category';
-
-    const label = document.createElement('div');
-    label.className = 'category-label';
-    label.textContent = cat;
-    section.appendChild(label);
-
-    // Sub-group by pack when multiple packs contribute to this category
-    const packs = {};
-    defs.forEach(def => {
-      const pk = def.pack || 'core';
-      if (!packs[pk]) packs[pk] = [];
-      packs[pk].push(def);
+  // Render a set of elements grouped by category
+  function renderElementGroup(elements, container) {
+    const cats = {};
+    elements.forEach(def => {
+      if (!cats[def.category]) cats[def.category] = [];
+      cats[def.category].push(def);
     });
-    const packIds = Object.keys(packs);
-    const multiPack = packIds.length > 1;
 
-    packIds.forEach(pk => {
-      if (multiPack) {
-        const packInfo = getPackById(pk);
-        const packLabel = document.createElement('div');
-        packLabel.className = 'pack-sublabel';
-        packLabel.textContent = packInfo ? (packInfo.icon + ' ' + packInfo.name) : pk;
-        section.appendChild(packLabel);
-      }
+    // Sort categories by element count descending (natural priority by affinity density)
+    const orderedCats = Object.entries(cats).sort((a, b) => b[1].length - a[1].length);
+
+    orderedCats.forEach(([cat, defs]) => {
+      const section = document.createElement('div');
+      section.className = 'element-category';
+
+      const label = document.createElement('div');
+      label.className = 'category-label';
+      label.textContent = cat;
+      section.appendChild(label);
 
       const grid = document.createElement('div');
       grid.className = 'element-grid';
 
-      packs[pk].forEach(def => {
-      const thumb = document.createElement('div');
-      thumb.className = 'element-thumb';
-      thumb.title = def.name;
-
-      // Hanko thumbnails render in vermillion instead of wood tone
-      const isHanko = def.hanko;
-      const thumbColor = isHanko ? '#c23b22' : WOOD_TONES[0];
-
-      // Render thumbnail SVG — show fully carved preview in monochrome
-      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      svg.setAttribute('viewBox', def.viewBox);
-      // Base silhouette
-      def.carveLevels[0].paths.forEach(p => {
-        if (p.type !== 'fill') return;
-        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', p.d);
-        path.setAttribute('fill', thumbColor);
-        path.setAttribute('stroke', 'none');
-        svg.appendChild(path);
-      });
-      // Carved detail from highest level
-      const detailCarve = def.carveLevels[def.carveLevels.length - 1];
-      detailCarve.paths.forEach(p => {
-        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', p.d);
-        if (p.type === 'fill') {
-          path.setAttribute('fill', PAPER_COLOR);
-          path.setAttribute('stroke', isHanko ? '#8b1a1a' : CARVED_STROKE);
-          path.setAttribute('stroke-width', 0.8);
-        } else {
-          path.setAttribute('fill', 'none');
-          path.setAttribute('stroke', isHanko ? '#8b1a1a' : CARVED_STROKE);
-          path.setAttribute('stroke-width', p.strokeWidth || 1.5);
-        }
-        svg.appendChild(path);
-      });
-      thumb.appendChild(svg);
-
-      const lbl = document.createElement('div');
-      lbl.className = 'element-thumb-label';
-      lbl.textContent = def.name;
-      thumb.appendChild(lbl);
-
-      // Drag-to-place: drag element from panel onto workspace
-      // Touch: ghost offset above finger so user can see it; drop point matches ghost.
-      //        Vertical movement scrolls the panel (touch-action: pan-y handles this).
-      // Mouse: ghost centered on cursor, any drag past threshold starts placement.
-      thumb.addEventListener('pointerdown', (e) => {
-        if (e.button !== 0) return;
-        const startX = e.clientX, startY = e.clientY;
-        const pointerId = e.pointerId;
-        const isTouch = e.pointerType === 'touch';
-        const DRAG_THRESHOLD = isTouch ? 12 : 4;
-        const TOUCH_OFFSET_Y = isTouch ? -72 : 0;
-        let ghost = null;
-        let dragging = false;
-        let done = false;
-
-        function onMove(me) {
-          if (done || me.pointerId !== pointerId) return;
-          const dx = me.clientX - startX, dy = me.clientY - startY;
-          if (!dragging) {
-            if (isTouch && Math.abs(dy) > Math.abs(dx) + 6) {
-              cleanup();
-              return;
-            }
-            if (dx * dx + dy * dy < DRAG_THRESHOLD * DRAG_THRESHOLD) return;
-            dragging = true;
-            me.preventDefault();
-            try { thumb.setPointerCapture(pointerId); } catch (ex) {}
-            ghost = document.createElement('div');
-            ghost.className = 'drag-ghost';
-            if (isTouch) ghost.classList.add('drag-ghost-touch');
-            ghost.appendChild(thumb.querySelector('svg').cloneNode(true));
-            document.body.appendChild(ghost);
-          }
-          if (dragging) me.preventDefault();
-          if (ghost) {
-            ghost.style.left = me.clientX + 'px';
-            ghost.style.top = (me.clientY + TOUCH_OFFSET_Y) + 'px';
-          }
-        }
-
-        function onUp(ue) {
-          if (done || ue.pointerId !== pointerId) return;
-          const wasDragging = dragging;
-          cleanup();
-          if (!wasDragging) return;
-
-          // Drop point matches ghost position (offset for touch)
-          const dropX = ue.clientX;
-          const dropY = ue.clientY + TOUCH_OFFSET_Y;
-          const wsRect = workspaceEl.getBoundingClientRect();
-          if (dropX >= wsRect.left && dropX <= wsRect.right &&
-              dropY >= wsRect.top && dropY <= wsRect.bottom) {
-            const svgPt = clientToSvg(dropX, dropY);
-            const px = Math.max(0, Math.min(STATE.paperW, svgPt.x));
-            const py = Math.max(0, Math.min(STATE.paperH, svgPt.y));
-            addElement(def.id, px, py);
-            if (STATE.mode !== 'select') setMode('select');
-          }
-        }
-
-        function onCancel(ce) {
-          if (ce.pointerId !== pointerId) return;
-          cleanup();
-        }
-
-        function cleanup() {
-          done = true;
-          document.removeEventListener('pointermove', onMove);
-          document.removeEventListener('pointerup', onUp);
-          document.removeEventListener('pointercancel', onCancel);
-          try { thumb.releasePointerCapture(pointerId); } catch (ex) {}
-          if (ghost) { ghost.remove(); ghost = null; }
-        }
-
-        // Don't preventDefault or capture yet — let browser handle scroll
-        document.addEventListener('pointermove', onMove);
-        document.addEventListener('pointerup', onUp);
-        document.addEventListener('pointercancel', onCancel);
+      defs.forEach(def => {
+        grid.appendChild(buildElementThumb(def));
       });
 
-      // Double-click quick-add: place at viewport center (mouse/pen convenience)
-      thumb.addEventListener('dblclick', (e) => {
-        e.preventDefault();
-        const svgPt = clientToSvg(
-          workspaceEl.getBoundingClientRect().left + workspaceEl.clientWidth / 2,
-          workspaceEl.getBoundingClientRect().top + workspaceEl.clientHeight / 2
-        );
+      section.appendChild(grid);
+
+      // Add "Create Hanko" button for the hanko category
+      if (cat === 'hanko') {
+        const createBtn = document.createElement('button');
+        createBtn.className = 'cf-pattern-chip';
+        createBtn.style.cssText = 'display:block;margin:6px auto 2px;padding:5px 14px;font-size:11px;';
+        createBtn.textContent = '✦ Custom Initials';
+        createBtn.title = 'Create a hanko stamp from your initials';
+        createBtn.addEventListener('click', () => showHankoCreator());
+        section.appendChild(createBtn);
+      }
+
+      container.appendChild(section);
+    });
+  }
+
+  renderElementGroup(featured, list);
+
+  // "All Elements" accordion for the rest
+  if (rest.length > 0) {
+    const accordion = document.createElement('div');
+    accordion.className = 'element-category all-elements-accordion';
+    const toggle = document.createElement('div');
+    toggle.className = 'category-label all-elements-toggle';
+    toggle.innerHTML = '<span class="all-elements-chevron">▶</span> All Elements';
+    toggle.style.cursor = 'pointer';
+    toggle.style.opacity = '0.6';
+    const content = document.createElement('div');
+    content.style.display = 'none';
+    toggle.addEventListener('click', () => {
+      const open = content.style.display !== 'none';
+      content.style.display = open ? 'none' : '';
+      toggle.querySelector('.all-elements-chevron').textContent = open ? '▶' : '▼';
+    });
+    accordion.appendChild(toggle);
+    accordion.appendChild(content);
+    renderElementGroup(rest, content);
+    list.appendChild(accordion);
+  }
+}
+
+function buildElementThumb(def) {
+  const thumb = document.createElement('div');
+  thumb.className = 'element-thumb';
+  thumb.title = def.name;
+
+  const isHanko = def.hanko;
+  const thumbColor = isHanko ? '#c23b22' : WOOD_TONES[0];
+
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', def.viewBox);
+  def.carveLevels[0].paths.forEach(p => {
+    if (p.type !== 'fill') return;
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', p.d);
+    path.setAttribute('fill', thumbColor);
+    path.setAttribute('stroke', 'none');
+    svg.appendChild(path);
+  });
+  const detailCarve = def.carveLevels[def.carveLevels.length - 1];
+  detailCarve.paths.forEach(p => {
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', p.d);
+    if (p.type === 'fill') {
+      path.setAttribute('fill', PAPER_COLOR);
+      path.setAttribute('stroke', isHanko ? '#8b1a1a' : CARVED_STROKE);
+      path.setAttribute('stroke-width', 0.8);
+    } else {
+      path.setAttribute('fill', 'none');
+      path.setAttribute('stroke', isHanko ? '#8b1a1a' : CARVED_STROKE);
+      path.setAttribute('stroke-width', p.strokeWidth || 1.5);
+    }
+    svg.appendChild(path);
+  });
+  thumb.appendChild(svg);
+
+  const lbl = document.createElement('div');
+  lbl.className = 'element-thumb-label';
+  lbl.textContent = def.name;
+  thumb.appendChild(lbl);
+
+  // Drag-to-place
+  thumb.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0) return;
+    const startX = e.clientX, startY = e.clientY;
+    const pointerId = e.pointerId;
+    const isTouch = e.pointerType === 'touch';
+    const DRAG_THRESHOLD = isTouch ? 12 : 4;
+    const TOUCH_OFFSET_Y = isTouch ? -72 : 0;
+    let ghost = null;
+    let dragging = false;
+    let done = false;
+
+    function onMove(me) {
+      if (done || me.pointerId !== pointerId) return;
+      const dx = me.clientX - startX, dy = me.clientY - startY;
+      if (!dragging) {
+        if (isTouch && Math.abs(dy) > Math.abs(dx) + 6) { cleanup(); return; }
+        if (dx * dx + dy * dy < DRAG_THRESHOLD * DRAG_THRESHOLD) return;
+        dragging = true;
+        me.preventDefault();
+        try { thumb.setPointerCapture(pointerId); } catch (ex) {}
+        ghost = document.createElement('div');
+        ghost.className = 'drag-ghost';
+        if (isTouch) ghost.classList.add('drag-ghost-touch');
+        ghost.appendChild(thumb.querySelector('svg').cloneNode(true));
+        document.body.appendChild(ghost);
+      }
+      if (dragging) me.preventDefault();
+      if (ghost) {
+        ghost.style.left = me.clientX + 'px';
+        ghost.style.top = (me.clientY + TOUCH_OFFSET_Y) + 'px';
+      }
+    }
+
+    function onUp(ue) {
+      if (done || ue.pointerId !== pointerId) return;
+      const wasDragging = dragging;
+      cleanup();
+      if (!wasDragging) return;
+      const dropX = ue.clientX;
+      const dropY = ue.clientY + TOUCH_OFFSET_Y;
+      const wsRect = workspaceEl.getBoundingClientRect();
+      if (dropX >= wsRect.left && dropX <= wsRect.right &&
+          dropY >= wsRect.top && dropY <= wsRect.bottom) {
+        const svgPt = clientToSvg(dropX, dropY);
         const px = Math.max(0, Math.min(STATE.paperW, svgPt.x));
         const py = Math.max(0, Math.min(STATE.paperH, svgPt.y));
         addElement(def.id, px, py);
         if (STATE.mode !== 'select') setMode('select');
-      });
-
-      grid.appendChild(thumb);
-    });
-
-      section.appendChild(grid);
-    }); // end packIds.forEach
-
-    // Add "Create Hanko" button for the hanko category
-    if (cat === 'hanko') {
-      const createBtn = document.createElement('button');
-      createBtn.className = 'cf-pattern-chip';
-      createBtn.style.cssText = 'display:block;margin:6px auto 2px;padding:5px 14px;font-size:11px;';
-      createBtn.textContent = '✦ Custom Initials';
-      createBtn.title = 'Create a hanko stamp from your initials';
-      createBtn.addEventListener('click', () => showHankoCreator());
-      section.appendChild(createBtn);
+      }
     }
 
-    list.appendChild(section);
+    function onCancel(ce) {
+      if (ce.pointerId !== pointerId) return;
+      cleanup();
+    }
+
+    function cleanup() {
+      done = true;
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      document.removeEventListener('pointercancel', onCancel);
+      try { thumb.releasePointerCapture(pointerId); } catch (ex) {}
+      if (ghost) { ghost.remove(); ghost = null; }
+    }
+
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+    document.addEventListener('pointercancel', onCancel);
   });
+
+  thumb.addEventListener('dblclick', (e) => {
+    e.preventDefault();
+    const svgPt = clientToSvg(
+      workspaceEl.getBoundingClientRect().left + workspaceEl.clientWidth / 2,
+      workspaceEl.getBoundingClientRect().top + workspaceEl.clientHeight / 2
+    );
+    const px = Math.max(0, Math.min(STATE.paperW, svgPt.x));
+    const py = Math.max(0, Math.min(STATE.paperH, svgPt.y));
+    addElement(def.id, px, py);
+    if (STATE.mode !== 'select') setMode('select');
+  });
+
+  return thumb;
 }
 
 // ============================================================
@@ -6524,51 +6577,6 @@ function buildPaletteUI() {
 
       }
     }
-  }
-
-  // Style pack picker — toggle which packs' elements appear in gallery
-  const packs = getAllPacks();
-  if (packs.length > 1) {
-    const packLabel = document.createElement('div');
-    packLabel.className = 'palette-label';
-    packLabel.style.marginTop = '8px';
-    packLabel.textContent = 'Style Packs';
-    bar.appendChild(packLabel);
-
-    const packRow = document.createElement('div');
-    packRow.className = 'pack-picker-row';
-    packs.forEach(pack => {
-      const chip = document.createElement('button');
-      chip.className = 'pack-picker-chip' + (STATE.activePacks.has(pack.id) ? ' active' : '');
-      chip.title = pack.description || pack.name;
-      const displayName = pack.id === 'core' ? 'Mokuri' : pack.id === 'moribana' ? 'Ikebana' : pack.name.replace(' Collection', '');
-      chip.innerHTML = '<span class="pack-picker-icon">' + (pack.icon || '◆') + '</span> ' + displayName;
-      chip.addEventListener('click', () => {
-        if (STATE.activePacks.has(pack.id)) {
-          // Don't allow deactivating all packs
-          if (STATE.activePacks.size <= 1) return;
-          STATE.activePacks.delete(pack.id);
-        } else {
-          STATE.activePacks.add(pack.id);
-        }
-        localStorage.setItem('mokuri-activePacks', JSON.stringify([...STATE.activePacks]));
-        // If current palette belongs to a deactivated pack, switch to first available
-        const curPal = PALETTES[STATE.paletteId];
-        const curPack = (curPal && curPal.pack) || 'core';
-        if (!STATE.activePacks.has(curPack)) {
-          const fallback = Object.entries(PALETTES).find(([, p]) => STATE.activePacks.has(p.pack || 'core'));
-          if (fallback) {
-            STATE.paletteId = fallback[0];
-            rerenderAll();
-          }
-        }
-        buildElementPicker();
-        buildPaletteUI();
-        if (STATE.inkStudioOpen) buildInkStudioUI();
-      });
-      packRow.appendChild(chip);
-    });
-    bar.appendChild(packRow);
   }
 }
 
@@ -7366,9 +7374,9 @@ function buildInkStudioUI() {
     chipContainer.innerHTML = '';
     if (expanded) {
       Object.entries(PALETTES).forEach(([pid, pal]) => {
-        // Filter palettes by active packs
+        // Filter palettes: active style + core
         const palPack = pal.pack || 'core';
-        if (!STATE.activePacks.has(palPack)) return;
+        if (palPack !== 'core' && palPack !== STATE.activeStyle) return;
         const chip = document.createElement('div');
         chip.className = 'is-palette-chip' + (pid === STATE.paletteId ? ' active' : '');
         chip.title = pal.name;
@@ -9559,7 +9567,9 @@ async function init() {
   updateWorkspaceSurface();
   fitPaperToView();
   buildPaletteUI();
+  buildStyleSelector();
   buildElementPicker();
+  updateStyleBadge();
   setupInteraction();
   setupKeyboard();
   setupToolbar();

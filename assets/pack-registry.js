@@ -86,10 +86,10 @@ function getAffinityElements(packId, allElements) {
   // Sort by overlap descending
   scored.sort((a, b) => b.overlap - a.overlap);
 
-  // Featured: own elements + core with any overlap
+  // Featured: own elements + core with 2+ tag overlap (minimum affinity threshold)
   featured.push(...ownEls);
   for (const { el, overlap } of scored) {
-    if (overlap > 0) {
+    if (overlap >= 2) {
       featured.push(el);
     } else {
       rest.push(el);

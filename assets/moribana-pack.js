@@ -40,11 +40,6 @@ registerPack({
   ],
   paletteIds: ['seiji', 'shino', 'raku'],
   presetIds: null,
-  companionElements: [
-    'iris-cluster', 'chrysanthemum', 'susuki-grass', 'pine-bough',
-    'bare-branch', 'cherry-branch', 'maple-branch',
-    'peony', 'wisteria', 'morning-glory', 'lotus'
-  ],
   journeys: [
     {
       id: 'hajimete-ikebana',
