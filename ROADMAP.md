@@ -209,17 +209,38 @@ Ikebana-inspired still-life — vessels, refined florals, and structural branche
   - **4 flowers**: Kiku (chrysanthemum), Tsubaki (camellia), Ran (orchid spray), Suisen (narcissus)
   - **3 branches/accents**: Ume Branch (angular plum with blossoms), Matsu Branch (pine with needle clusters), Kenzan (pin frog holder)
 - **3 palettes** inspired by Japanese ceramic glazes: Seiji 青磁 (celadon cool), Shino 志野 (autumn warm), Raku 楽 (dramatic black/vermillion).
-- **Pack manifest** (`assets/moribana-pack.js`): 2 journeys (Your First Arrangement, Seasonal Harmony), 10 creative prompts, 11 companion element references to core/Kacho-e packs.
+- **Pack manifest** (`assets/moribana-pack.js`): 2 journeys (Your First Arrangement, Seasonal Harmony), 10 creative prompts. Affinity-based companion discovery replaces hand-curated companion list.
 - **Design document**: `docs/moribana_style_pack.md` — element specs, scale relationships, atmosphere pairings, companion strategy.
+
+### Active Style Model ✅
+
+Transforms style packs from content filters into distinct creative contexts that shape the entire studio environment. See `docs/plan.md` for full design.
+
+- **Element tag system**: 17-tag vocabulary (`landscape`, `flora`, `fauna`, `water`, `structural`, `atmospheric`, `vessel`, `minimal`, `organic`, `geometric`, `figure`, `intimate`, `seasonal-spring/autumn/winter`, `decorative`, `signing`) applied to all 112 elements. Tags describe what the element *is* and what creative contexts it suits.
+- **Pack affinity**: Each pack declares `affinity: [...]` — tags it's drawn to. `getAffinityElements(packId, allElements)` computes `{ featured, rest }` by tag overlap (2+ threshold). Elements with more matching tags rank higher. Scales automatically as elements are added.
+- **Single active style**: `STATE.activeStyle` (string) replaces old `STATE.activePacks` (Set). One pack sets the creative context at a time. Core Mokuri (landscape/nature) is a first-class style, not "everything."
+- **Style selector**: Chips at top of Elements panel. Status bar badge shows current style.
+- **Two-tier element picker**: Featured section (pack's own elements + affinity-matched core elements) sorted by category size. "All Elements ▶" collapsible accordion below — nothing hidden, just prioritized.
+- **Palette & prompt filtering**: Inking Workbench shows active style palettes + core. Workshop prompts from active style + core only.
+- **Smart defaults**: Switching styles auto-selects pack's first palette. Non-destructive — elements already placed stay.
+- **Atmosphere rename**: `sky` → `background`, `ground` → `foreground` throughout STATE, UI, save/load, gallery presets, audio engine. Save/load migration reads both old and new keys.
 
 ---
 
 ## Future Work
 
+### Active Style — Remaining Phases
+
+- **Atmosphere presets**: Named scene combinations per pack (e.g., "Mountain Dawn", "Clean Studio"). Preset chips in Inking Workbench above raw toggles.
+- **Journey activation**: First-switch journey prompt when user activates a style for the first time.
+- **Pack gallery presets**: Curated starting compositions per pack.
+- **Affinity tuning**: Refine tag weights through real use. Consider weighted affinities.
+
 ### Style Packs (Expansion Content)
-Pack infrastructure is in place with two packs shipped. Next candidates:
+Active Style model and two packs shipped. Next candidates:
 - **Shin-hanga** — Light & Atmosphere pack. Rain layers, fog banks, lantern glow, moonlit reflections, 2-3 mood palettes. Leverages existing atmosphere system.
 - **Wabi-sabi** — Minimalism mode/preset (not a paid pack). Rougher edges, ink bleed, sparse elements.
+- Additional contrasting packs to validate the Active Style model with non-landscape creative contexts.
 
 ### First-Run Experience
 Guided onboarding using the pack journey system. Data model ready; behavior layer needed:
