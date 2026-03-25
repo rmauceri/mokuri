@@ -303,7 +303,7 @@ html, body {
   transition: border-color 0.15s, box-shadow 0.15s;
   overflow: hidden;
   position: relative;
-  touch-action: pan-y;
+  touch-action: manipulation;
 }
 .element-thumb:hover {
   border-color: var(--accent);
@@ -6235,11 +6235,16 @@ function buildElementThumb(def) {
     let dragging = false;
     let done = false;
 
+    // Prevent Safari/WebKit from claiming the touch as a scroll gesture
+    if (isTouch) {
+      thumb.style.touchAction = 'none';
+      e.preventDefault();
+    }
+
     function onMove(me) {
       if (done || me.pointerId !== pointerId) return;
       const dx = me.clientX - startX, dy = me.clientY - startY;
       if (!dragging) {
-        if (isTouch && Math.abs(dy) > Math.abs(dx) + 6) { cleanup(); return; }
         if (dx * dx + dy * dy < DRAG_THRESHOLD * DRAG_THRESHOLD) return;
         dragging = true;
         me.preventDefault();
@@ -6287,6 +6292,7 @@ function buildElementThumb(def) {
       document.removeEventListener('pointercancel', onCancel);
       try { thumb.releasePointerCapture(pointerId); } catch (ex) {}
       if (ghost) { ghost.remove(); ghost = null; }
+      if (isTouch) thumb.style.touchAction = '';
     }
 
     document.addEventListener('pointermove', onMove);
