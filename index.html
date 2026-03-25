@@ -6250,6 +6250,7 @@ function buildElementThumb(def) {
 
     // Pen: capture pointer immediately so drag survives leaving the thumb
     if (isPen) {
+      thumb.style.touchAction = 'none'; // prevent WebKit pan-gesture from firing pointercancel
       try { thumb.setPointerCapture(pointerId); } catch (ex) {}
       if (scrollContainer) scrollContainer.style.overflow = 'hidden';
     }
@@ -6328,6 +6329,7 @@ function buildElementThumb(def) {
       try { thumb.releasePointerCapture(pointerId); } catch (ex) {}
       if (ghost) { ghost.remove(); ghost = null; }
       if (scrollContainer) scrollContainer.style.overflow = '';
+      thumb.style.touchAction = ''; // restore CSS default
     }
 
     document.addEventListener('pointermove', onMove);
