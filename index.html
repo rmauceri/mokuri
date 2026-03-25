@@ -2606,7 +2606,7 @@ if (typeof MOKURI_KACHOE_PRESETS !== 'undefined' && typeof MOKURI_GALLERY_PRESET
 // ============================================================
 //  VERSION
 // ============================================================
-const MOKURI_VERSION = '0.41';
+const MOKURI_VERSION = '0.42';
 
 // ============================================================
 //  APP STATE
@@ -6287,6 +6287,9 @@ function buildElementThumb(def) {
     const isPen = e.pointerType === 'pen';
     const isTouch = e.pointerType === 'touch';
     const useTapToPlace = IS_IOS && isTouch;
+
+    // DEBUG: show input detection (remove after iPad testing)
+    $('status-hint').textContent = 'input: ' + e.pointerType + ' | iOS: ' + IS_IOS + ' | tap2place: ' + useTapToPlace;
 
     if (useTapToPlace) {
       // iOS touch: track for tap detection (no drag attempt)
