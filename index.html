@@ -2682,6 +2682,10 @@ const STATE = {
   redoStack: [],
 };
 
+// iOS/iPadOS detection — needed to work around WebKit compositor scroll issues
+const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+               (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
 // ============================================================
 //  PALETTES (used at print time only)
 // ============================================================
@@ -6097,6 +6101,7 @@ function switchActiveStyle(packId) {
 
   buildStyleSelector();
   buildElementPicker();
+  setupIOSPanelScroll();
   buildPaletteUI();
   updateStyleBadge();
   if (STATE.inkStudioOpen) buildInkStudioUI();
@@ -6111,6 +6116,66 @@ function updateStyleBadge() {
     const displayName = pack.id === 'core' ? 'Mokuri' : pack.id === 'moribana' ? 'Ikebana' : pack.name.replace(' Collection', '');
     badge.textContent = (pack.icon || '◆') + ' ' + displayName;
   }
+}
+
+// ============================================================
+//  iOS Panel Scroll — work around WebKit compositor
+// ============================================================
+// WebKit's compositor runs on a separate thread and aggressively claims
+// gestures inside overflow:auto containers for scrolling, firing pointercancel
+// and killing drag-to-place. Fix: make the element list non-scrollable to
+// the compositor (overflow:hidden) and handle scrolling via JS.
+function setupIOSPanelScroll() {
+  if (!IS_IOS) return;
+  const panel = $('element-list');
+  if (!panel) return;
+  panel.style.overflowY = 'hidden';
+  panel.style.touchAction = 'none';
+  // webkitOverflowScrolling is irrelevant with hidden, but clear it
+  panel.style.webkitOverflowScrolling = '';
+
+  // Scroll handling for touches that start on panel background / category labels
+  // (touches on thumbs are handled by the thumb's own scroll proxy)
+  panel.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse') return;
+    if (e.target.closest('.element-thumb')) return;
+
+    e.preventDefault();
+    const startY = e.clientY;
+    const startTop = panel.scrollTop;
+    let lastY = e.clientY;
+    let lastTime = performance.now();
+    let velocity = 0;
+    let animId = null;
+
+    function onMove(me) {
+      if (me.pointerId !== e.pointerId) return;
+      panel.scrollTop = startTop - (me.clientY - startY);
+      const now = performance.now();
+      const dt = now - lastTime;
+      if (dt > 0) velocity = (lastY - me.clientY) / dt * 16;
+      lastY = me.clientY;
+      lastTime = now;
+    }
+    function onEnd() {
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onEnd);
+      document.removeEventListener('pointercancel', onEnd);
+      // Momentum
+      if (Math.abs(velocity) > 0.5) {
+        const tick = () => {
+          velocity *= 0.93;
+          if (Math.abs(velocity) < 0.5) return;
+          panel.scrollTop += velocity;
+          animId = requestAnimationFrame(tick);
+        };
+        animId = requestAnimationFrame(tick);
+      }
+    }
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onEnd);
+    document.addEventListener('pointercancel', onEnd);
+  });
 }
 
 function buildElementPicker() {
@@ -6232,16 +6297,8 @@ function buildElementThumb(def) {
   // Drag-to-place
   // Mouse: immediate drag on threshold
   // Pen & touch: long-press (400ms) then drag; swipe before long-press = scroll
-  // Apple Pencil: touchstart.preventDefault() blocks WebKit compositor from handling gesture
+  // iOS: scroll container uses overflow:hidden to prevent compositor interference (see setupIOSPanelScroll)
   let lastTapTime = 0;
-
-  // Apple Pencil: prevent browser gesture handling at compositor level (before pointerdown)
-  // Safari exposes Touch.touchType === 'stylus' for Apple Pencil
-  thumb.addEventListener('touchstart', (e) => {
-    if (e.touches.length === 1 && e.touches[0].touchType === 'stylus') {
-      e.preventDefault();
-    }
-  }, { passive: false });
 
   thumb.addEventListener('pointerdown', (e) => {
     if (e.button !== 0) return;
@@ -9642,6 +9699,7 @@ function setupToolbar() {
     const py = Math.max(0, Math.min(STATE.paperH, svgPt.y));
     addElement(def.id, px, py);
     buildElementPicker();
+    setupIOSPanelScroll();
   });
 }
 
@@ -9675,6 +9733,7 @@ async function init() {
   buildPaletteUI();
   buildStyleSelector();
   buildElementPicker();
+  setupIOSPanelScroll();
   updateStyleBadge();
   setupInteraction();
   setupKeyboard();
