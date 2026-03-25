@@ -6271,16 +6271,19 @@ function buildElementThumb(def) {
   lbl.textContent = def.name;
   thumb.appendChild(lbl);
 
-  // Drag-to-place (all platforms) + tap-to-place (iOS touch/pen only)
-  // iOS WebKit compositor fires pointercancel for touch/pen drag in scrollable
-  // containers, so those use tap-to-arm then tap-workspace-to-place instead.
+  // Drag-to-place (all platforms) + tap-to-place (iOS touch only)
+  // iOS WebKit compositor fires pointercancel for touch drag in scrollable
+  // containers, so finger touch uses tap-to-arm then tap-workspace-to-place.
+  // Pen on iOS uses immediate drag (no long-press) — pen is a precision tool.
   thumb.addEventListener('pointerdown', (e) => {
     if (e.button !== 0) return;
     const isMouse = e.pointerType === 'mouse';
-    const useTapToPlace = IS_IOS && !isMouse;
+    const isPen = e.pointerType === 'pen';
+    const isTouch = e.pointerType === 'touch';
+    const useTapToPlace = IS_IOS && isTouch;
 
     if (useTapToPlace) {
-      // iOS touch/pen: track for tap detection (no drag attempt)
+      // iOS touch: track for tap detection (no drag attempt)
       const startX = e.clientX, startY = e.clientY;
       const pointerId = e.pointerId;
       let moved = false;
@@ -6313,15 +6316,18 @@ function buildElementThumb(def) {
       return;
     }
 
-    // Mouse + non-iOS touch/pen: drag with ghost
+    // Mouse, pen (all platforms), non-iOS touch: drag with ghost
     const startX = e.clientX, startY = e.clientY;
     const pointerId = e.pointerId;
-    const isTouch = e.pointerType === 'touch';
+    const useOffset = isTouch || isPen;
     const DRAG_THRESHOLD = isTouch ? 12 : 4;
-    const TOUCH_OFFSET_Y = isTouch ? -72 : 0;
+    const TOUCH_OFFSET_Y = useOffset ? -72 : 0;
     let ghost = null;
     let dragging = false;
     let done = false;
+
+    // iOS pen: prevent default to block compositor scroll claim
+    if (IS_IOS && isPen) e.preventDefault();
 
     function onMove(me) {
       if (done || me.pointerId !== pointerId) return;
@@ -6334,7 +6340,7 @@ function buildElementThumb(def) {
         try { thumb.setPointerCapture(pointerId); } catch (ex) {}
         ghost = document.createElement('div');
         ghost.className = 'drag-ghost';
-        if (isTouch) ghost.classList.add('drag-ghost-touch');
+        if (useOffset) ghost.classList.add('drag-ghost-touch');
         ghost.appendChild(thumb.querySelector('svg').cloneNode(true));
         document.body.appendChild(ghost);
       }
