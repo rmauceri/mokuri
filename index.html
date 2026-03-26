@@ -2770,7 +2770,7 @@ if (typeof MOKURI_KACHOE_PRESETS !== 'undefined' && typeof MOKURI_GALLERY_PRESET
 // ============================================================
 //  VERSION
 // ============================================================
-const MOKURI_VERSION = '0.44';
+const MOKURI_VERSION = '0.45';
 
 // ============================================================
 //  APP STATE
@@ -6194,21 +6194,30 @@ let _freHintEl = null;       // current hint DOM element
 let _frePulseTarget = null;  // element with pulse glow
 let _freShowTimer = null;    // delay timer for showing hint
 
-// Hint definitions: text, target CSS selector, preferred arrow direction
+// Hint definitions: text, target (CSS selector or function), preferred arrow direction
 const FRE_HINTS = {
   'place':         { text: 'Choose an element to begin your scene', target: '#element-list', arrow: 'right' },
-  'move':          { text: 'Drag to position your element',        target: '#workspace-svg', arrow: 'left' },
-  'resize':        { text: 'Pull corners to resize',               target: '#workspace-svg', arrow: 'left' },
+  'move':          { text: 'Drag to position your element',        target: () => _freSelectedElementTarget(), arrow: 'left' },
+  'resize':        { text: 'Pull corners to resize',               target: () => _freSelectedElementTarget(), arrow: 'left' },
   'palette':       { text: 'Try a different palette',              target: '#palette-bar',   arrow: 'right' },
-  'carve':         { text: 'Carve to reveal the wood beneath',     target: '#btn-carve',     arrow: 'bottom' },
-  'carve-detail':  { text: 'Press C to carve deeper detail',       target: '#workspace-svg', arrow: 'left' },
-  'carve-pattern': { text: 'Try a carve pattern',                  target: '#workspace-svg', arrow: 'left' },
-  'atmosphere':    { text: 'Set the mood of your scene',           target: '#btn-ink',       arrow: 'bottom' },
-  'bokashi':       { text: 'Add a gradient fade to a zone',        target: '#workspace-svg', arrow: 'left' },
-  'color-zones':   { text: 'Click a zone to change its color',     target: '#workspace-svg', arrow: 'left' },
+  'carve':         { text: 'Carve to reveal the wood beneath',     target: '#btn-phase-carve', arrow: 'bottom' },
+  'carve-detail':  { text: 'Press C to carve deeper detail',       target: () => _freSelectedElementTarget(), arrow: 'left' },
+  'carve-pattern': { text: 'Try a carve pattern',                  target: () => _freSelectedElementTarget(), arrow: 'left' },
+  'atmosphere':    { text: 'Set the mood of your scene',           target: '#btn-phase-ink', arrow: 'bottom' },
+  'bokashi':       { text: 'Add a gradient fade to a zone',        target: () => _freSelectedElementTarget(), arrow: 'left' },
+  'color-zones':   { text: 'Click a zone to change its color',     target: () => _freSelectedElementTarget(), arrow: 'left' },
   'elements':      { text: 'Browse the element library',           target: '#element-list',  arrow: 'right' },
-  'print':         { text: 'Pull your first print',                target: '#btn-print',     arrow: 'bottom' },
+  'print':         { text: 'Pull your first print',                target: '#btn-phase-print', arrow: 'bottom' },
 };
+
+function _freSelectedElementTarget() {
+  const selId = typeof primarySelectedId === 'function' ? primarySelectedId() : null;
+  if (selId != null) {
+    const el = document.querySelector('g[data-id="' + selId + '"]');
+    if (el) return el;
+  }
+  return document.querySelector('#workspace-svg');
+}
 
 function freShowHint(hintId, opts) {
   freHideHint();
@@ -6218,7 +6227,7 @@ function freShowHint(hintId, opts) {
 
   _freShowTimer = setTimeout(() => {
     _freShowTimer = null;
-    const targetEl = document.querySelector(def.target);
+    const targetEl = typeof def.target === 'function' ? def.target() : document.querySelector(def.target);
     if (!targetEl) return;
 
     // Pulse glow on target
@@ -6407,10 +6416,16 @@ function freStartJourney(journeyId) {
   // Load starting preset if defined and workspace is empty
   if (journey.startingPreset != null && STATE.elements.length === 0) {
     const presets = typeof MOKURI_GALLERY_PRESETS !== 'undefined' ? MOKURI_GALLERY_PRESETS : [];
-    if (presets[journey.startingPreset]) {
-      applyCompositionData(presets[journey.startingPreset].data);
+    const preset = presets[journey.startingPreset];
+    if (preset) {
+      applyCompositionData(preset);
       rerenderAll();
     }
+  }
+
+  // Select first element so hints can target it
+  if (STATE.elements.length > 0 && STATE.selectedIds.size === 0) {
+    selectElement(STATE.elements[0].id);
   }
 
   _freShowCurrentHint();
@@ -9688,6 +9703,9 @@ function setupInteraction() {
     }
     if (STATE.dragging && STATE.dragging.type === 'group-resize') {
       autoSave();
+      freAdvance('resize');
+    }
+    if (STATE.dragging && STATE.dragging.type === 'resize') {
       freAdvance('resize');
     }
     STATE.dragging = null;
