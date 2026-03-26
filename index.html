@@ -2775,7 +2775,7 @@ if (typeof MOKURI_KACHOE_PRESETS !== 'undefined' && typeof MOKURI_GALLERY_PRESET
 // ============================================================
 //  VERSION
 // ============================================================
-const MOKURI_VERSION = '0.57';
+const MOKURI_VERSION = '0.58';
 
 // ============================================================
 //  APP STATE
@@ -6556,10 +6556,8 @@ function _freShowCurrentHint() {
     _freEditTitleTimer = setTimeout(() => freAdvance('edit-title'), 5000);
   }
 
-  // Close print studio before showing gallery hint
-  if (hintId === 'open-gallery' && STATE.printStudioOpen) {
-    closePrintStudio();
-  }
+  // Don't close print studio for gallery hint — keep the print visible
+  // Gallery button is still accessible in the toolbar
 
   freShowHint(hintId, { showSkip: _hintIndex === 0 });
 }
@@ -6587,7 +6585,9 @@ function _freShowCelebration(journey) {
 
   const subtitle = document.createElement('div');
   subtitle.style.cssText = 'font-size:13px; color:#6a5e48;';
-  subtitle.textContent = journey.title + ' — complete';
+  subtitle.textContent = journey.completionMessage
+    ? 'Great job! You are on the Mokuri path.'
+    : journey.title + ' — complete';
   toast.appendChild(subtitle);
 
   // Completion message
