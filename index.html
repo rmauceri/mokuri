@@ -1067,6 +1067,13 @@ html, body {
 .pgallery-image-wrap {
   max-width: 88vw; max-height: calc(100vh - 200px); display: flex;
   align-items: center; justify-content: center;
+  will-change: transform, opacity;
+}
+.pgallery-image-wrap.pgallery-sliding {
+  transition: transform 0.28s cubic-bezier(0.22, 0.68, 0.35, 1), opacity 0.28s ease;
+}
+.pgallery-image-wrap.pgallery-snap-back {
+  transition: transform 0.22s cubic-bezier(0.34, 1.2, 0.64, 1), opacity 0.22s ease;
 }
 .pgallery-image {
   max-width: 100%; max-height: calc(100vh - 200px); object-fit: contain;
@@ -5797,9 +5804,37 @@ function buildThumbnailStrip() {
       thumb.onload = () => URL.revokeObjectURL(url);
     }
     thumb.addEventListener('click', () => {
-      _pgalleryIndex = idx;
-      renderCurrentPrint();
-      updateStripActive();
+      if (idx === _pgalleryIndex) return;
+      const dir = idx > _pgalleryIndex ? 1 : -1;
+      const target = idx;
+      // Jump index directly (not stepping through each) but animate in the right direction
+      if (_galleryAnimating) return;
+      _galleryAnimating = true;
+      const wrap = $('pgallery-image-wrap');
+      const vw = wrap.parentElement.clientWidth;
+      const slideOut = dir > 0 ? -vw : vw;
+      wrap.classList.remove('pgallery-snap-back');
+      wrap.classList.add('pgallery-sliding');
+      wrap.style.transform = `translateX(${slideOut}px)`;
+      wrap.style.opacity = '0.3';
+      function done() {
+        wrap.removeEventListener('transitionend', done);
+        _pgalleryIndex = target;
+        renderCurrentPrint();
+        updateStripActive();
+        wrap.classList.remove('pgallery-sliding');
+        wrap.style.transform = `translateX(${-slideOut}px)`;
+        wrap.style.opacity = '0.3';
+        void wrap.offsetWidth;
+        wrap.classList.add('pgallery-sliding');
+        wrap.style.transform = '';
+        wrap.style.opacity = '';
+        function fin() { wrap.removeEventListener('transitionend', fin); wrap.classList.remove('pgallery-sliding'); _galleryAnimating = false; }
+        wrap.addEventListener('transitionend', fin, { once: true });
+        setTimeout(() => { if (_galleryAnimating) fin(); }, 400);
+      }
+      wrap.addEventListener('transitionend', done, { once: true });
+      setTimeout(() => { if (_galleryAnimating && wrap.style.opacity === '0.3') done(); }, 400);
     });
     strip.appendChild(thumb);
   });
@@ -5841,12 +5876,64 @@ function renderCurrentPrint() {
   $('pgallery-nav-next').style.visibility = _pgalleryIndex < _pgalleryPrints.length - 1 ? 'visible' : 'hidden';
 }
 
-function galleryNav(dir) {
+function galleryNav(dir, skipAnim) {
   const next = _pgalleryIndex + dir;
   if (next < 0 || next >= _pgalleryPrints.length) return;
-  _pgalleryIndex = next;
-  renderCurrentPrint();
-  updateStripActive();
+  if (skipAnim || _galleryAnimating) {
+    _pgalleryIndex = next;
+    renderCurrentPrint();
+    updateStripActive();
+    return;
+  }
+  gallerySlide(dir, next);
+}
+
+// Shared slide animation for swipe, arrows, and thumbnail clicks
+let _galleryAnimating = false;
+function gallerySlide(dir, nextIndex) {
+  if (_galleryAnimating) return;
+  _galleryAnimating = true;
+  const wrap = $('pgallery-image-wrap');
+  const vw = wrap.parentElement.clientWidth;
+  const slideOut = dir > 0 ? -vw : vw;
+
+  // Phase 1: slide current image out
+  wrap.classList.remove('pgallery-snap-back');
+  wrap.classList.add('pgallery-sliding');
+  wrap.style.transform = `translateX(${slideOut}px)`;
+  wrap.style.opacity = '0.3';
+
+  function onSlideOut() {
+    wrap.removeEventListener('transitionend', onSlideOut);
+    // Swap content
+    _pgalleryIndex = nextIndex;
+    renderCurrentPrint();
+    updateStripActive();
+
+    // Phase 2: position off-screen on opposite side (no transition)
+    wrap.classList.remove('pgallery-sliding');
+    wrap.style.transform = `translateX(${-slideOut}px)`;
+    wrap.style.opacity = '0.3';
+
+    // Force reflow so the position takes before transition starts
+    void wrap.offsetWidth;
+
+    // Phase 3: slide new image in
+    wrap.classList.add('pgallery-sliding');
+    wrap.style.transform = '';
+    wrap.style.opacity = '';
+
+    function onSlideIn() {
+      wrap.removeEventListener('transitionend', onSlideIn);
+      wrap.classList.remove('pgallery-sliding');
+      _galleryAnimating = false;
+    }
+    wrap.addEventListener('transitionend', onSlideIn, { once: true });
+    // Safety timeout in case transitionend doesn't fire
+    setTimeout(() => { if (_galleryAnimating) { onSlideIn(); } }, 400);
+  }
+  wrap.addEventListener('transitionend', onSlideOut, { once: true });
+  setTimeout(() => { if (_galleryAnimating && wrap.style.opacity === '0.3') { onSlideOut(); } }, 400);
 }
 
 function currentPrint() {
@@ -9539,8 +9626,8 @@ function setupToolbar() {
     }
   });
   // Viewer controls
-  $('pgallery-nav-prev').addEventListener('click', () => galleryNav(-1));
-  $('pgallery-nav-next').addEventListener('click', () => galleryNav(1));
+  $('pgallery-nav-prev').addEventListener('click', () => { galleryNav(-1); MokuriAudio.playSwipe(); });
+  $('pgallery-nav-next').addEventListener('click', () => { galleryNav(1); MokuriAudio.playSwipe(); });
   $('pgallery-btn-fav').addEventListener('click', async () => {
     const print = currentPrint();
     if (!print) return;
@@ -9606,29 +9693,91 @@ function setupToolbar() {
     let swipeStartX = 0, swipeStartY = 0, swiping = false;
     const viewer = $('pgallery-viewer');
     const SWIPE_THRESHOLD = 50;
+    const wrap = $('pgallery-image-wrap');
+
     viewer.addEventListener('pointerdown', (e) => {
+      if (_galleryAnimating) return;
       if (e.target.closest('.pgallery-nav') || e.target.closest('.pgallery-strip-wrap')) return;
       swipeStartX = e.clientX;
       swipeStartY = e.clientY;
       swiping = true;
+      wrap.classList.remove('pgallery-sliding', 'pgallery-snap-back');
+      wrap.style.transition = 'none';
     });
     viewer.addEventListener('pointermove', (e) => {
       if (!swiping) return;
+      const dx = e.clientX - swipeStartX;
       // Cancel swipe if vertical movement dominates (scrolling)
-      if (Math.abs(e.clientY - swipeStartY) > Math.abs(e.clientX - swipeStartX)) {
+      if (Math.abs(e.clientY - swipeStartY) > Math.abs(dx) + 10) {
         swiping = false;
+        wrap.style.transition = '';
+        wrap.style.transform = '';
+        wrap.style.opacity = '';
+        return;
       }
+      // Track finger: translate image and fade slightly
+      const vw = wrap.parentElement.clientWidth || 1;
+      const ratio = Math.min(1, Math.abs(dx) / vw);
+      wrap.style.transform = `translateX(${dx}px)`;
+      wrap.style.opacity = `${1 - ratio * 0.6}`;
     });
     viewer.addEventListener('pointerup', (e) => {
       if (!swiping) return;
       swiping = false;
+      wrap.style.transition = '';
       const dx = e.clientX - swipeStartX;
       if (Math.abs(dx) >= SWIPE_THRESHOLD) {
-        galleryNav(dx < 0 ? 1 : -1);
-        MokuriAudio.playSwipe();
+        const dir = dx < 0 ? 1 : -1;
+        const next = _pgalleryIndex + dir;
+        if (next >= 0 && next < _pgalleryPrints.length) {
+          // Commit: animate from current drag position off-screen
+          _galleryAnimating = true;
+          const vw = wrap.parentElement.clientWidth;
+          const slideOut = dir > 0 ? -vw : vw;
+          wrap.classList.add('pgallery-sliding');
+          wrap.style.transform = `translateX(${slideOut}px)`;
+          wrap.style.opacity = '0.3';
+          MokuriAudio.playSwipe();
+          function done() {
+            wrap.removeEventListener('transitionend', done);
+            _pgalleryIndex = next;
+            renderCurrentPrint();
+            updateStripActive();
+            wrap.classList.remove('pgallery-sliding');
+            wrap.style.transform = `translateX(${-slideOut}px)`;
+            wrap.style.opacity = '0.3';
+            void wrap.offsetWidth;
+            wrap.classList.add('pgallery-sliding');
+            wrap.style.transform = '';
+            wrap.style.opacity = '';
+            function fin() { wrap.removeEventListener('transitionend', fin); wrap.classList.remove('pgallery-sliding'); _galleryAnimating = false; }
+            wrap.addEventListener('transitionend', fin, { once: true });
+            setTimeout(() => { if (_galleryAnimating) fin(); }, 400);
+          }
+          wrap.addEventListener('transitionend', done, { once: true });
+          setTimeout(() => { if (_galleryAnimating && wrap.style.opacity === '0.3') done(); }, 400);
+          return;
+        }
       }
+      // Snap back — didn't meet threshold or at boundary
+      wrap.classList.add('pgallery-snap-back');
+      wrap.style.transform = '';
+      wrap.style.opacity = '';
+      function snapDone() { wrap.removeEventListener('transitionend', snapDone); wrap.classList.remove('pgallery-snap-back'); }
+      wrap.addEventListener('transitionend', snapDone, { once: true });
+      setTimeout(snapDone, 300);
     });
-    viewer.addEventListener('pointercancel', () => { swiping = false; });
+    viewer.addEventListener('pointercancel', () => {
+      if (!swiping) return;
+      swiping = false;
+      wrap.style.transition = '';
+      wrap.classList.add('pgallery-snap-back');
+      wrap.style.transform = '';
+      wrap.style.opacity = '';
+      function snapDone() { wrap.removeEventListener('transitionend', snapDone); wrap.classList.remove('pgallery-snap-back'); }
+      wrap.addEventListener('transitionend', snapDone, { once: true });
+      setTimeout(snapDone, 300);
+    });
   }
 
   // Audio controls
