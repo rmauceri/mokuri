@@ -160,8 +160,9 @@ registerPack({
       prompt: 'A calm evening by the water',
       promptType: 'scene',
       startingPreset: 1,
-      featureHints: ['open-ink', 'atmosphere-bg', 'bokashi', 'carve-detail'],
-      suggestedNext: 'weather-study',
+      featureHints: ['open-ink', 'atmosphere-bg', 'print-2', 'edit-title', 'pull-print', 'open-gallery', 'exit-gallery'],
+      completionMessage: 'Visit the Workshop to create new or work on existing prints',
+      suggestedNext: null,
     },
     {
       id: 'weather-study',

@@ -2770,7 +2770,7 @@ if (typeof MOKURI_KACHOE_PRESETS !== 'undefined' && typeof MOKURI_GALLERY_PRESET
 // ============================================================
 //  VERSION
 // ============================================================
-const MOKURI_VERSION = '0.49';
+const MOKURI_VERSION = '0.50';
 
 // ============================================================
 //  APP STATE
@@ -5838,6 +5838,7 @@ function openPrintGallery() {
   buildPrintGalleryUI();
   $('pgallery-modal').classList.add('visible');
   MokuriAudio.playModalOpen();
+  freAdvance('open-gallery');
 }
 
 function closePrintGallery() {
@@ -5846,6 +5847,7 @@ function closePrintGallery() {
   const img = $('pgallery-image');
   if (img._blobUrl) { URL.revokeObjectURL(img._blobUrl); img._blobUrl = null; }
   MokuriAudio.playModalClose();
+  freAdvance('exit-gallery');
 }
 
 async function buildPrintGalleryUI() {
@@ -6210,7 +6212,12 @@ const FRE_HINTS = {
   'elements':      { text: 'Browse the element library',           target: '#element-list',  arrow: 'right' },
   'print':         { text: 'Pull your first print',                target: '#btn-phase-print', arrow: 'bottom' },
   'open-ink':      { text: 'Open the Inking Workbench',            target: '#btn-phase-ink',   arrow: 'bottom' },
-  'atmosphere-bg': { text: 'Change the background',                target: '#is-atmo-content', arrow: 'left' },
+  'atmosphere-bg': { text: 'Change the background',                target: '#is-atmo-bg-chips', arrow: 'left' },
+  'print-2':       { text: 'Pull a print of your evening scene',   target: '#btn-phase-print', arrow: 'bottom' },
+  'edit-title':    { text: 'Give your print a title',              target: '#ps-title-input',  arrow: 'left' },
+  'pull-print':    { text: 'Pull your print',                      target: '#ps-pull-print',   arrow: 'left' },
+  'open-gallery':  { text: 'Open the Gallery to see your prints',  target: '#btn-print-gallery', arrow: 'bottom' },
+  'exit-gallery':  { text: 'Close the gallery to continue',        target: '#pgallery-close',  arrow: 'left' },
 };
 
 function _freSelectedElementTarget() {
@@ -6401,6 +6408,7 @@ function handleFirstRun() {
 let _activeJourney = null;   // current journey object from pack registry
 let _hintIndex = -1;         // current step in featureHints array
 let _freSkipped = false;     // user clicked "Skip guide"
+let _freEditTitleTimer = null; // auto-advance timer for edit-title hint
 
 function freStartJourney(journeyId) {
   const allJourneys = typeof getPackJourneys === 'function' ? getPackJourneys() : [];
@@ -6547,6 +6555,11 @@ function _freShowCurrentHint() {
     autoSave();
   }
 
+  // Auto-advance edit-title after 5s if user doesn't type
+  if (hintId === 'edit-title') {
+    _freEditTitleTimer = setTimeout(() => freAdvance('edit-title'), 5000);
+  }
+
   freShowHint(hintId, { showSkip: _hintIndex === 0 });
 }
 
@@ -6572,6 +6585,14 @@ function _freShowCelebration(journey) {
   subtitle.style.color = '#6a5e48';
   subtitle.textContent = journey.title + ' — complete!';
   toast.appendChild(subtitle);
+
+  // Completion message
+  if (journey.completionMessage) {
+    const msg = document.createElement('div');
+    msg.style.cssText = 'margin-top:8px; font-size:12px; color:#5a6e7e; line-height:1.4;';
+    msg.textContent = journey.completionMessage;
+    toast.appendChild(msg);
+  }
 
   // Suggested next
   if (journey.suggestedNext) {
@@ -8283,6 +8304,7 @@ function buildInkStudioUI() {
     atmoContent.appendChild(skyLabel);
     const skyRow = document.createElement('div');
     skyRow.className = 'is-atmo-chips';
+    skyRow.id = 'is-atmo-bg-chips';
     Object.entries(BACKGROUND_TYPES).forEach(([id, s]) => {
       const chip = document.createElement('button');
       chip.className = 'is-atmo-chip' + (STATE.background === id ? ' active' : '');
@@ -8401,6 +8423,7 @@ function openPrintStudio() {
   updatePhaseButtons();
   $('status-hint').textContent = 'Printing Workbench — choose settings and Pull Print';
   MokuriAudio.playPanelToggle();
+  freAdvance('print-2');
 }
 
 function closePrintStudio(restorePanel) {
@@ -8517,6 +8540,10 @@ function buildPrintStudioUI() {
       $('status-hint').textContent = t;
     }
     autoSave();
+  };
+  titleInput.oninput = () => {
+    if (_freEditTitleTimer) { clearTimeout(_freEditTitleTimer); _freEditTitleTimer = null; }
+    freAdvance('edit-title');
   };
 
   // Deckle edge checkbox
@@ -8943,6 +8970,7 @@ async function pullPrint() {
   pullBtn.disabled = false;
   $('status-hint').textContent = 'Print saved · scroll to zoom, alt+drag to pan';
   freAdvance('print');
+  freAdvance('pull-print');
 
   // Auto-save print to gallery (fire-and-forget)
   // Save the mirrored version (what user sees)
