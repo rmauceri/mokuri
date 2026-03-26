@@ -821,14 +821,26 @@ const MokuriAudio = (() => {
   loadPrefs();
 
   // Ensure AudioContext is initialized on first user gesture
+  // iOS standalone PWA requires touchstart/pointerdown (click alone may not qualify)
   function initOnGesture() {
     ensureContext();
     if (prefs.ambientOn && !ambientRunning) startAmbient();
     document.removeEventListener('click', initOnGesture);
     document.removeEventListener('keydown', initOnGesture);
+    document.removeEventListener('touchstart', initOnGesture);
+    document.removeEventListener('pointerdown', initOnGesture);
   }
   document.addEventListener('click', initOnGesture);
   document.addEventListener('keydown', initOnGesture);
+  document.addEventListener('touchstart', initOnGesture);
+  document.addEventListener('pointerdown', initOnGesture);
+
+  // Resume AudioContext when returning from background (iOS PWA suspends it)
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && ctx && ctx.state === 'suspended') {
+      ctx.resume();
+    }
+  });
 
   // Public API
   return {
