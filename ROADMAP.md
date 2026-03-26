@@ -242,18 +242,27 @@ Active Style model and two packs shipped. Next candidates:
 - **Wabi-sabi** — Minimalism mode/preset (not a paid pack). Rougher edges, ink bleed, sparse elements.
 - Additional contrasting packs to validate the Active Style model with non-landscape creative contexts.
 
-### First-Run Experience
-Guided onboarding using the pack journey system. Data model ready; behavior layer needed:
-- Progressive feature disclosure (move → add → palette → carve → print)
-- Prompt-driven session framing ("Your First Print" → "Evening Scene" → "Weather Study")
-- Subtle overlay hints (3-5 word prompts, skippable, visual cues over text)
-- Retention hooks (remix suggestions, "try a night version" after first print)
+### First-Run Experience ✅ (Core Complete)
+Two-journey guided onboarding built on the pack journey system:
+- **Journey engine**: start, advance, resume, complete, skip with IndexedDB persistence. Hint-per-step state machine with `freAdvance(triggerId)` calls at 11+ action points throughout the app.
+- **Hint overlay system**: Pale blue italic bubbles with directional arrows, pulse glow on targets, auto-positioning with viewport clamping and overflow fallback. Z-index layered above all panels including gallery modal.
+- **First-print journey** (7 steps): move → resize → carve → carve-level → palette → open print studio → pull print. Loads curated preset, selects last element (top layer), auto-names composition "My First Mokuri Print", deselects before palette step.
+- **Evening-scene journey** (7 steps): open ink → change background atmosphere → open print studio → edit title → pull print → open gallery → exit gallery. Celebration toast with ensō (◯) mark and Workshop guidance.
+- **Audio cues**: Pentatonic chimes from the ambient D-minor scale (D4+A4 fifth for hints, D4→G4→A4→D5 ascending motif with bell shimmer for celebration).
+- **Celebration toast**: Ensō circle with journey titleJa, completion message, persistent until dismissed. Optional "Try next" button chains to suggested journey.
+- **"Begin Creating" always starts FRE** from the Makimono/About screen for easy re-testing.
+- **iPad tap-to-place**: iOS touch and pen use tap-to-arm then tap-workspace due to confirmed WebKit compositor limitation (pointercancel on all non-mouse drag in scrollable containers).
+
+Remaining FRE work:
+- Phase 5: Workshop journey cards section — visual journey browser in Workshop panel.
+- Phase 6: Polish — panel conflict handling, touch target sizing, edge cases, third journey (weather-study).
 
 ### Element Fidelity
 - **Continued SVG refinement** — Mountain and water elements now follow the Element Design Guide. Remaining older elements (particularly some flora and objects predating the guide) could benefit from the same organic Q-curve treatment. Hatching density, form-following texture lines, and zone boundary refinement are ongoing opportunities.
 
 ### Composition & Creativity
 
+- **Element auto-scale on placement** — Elements currently place at `scale: 1` using raw viewBox dimensions, causing large variability in visual size across elements. Normalize initial scale relative to paper size (e.g., target ~15-20% of paper width) so a mountain and a moon land at comparable visual sizes. Per-element `suggestedScale` override for intentional size differences.
 - **More scene presets** — Seasonal themes, time-of-day variations, genre-specific starters (seascape, garden, urban, spiritual).
 - **Border & corner elements** — Corner ornaments, edge repeaters as a new element category with edge-snapping behavior.
 - **Frame presets** — Pre-composed corner+edge combinations for one-click decorative borders.
@@ -377,6 +386,7 @@ Foundation for style packs and first-run experience — data models and registry
 - **Touch-friendly status bar**: `@media (pointer: coarse)` scales status bar from 24px→36px height, buttons from 20px→32px, larger volume slider. Touch targets properly sized for finger input on tablets.
 - **PWA audio on iOS**: Standalone PWA mode has stricter audio gesture policies than Safari. Added `touchstart` and `pointerdown` to audio gesture listeners alongside `click`/`keydown`. Added `visibilitychange` handler to resume suspended AudioContext after app backgrounding.
 - **Element tap-to-place**: WebKit compositor fires `pointercancel` for both pen and finger drags inside scrollable panels — no JS workaround exists. Implemented tap-to-place for all input types on iOS as a reliable alternative to drag-and-drop.
+- **Windows drag ghost fix**: `setPointerCapture` inside scrollable containers with `touch-action: pan-y` caused browser compositor conflict, breaking mouse/touch ghost feedback. Removed capture, added `@media (pointer: fine)` override for `touch-action: none` on element thumbs.
 
 ### Print Gallery Slide Animation ✅
 
