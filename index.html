@@ -1075,7 +1075,7 @@ html, body {
 }
 /* Slide in: gentle arrival with subtle settle, like placing a print down */
 .pgallery-image-wrap.pgallery-slide-in {
-  transition: transform 0.38s cubic-bezier(0.22, 0.85, 0.40, 1.04), opacity 0.35s ease-in;
+  transition: transform 0.35s cubic-bezier(0.22, 0.85, 0.40, 1.04), opacity 0.32s ease-in;
 }
 /* Snap back from aborted swipe */
 .pgallery-image-wrap.pgallery-snap-back {
@@ -5870,8 +5870,8 @@ function galleryNav(dir, skipAnim) {
 // Shared slide animation for swipe, arrows, and thumbnail clicks
 // Timing constants (ms) — easy to tune
 const _GSLIDE_OUT = 400;   // print slides away
-const _GSLIDE_PAUSE = 90;  // breath between prints
-const _GSLIDE_IN = 380;    // new print arrives
+const _GSLIDE_PAUSE = 75;  // breath between prints
+const _GSLIDE_IN = 350;    // new print arrives
 
 let _galleryAnimating = false;
 function gallerySlide(dir, nextIndex) {
