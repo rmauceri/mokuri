@@ -2770,7 +2770,7 @@ if (typeof MOKURI_KACHOE_PRESETS !== 'undefined' && typeof MOKURI_GALLERY_PRESET
 // ============================================================
 //  VERSION
 // ============================================================
-const MOKURI_VERSION = '0.53';
+const MOKURI_VERSION = '0.54';
 
 // ============================================================
 //  APP STATE
@@ -6562,28 +6562,27 @@ function _freShowCurrentHint() {
 function _freShowCelebration(journey) {
   const toast = document.createElement('div');
   toast.className = 'fre-hint';
-  toast.style.maxWidth = '300px';
+  toast.style.maxWidth = '280px';
   toast.style.textAlign = 'center';
   toast.style.left = '50%';
   toast.style.top = '40%';
   toast.style.transform = 'translate(-50%, -50%)';
   toast.style.padding = '20px 24px';
-  toast.style.background = 'linear-gradient(135deg, #e8f0fa 0%, #f0e8fa 100%)';
-  toast.style.borderColor = '#b0a0d4';
 
-  const sparkle = document.createElement('div');
-  sparkle.style.cssText = 'font-size:28px; margin-bottom:6px;';
-  sparkle.textContent = '✨ 🎉 ✨';
-  toast.appendChild(sparkle);
+  // Ensō circle — calligraphic completion mark
+  const enso = document.createElement('div');
+  enso.style.cssText = 'font-size:42px; line-height:1; margin-bottom:2px; color:#8a7a6a; opacity:0.4;';
+  enso.textContent = '◯';
+  toast.appendChild(enso);
 
   const title = document.createElement('div');
-  title.style.cssText = 'font-size:20px; font-weight:bold; margin-bottom:2px;';
+  title.style.cssText = 'font-size:22px; font-weight:bold; margin-top:-28px; margin-bottom:6px; position:relative;';
   title.textContent = journey.titleJa || '✓';
   toast.appendChild(title);
 
   const subtitle = document.createElement('div');
-  subtitle.style.cssText = 'font-size:14px; color:#5a4e6a; margin-bottom:4px;';
-  subtitle.textContent = journey.title + ' — complete!';
+  subtitle.style.cssText = 'font-size:13px; color:#6a5e48;';
+  subtitle.textContent = journey.title + ' — complete';
   toast.appendChild(subtitle);
 
   // Completion message
@@ -6600,7 +6599,7 @@ function _freShowCelebration(journey) {
     const next = allJourneys.find(j => j.id === journey.suggestedNext);
     if (next) {
       const nextBtn = document.createElement('button');
-      nextBtn.style.cssText = 'margin-top:12px; padding:8px 16px; background:linear-gradient(135deg, #8a6ab8, #6a8ab8); color:#fff; border:none; border-radius:6px; font-size:13px; cursor:pointer; font-family:inherit; font-weight:bold;';
+      nextBtn.style.cssText = 'margin-top:12px; padding:7px 16px; background:#8a7a6a; color:#fff; border:none; border-radius:4px; font-size:12px; cursor:pointer; font-family:inherit;';
       nextBtn.textContent = 'Try: ' + next.title;
       nextBtn.addEventListener('click', () => {
         toast.remove();

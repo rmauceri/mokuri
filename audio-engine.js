@@ -843,42 +843,58 @@ const MokuriAudio = (() => {
   });
 
   function playFreHint() {
+    // Two-note pentatonic chime from the ambient scale — D4 + A4 (perfect fifth)
     playOneShot((c, dest) => {
-      // Bright two-note ascending chime — clear attention-getter
       const now = c.currentTime;
-      [587, 784].forEach((freq, i) => {  // D5 → G5
+      [293.66, 440.00].forEach((freq, i) => {
         const osc = c.createOscillator();
-        osc.type = 'triangle';
+        osc.type = i === 0 ? 'sine' : 'triangle';
         osc.frequency.value = freq;
+        osc.detune.value = (Math.random() - 0.5) * 6;
         const g = c.createGain();
-        const t = now + i * 0.1;
-        g.gain.setValueAtTime(0.22, t);
-        g.gain.setValueAtTime(0.22, t + 0.06);
-        g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+        const t = now + i * 0.15;
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(0.14, t + 0.005);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 1.8);
         osc.connect(g).connect(dest);
         osc.start(t);
-        osc.stop(t + 0.32);
+        osc.stop(t + 2.0);
       });
     });
   }
 
   function playFreCelebration() {
+    // Ascending pentatonic motif: D4 → G4 → A4 → D5, with bell shimmer on final note
     playOneShot((c, dest) => {
-      // Three-note ascending arpeggio — festive completion
       const now = c.currentTime;
-      [523, 659, 784].forEach((freq, i) => {  // C5 → E5 → G5
+      [293.66, 392.00, 440.00, 587.33].forEach((freq, i) => {
         const osc = c.createOscillator();
-        osc.type = 'triangle';
+        osc.type = Math.random() < 0.6 ? 'sine' : 'triangle';
         osc.frequency.value = freq;
+        osc.detune.value = (Math.random() - 0.5) * 6;
         const g = c.createGain();
-        const t = now + i * 0.12;
-        g.gain.setValueAtTime(0.20, t);
-        g.gain.setValueAtTime(0.20, t + 0.1);
-        g.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+        const t = now + i * 0.22;
+        const decay = i === 3 ? 3.0 : 1.6;
+        const vol = i === 3 ? 0.12 : 0.10;
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(vol, t + 0.005);
+        g.gain.exponentialRampToValueAtTime(0.001, t + decay);
         osc.connect(g).connect(dest);
         osc.start(t);
-        osc.stop(t + 0.48);
+        osc.stop(t + decay + 0.1);
       });
+      // Bell shimmer on final note
+      const shimmer = c.createOscillator();
+      shimmer.type = 'sine';
+      shimmer.frequency.value = 587.33 * 2.76;
+      const sg = c.createGain();
+      const st = now + 3 * 0.22;
+      sg.gain.setValueAtTime(0, st);
+      sg.gain.linearRampToValueAtTime(0.03, st + 0.01);
+      sg.gain.exponentialRampToValueAtTime(0.001, st + 2.0);
+      shimmer.connect(sg).connect(dest);
+      shimmer.start(st);
+      shimmer.stop(st + 2.2);
     });
   }
 
