@@ -2606,7 +2606,7 @@ if (typeof MOKURI_KACHOE_PRESETS !== 'undefined' && typeof MOKURI_GALLERY_PRESET
 // ============================================================
 //  VERSION
 // ============================================================
-const MOKURI_VERSION = '0.42';
+const MOKURI_VERSION = '0.43';
 
 // ============================================================
 //  APP STATE
@@ -6277,19 +6277,16 @@ function buildElementThumb(def) {
   lbl.textContent = def.name;
   thumb.appendChild(lbl);
 
-  // Drag-to-place (all platforms) + tap-to-place (iOS touch only)
-  // iOS WebKit compositor fires pointercancel for touch drag in scrollable
-  // containers, so finger touch uses tap-to-arm then tap-workspace-to-place.
-  // Pen on iOS uses immediate drag (no long-press) — pen is a precision tool.
+  // Drag-to-place (all platforms) + tap-to-place (iOS touch & pen)
+  // WebKit compositor fires pointercancel for ANY non-mouse drag in scrollable
+  // containers — confirmed for both finger and Apple Pencil. No JS workaround exists.
+  // iOS touch/pen use tap-to-arm then tap-workspace-to-place instead.
   thumb.addEventListener('pointerdown', (e) => {
     if (e.button !== 0) return;
     const isMouse = e.pointerType === 'mouse';
     const isPen = e.pointerType === 'pen';
     const isTouch = e.pointerType === 'touch';
-    const useTapToPlace = IS_IOS && isTouch;
-
-    // DEBUG: show input detection (remove after iPad testing)
-    $('status-hint').textContent = 'input: ' + e.pointerType + ' | iOS: ' + IS_IOS + ' | tap2place: ' + useTapToPlace;
+    const useTapToPlace = IS_IOS && !isMouse;
 
     if (useTapToPlace) {
       // iOS touch: track for tap detection (no drag attempt)
@@ -6325,18 +6322,14 @@ function buildElementThumb(def) {
       return;
     }
 
-    // Mouse, pen (all platforms), non-iOS touch: drag with ghost
+    // Mouse + non-iOS touch/pen: drag with ghost
     const startX = e.clientX, startY = e.clientY;
     const pointerId = e.pointerId;
-    const useOffset = isTouch || isPen;
     const DRAG_THRESHOLD = isTouch ? 12 : 4;
-    const TOUCH_OFFSET_Y = useOffset ? -72 : 0;
+    const TOUCH_OFFSET_Y = isTouch ? -72 : 0;
     let ghost = null;
     let dragging = false;
     let done = false;
-
-    // iOS pen: prevent default to block compositor scroll claim
-    if (IS_IOS && isPen) e.preventDefault();
 
     function onMove(me) {
       if (done || me.pointerId !== pointerId) return;
