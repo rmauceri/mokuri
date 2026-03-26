@@ -2494,7 +2494,7 @@ html, body {
     <span id="status-elements">0 elements</span>
     <span id="status-style" class="status-style-badge" title="Active style"></span>
     <span id="status-zoom">100%</span>
-    <span id="status-hint">Place elements · Select + V to carve · P to print</span>
+    <span id="status-hint">Place elements on the canvas</span>
     <div class="status-view-controls">
       <button class="status-btn" id="btn-zoom-in" title="Zoom In (+)">+</button>
       <button class="status-btn" id="btn-zoom-out" title="Zoom Out (−)">−</button>
@@ -2779,7 +2779,7 @@ if (typeof MOKURI_KACHOE_PRESETS !== 'undefined' && typeof MOKURI_GALLERY_PRESET
 // ============================================================
 //  VERSION
 // ============================================================
-const MOKURI_VERSION = '0.60';
+const MOKURI_VERSION = '0.61';
 
 // ============================================================
 //  APP STATE
@@ -9931,7 +9931,7 @@ function setupKeyboard() {
       });
     }
     if (e.key === 'Escape') {
-      if (_armedElementDef) { clearArmedElement(); $('status-hint').textContent = 'Place elements · Select + V to carve · P to print'; }
+      if (_armedElementDef) { clearArmedElement(); $('status-hint').textContent = 'Place elements on the canvas'; }
       else if (marquee) { cancelMarquee(); workspaceEl.style.cursor = ''; }
       else if ($('pgallery-modal').classList.contains('visible')) { closePrintGallery(); }
       else if ($('makimono').classList.contains('visible')) { hideMakimono(); }
