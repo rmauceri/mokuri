@@ -9,7 +9,7 @@
 
 const MOKURI_GALLERY_PRESETS = [
 
-  // FRE Print (600×420)
+  // Mokuri FRE preset (600×420)
   {
   "elements": [
     {
@@ -35,7 +35,7 @@ const MOKURI_GALLERY_PRESETS = [
       "scaleX": -2.3587922438758904,
       "scaleY": 1.5661636019199363,
       "rotation": 0,
-      "carveLevel": 1,
+      "carveLevel": 2,
       "colorOverrides": {
         "body": "#c46a20"
       },
@@ -53,7 +53,7 @@ const MOKURI_GALLERY_PRESETS = [
       "scaleX": 2.3587922438758904,
       "scaleY": 1.5661636019199363,
       "rotation": 0,
-      "carveLevel": 1,
+      "carveLevel": 0,
       "colorOverrides": {
         "body": 2
       },
@@ -92,10 +92,10 @@ const MOKURI_GALLERY_PRESETS = [
     {
       "id": 15,
       "defId": "pagoda",
-      "x": 117.97578691354579,
-      "y": 273.7848257164152,
-      "scaleX": 0.8251459963226678,
-      "scaleY": 0.8251459963226678,
+      "x": 156.4563135452154,
+      "y": 286.8949998839738,
+      "scaleX": 0.7483379715346388,
+      "scaleY": 0.7483379715346388,
       "rotation": 0,
       "carveLevel": 0,
       "colorOverrides": {},
@@ -498,7 +498,7 @@ const MOKURI_GALLERY_PRESETS = [
   "presentationHanko": null,
   "presentationHankoPos": "bottom-right",
   "presentationDeckle": true,
-  "compositionName": "Untitled Print"
+  "compositionName": "Mountain Sunset"
 },
 
   // Bridge in Summer (600×420)

@@ -842,6 +842,46 @@ const MokuriAudio = (() => {
     }
   });
 
+  function playFreHint() {
+    playOneShot((c, dest) => {
+      // Bright two-note ascending chime — clear attention-getter
+      const now = c.currentTime;
+      [587, 784].forEach((freq, i) => {  // D5 → G5
+        const osc = c.createOscillator();
+        osc.type = 'triangle';
+        osc.frequency.value = freq;
+        const g = c.createGain();
+        const t = now + i * 0.1;
+        g.gain.setValueAtTime(0.22, t);
+        g.gain.setValueAtTime(0.22, t + 0.06);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+        osc.connect(g).connect(dest);
+        osc.start(t);
+        osc.stop(t + 0.32);
+      });
+    });
+  }
+
+  function playFreCelebration() {
+    playOneShot((c, dest) => {
+      // Three-note ascending arpeggio — festive completion
+      const now = c.currentTime;
+      [523, 659, 784].forEach((freq, i) => {  // C5 → E5 → G5
+        const osc = c.createOscillator();
+        osc.type = 'triangle';
+        osc.frequency.value = freq;
+        const g = c.createGain();
+        const t = now + i * 0.12;
+        g.gain.setValueAtTime(0.20, t);
+        g.gain.setValueAtTime(0.20, t + 0.1);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+        osc.connect(g).connect(dest);
+        osc.start(t);
+        osc.stop(t + 0.48);
+      });
+    });
+  }
+
   // Public API
   return {
     get prefs() { return prefs; },
@@ -868,5 +908,7 @@ const MokuriAudio = (() => {
     playSave,
     playFavorite,
     playSwipe,
+    playFreHint,
+    playFreCelebration,
   };
 })();

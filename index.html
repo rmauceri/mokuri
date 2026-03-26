@@ -2770,7 +2770,7 @@ if (typeof MOKURI_KACHOE_PRESETS !== 'undefined' && typeof MOKURI_GALLERY_PRESET
 // ============================================================
 //  VERSION
 // ============================================================
-const MOKURI_VERSION = '0.52';
+const MOKURI_VERSION = '0.53';
 
 // ============================================================
 //  APP STATE
@@ -6216,8 +6216,8 @@ const FRE_HINTS = {
   'print-2':       { text: 'Pull a print of your evening scene',   target: '#btn-phase-print', arrow: 'bottom' },
   'edit-title':    { text: 'Give your print a title',              target: '#ps-title-input',  arrow: 'left' },
   'pull-print':    { text: 'Pull your print',                      target: '#ps-pull-print',   arrow: 'left' },
-  'open-gallery':  { text: 'Open the Gallery to see your prints',  target: '#btn-print-gallery', arrow: 'bottom' },
-  'exit-gallery':  { text: 'Close the gallery to continue',        target: '#pgallery-close',  arrow: 'left' },
+  'open-gallery':  { text: 'Open the Gallery to see your prints',  target: '#btn-print-gallery', arrow: 'top' },
+  'exit-gallery':  { text: 'Close the gallery to continue',        target: '#pgallery-close',  arrow: 'right' },
 };
 
 function _freSelectedElementTarget() {
@@ -6278,7 +6278,7 @@ function freShowHint(hintId, opts) {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => hint.classList.add('visible'));
     });
-    MokuriAudio.playFocusEnter();
+    MokuriAudio.playFreHint();
   }, 500);
 }
 
@@ -6527,14 +6527,10 @@ function _freShowCurrentHint() {
   if (_hintIndex >= hints.length) return;
   const hintId = hints[_hintIndex];
 
-  // Pre-hint setup: ensure a useful element is selected for certain hints
+  // Pre-hint setup: select last element (top layer) for carve hints
   if (hintId === 'carve' || hintId === 'carve-detail' || hintId === 'carve-level') {
-    const defs = typeof MOKURI_ELEMENTS !== 'undefined' ? MOKURI_ELEMENTS : [];
-    // Pick an element at low carve level (most room to carve)
-    const best = STATE.elements
-      .filter(el => !el.locked)
-      .sort((a, b) => (a.carveLevel || 0) - (b.carveLevel || 0))[0];
-    if (best && !STATE.selectedIds.has(best.id)) selectElement(best.id);
+    const pick = STATE.elements.filter(el => !el.locked).pop();
+    if (pick && !STATE.selectedIds.has(pick.id)) selectElement(pick.id);
   }
 
   // Deselect before palette so full palette list is visible
@@ -6553,6 +6549,11 @@ function _freShowCurrentHint() {
   // Auto-advance edit-title after 5s if user doesn't type
   if (hintId === 'edit-title') {
     _freEditTitleTimer = setTimeout(() => freAdvance('edit-title'), 5000);
+  }
+
+  // Close print studio before showing gallery hint
+  if (hintId === 'open-gallery' && STATE.printStudioOpen) {
+    closePrintStudio();
   }
 
   freShowHint(hintId, { showSkip: _hintIndex === 0 });
@@ -6620,7 +6621,7 @@ function _freShowCelebration(journey) {
   requestAnimationFrame(() => {
     requestAnimationFrame(() => toast.classList.add('visible'));
   });
-  MokuriAudio.playFavorite();
+  MokuriAudio.playFreCelebration();
 }
 
 // ============================================================
