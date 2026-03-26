@@ -1188,6 +1188,111 @@ html, body {
 
 
 /* ============================================================
+   FRE HINT OVERLAY — contextual guidance bubbles
+   ============================================================ */
+.fre-hint {
+  position: fixed;
+  z-index: 250;
+  max-width: 240px;
+  padding: 10px 14px;
+  background: #f5f0e8;
+  border: 1px solid #c4b8a0;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(20,17,12,0.18), 0 1px 4px rgba(20,17,12,0.10);
+  font-family: 'Georgia', serif;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #3a3224;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: auto;
+}
+.fre-hint.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.fre-hint-text {
+  margin: 0;
+}
+.fre-hint-close {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #9a8e78;
+  cursor: pointer;
+  padding: 2px 4px;
+  line-height: 1;
+}
+.fre-hint-close:hover { color: #5a4e3a; }
+.fre-hint-skip {
+  display: block;
+  margin-top: 8px;
+  font-size: 10px;
+  color: #9a8e78;
+  text-decoration: underline;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+}
+.fre-hint-skip:hover { color: #5a4e3a; }
+
+/* Arrow — CSS triangle on ::after pseudo-element */
+.fre-hint::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #f5f0e8;
+  border-right: 1px solid #c4b8a0;
+  border-bottom: 1px solid #c4b8a0;
+}
+/* Arrow directions — which side of the bubble the arrow points FROM */
+.fre-hint.arrow-bottom::after {
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+}
+.fre-hint.arrow-top::after {
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-135deg);
+}
+.fre-hint.arrow-left::after {
+  left: -6px;
+  top: 50%;
+  transform: translateY(-50%) rotate(135deg);
+}
+.fre-hint.arrow-right::after {
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%) rotate(-45deg);
+}
+
+/* Pulse glow on target element */
+@keyframes fre-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(184,149,106, 0.5); }
+  50% { box-shadow: 0 0 0 6px rgba(184,149,106, 0); }
+}
+.fre-pulse {
+  animation: fre-pulse 2s ease-in-out infinite;
+}
+/* SVG elements use filter glow instead of box-shadow */
+@keyframes fre-pulse-svg {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(184,149,106, 0.5)); }
+  50% { filter: drop-shadow(0 0 8px rgba(184,149,106, 0.6)); }
+}
+.fre-pulse-svg {
+  animation: fre-pulse-svg 2s ease-in-out infinite;
+}
+
+
+/* ============================================================
    MAKIMONO (巻物) — Welcome Scroll / About / FRE
    ============================================================ */
 .makimono {
@@ -2665,7 +2770,7 @@ if (typeof MOKURI_KACHOE_PRESETS !== 'undefined' && typeof MOKURI_GALLERY_PRESET
 // ============================================================
 //  VERSION
 // ============================================================
-const MOKURI_VERSION = '0.43';
+const MOKURI_VERSION = '0.44';
 
 // ============================================================
 //  APP STATE
@@ -4269,6 +4374,7 @@ function addElement(defId, x, y) {
   rerenderAll();
   selectElement(el.id);
   MokuriAudio.playElementPlace();
+  freAdvance('place');
   return el;
 }
 
@@ -6081,6 +6187,146 @@ color:rgba(232,227,218,0.2);font-family:sans-serif;text-decoration:none}
 }
 
 // ============================================================
+//  FRE HINT SYSTEM — contextual guidance bubbles
+// ============================================================
+
+let _freHintEl = null;       // current hint DOM element
+let _frePulseTarget = null;  // element with pulse glow
+let _freShowTimer = null;    // delay timer for showing hint
+
+// Hint definitions: text, target CSS selector, preferred arrow direction
+const FRE_HINTS = {
+  'place':         { text: 'Choose an element to begin your scene', target: '#element-list', arrow: 'right' },
+  'move':          { text: 'Drag to position your element',        target: '#workspace-svg', arrow: 'left' },
+  'resize':        { text: 'Pull corners to resize',               target: '#workspace-svg', arrow: 'left' },
+  'palette':       { text: 'Try a different palette',              target: '#palette-bar',   arrow: 'right' },
+  'carve':         { text: 'Carve to reveal the wood beneath',     target: '#btn-carve',     arrow: 'bottom' },
+  'carve-detail':  { text: 'Press C to carve deeper detail',       target: '#workspace-svg', arrow: 'left' },
+  'carve-pattern': { text: 'Try a carve pattern',                  target: '#workspace-svg', arrow: 'left' },
+  'atmosphere':    { text: 'Set the mood of your scene',           target: '#btn-ink',       arrow: 'bottom' },
+  'bokashi':       { text: 'Add a gradient fade to a zone',        target: '#workspace-svg', arrow: 'left' },
+  'color-zones':   { text: 'Click a zone to change its color',     target: '#workspace-svg', arrow: 'left' },
+  'elements':      { text: 'Browse the element library',           target: '#element-list',  arrow: 'right' },
+  'print':         { text: 'Pull your first print',                target: '#btn-print',     arrow: 'bottom' },
+};
+
+function freShowHint(hintId, opts) {
+  freHideHint();
+  const def = FRE_HINTS[hintId];
+  if (!def) return;
+  const showSkip = opts && opts.showSkip;
+
+  _freShowTimer = setTimeout(() => {
+    _freShowTimer = null;
+    const targetEl = document.querySelector(def.target);
+    if (!targetEl) return;
+
+    // Pulse glow on target
+    _frePulseTarget = targetEl;
+    targetEl.classList.add(targetEl instanceof SVGElement ? 'fre-pulse-svg' : 'fre-pulse');
+
+    // Build hint bubble
+    const hint = document.createElement('div');
+    hint.className = 'fre-hint';
+
+    const text = document.createElement('p');
+    text.className = 'fre-hint-text';
+    text.textContent = def.text;
+    hint.appendChild(text);
+
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'fre-hint-close';
+    closeBtn.textContent = '✕';
+    closeBtn.addEventListener('click', (e) => { e.stopPropagation(); freHideHint(); });
+    hint.appendChild(closeBtn);
+
+    if (showSkip) {
+      const skip = document.createElement('button');
+      skip.className = 'fre-hint-skip';
+      skip.textContent = 'Skip guide';
+      skip.addEventListener('click', (e) => { e.stopPropagation(); freSkipJourney(); });
+      hint.appendChild(skip);
+    }
+
+    hint.addEventListener('click', () => freHideHint());
+    document.body.appendChild(hint);
+    _freHintEl = hint;
+
+    // Position near target
+    _frePositionHint(hint, targetEl, def.arrow);
+
+    // Animate in
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => hint.classList.add('visible'));
+    });
+  }, 500);
+}
+
+function freHideHint() {
+  if (_freShowTimer) { clearTimeout(_freShowTimer); _freShowTimer = null; }
+  if (_frePulseTarget) {
+    _frePulseTarget.classList.remove('fre-pulse', 'fre-pulse-svg');
+    _frePulseTarget = null;
+  }
+  if (_freHintEl) {
+    const el = _freHintEl;
+    _freHintEl = null;
+    el.classList.remove('visible');
+    setTimeout(() => el.remove(), 300);
+  }
+}
+
+function _frePositionHint(hint, target, preferredArrow) {
+  const rect = target.getBoundingClientRect();
+  const GAP = 12;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  // Temporarily show off-screen to measure
+  hint.style.left = '-9999px';
+  hint.style.top = '-9999px';
+  const hintRect = hint.getBoundingClientRect();
+  const hw = hintRect.width;
+  const hh = hintRect.height;
+
+  let arrow = preferredArrow;
+  let x, y;
+
+  // Try preferred direction, fall back if it overflows
+  if (arrow === 'right') {
+    // Hint to the left of target, arrow points right
+    x = rect.left - hw - GAP;
+    y = rect.top + rect.height / 2 - hh / 2;
+    if (x < 8) { arrow = 'left'; x = rect.right + GAP; }
+  } else if (arrow === 'left') {
+    x = rect.right + GAP;
+    y = rect.top + rect.height / 2 - hh / 2;
+    if (x + hw > vw - 8) { arrow = 'right'; x = rect.left - hw - GAP; }
+  } else if (arrow === 'bottom') {
+    // Hint above target, arrow points down
+    x = rect.left + rect.width / 2 - hw / 2;
+    y = rect.top - hh - GAP;
+    if (y < 8) { arrow = 'top'; y = rect.bottom + GAP; }
+  } else {
+    // arrow === 'top': hint below target, arrow points up
+    x = rect.left + rect.width / 2 - hw / 2;
+    y = rect.bottom + GAP;
+    if (y + hh > vh - 8) { arrow = 'bottom'; y = rect.top - hh - GAP; }
+  }
+
+  // Clamp to viewport
+  x = Math.max(8, Math.min(vw - hw - 8, x));
+  y = Math.max(8, Math.min(vh - hh - 8, y));
+
+  hint.style.left = x + 'px';
+  hint.style.top = y + 'px';
+
+  // Set arrow class
+  hint.classList.remove('arrow-top', 'arrow-bottom', 'arrow-left', 'arrow-right');
+  hint.classList.add('arrow-' + arrow);
+}
+
+// ============================================================
 //  MAKIMONO (巻物) — Welcome Scroll / About / First Run
 // ============================================================
 
@@ -6134,6 +6380,175 @@ function handleFirstRun() {
   } else if (visits < 5) {
     showMakimono('splash');
   }
+}
+
+// ============================================================
+//  JOURNEY ENGINE — guided creative journeys
+// ============================================================
+
+let _activeJourney = null;   // current journey object from pack registry
+let _hintIndex = -1;         // current step in featureHints array
+let _freSkipped = false;     // user clicked "Skip guide"
+
+function freStartJourney(journeyId) {
+  const allJourneys = typeof getPackJourneys === 'function' ? getPackJourneys() : [];
+  const journey = allJourneys.find(j => j.id === journeyId);
+  if (!journey || !journey.featureHints || !journey.featureHints.length) return;
+
+  _activeJourney = journey;
+  _hintIndex = 0;
+  _freSkipped = false;
+
+  // Persist start
+  if (!_useLocalStorage) {
+    MokuriDB.updateJourneyProgress(journeyId, { step: 0, status: 'in-progress' }).catch(() => {});
+  }
+
+  // Load starting preset if defined and workspace is empty
+  if (journey.startingPreset != null && STATE.elements.length === 0) {
+    const presets = typeof MOKURI_GALLERY_PRESETS !== 'undefined' ? MOKURI_GALLERY_PRESETS : [];
+    if (presets[journey.startingPreset]) {
+      applyCompositionData(presets[journey.startingPreset].data);
+      rerenderAll();
+    }
+  }
+
+  _freShowCurrentHint();
+}
+
+function freAdvance(triggerId) {
+  if (!_activeJourney || _freSkipped || _hintIndex < 0) return;
+  const hints = _activeJourney.featureHints;
+  if (_hintIndex >= hints.length) return;
+
+  if (hints[_hintIndex] === triggerId) {
+    _hintIndex++;
+    freHideHint();
+
+    // Persist step
+    if (!_useLocalStorage) {
+      MokuriDB.updateJourneyProgress(_activeJourney.id, { step: _hintIndex }).catch(() => {});
+    }
+
+    if (_hintIndex >= hints.length) {
+      freCompleteJourney();
+    } else {
+      // Brief pause before next hint
+      setTimeout(() => _freShowCurrentHint(), 800);
+    }
+  }
+}
+
+async function freResumeJourney() {
+  if (_useLocalStorage) return;
+  try {
+    const progress = await MokuriDB.getJourneyProgress();
+    if (!progress) return;
+
+    // Find an in-progress journey
+    for (const [id, data] of Object.entries(progress)) {
+      if (data.status === 'in-progress' && typeof data.step === 'number') {
+        const allJourneys = typeof getPackJourneys === 'function' ? getPackJourneys() : [];
+        const journey = allJourneys.find(j => j.id === id);
+        if (journey && journey.featureHints && data.step < journey.featureHints.length) {
+          _activeJourney = journey;
+          _hintIndex = data.step;
+          _freSkipped = false;
+          // Delay to let UI settle after load
+          setTimeout(() => _freShowCurrentHint(), 1200);
+          return;
+        }
+      }
+    }
+  } catch (e) {}
+}
+
+function freCompleteJourney() {
+  if (!_activeJourney) return;
+  const journey = _activeJourney;
+  freHideHint();
+
+  // Persist completion
+  if (!_useLocalStorage) {
+    MokuriDB.updateJourneyProgress(journey.id, { status: 'complete', step: journey.featureHints.length }).catch(() => {});
+  }
+
+  // Celebration toast
+  _freShowCelebration(journey);
+
+  _activeJourney = null;
+  _hintIndex = -1;
+}
+
+function freSkipJourney() {
+  if (!_activeJourney) return;
+  const journeyId = _activeJourney.id;
+  _freSkipped = true;
+  freHideHint();
+
+  if (!_useLocalStorage) {
+    MokuriDB.updateJourneyProgress(journeyId, { status: 'skipped' }).catch(() => {});
+  }
+
+  _activeJourney = null;
+  _hintIndex = -1;
+}
+
+function _freShowCurrentHint() {
+  if (!_activeJourney || _freSkipped || _hintIndex < 0) return;
+  const hints = _activeJourney.featureHints;
+  if (_hintIndex >= hints.length) return;
+  const hintId = hints[_hintIndex];
+  freShowHint(hintId, { showSkip: _hintIndex === 0 });
+}
+
+function _freShowCelebration(journey) {
+  const toast = document.createElement('div');
+  toast.className = 'fre-hint';
+  toast.style.maxWidth = '280px';
+  toast.style.textAlign = 'center';
+  toast.style.left = '50%';
+  toast.style.top = '40%';
+  toast.style.transform = 'translate(-50%, -50%)';
+  toast.style.padding = '16px 20px';
+
+  const title = document.createElement('div');
+  title.style.fontSize = '18px';
+  title.style.fontWeight = 'bold';
+  title.style.marginBottom = '4px';
+  title.textContent = journey.titleJa || '✓';
+  toast.appendChild(title);
+
+  const subtitle = document.createElement('div');
+  subtitle.style.fontSize = '13px';
+  subtitle.style.color = '#6a5e48';
+  subtitle.textContent = journey.title + ' — complete!';
+  toast.appendChild(subtitle);
+
+  // Suggested next
+  if (journey.suggestedNext) {
+    const allJourneys = typeof getPackJourneys === 'function' ? getPackJourneys() : [];
+    const next = allJourneys.find(j => j.id === journey.suggestedNext);
+    if (next) {
+      const nextBtn = document.createElement('button');
+      nextBtn.style.cssText = 'margin-top:12px; padding:6px 14px; background:#b8956a; color:#fff; border:none; border-radius:4px; font-size:12px; cursor:pointer; font-family:inherit;';
+      nextBtn.textContent = 'Try: ' + next.title;
+      nextBtn.addEventListener('click', () => {
+        toast.remove();
+        freStartJourney(next.id);
+      });
+      toast.appendChild(nextBtn);
+    }
+  }
+
+  document.body.appendChild(toast);
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => toast.classList.add('visible'));
+  });
+
+  // Auto-dismiss after 6 seconds if no interaction
+  const timer = setTimeout(() => toast.remove(), 6000);
+  toast.addEventListener('click', () => { clearTimeout(timer); toast.remove(); });
 }
 
 // ============================================================
@@ -6876,6 +7291,7 @@ function pointToLineDist(p, a, b) {
 // Set mode and update UI
 function setMode(mode) {
   STATE.mode = mode;
+  if (mode === 'carve') freAdvance('carve');
   workspaceEl.classList.toggle('carve-mode', mode === 'carve');
   workspaceEl.classList.toggle('erase-mode', mode === 'erase');
   if (mode === 'select') workspaceEl.classList.remove('over-paper');
@@ -7613,6 +8029,7 @@ function buildInkStudioUI() {
           buildPaletteUI();
           autoSave();
           MokuriAudio.playColorChange();
+          freAdvance('palette');
         });
         chipContainer.appendChild(chip);
       });
@@ -7697,6 +8114,7 @@ function buildInkStudioUI() {
             buildPaletteUI();
             autoSave();
             MokuriAudio.playColorChange();
+            freAdvance('color-zones');
           });
           picker.appendChild(ps);
         });
@@ -7767,6 +8185,7 @@ function buildInkStudioUI() {
             buildInkStudioUI();
             buildPaletteUI();
             autoSave();
+            freAdvance('bokashi');
           });
           bokRow.appendChild(btn);
         });
@@ -7815,6 +8234,7 @@ function buildInkStudioUI() {
         buildInkStudioUI();
         autoSave();
         MokuriAudio.setAmbienceForAtmosphere(STATE.background, STATE.foreground);
+        freAdvance('atmosphere');
       });
       skyRow.appendChild(chip);
     });
@@ -7837,6 +8257,7 @@ function buildInkStudioUI() {
         buildInkStudioUI();
         autoSave();
         MokuriAudio.setAmbienceForAtmosphere(STATE.background, STATE.foreground);
+        freAdvance('atmosphere');
       });
       groundRow.appendChild(chip);
     });
@@ -8460,6 +8881,7 @@ async function pullPrint() {
 
   pullBtn.disabled = false;
   $('status-hint').textContent = 'Print saved · scroll to zoom, alt+drag to pan';
+  freAdvance('print');
 
   // Auto-save print to gallery (fire-and-forget)
   // Save the mirrored version (what user sees)
@@ -9241,6 +9663,8 @@ function setupInteraction() {
         rerenderAll();
         autoSave();
         MokuriAudio.playCarveEnd();
+        freAdvance('carve-detail');
+        if (STATE.carveTool === 'pattern') freAdvance('carve-pattern');
       } else if (el) {
         // Too short — remove the undo entry
         STATE.undoStack.pop();
@@ -9259,10 +9683,12 @@ function setupInteraction() {
           return el && (el.x !== op.x || el.y !== op.y);
         });
         if (!moved) STATE.undoStack.pop();
+        else freAdvance('move');
       }
     }
     if (STATE.dragging && STATE.dragging.type === 'group-resize') {
       autoSave();
+      freAdvance('resize');
     }
     STATE.dragging = null;
     ws.style.cursor = '';  // Clear inline cursor — let CSS classes control it
@@ -9895,7 +10321,18 @@ async function init() {
   handleFirstRun();
   $('maki-version').textContent = 'v' + MOKURI_VERSION;
 
-  $('maki-begin').addEventListener('click', hideMakimono);
+  // Resume any in-progress journey (unless Makimono is showing)
+  if (getMokuriVisits() > 3) {
+    freResumeJourney();
+  }
+
+  $('maki-begin').addEventListener('click', () => {
+    hideMakimono();
+    // On first visit, start the guided journey
+    if (getMokuriVisits() <= 1) {
+      setTimeout(() => freStartJourney('first-print'), 700);
+    }
+  });
   $('makimono').addEventListener('click', (e) => {
     // Click on backdrop (not card content) dismisses
     if (e.target === $('makimono')) hideMakimono();
