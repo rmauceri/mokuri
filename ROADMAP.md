@@ -371,6 +371,21 @@ Foundation for style packs and first-run experience — data models and registry
 - **Two-row toolbar** (portrait phone ≤600px): Row 1: brand + phase buttons + Workshop. Row 2: edit tools centered. Touch targets bumped to 36px. No impact on landscape or larger screens.
 - **Multi-selection flip fix**: Flip now mirrors element positions around the group centroid, making the operation visually meaningful even for symmetric shapes (basic forms). Single-element flip unchanged.
 
+### iPad & Touch UX Polish ✅
+
+- **Toolbar icon rendering fix**: Unicode characters (⬆⬇↩↪) rendered as Apple emoji on iOS, looking out of place with Mokuri's muted aesthetic. Fixed with `font-variant-emoji: text` and symbol font stack on `.tool-btn`. Replaced ⬆⬇ with ▲▼ for layer ordering.
+- **Touch-friendly status bar**: `@media (pointer: coarse)` scales status bar from 24px→36px height, buttons from 20px→32px, larger volume slider. Touch targets properly sized for finger input on tablets.
+- **PWA audio on iOS**: Standalone PWA mode has stricter audio gesture policies than Safari. Added `touchstart` and `pointerdown` to audio gesture listeners alongside `click`/`keydown`. Added `visibilitychange` handler to resume suspended AudioContext after app backgrounding.
+- **Element tap-to-place**: WebKit compositor fires `pointercancel` for both pen and finger drags inside scrollable panels — no JS workaround exists. Implemented tap-to-place for all input types on iOS as a reliable alternative to drag-and-drop.
+
+### Print Gallery Slide Animation ✅
+
+Contemplative slide transitions when browsing prints — arrows, thumbnails, and swipe gestures all animate with a physical, print-handling feel.
+
+- **Three-phase animation**: Slide out (400ms ease-out with scale-down to 0.97) → brief pause (75ms breath) → slide in (350ms with gentle overshoot settle). Separate CSS classes for out/in with distinct easing curves.
+- **Swipe tracking**: Finger/pen drag tracks position with proportional scale-down and opacity fade. Threshold-based commit or snap-back with overshoot bounce.
+- **Tunable constants**: `_GSLIDE_OUT`, `_GSLIDE_PAUSE`, `_GSLIDE_IN` at top of function for easy timing adjustments.
+
 #### Memory Bounds
 Carve stroke arrays are unbounded. Heavy sessions could grow to MB, bloating undo snapshots and localStorage.
 
