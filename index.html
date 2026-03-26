@@ -2089,7 +2089,7 @@ html, body {
 /* --- Responsive: progressive toolbar compaction & panel sizing --- */
 
 /* Tablets and small laptops: compact labels, shrink panels */
-@media (max-width: 1024px) {
+@media (max-width: 1180px) {
   :root {
     --panel-w: 180px;
     --studio-w: 220px;
@@ -2775,7 +2775,7 @@ if (typeof MOKURI_KACHOE_PRESETS !== 'undefined' && typeof MOKURI_GALLERY_PRESET
 // ============================================================
 //  VERSION
 // ============================================================
-const MOKURI_VERSION = '0.58';
+const MOKURI_VERSION = '0.59';
 
 // ============================================================
 //  APP STATE
@@ -6245,45 +6245,56 @@ function freShowHint(hintId, opts) {
     const targetEl = typeof def.target === 'function' ? def.target() : document.querySelector(def.target);
     if (!targetEl) return;
 
-    // Pulse glow on target
-    _frePulseTarget = targetEl;
-    targetEl.classList.add(targetEl instanceof SVGElement ? 'fre-pulse-svg' : 'fre-pulse');
-
-    // Build hint bubble
-    const hint = document.createElement('div');
-    hint.className = 'fre-hint';
-
-    const text = document.createElement('p');
-    text.className = 'fre-hint-text';
-    text.textContent = def.text;
-    hint.appendChild(text);
-
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'fre-hint-close';
-    closeBtn.textContent = '✕';
-    closeBtn.addEventListener('click', (e) => { e.stopPropagation(); freHideHint(); });
-    hint.appendChild(closeBtn);
-
-    if (showSkip) {
-      const skip = document.createElement('button');
-      skip.className = 'fre-hint-skip';
-      skip.textContent = 'Skip guide';
-      skip.addEventListener('click', (e) => { e.stopPropagation(); freSkipJourney(); });
-      hint.appendChild(skip);
+    // Scroll target into view if inside a scrollable panel, then show hint after scroll settles
+    const needsScroll = targetEl.closest('.carve-studio-inner, .ink-studio-inner, .print-studio-inner');
+    if (needsScroll) {
+      targetEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
-    hint.addEventListener('click', () => freHideHint());
-    document.body.appendChild(hint);
-    _freHintEl = hint;
+    const buildHint = () => {
+      // Pulse glow on target
+      _frePulseTarget = targetEl;
+      targetEl.classList.add(targetEl instanceof SVGElement ? 'fre-pulse-svg' : 'fre-pulse');
 
-    // Position near target
-    _frePositionHint(hint, targetEl, def.arrow);
+      // Build hint bubble
+      const hint = document.createElement('div');
+      hint.className = 'fre-hint';
 
-    // Animate in + audio cue
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => hint.classList.add('visible'));
-    });
-    MokuriAudio.playFreHint();
+      const text = document.createElement('p');
+      text.className = 'fre-hint-text';
+      text.textContent = def.text;
+      hint.appendChild(text);
+
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'fre-hint-close';
+      closeBtn.textContent = '✕';
+      closeBtn.addEventListener('click', (e) => { e.stopPropagation(); freHideHint(); });
+      hint.appendChild(closeBtn);
+
+      if (showSkip) {
+        const skip = document.createElement('button');
+        skip.className = 'fre-hint-skip';
+        skip.textContent = 'Skip guide';
+        skip.addEventListener('click', (e) => { e.stopPropagation(); freSkipJourney(); });
+        hint.appendChild(skip);
+      }
+
+      hint.addEventListener('click', () => freHideHint());
+      document.body.appendChild(hint);
+      _freHintEl = hint;
+
+      // Position near target
+      _frePositionHint(hint, targetEl, def.arrow);
+
+      // Animate in + audio cue
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => hint.classList.add('visible'));
+      });
+      MokuriAudio.playFreHint();
+    };
+
+    if (needsScroll) setTimeout(buildHint, 350);
+    else buildHint();
   }, 500);
 }
 
