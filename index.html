@@ -2770,7 +2770,7 @@ if (typeof MOKURI_KACHOE_PRESETS !== 'undefined' && typeof MOKURI_GALLERY_PRESET
 // ============================================================
 //  VERSION
 // ============================================================
-const MOKURI_VERSION = '0.50';
+const MOKURI_VERSION = '0.51';
 
 // ============================================================
 //  APP STATE
@@ -6434,15 +6434,9 @@ function freStartJourney(journeyId) {
     }
   }
 
-  // Select a foreground element so hints can target it meaningfully
+  // Select the last element (top layer) so hints can target it meaningfully
   if (STATE.elements.length > 0 && STATE.selectedIds.size === 0) {
-    // Prefer a foreground/fauna element the user would naturally want to move
-    const defs = typeof MOKURI_ELEMENTS !== 'undefined' ? MOKURI_ELEMENTS : [];
-    const pick = STATE.elements.find(el => {
-      const def = defs.find(d => d.id === el.defId);
-      return def && (def.suggestedLayer === 'foreground' || def.category === 'fauna');
-    }) || STATE.elements[STATE.elements.length - 1];
-    selectElement(pick.id);
+    selectElement(STATE.elements[STATE.elements.length - 1].id);
   }
 
   _freShowCurrentHint();

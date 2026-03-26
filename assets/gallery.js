@@ -9,249 +9,496 @@
 
 const MOKURI_GALLERY_PRESETS = [
 
-    // Cranes at Dawn (600×420)
+  // FRE Print (600×420)
   {
-  "pack": "core",
   "elements": [
     {
-      "id": 7,
-      "defId": "shore-waves",
-      "x": 298.8439027878959,
-      "y": 359.41420921493966,
-      "scaleX": 2.0213577276071897,
-      "scaleY": 2.7276627109941916,
+      "id": 1,
+      "defId": "mountain-fuji-peak",
+      "x": 453.9964221173998,
+      "y": 154.04973859413926,
+      "scaleX": 1,
+      "scaleY": 1,
       "rotation": 0,
-      "carveLevel": 0,
-      "colorOverrides": {
-        "water": "#4a90c4"
-      },
-      "variationSeed": 82354,
+      "carveLevel": 2,
+      "colorOverrides": {},
+      "variationSeed": 17947,
       "zoneBokashi": {
-        "water": "up",
-        "sand": "down"
+        "mountain": "up"
       }
     },
     {
-      "id": 1,
-      "defId": "rock-formation",
-      "x": 97.8706421491377,
-      "y": 207.3635184731365,
-      "scaleX": 0.6097522566840304,
-      "scaleY": 0.35972470770275855,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "rock": 2,
-        "shadow": 3,
-        "moss": 0
-      },
-      "variationSeed": 26660
-    },
-    {
       "id": 3,
-      "defId": "rock-formation",
-      "x": 284.87361375827203,
-      "y": 198.18450529885502,
-      "scaleX": 0.6097522566840304,
-      "scaleY": 0.4262430712969206,
+      "defId": "gentle-waves",
+      "x": 311.4742514332643,
+      "y": 210.0177906654669,
+      "scaleX": -2.3587922438758904,
+      "scaleY": 1.5661636019199363,
       "rotation": 0,
-      "carveLevel": 2,
+      "carveLevel": 1,
       "colorOverrides": {
-        "shadow": 3,
-        "rock": 2,
-        "moss": 0,
-        "detail": 4
+        "body": "#c46a20"
       },
-      "variationSeed": 580,
+      "variationSeed": 81795,
+      "zoneBokashi": {
+        "body": "down"
+      },
       "locked": false
     },
     {
       "id": 2,
-      "defId": "rock-formation",
-      "x": 203.15684292763214,
-      "y": 226.3519624893052,
-      "scaleX": -0.5134174145359788,
-      "scaleY": 0.38878840727258285,
+      "defId": "gentle-waves",
+      "x": 272.0284422448701,
+      "y": 226.78510784839125,
+      "scaleX": 2.3587922438758904,
+      "scaleY": 1.5661636019199363,
       "rotation": 0,
-      "carveLevel": 2,
+      "carveLevel": 1,
       "colorOverrides": {
-        "shadow": 4,
-        "moss": 0,
-        "detail": "#d4a030"
+        "body": 2
       },
-      "variationSeed": 48448,
-      "locked": false
+      "variationSeed": 24994,
+      "zoneBokashi": {
+        "body": "down"
+      }
     },
     {
       "id": 4,
-      "defId": "iris-cluster",
-      "x": 467.9167566229503,
-      "y": 249.9425076914202,
-      "scaleX": 0.4762971965032356,
-      "scaleY": 0.49054046504708254,
+      "defId": "full-moon",
+      "x": 81.27320584193001,
+      "y": 89.33606060387473,
+      "scaleX": 0.6092361069870991,
+      "scaleY": 0.6092361069870991,
       "rotation": 0,
-      "carveLevel": 2,
+      "carveLevel": 1,
       "colorOverrides": {
-        "petal": "#4a90c4",
-        "stem": 0,
-        "leaf": 1,
-        "detail": 4
+        "body": "#e8c870",
+        "glow": "#d4a030"
       },
-      "variationSeed": 46310
-    },
-    {
-      "id": 5,
-      "defId": "iris-cluster",
-      "x": 529.5784760405493,
-      "y": 288.4588545995577,
-      "scaleX": -0.4762971965032356,
-      "scaleY": 0.4762971965032356,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "petal": "#1b4872",
-        "stem": 0,
-        "leaf": 1,
-        "detail": "#d4a030"
-      },
-      "variationSeed": 46102,
-      "locked": false
-    },
-    {
-      "id": 6,
-      "defId": "stone-path",
-      "x": 390.78797071189854,
-      "y": 322.50898456505246,
-      "scaleX": 0.7741509647028996,
-      "scaleY": 0.7741509647028996,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "stone": 3,
-        "shadow": 4,
-        "moss": 1,
-        "detail": 2
-      },
-      "variationSeed": 81917
-    },
-    {
-      "id": 8,
-      "defId": "crane-flying",
-      "x": 152.79224220692996,
-      "y": 52.71945422361272,
-      "scaleX": -0.2573149184835521,
-      "scaleY": 0.2573149184835521,
-      "rotation": 7.538360707234432,
-      "carveLevel": 0,
-      "colorOverrides": {
-        "body": "#f5f0e1",
-        "wing": "#f5f0e1",
-        "accent": "#c23b22",
-        "detail": "#d4a030"
-      },
-      "variationSeed": 53616
-    },
-    {
-      "id": 9,
-      "defId": "crane-flying",
-      "x": 220.4153287490306,
-      "y": 74.92500910061656,
-      "scaleX": -0.20222639837715822,
-      "scaleY": 0.20222639837715822,
-      "rotation": -10.961030040805923,
-      "carveLevel": 0,
-      "colorOverrides": {
-        "body": "#f5f0e1",
-        "wing": "#f5f0e1",
-        "accent": "#c23b22",
-        "detail": "#d4a030"
-      },
-      "variationSeed": 23905,
-      "locked": false
-    },
-    {
-      "id": 11,
-      "defId": "crane-landing",
-      "x": 392.07943343559737,
-      "y": 194.65890745362663,
-      "scaleX": 0.5088561005606365,
-      "scaleY": 0.5088561005606365,
-      "rotation": -4.829505118542542,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "body": "#f5f0e1",
-        "wing": "#f5f0e1",
-        "accent": "#c23b22",
-        "detail": "#d4a030"
-      },
-      "variationSeed": 89645
-    },
-    {
-      "id": 12,
-      "defId": "iris-cluster",
-      "x": 75.65121534403553,
-      "y": 305.5030980962224,
-      "scaleX": 0.4378906122395488,
-      "scaleY": 0.45987096488600787,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "petal": "#1b4872",
-        "stem": 0,
-        "leaf": 1,
-        "detail": "#d4a030"
-      },
-      "variationSeed": 81578
-    },
-    {
-      "id": 13,
-      "defId": "crane-standing",
-      "x": 163.3991865967653,
-      "y": 264.8208078705087,
-      "scaleX": -0.6147525572308369,
-      "scaleY": 0.582169712090369,
-      "rotation": 4.863075176756254,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "body": "#f5f0e1",
-        "wing": "#f5f0e1",
-        "detail": "#d4a030",
-        "accent": "#c23b22"
-      },
-      "variationSeed": 43578
+      "variationSeed": 54059
     },
     {
       "id": 14,
       "defId": "hanko-mokuri",
-      "x": 581.4970996926081,
-      "y": 398.1675802690702,
-      "scaleX": 0.5189466838947671,
-      "scaleY": 0.5189466838947671,
+      "x": 578.0298155209871,
+      "y": 398.27190821700435,
+      "scaleX": 0.5127248924284383,
+      "scaleY": 0.5127248924284383,
       "rotation": 0,
       "carveLevel": 2,
       "colorOverrides": {},
-      "variationSeed": 14717
+      "variationSeed": 37299
+    },
+    {
+      "id": 15,
+      "defId": "pagoda",
+      "x": 117.97578691354579,
+      "y": 273.7848257164152,
+      "scaleX": 0.8251459963226678,
+      "scaleY": 0.8251459963226678,
+      "rotation": 0,
+      "carveLevel": 0,
+      "colorOverrides": {},
+      "variationSeed": 20540
     }
   ],
-  "nextId": 15,
-  "paletteId": "matcha",
+  "nextId": 16,
+  "paletteId": "sumi",
   "paperW": 600,
   "paperH": 420,
-  "paperType": "hosho",
-  "inkLoad": "light",
+  "paperType": "kozo",
+  "inkLoad": "standard",
   "impressions": 1,
-  "background": "pink",
-  "foreground": "water",
-  "horizon": 0.53,
-  "mist": 2,
-  "backgroundCarveStrokes": [],
+  "background": "day",
+  "foreground": "grass",
+  "horizon": 0.66,
+  "mist": 1,
+  "backgroundCarveStrokes": [
+    {
+      "points": [
+        {
+          "x": 9.784400893571785,
+          "y": 305.5444497689575,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 88.30461660326338,
+          "y": 305.0011689845945,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 140.13421781906467,
+          "y": 310.2218425615062,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 205.17174432340028,
+          "y": 311.52033944605256,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "pattern",
+      "pattern": "lines",
+      "density": 0.75,
+      "rotation": 25,
+      "pressure": 60
+    },
+    {
+      "points": [
+        {
+          "x": 222.2007217278728,
+          "y": 310.4338276162638,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 222.824114046135,
+          "y": 309.5280427285328,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 240.99077338929487,
+          "y": 307.8693618502006,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 315.54632781432184,
+          "y": 307.71749279442605,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 365.03756733616706,
+          "y": 308.260753636234,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 390.9429754724368,
+          "y": 310.9388984317131,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "pattern",
+      "pattern": "lines",
+      "density": 0.75,
+      "rotation": 25,
+      "pressure": 60
+    },
+    {
+      "points": [
+        {
+          "x": 238.49864788556022,
+          "y": 337.0537405156043,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 271.6796290959073,
+          "y": 337.43267886269825,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 284.8150898926302,
+          "y": 339.68640641756144,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 394.5839759909721,
+          "y": 347.35472544553835,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "pattern",
+      "pattern": "lines",
+      "density": 0.75,
+      "rotation": 25,
+      "pressure": 60
+    },
+    {
+      "points": [
+        {
+          "x": 242.8447449485024,
+          "y": 396.26955546764316,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 433.9049004320133,
+          "y": 396.81283615552354,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 448.3293042941399,
+          "y": 397.84136415380465,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "pattern",
+      "pattern": "lines",
+      "density": 0.75,
+      "rotation": 25,
+      "pressure": 60
+    },
+    {
+      "points": [
+        {
+          "x": 418.86234745152694,
+          "y": 303.3713763688247,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 518.4128380027573,
+          "y": 307.50754901464734,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 561.7426069602818,
+          "y": 307.7169417033742,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 594.8131223605518,
+          "y": 309.86046209755597,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "pattern",
+      "pattern": "lines",
+      "density": 0.75,
+      "rotation": 25,
+      "pressure": 60
+    },
+    {
+      "points": [
+        {
+          "x": 379.74732467307706,
+          "y": 339.77009470010114,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 428.8288739822983,
+          "y": 340.148998355412,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 478.7784135825346,
+          "y": 343.3265843258067,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 553.7812240523324,
+          "y": 343.57290810523676,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 605.7066841299088,
+          "y": 347.89215913461493,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "pattern",
+      "pattern": "lines",
+      "density": 0.75,
+      "rotation": 25,
+      "pressure": 60
+    },
+    {
+      "points": [
+        {
+          "x": 417.7758356201223,
+          "y": 376.7120440784182,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 457.6753432875218,
+          "y": 377.09098242551215,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 480.3406058095044,
+          "y": 379.28834347571,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 585.5342991923209,
+          "y": 381.05313428357715,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 623.9197496649203,
+          "y": 383.2208927387053,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "pattern",
+      "pattern": "lines",
+      "density": 0.75,
+      "rotation": 25,
+      "pressure": 60
+    },
+    {
+      "points": [
+        {
+          "x": 26.625607835623327,
+          "y": 345.20270359444794,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 41.415556198227755,
+          "y": 344.1449102140054,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 251.26601380778817,
+          "y": 343.663299319179,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "pattern",
+      "pattern": "lines",
+      "density": 0.75,
+      "rotation": 25,
+      "pressure": 60
+    },
+    {
+      "points": [
+        {
+          "x": 64.65409391400681,
+          "y": 393.5532510204698,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 219.501253418848,
+          "y": 393.5532510204698,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 230.94037217968597,
+          "y": 390.9541141809288,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "pattern",
+      "pattern": "lines",
+      "density": 0.75,
+      "rotation": 25,
+      "pressure": 60
+    }
+  ],
   "presentationMargin": "narrow",
-  "presentationTitle": "Cranes at Dawn",
+  "presentationTitle": "Mountain Sunset",
   "presentationEdition": "",
   "presentationHanko": null,
   "presentationHankoPos": "bottom-right",
   "presentationDeckle": true,
-  "compositionName": "Cranes at Dawn"
+  "compositionName": "Untitled Print"
 },
 
   // Bridge in Summer (600×420)
