@@ -7777,6 +7777,7 @@ function openComposePanel() {
   setMode('select');
   if (STATE.viewMode !== 'carve') setViewMode('carve');
   updatePhaseButtons();
+  $('status-hint').textContent = 'Place elements on the canvas';
   MokuriAudio.playPanelToggle();
 }
 
@@ -7821,6 +7822,7 @@ function closeCarveStudio() {
 
   setMode('select');
   updatePhaseButtons();
+  $('status-hint').textContent = 'Place elements on the canvas';
   MokuriAudio.playPanelToggle();
 }
 
@@ -8066,6 +8068,7 @@ function closeInkStudio() {
   if (STATE.viewMode !== 'carve') setViewMode('carve');
   setMode('select');
   updatePhaseButtons();
+  $('status-hint').textContent = 'Place elements on the canvas';
   MokuriAudio.playPanelToggle();
 }
 
@@ -10417,7 +10420,7 @@ async function init() {
 
   // Restore previous session from gallery
   if (await autoLoad()) {
-    $('status-hint').textContent = STATE.compositionName || 'Session restored';
+    $('status-hint').textContent = 'Place elements on the canvas';
   } else {
     // First run — create initial composition entry
     const id = generateCompositionId();
