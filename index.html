@@ -2770,7 +2770,7 @@ if (typeof MOKURI_KACHOE_PRESETS !== 'undefined' && typeof MOKURI_GALLERY_PRESET
 // ============================================================
 //  VERSION
 // ============================================================
-const MOKURI_VERSION = '0.46';
+const MOKURI_VERSION = '0.47';
 
 // ============================================================
 //  APP STATE
@@ -6201,6 +6201,7 @@ const FRE_HINTS = {
   'resize':        { text: 'Pull corners to resize',               target: () => _freSelectedElementTarget(), arrow: 'left' },
   'palette':       { text: 'Try a different palette',              target: '#btn-phase-ink', arrow: 'bottom' },
   'carve':         { text: 'Carve to reveal the wood beneath',     target: '#btn-phase-carve', arrow: 'bottom' },
+  'carve-level':   { text: 'Add more carve detail',                target: '.cs-carve-level-row', arrow: 'left' },
   'carve-detail':  { text: 'Press C to carve deeper detail',       target: () => _freSelectedElementTarget(), arrow: 'left' },
   'carve-pattern': { text: 'Try a carve pattern',                  target: () => _freSelectedElementTarget(), arrow: 'left' },
   'atmosphere':    { text: 'Set the mood of your scene',           target: '#btn-phase-ink', arrow: 'bottom' },
@@ -6522,13 +6523,24 @@ function _freShowCurrentHint() {
   const hintId = hints[_hintIndex];
 
   // Pre-hint setup: ensure a useful element is selected for certain hints
-  if (hintId === 'carve' || hintId === 'carve-detail') {
+  if (hintId === 'carve' || hintId === 'carve-detail' || hintId === 'carve-level') {
     const defs = typeof MOKURI_ELEMENTS !== 'undefined' ? MOKURI_ELEMENTS : [];
     // Pick an element at low carve level (most room to carve)
     const best = STATE.elements
       .filter(el => !el.locked)
       .sort((a, b) => (a.carveLevel || 0) - (b.carveLevel || 0))[0];
     if (best && !STATE.selectedIds.has(best.id)) selectElement(best.id);
+  }
+
+  // Deselect before palette so full palette list is visible
+  if (hintId === 'palette') {
+    deselectAll();
+  }
+
+  // Name the composition for the first print
+  if (hintId === 'print') {
+    STATE.compositionName = 'My First Mokuri Print';
+    autoSave();
   }
 
   freShowHint(hintId, { showSkip: _hintIndex === 0 });
@@ -6573,14 +6585,17 @@ function _freShowCelebration(journey) {
     }
   }
 
+  // Close button — stays until user dismisses
+  const closeBtn = document.createElement('span');
+  closeBtn.className = 'fre-hint-close';
+  closeBtn.textContent = '×';
+  closeBtn.addEventListener('click', (e) => { e.stopPropagation(); toast.remove(); });
+  toast.appendChild(closeBtn);
+
   document.body.appendChild(toast);
   requestAnimationFrame(() => {
     requestAnimationFrame(() => toast.classList.add('visible'));
   });
-
-  // Auto-dismiss after 6 seconds if no interaction
-  const timer = setTimeout(() => toast.remove(), 6000);
-  toast.addEventListener('click', () => { clearTimeout(timer); toast.remove(); });
 }
 
 // ============================================================
@@ -7226,6 +7241,7 @@ function buildPaletteUI() {
               el.carveLevel = i;
               rerenderAll();
               selectElement(el.id);
+              freAdvance('carve-level');
             }
           });
           carveRow.appendChild(pip);
@@ -7923,6 +7939,7 @@ function buildCarveStudioUI() {
               el.carveLevel = i;
               rerenderAll();
               selectElement(el.id);
+              freAdvance('carve-level');
             }
           });
           levelRow.appendChild(pip);

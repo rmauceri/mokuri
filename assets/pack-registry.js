@@ -150,7 +150,7 @@ registerPack({
       prompt: 'A quiet mountain morning',
       promptType: 'scene',
       startingPreset: 0,
-      featureHints: ['move', 'resize', 'palette', 'carve', 'print'],
+      featureHints: ['move', 'resize', 'carve', 'carve-level', 'palette', 'print'],
       suggestedNext: 'evening-scene',
     },
     {
