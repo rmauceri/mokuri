@@ -2770,7 +2770,7 @@ if (typeof MOKURI_KACHOE_PRESETS !== 'undefined' && typeof MOKURI_GALLERY_PRESET
 // ============================================================
 //  VERSION
 // ============================================================
-const MOKURI_VERSION = '0.47';
+const MOKURI_VERSION = '0.48';
 
 // ============================================================
 //  APP STATE
@@ -6209,6 +6209,8 @@ const FRE_HINTS = {
   'color-zones':   { text: 'Click a zone to change its color',     target: () => _freSelectedElementTarget(), arrow: 'left' },
   'elements':      { text: 'Browse the element library',           target: '#element-list',  arrow: 'right' },
   'print':         { text: 'Pull your first print',                target: '#btn-phase-print', arrow: 'bottom' },
+  'open-ink':      { text: 'Open the Inking Workbench',            target: '#btn-phase-ink',   arrow: 'bottom' },
+  'atmosphere-bg': { text: 'Change the background',                target: '#is-atmo-content', arrow: 'left' },
 };
 
 function _freSelectedElementTarget() {
@@ -6534,12 +6536,14 @@ function _freShowCurrentHint() {
 
   // Deselect before palette so full palette list is visible
   if (hintId === 'palette') {
-    deselectAll();
+    // Don't deselect here — wait until user opens Ink studio (see openInkStudio)
   }
 
   // Name the composition for the first print
   if (hintId === 'print') {
     STATE.compositionName = 'My First Mokuri Print';
+    STATE.presentationTitle = 'My First Mokuri Print';
+    $('status-hint').textContent = STATE.compositionName;
     autoSave();
   }
 
@@ -7998,6 +8002,12 @@ function openInkStudio() {
 
   STATE.inkStudioOpen = true;
 
+  // FRE: deselect so palette grid shows (not zone editor); advance ink-open step
+  if (_activeJourney && !_freSkipped) {
+    deselectAll();
+    freAdvance('open-ink');
+  }
+
   // Switch to ink view and select mode
   if (STATE.viewMode !== 'ink') setViewMode('ink');
   setMode('select');
@@ -8284,6 +8294,7 @@ function buildInkStudioUI() {
         autoSave();
         MokuriAudio.setAmbienceForAtmosphere(STATE.background, STATE.foreground);
         freAdvance('atmosphere');
+        freAdvance('atmosphere-bg');
       });
       skyRow.appendChild(chip);
     });
@@ -8307,6 +8318,7 @@ function buildInkStudioUI() {
         autoSave();
         MokuriAudio.setAmbienceForAtmosphere(STATE.background, STATE.foreground);
         freAdvance('atmosphere');
+        freAdvance('atmosphere-bg');
       });
       groundRow.appendChild(chip);
     });

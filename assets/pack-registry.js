@@ -160,7 +160,7 @@ registerPack({
       prompt: 'A calm evening by the water',
       promptType: 'scene',
       startingPreset: 1,
-      featureHints: ['atmosphere', 'bokashi', 'carve-detail'],
+      featureHints: ['open-ink', 'atmosphere-bg', 'bokashi', 'carve-detail'],
       suggestedNext: 'weather-study',
     },
     {
