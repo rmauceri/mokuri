@@ -2770,7 +2770,7 @@ if (typeof MOKURI_KACHOE_PRESETS !== 'undefined' && typeof MOKURI_GALLERY_PRESET
 // ============================================================
 //  VERSION
 // ============================================================
-const MOKURI_VERSION = '0.48';
+const MOKURI_VERSION = '0.49';
 
 // ============================================================
 //  APP STATE
@@ -10392,10 +10392,8 @@ async function init() {
 
   $('maki-begin').addEventListener('click', () => {
     hideMakimono();
-    // On first visit, start the guided journey
-    if (getMokuriVisits() <= 1) {
-      setTimeout(() => freStartJourney('first-print'), 700);
-    }
+    // Always start the guided journey from Begin Creating
+    setTimeout(() => freStartJourney('first-print'), 700);
   });
   $('makimono').addEventListener('click', (e) => {
     // Click on backdrop (not card content) dismisses
