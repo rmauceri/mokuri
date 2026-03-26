@@ -1194,15 +1194,15 @@ html, body {
   position: fixed;
   z-index: 250;
   max-width: 240px;
-  padding: 10px 14px;
-  background: #f5f0e8;
-  border: 1px solid #c4b8a0;
+  padding: 12px 32px 12px 14px;
+  background: #e8f0fa;
+  border: 1px solid #a0b8d4;
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(20,17,12,0.18), 0 1px 4px rgba(20,17,12,0.10);
   font-family: 'Georgia', serif;
   font-size: 13px;
   line-height: 1.5;
-  color: #3a3224;
+  color: #2a3a4a;
   opacity: 0;
   transform: translateY(6px);
   transition: opacity 0.3s ease, transform 0.3s ease;
@@ -1222,17 +1222,17 @@ html, body {
   background: none;
   border: none;
   font-size: 14px;
-  color: #9a8e78;
+  color: #7a90a8;
   cursor: pointer;
   padding: 2px 4px;
   line-height: 1;
 }
-.fre-hint-close:hover { color: #5a4e3a; }
+.fre-hint-close:hover { color: #3a5a78; }
 .fre-hint-skip {
   display: block;
   margin-top: 8px;
   font-size: 10px;
-  color: #9a8e78;
+  color: #7a90a8;
   text-decoration: underline;
   cursor: pointer;
   background: none;
@@ -1240,7 +1240,7 @@ html, body {
   padding: 0;
   font-family: inherit;
 }
-.fre-hint-skip:hover { color: #5a4e3a; }
+.fre-hint-skip:hover { color: #3a5a78; }
 
 /* Arrow — CSS triangle on ::after pseudo-element */
 .fre-hint::after {
@@ -1248,9 +1248,9 @@ html, body {
   position: absolute;
   width: 10px;
   height: 10px;
-  background: #f5f0e8;
-  border-right: 1px solid #c4b8a0;
-  border-bottom: 1px solid #c4b8a0;
+  background: #e8f0fa;
+  border-right: 1px solid #a0b8d4;
+  border-bottom: 1px solid #a0b8d4;
 }
 /* Arrow directions — which side of the bubble the arrow points FROM */
 .fre-hint.arrow-bottom::after {
@@ -1276,16 +1276,16 @@ html, body {
 
 /* Pulse glow on target element */
 @keyframes fre-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(184,149,106, 0.5); }
-  50% { box-shadow: 0 0 0 6px rgba(184,149,106, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(100,150,210, 0.5); }
+  50% { box-shadow: 0 0 0 6px rgba(100,150,210, 0); }
 }
 .fre-pulse {
   animation: fre-pulse 2s ease-in-out infinite;
 }
 /* SVG elements use filter glow instead of box-shadow */
 @keyframes fre-pulse-svg {
-  0%, 100% { filter: drop-shadow(0 0 0 rgba(184,149,106, 0.5)); }
-  50% { filter: drop-shadow(0 0 8px rgba(184,149,106, 0.6)); }
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(100,150,210, 0.5)); }
+  50% { filter: drop-shadow(0 0 8px rgba(100,150,210, 0.6)); }
 }
 .fre-pulse-svg {
   animation: fre-pulse-svg 2s ease-in-out infinite;
@@ -2770,7 +2770,7 @@ if (typeof MOKURI_KACHOE_PRESETS !== 'undefined' && typeof MOKURI_GALLERY_PRESET
 // ============================================================
 //  VERSION
 // ============================================================
-const MOKURI_VERSION = '0.45';
+const MOKURI_VERSION = '0.46';
 
 // ============================================================
 //  APP STATE
@@ -6199,7 +6199,7 @@ const FRE_HINTS = {
   'place':         { text: 'Choose an element to begin your scene', target: '#element-list', arrow: 'right' },
   'move':          { text: 'Drag to position your element',        target: () => _freSelectedElementTarget(), arrow: 'left' },
   'resize':        { text: 'Pull corners to resize',               target: () => _freSelectedElementTarget(), arrow: 'left' },
-  'palette':       { text: 'Try a different palette',              target: '#palette-bar',   arrow: 'right' },
+  'palette':       { text: 'Try a different palette',              target: '#btn-phase-ink', arrow: 'bottom' },
   'carve':         { text: 'Carve to reveal the wood beneath',     target: '#btn-phase-carve', arrow: 'bottom' },
   'carve-detail':  { text: 'Press C to carve deeper detail',       target: () => _freSelectedElementTarget(), arrow: 'left' },
   'carve-pattern': { text: 'Try a carve pattern',                  target: () => _freSelectedElementTarget(), arrow: 'left' },
@@ -6423,9 +6423,15 @@ function freStartJourney(journeyId) {
     }
   }
 
-  // Select first element so hints can target it
+  // Select a foreground element so hints can target it meaningfully
   if (STATE.elements.length > 0 && STATE.selectedIds.size === 0) {
-    selectElement(STATE.elements[0].id);
+    // Prefer a foreground/fauna element the user would naturally want to move
+    const defs = typeof MOKURI_ELEMENTS !== 'undefined' ? MOKURI_ELEMENTS : [];
+    const pick = STATE.elements.find(el => {
+      const def = defs.find(d => d.id === el.defId);
+      return def && (def.suggestedLayer === 'foreground' || def.category === 'fauna');
+    }) || STATE.elements[STATE.elements.length - 1];
+    selectElement(pick.id);
   }
 
   _freShowCurrentHint();
@@ -6514,6 +6520,17 @@ function _freShowCurrentHint() {
   const hints = _activeJourney.featureHints;
   if (_hintIndex >= hints.length) return;
   const hintId = hints[_hintIndex];
+
+  // Pre-hint setup: ensure a useful element is selected for certain hints
+  if (hintId === 'carve' || hintId === 'carve-detail') {
+    const defs = typeof MOKURI_ELEMENTS !== 'undefined' ? MOKURI_ELEMENTS : [];
+    // Pick an element at low carve level (most room to carve)
+    const best = STATE.elements
+      .filter(el => !el.locked)
+      .sort((a, b) => (a.carveLevel || 0) - (b.carveLevel || 0))[0];
+    if (best && !STATE.selectedIds.has(best.id)) selectElement(best.id);
+  }
+
   freShowHint(hintId, { showSkip: _hintIndex === 0 });
 }
 
