@@ -138,6 +138,9 @@ html, body {
   color: var(--text);
   cursor: pointer;
   font-size: 18px;
+  font-family: 'Segoe UI Symbol', 'Noto Sans Symbols 2', system-ui, sans-serif;
+  font-variant-emoji: text;
+  -webkit-text-size-adjust: none;
   transition: background 0.15s, border-color 0.15s;
 }
 .tool-btn:hover { background: var(--selection); border-color: var(--panel-border); }
@@ -2014,6 +2017,49 @@ html, body {
   .status-bar { height: 20px; font-size: 10px; }
   .status-btn { width: 18px; height: 18px; font-size: 10px; }
 }
+
+/* Touch devices: larger status bar for finger-friendly targets */
+@media (pointer: coarse) {
+  .status-bar {
+    height: 36px;
+    font-size: 13px;
+    padding: 0 14px;
+    gap: 4px;
+  }
+  .status-bar span { margin-right: 12px; }
+  .status-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+    border-radius: 6px;
+  }
+  .status-view-controls { gap: 4px; }
+  .audio-btn {
+    font-size: 18px;
+    padding: 4px 6px;
+  }
+  .audio-slider {
+    width: 64px;
+    height: 6px;
+  }
+  .audio-slider::-webkit-slider-runnable-track {
+    height: 6px;
+  }
+  .audio-slider::-webkit-slider-thumb {
+    width: 18px; height: 18px;
+    margin-top: -6px;
+  }
+  .audio-slider::-moz-range-track {
+    height: 6px;
+  }
+  .audio-slider::-moz-range-thumb {
+    width: 18px; height: 18px;
+  }
+  .audio-sep {
+    height: 20px;
+    margin: 0 4px;
+  }
+}
 </style>
 </head>
 <body>
@@ -2026,11 +2072,11 @@ html, body {
 
     <!-- Left group: Editing commands -->
     <div class="toolbar-group toolbar-edit-group">
-      <button class="tool-btn" id="btn-undo" title="Undo (Ctrl+Z)" disabled style="transform:scaleY(-1)">↩</button>
-      <button class="tool-btn" id="btn-redo" title="Redo (Ctrl+Y)" disabled style="transform:scaleY(-1)">↪</button>
+      <button class="tool-btn" id="btn-undo" title="Undo (Ctrl+Z)" disabled style="transform:scaleY(-1)">↩︎</button>
+      <button class="tool-btn" id="btn-redo" title="Redo (Ctrl+Y)" disabled style="transform:scaleY(-1)">↪︎</button>
       <div class="toolbar-separator"></div>
-      <button class="tool-btn" id="btn-layer-up" title="Bring Forward (])" disabled>⬆</button>
-      <button class="tool-btn" id="btn-layer-down" title="Send Backward ([)" disabled>⬇</button>
+      <button class="tool-btn" id="btn-layer-up" title="Bring Forward (])" disabled>▲</button>
+      <button class="tool-btn" id="btn-layer-down" title="Send Backward ([)" disabled>▼</button>
       <button class="tool-btn" id="btn-flip-h" title="Flip Horizontal (H)" disabled>⇄</button>
       <button class="tool-btn" id="btn-flip-v" title="Flip Vertical (F)" disabled>⇅</button>
       <button class="tool-btn" id="btn-duplicate" title="Duplicate (Ctrl+D)" disabled>⧉</button>
