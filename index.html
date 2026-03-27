@@ -2122,7 +2122,8 @@ html, body {
   /* Row 1: brand + phases + separator + gallery/workshop fill full width */
   .toolbar-title { order: 0; }
   .toolbar-mode-group { order: 1; }
-  .toolbar > .toolbar-separator { display: inline-block; order: 2; }
+  .toolbar > .toolbar-separator { display: none; }
+  .toolbar-mode-group + .toolbar-separator { display: inline-block; order: 2; }
   .toolbar-nav-group { order: 3; }
   /* Push edit group to row 2 */
   .toolbar-edit-group { order: 5; width: 100%; justify-content: center; padding: 2px 0; }
@@ -2341,7 +2342,8 @@ html, body {
   .toolbar-title { order: 0; font-size: 0; margin-right: 2px; }
   .toolbar-title .toolbar-title-kanji { font-size: 18px; margin-right: 0; }
   .toolbar-mode-group { order: 1; }
-  .toolbar > .toolbar-separator { display: inline-block; order: 2; }
+  .toolbar > .toolbar-separator { display: none; }
+  .toolbar-mode-group + .toolbar-separator { display: inline-block; order: 2; }
   .toolbar-nav-group { order: 3; }
   .toolbar-spacer { display: none; }
   /* Row 2: edit tools centered */
