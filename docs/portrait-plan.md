@@ -318,26 +318,94 @@ The foundational CSS that makes panels stack vertically in portrait.
 
 ### Phase 3: Workbench Content Reflow ⬜
 
-Optimize panel content layout for wide-but-short portrait orientation.
+Each workbench panel needs individual design attention. Working order: Print (easiest) → Carve (medium) → Ink (hardest). For each panel, write a detailed layout spec, validate in Edge, iterate, then commit.
 
-**3a. Carve Workbench portrait layout**
-- Carve level + focus row: stays horizontal
-- Tool selector: horizontal row (already is)
-- Pressure slider: inline with tool row or below
-- Pattern grid: could go wider (3×3 in 260px → maybe 4×3 in 744px)
-- Goal: reduce panel height by spreading content horizontally
+**Design principles:**
+1. Seek 3 columns of layout (2 if content doesn't justify 3)
+2. Panel height similar to element shelf (~156px), grow only if needed
+3. No buttons or controls should spread across the full panel width
+4. Avoid vertical scrolling if possible
+5. Controls may need to scale down from their 260px-column sizes
+6. Panel headers hidden (Esc to close, panel identity is clear from context)
 
-**3b. Ink Workbench portrait layout**
-- Palette chips: could expand to 3-4 columns instead of 2
-- Zone editor: can sit beside palette when element selected
-- Atmosphere controls: sky/ground chips in wider rows
-- Bokashi widget: inline with zone editor
+**3a. Print Workbench portrait layout** (easiest)
 
-**3c. Print Workbench portrait layout**
-- Paper type cards: wider grid (3 across instead of stacked)
-- Ink load + impressions: inline row
-- Title input + Pull Print button: side by side
-- Goal: everything visible without scrolling
+3-column grid. All controls are static chips/toggles/inputs.
+
+```
+┌─────────────────┬──────────────────┬──────────────────┐
+│  PAPER           │  INK LOAD        │  MARGINS         │
+│  ┌──┬──┬──┐     │  [淡] [中] [濃]  │  [None][Nar][Std]│
+│  │Ho│Ko│To│     │                  │  [Wide]          │
+│  ├──┼──┼──┤     │  BAREN PASSES    │  ☐ Deckle edge   │
+│  │Ga│Un│Ka│     │  [1×] [2×] [3×]  │                  │
+│  └──┴──┴──┘     │                  │  TITLE           │
+│                  │  [Pull Print]    │  [____________]  │
+│                  │  [💾 Save]       │  EDITION         │
+│                  │                  │  [____________]  │
+└─────────────────┴──────────────────┴──────────────────┘
+```
+
+- Paper: col 1, spans all rows. 3×2 chip grid fits naturally.
+- Ink + Baren + Actions: col 2. Toggles compact, buttons auto-width.
+- Presentation: col 3. Margin toggles, deckle, title/edition inputs.
+- Height budget: ~150px (Paper grid ~90px is tallest column).
+- Control sizing: toggle buttons at current size work for ~230px columns.
+
+**3b. Carve Workbench portrait layout** (medium)
+
+2-column layout (base state) expanding to 3 when pattern tool is active.
+
+Base state (Fine/V/U gouge selected):
+```
+┌──────────────────────┬──────────────────────┐
+│  CARVE LEVEL         │  TOOLS               │
+│  [●] [●] [●]        │  [╱] [∨] [∪] [⊞]   │
+│  [Focus] [Clear]     │                      │
+│                      │  PRESSURE            │
+│                      │  Soft ═══════ Firm   │
+└──────────────────────┴──────────────────────┘
+```
+
+Pattern tool active state:
+```
+┌────────────────┬────────────────┬────────────────┐
+│  CARVE LEVEL   │  TOOLS         │  PATTERN       │
+│  [●] [●] [●]  │  [╱][∨][∪][⊞] │  [╳][〰][╱]   │
+│  [Focus][Clear]│                │  [∴][∿][  ]   │
+│                │  PRESSURE      │  DENSITY       │
+│                │  Soft ══ Firm  │  □ ═══════ ■   │
+│                │                │  ROTATION      │
+│                │                │  0° ═══════ °  │
+└────────────────┴────────────────┴────────────────┘
+```
+
+- Tool buttons may need 2×2 layout at narrow column widths.
+- Pattern chips already in 3×2 grid — fits in ~230px column.
+- Height: ~140px base, ~150px with patterns.
+
+**3c. Ink Workbench portrait layout** (hardest)
+
+The zone editor is inherently tall. An expanded zone shows color picker + bokashi + accents. Options to explore:
+- **Option A**: Accept taller panel (~200-220px) for Ink
+- **Option B**: Collapse palette into compact summary, give more room to zones
+- **Option C**: Zone editing via inline popover that floats above the panel
+- **Option D**: Horizontal zone strip — zones as a scrolling row, expanded zone shown below
+
+Proposed starting layout (3-col, ~170px):
+```
+┌────────────────┬────────────────────┬─────────────────┐
+│  PALETTE       │  ELEMENT ZONES     │  ATMOSPHERE     │
+│  [chip scroll→]│  [■ body  ]▸       │  Background     │
+│  ▪▪▪▪▪ swatch │  [■ detail]        │  [dawn][day]... │
+│                │  [■ accent]        │  Foreground     │
+│                │  (expanded zone:   │  [earth][snow]..│
+│                │   picker+bokashi)  │  Horizon ═══    │
+│                │                    │  Mist [0][1]..  │
+└────────────────┴────────────────────┴─────────────────┘
+```
+
+Challenge: expanded zone easily needs 100px+. May need to accept vertical scroll on zone column, or use Option B/C/D. This should be discussed interactively during implementation.
 
 ### Phase 4: FRE Portrait Support ⬜
 
