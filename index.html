@@ -2329,20 +2329,28 @@ html, body {
   /* --- Workspace: fills middle --- */
   .workspace { order: 1; flex: 1; min-height: 0; }
 
-  /* --- Toolbar: compact but touch-friendly for portrait --- */
+  /* --- Toolbar: 2-row layout with phase labels for portrait --- */
   .toolbar {
-    padding: 0 6px;
+    height: auto;
+    flex-wrap: wrap;
+    overflow: visible;
+    padding: 4px 8px;
     gap: 3px;
   }
-  .tool-btn { width: 34px; height: 34px; font-size: 15px; }
-  .mode-btn { padding: 4px 8px; }
-  .mode-btn .mode-label { display: none; }
-  .toolbar-spacer { display: none; }
-  .toolbar > .toolbar-separator { display: none; }
-  .toolbar-edit-group .toolbar-separator { display: none; }
-  .toolbar-edit-group { gap: 1px; }
-  .toolbar-title { font-size: 0; margin-right: 2px; }
+  /* Row 1: brand + phase buttons + workshop */
+  .toolbar-title { order: 0; font-size: 0; margin-right: 2px; }
   .toolbar-title .toolbar-title-kanji { font-size: 18px; margin-right: 0; }
+  .toolbar-mode-group { order: 1; }
+  .toolbar > .toolbar-separator { display: none; }
+  #btn-file { order: 3; }
+  .toolbar-spacer { display: none; }
+  /* Row 2: edit tools centered */
+  .toolbar-edit-group { order: 5; width: 100%; justify-content: center; padding: 2px 0; gap: 2px; }
+  .toolbar-edit-group .toolbar-separator { display: none; }
+  /* Show phase labels, touch-friendly sizes */
+  .mode-btn { padding: 4px 8px; }
+  .mode-btn .mode-label { display: inline; font-size: 11px; }
+  .tool-btn { width: 34px; height: 34px; font-size: 15px; }
 
   /* --- Workbench Panels → Compact 3-Column Bottom Sheets --- */
   .carve-studio,
