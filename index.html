@@ -2329,6 +2329,21 @@ html, body {
   /* --- Workspace: fills middle --- */
   .workspace { order: 1; flex: 1; min-height: 0; }
 
+  /* --- Toolbar: compact but touch-friendly for portrait --- */
+  .toolbar {
+    padding: 0 6px;
+    gap: 3px;
+  }
+  .tool-btn { width: 34px; height: 34px; font-size: 15px; }
+  .mode-btn { padding: 4px 8px; }
+  .mode-btn .mode-label { display: none; }
+  .toolbar-spacer { display: none; }
+  .toolbar > .toolbar-separator { display: none; }
+  .toolbar-edit-group .toolbar-separator { display: none; }
+  .toolbar-edit-group { gap: 1px; }
+  .toolbar-title { font-size: 0; margin-right: 2px; }
+  .toolbar-title .toolbar-title-kanji { font-size: 18px; margin-right: 0; }
+
   /* --- Workbench Panels → Bottom Sheets --- */
   .carve-studio,
   .ink-studio,
