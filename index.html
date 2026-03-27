@@ -2337,10 +2337,10 @@ html, body {
     overflow: visible;
     padding: 4px 8px;
     gap: 3px;
+    justify-content: center;
   }
-  /* Row 1: brand + phase buttons + separator + gallery/workshop */
-  .toolbar-title { order: 0; font-size: 0; margin-right: 2px; }
-  .toolbar-title .toolbar-title-kanji { font-size: 18px; margin-right: 0; }
+  /* Row 1: phase buttons + separator + gallery/workshop, centered */
+  .toolbar-title { order: 0; font-size: 0; width: 0; overflow: hidden; margin: 0; }
   .toolbar-mode-group { order: 1; }
   .toolbar > .toolbar-separator { display: none; }
   .toolbar-mode-group + .toolbar-separator { display: inline-block; order: 2; }
