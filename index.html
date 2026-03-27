@@ -352,10 +352,9 @@ html, body {
   opacity: 0.85;
 }
 
-/* --- Palette bar (bottom of panel) --- */
+/* --- Palette bar (bottom of panel) — carve pips removed, kept as stub --- */
 .palette-bar {
-  border-top: 1px solid var(--panel-border);
-  padding: 8px;
+  display: none;
 }
 
 .palette-label {
@@ -4538,7 +4537,7 @@ function addElement(defId, x, y) {
     scaleX: 1,
     scaleY: 1,
     rotation: 0,
-    carveLevel: 0,
+    carveLevel: def.carveLevels.length - 1,
     colorOverrides: {},
     variationSeed: Math.floor(Math.random() * 100000),
   };
@@ -7421,44 +7420,10 @@ function updateHankoPreview() {
 // ============================================================
 //  PANEL BOTTOM — Carve Info + Style Pack Picker
 // ============================================================
+// Carve level pips removed from element panel — now only in Carving Workbench.
+// Kept as stub since callers still reference it.
 function buildPaletteUI() {
-  const bar = $('palette-bar');
-  bar.innerHTML = '';
-
-  // Carve info for selected element
-  if (STATE.selectedIds.size === 1) {
-    const el = STATE.elements.find(e => e.id === primarySelectedId());
-    if (el) {
-      const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
-      if (def) {
-        const infoLabel = document.createElement('div');
-        infoLabel.className = 'palette-label';
-        infoLabel.textContent = 'Carve Level';
-        bar.appendChild(infoLabel);
-
-        const carveRow = document.createElement('div');
-        carveRow.className = 'carve-level-row';
-        def.carveLevels.forEach((lvl, i) => {
-          const pip = document.createElement('div');
-          pip.className = 'carve-pip' + (i <= el.carveLevel ? ' active' : '');
-          pip.title = lvl.name;
-          pip.textContent = lvl.name.charAt(0).toUpperCase() + lvl.name.slice(1);
-          pip.addEventListener('click', () => {
-            if (el.carveLevel !== i) {
-              pushUndo();
-              el.carveLevel = i;
-              rerenderAll();
-              selectElement(el.id);
-              freAdvance('carve-level');
-            }
-          });
-          carveRow.appendChild(pip);
-        });
-        bar.appendChild(carveRow);
-
-      }
-    }
-  }
+  $('palette-bar').innerHTML = '';
 }
 
 // ============================================================
