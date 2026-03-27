@@ -1,8 +1,8 @@
 # First-Run Experience (FRE)
 
-## Status: Phases 1–4 Complete · Phases 5–6 Remaining
+## Status: Phases 1–4 Complete · Phase 5 (Polish) Remaining
 
-The core FRE engine is fully implemented with two connected guided journeys ("Your First Print" and "Evening Scene"). Hint system, journey engine, audio cues, celebration toasts, persistence, and responsive layout are all working and tested on Windows Edge, iPad mini, and Android.
+The core FRE engine is fully implemented with two connected guided journeys ("Your First Print" and "Evening Scene"). Hint system, journey engine, audio cues, celebration toasts, persistence, and responsive layout are all working and tested on Windows Edge, iPad mini, and Android. Workshop journey cards were dropped in favor of two future features: Guided Creative Prompts and Pack FRE.
 
 ---
 
@@ -197,19 +197,23 @@ Two dedicated sounds in `audio-engine.js`:
 - [x] 4d. "Try next?" button offering `suggestedNext` journey
 - [x] 4e. Audio: pentatonic chime on hint show, ascending motif on celebration
 
-### Phase 5: Workshop Journey Cards ⬜
-- [ ] 5a. "Guided Journeys" section in Workshop panel below presets
-- [ ] 5b. Journey cards: title, titleJa, prompt text, status badge (new / in-progress / complete)
-- [ ] 5c. Click to start journey (loads startingPreset, starts hint sequence)
-- [ ] 5d. Show journeys from active style pack + core
+### Phase 5: Workshop Journey Cards — DROPPED
 
-### Phase 6: Polish & Edge Cases ⬜
-- [ ] 6a. Gate FRE on visit count for production (currently always-on for testing)
-- [ ] 6b. Handle journey start when workspace has existing content
-- [ ] 6c. Third journey wiring: "Weather Study" needs activation path and UI
-- [ ] 6d. iPad mini portrait layout (known issues, deferred)
-- [ ] 6e. Style-switch activation: offer pack's first journey on first style change
-- [ ] 6f. Cross-browser hardening (Edge, Safari, iPad tested; Chrome/Firefox need verification)
+Dropped after design review. The original plan (journey cards in Workshop) was solving a discoverability problem that's better addressed by two separate, more targeted features:
+
+1. **Guided Creative Prompts** (future) — enhanced Workshop prompts that suggest relevant elements, palettes, and atmosphere for the prompt theme. Inspires creation for users who don't know where to start. Not about teaching tools — about creative springboards. Requires prompt metadata (element/palette/atmosphere associations).
+
+2. **Pack FRE** (Phase 6e below) — short guided walkthrough triggered on first style-switch to a pack. "Get to know Kacho-e" rather than "learn Mokuri." Each pack already has journeys and starting presets.
+
+For the rare case of wanting to replay a journey, a "Reset guide" option in About/Makimono is sufficient.
+
+### Phase 5: Polish & Hardening ⬜
+- [ ] 5a. Gate FRE on visit count for production (currently always-on for testing)
+- [ ] 5b. Handle journey start when workspace has existing content
+- [ ] 5c. Style-switch activation: offer pack's first journey on first style change
+- [ ] 5d. "Reset guide" option in About/Makimono screen
+- [ ] 5e. Cross-browser hardening (Edge, Safari, iPad tested; Chrome/Firefox need verification)
+- [ ] 5f. iPad mini portrait hint positioning (deferred to portrait-plan.md)
 
 ---
 
@@ -217,9 +221,28 @@ Two dedicated sounds in `audio-engine.js`:
 
 - Pack unlock/purchase gating
 - Daily/weekly prompt scheduling
-- Retention hooks beyond suggestedNext
 - Animated hand/cursor showing gesture
 - Status bar journey progress indicator (e.g., "初摺 3/5")
+- Workshop journey cards (dropped — see Phase 5 rationale above)
+
+## Future Directions
+
+### Guided Creative Prompts (not yet planned)
+
+Evolve the existing Workshop prompt system from text-only inspiration to creative springboards:
+- **Prompt metadata**: each prompt gains `elements[]`, `palettes[]`, `atmosphere{}` associations
+- **Element highlighting**: when a guided prompt is active, relevant elements get subtle badges or sorting priority in the element picker
+- **Palette/atmosphere suggestion**: prompt card shows recommended palette and atmosphere chips; tapping applies them
+- **Progressive guidance**: hints like "Try adding rain for atmosphere" appear contextually as user composes
+- Separate from FRE tool-learning — this is about inspiring people who stare at a blank canvas
+
+### Pack FRE (planned — Phase 5c)
+
+On first activation of a style pack, offer its first journey:
+- Triggered in `switchActiveStyle()` when pack has uncompleted journeys
+- Uses existing journey engine and hint system
+- Pack journeys (Kacho-e: "Your First Kacho-e", Moribana: "Your First Arrangement") already defined in pack manifests
+- Short and focused on the pack's unique elements and creative context, not on re-teaching Mokuri basics
 
 ## Resolved Design Decisions
 
@@ -230,3 +253,4 @@ Two dedicated sounds in `audio-engine.js`:
 - **Celebration**: ensō mark (◯) over colorful emoji — stays on-brand
 - **Element selection**: always last element in preset array (predictable for preset design)
 - **Print visibility**: keep print on screen during gallery hint (don't close print studio)
+- **Workshop journey cards**: ❌ Dropped — discoverability better served by guided prompts and pack FRE
