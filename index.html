@@ -2423,11 +2423,11 @@ html, body {
 
   /* ---- Carve Studio: 2 cols — Level+Tools+Pressure | Patterns+Sliders ---- */
   .carve-studio-inner { grid-template-columns: 1fr 1fr; align-items: start; height: auto; }
-  .carve-studio-inner > .cs-element-section { grid-column: 1; }
-  .carve-studio-inner > div:not([class]) { grid-column: 1; }
-  .carve-studio-inner > #cs-pressure-section { grid-column: 1; }
-  .carve-studio-inner > #cs-pattern-section { grid-column: 2; }
-  .carve-studio-inner > #cs-tone-section { grid-column: 2; }
+  .carve-studio-inner > .cs-element-section { grid-column: 1; grid-row: 1; }
+  .carve-studio-inner > div:not([class]) { grid-column: 1; grid-row: 2; }
+  .carve-studio-inner > #cs-pressure-section { grid-column: 1; grid-row: 3; }
+  .carve-studio-inner > #cs-pattern-section { grid-column: 2; grid-row: 1 / span 2; }
+  .carve-studio-inner > #cs-tone-section { grid-column: 2; grid-row: 3; }
   .carve-studio-inner > .ps-actions { display: none; }
   /* Scale down pattern chips to fit without scrolling */
   .carve-studio-inner .cs-pattern-row { gap: 4px; }
@@ -2530,7 +2530,7 @@ html, body {
             <feDiffuseLighting in="noise" lighting-color="#f5f0e6" surfaceScale="1.5" result="lit">
               <feDistantLight azimuth="225" elevation="55"/>
             </feDiffuseLighting>
-            <feComposite in="lit" in2="SourceGraphic" operator="multiply"/>
+            <feBlend in="lit" in2="SourceGraphic" mode="multiply"/>
           </filter>
           <!-- Wood block texture filter (horizontal grain bias) -->
           <filter id="wood-texture" x="0" y="0" width="100%" height="100%">
@@ -2538,7 +2538,7 @@ html, body {
             <feDiffuseLighting in="noise" lighting-color="#8a7963" surfaceScale="1.0" result="lit">
               <feDistantLight azimuth="200" elevation="50"/>
             </feDiffuseLighting>
-            <feComposite in="lit" in2="SourceGraphic" operator="multiply"/>
+            <feBlend in="lit" in2="SourceGraphic" mode="multiply"/>
           </filter>
           <!-- Wood grain overlay pattern -->
           <pattern id="wood-grain-surface" patternUnits="userSpaceOnUse" width="120" height="120">
