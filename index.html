@@ -2421,18 +2421,28 @@ html, body {
   /* Compact atmosphere for portrait */
   .ink-studio-inner .is-atmo-label { margin-top: 4px; margin-bottom: 2px; }
 
-  /* ---- Carve Studio: 2 cols — Level+Tools+Sliders | Pattern chips ---- */
+  /* ---- Carve Studio: 2 cols — Level+Tools+Pressure | Patterns+Sliders ---- */
   .carve-studio-inner { grid-template-columns: 1fr 1fr; }
   .carve-studio-inner > .cs-element-section { grid-column: 1; }
   .carve-studio-inner > div:not([class]) { grid-column: 1; }
   .carve-studio-inner > #cs-pressure-section { grid-column: 1; }
-  .carve-studio-inner > #cs-tone-section { grid-column: 1; }
-  .carve-studio-inner > #cs-pattern-section { grid-column: 2; grid-row: 1 / span 4; }
+  .carve-studio-inner > #cs-pattern-section { grid-column: 2; }
+  .carve-studio-inner > #cs-tone-section { grid-column: 2; }
   .carve-studio-inner > .ps-actions { display: none; }
   /* Scale down pattern chips to fit without scrolling */
   .carve-studio-inner .cs-pattern-row { gap: 4px; }
   .carve-studio-inner .cs-pattern-chip { padding: 3px 2px; font-size: 7px; }
   .carve-studio-inner .cs-pattern-chip svg { width: 28px; height: 28px; }
+
+  /* ---- Status bar: prevent overflow in portrait ---- */
+  .status-bar { overflow: hidden; }
+  #status-hint {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 </style>
 </head>
