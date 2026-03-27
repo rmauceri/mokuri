@@ -2358,7 +2358,7 @@ html, body {
     overflow: hidden;
   }
   .carve-studio.open { max-height: 234px; }
-  .ink-studio.open   { max-height: 234px; }
+  .ink-studio.open   { max-height: 270px; }
   .print-studio.open { max-height: 234px; }
 
   /* Shared: 3-column grid */
@@ -2401,23 +2401,23 @@ html, body {
   .print-studio-inner .ps-text-input { padding: 4px 6px; font-size: 11px; }
 
   /* ---- Ink Studio: Palette | Zones | Atmosphere ---- */
-  .ink-studio-inner > div:not([class]) { grid-column: 1; }
-  .ink-studio-inner > #is-zone-section { grid-column: 2; border-top: none; padding-top: 0; overflow-y: auto; max-height: 210px; }
+  .ink-studio-inner > div:not([class]) { grid-column: 1; display: flex; flex-direction: column; }
+  .ink-studio-inner > #is-zone-section { grid-column: 2; border-top: none; padding-top: 0; overflow-y: auto; max-height: 246px; }
   .ink-studio-inner > #is-atmo-section { grid-column: 3; border-top: none; padding-top: 0; }
   .ink-studio-inner > .ps-actions { display: none; }
-  /* Palette chips: horizontal scrolling row */
+  /* Swatch row on top, then label, then chips */
+  .ink-studio-inner .is-swatch-row { order: -1; margin-bottom: 4px; }
+  .ink-studio-inner .is-swatch-row .is-swatch { height: 24px; }
+  /* Palette chips: 3-column grid, scaled down, no scrolling */
   .ink-studio-inner .is-palette-chips {
-    display: flex;
-    grid-template-columns: unset;
-    gap: 4px;
-    overflow-x: auto;
-    flex-wrap: nowrap;
-    margin-bottom: 6px;
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-x;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3px;
+    margin-bottom: 0;
   }
-  .ink-studio-inner .is-palette-chip { flex-shrink: 0; min-width: 80px; }
-  .ink-studio-inner .is-swatch-row .is-swatch { height: 28px; }
+  .ink-studio-inner .is-palette-chip { padding: 3px 2px; gap: 2px; }
+  .ink-studio-inner .is-palette-chip-dot { width: 8px; height: 8px; }
+  .ink-studio-inner .is-palette-name { font-size: 8px; }
   /* Compact atmosphere for portrait */
   .ink-studio-inner .is-atmo-label { margin-top: 4px; margin-bottom: 2px; }
 
