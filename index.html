@@ -3812,6 +3812,7 @@ function updateViewBox() {
 
 function fitPaperToView() {
   const rect = workspaceEl.getBoundingClientRect();
+  if (rect.width < 1 || rect.height < 1) return;
   const pad = 60;
   const scaleX = (rect.width - pad * 2) / STATE.paperW;
   const scaleY = (rect.height - pad * 2) / STATE.paperH;
