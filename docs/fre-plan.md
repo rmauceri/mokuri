@@ -1,183 +1,232 @@
 # First-Run Experience (FRE)
 
-## Problem
+## Status: Phases 1–4 Complete · Phases 5–6 Remaining
 
-New Mokuri users see a blank workspace with no guidance. The existing Makimono welcome screen explains philosophy but not workflow. There's no path from "I just opened this" to "I pulled my first print." The pack journey data model is fully built but has zero behavioral wiring.
+The core FRE engine is fully implemented with two connected guided journeys ("Your First Print" and "Evening Scene"). Hint system, journey engine, audio cues, celebration toasts, persistence, and responsive layout are all working and tested on Windows Edge, iPad mini, and Android.
+
+---
 
 ## Design Philosophy
 
-Mokuri's FRE should feel like a **sensei quietly guiding your hands** — not a tutorial wizard. Short contextual whispers near the action, creative framing over feature training, always skippable.
+Mokuri's FRE feels like a **sensei quietly guiding your hands** — not a tutorial wizard. Short contextual whispers near the action, creative framing over feature training, always skippable.
 
 **Principles:**
 - **Show, don't explain** — visual cues over text walls
 - **Creative context first** — "Choose an element to begin your scene" not "Click the Elements panel"
 - **Minimal interruption** — hints float near the target, don't block interaction
 - **Progressive** — features revealed as the user naturally encounters them
-- **One-time** — each hint shows once per journey, persisted across sessions
+- **One-time** — each hint shows once per journey, persisted across sessions via IndexedDB
 
-## Architecture
+---
+
+## Architecture (Implemented)
 
 ### Hint System
 
-A floating hint bubble that points at a UI target:
+Floating hint bubbles that point at UI targets with directional arrows:
 
 ```
-┌─────────────────────────┐
-│  Choose an element  ◀───│── points at Elements panel
-│  to begin your scene    │
-└─────────────────────────┘
+┌──────────────────────────────┐
+│  Drag to position        ✕   │
+│  your element                │
+│  [Skip guide]                │  ← first hint only
+└─────────────▼────────────────┘
+              ↓ arrow points at target
 ```
 
-- **Style**: warm paper background (#f5f0e8), subtle border, calligraphic font feel, 12-16px text
-- **Position**: anchored near target element, arrow pointing at it
-- **Appear**: gentle fade-in (300ms) after a brief delay (500ms)
-- **Dismiss**: click hint, perform the hinted action, or tap ✕
-- **Skip all**: "Skip guide" link on first hint dismisses entire journey
+- **Style**: pale blue background (`#e8f0fa`), border `#b8c8d8`, italic system sans-serif font, 13px text
+- **Position**: anchored near target element, directional arrow (top/bottom/left/right)
+- **Appear**: gentle fade-in (300ms) after 500ms delay; extra 350ms if target needs scroll-into-view
+- **Dismiss**: click hint body, ✕ button, or perform the hinted action
+- **Skip all**: "Skip guide" link on first hint of each journey
+- **Pulse glow**: target element gets blue pulsing glow (`fre-pulse` / `fre-pulse-svg`)
+- **Z-index**: 1200 (above gallery modal at 1100, above all panels)
+- **Responsive**: viewport-aware positioning, flips arrow if near edge, panel scroll-into-view for targets inside scrollable workbench panels
 
-### Hint Definitions
-
-Each feature ID from journey `featureHints` maps to a definition:
+### Hint Definitions (21 hints)
 
 ```js
 const FRE_HINTS = {
-  'place':        { text: 'Choose an element to begin',    target: elements panel },
-  'move':         { text: 'Drag to position your element', target: selected element },
-  'resize':       { text: 'Pull corners to resize',        target: selected element },
-  'palette':      { text: 'Try a different palette',       target: palette area },
-  'carve':        { text: 'Carve to reveal the wood',      target: Carve phase button },
-  'carve-detail': { text: 'Press C to carve deeper',       target: carve level pips },
-  'carve-pattern':{ text: 'Try a carve pattern',           target: pattern chips },
-  'atmosphere':   { text: 'Set the mood of your scene',    target: atmosphere controls },
-  'bokashi':      { text: 'Add a gradient fade',           target: bokashi widget },
-  'color-zones':  { text: 'Click a zone to change color',  target: zone editor },
-  'elements':     { text: 'Browse the element library',    target: elements panel },
-  'print':        { text: 'Pull your first print',         target: Print phase button },
+  'place':         { text: 'Choose an element to begin your scene', target: '#element-list',          arrow: 'right' },
+  'move':          { text: 'Drag to position your element',        target: selectedElement(),          arrow: 'left' },
+  'resize':        { text: 'Pull corners to resize',               target: selectedElement(),          arrow: 'left' },
+  'palette':       { text: 'Try a different palette',              target: '#btn-phase-ink',           arrow: 'bottom' },
+  'carve':         { text: 'Carve to reveal the wood beneath',     target: '#btn-phase-carve',         arrow: 'bottom' },
+  'carve-level':   { text: 'Add more carve detail',                target: '.cs-carve-level-row',      arrow: 'left' },
+  'carve-detail':  { text: 'Press C to carve deeper detail',       target: selectedElement(),          arrow: 'left' },
+  'carve-pattern': { text: 'Try a carve pattern',                  target: selectedElement(),          arrow: 'left' },
+  'atmosphere':    { text: 'Set the mood of your scene',           target: '#btn-phase-ink',           arrow: 'bottom' },
+  'bokashi':       { text: 'Add a gradient fade to a zone',        target: selectedElement(),          arrow: 'left' },
+  'color-zones':   { text: 'Click a zone to change its color',     target: selectedElement(),          arrow: 'left' },
+  'elements':      { text: 'Browse the element library',           target: '#element-list',            arrow: 'right' },
+  'print':         { text: 'Pull your first print',                target: '#btn-phase-print',         arrow: 'bottom' },
+  'open-ink':      { text: 'Open the Inking Workbench',            target: '#btn-phase-ink',           arrow: 'bottom' },
+  'atmosphere-bg': { text: 'Change the background',                target: '#is-atmo-bg-chips',        arrow: 'left' },
+  'print-2':       { text: 'Pull a print of your evening scene',   target: '#btn-phase-print',         arrow: 'bottom' },
+  'edit-title':    { text: 'Give your print a title',              target: '#ps-title-input',          arrow: 'left' },
+  'pull-print':    { text: 'Pull your print',                      target: '#ps-pull-print',           arrow: 'left' },
+  'open-gallery':  { text: 'Open the Gallery to see your prints',  target: '#btn-print-gallery',       arrow: 'top' },
+  'exit-gallery':  { text: 'Close the gallery to continue',        target: '#pgallery-close',          arrow: 'right' },
 };
 ```
 
-Each also has a **trigger** — the action that satisfies it and advances to the next hint.
-
 ### Journey Engine
 
-Simple state machine:
+State machine in `index.html`:
 - `_activeJourney`: current journey object (or null)
-- `_hintIndex`: which featureHint we're on
-- `freAdvance(triggerId)`: called from action points throughout the app; if trigger matches current hint, advance to next
-- `freShowHint(hintId)`: displays the hint overlay for the current step
-- Persists to `MokuriDB.updateJourneyProgress(journeyId, { step, status })`
-- Resumes on reload if journey is in-progress
+- `_hintIndex`: current step index into `featureHints` array
+- `_freSkipped`: set true if user clicks "Skip guide"
+- `_freEditTitleTimer`: 5s auto-advance fallback for edit-title hint
 
-### Trigger Points
+**Key functions:**
+- `freStartJourney(journeyId)` — loads journey from pack registry, applies starting preset if workspace is empty, selects last element, shows first hint
+- `freAdvance(triggerId)` — if trigger matches current hint ID, advances to next step (800ms delay) or completes journey
+- `freResumeJourney()` — reads in-progress journey from IndexedDB on app init, resumes at saved step
+- `freCompleteJourney()` — persists completion to IDB, shows celebration toast
+- `freSkipJourney()` — persists skip status, hides all hints
+- `_freShowCurrentHint()` — per-hint setup logic (element selection for carve hints, title naming for print step, auto-advance timer for edit-title)
+- `freShowHint(hintId, opts)` — builds and positions the hint DOM element, handles scroll-into-view
+- `freHideHint()` — removes hint, clears pulse glow
 
-Lightweight `freAdvance('trigger-id')` calls added at key moments:
-- Element placed → `freAdvance('place')`
-- Element moved → `freAdvance('move')`
-- Element resized → `freAdvance('resize')`
-- Palette changed → `freAdvance('palette')`
-- Carve mode entered → `freAdvance('carve')`
-- Carve stroke completed → `freAdvance('carve-detail')`
-- Carve pattern set → `freAdvance('carve-pattern')`
-- Atmosphere changed → `freAdvance('atmosphere')`
-- Bokashi set → `freAdvance('bokashi')`
-- Zone color changed → `freAdvance('color-zones')`
-- Print pulled → `freAdvance('print')`
+**Pre-hint setup** (in `_freShowCurrentHint`):
+- Carve hints → auto-select last unlocked element
+- Print hint → set composition name to "My First Mokuri Print"
+- Edit-title → start 5s auto-advance timer
 
-### Journey Flow
+### Trigger Points (25+ locations)
 
-**"Your First Print" (core, first-time user):**
-1. Makimono welcome (existing) → dismiss
-2. `place` → "Choose an element to begin" (pulse on Elements panel)
-3. `move` → "Drag to position" (near placed element)
-4. `palette` → "Try a different palette" (near Ink button)
-5. `carve` → "Carve to reveal the wood" (near Carve button)
-6. `print` → "Pull your first print" (near Print button)
-7. 🎉 Completion celebration + "Try Evening Scene next?"
+`freAdvance()` calls wired at action points throughout `index.html`:
 
-The `featureHints` array in each journey defines the exact sequence. Some journeys are shorter (Kacho-e: place → palette → carve → print), some introduce advanced features (Evening Scene: atmosphere → bokashi → carve-detail).
+| Action | Trigger IDs |
+|--------|-------------|
+| Element placed (tap-to-place) | `place` |
+| Element moved (pointerup) | `move` |
+| Element resized | `resize` |
+| Carve mode entered | `carve` |
+| Carve level pip clicked | `carve-level` |
+| Carve stroke completed | `carve-detail`, `carve-pattern` |
+| Ink studio opened | `open-ink` |
+| Palette changed | `palette` |
+| Zone color changed | `color-zones` |
+| Bokashi direction set | `bokashi` |
+| Sky/ground chip clicked | `atmosphere`, `atmosphere-bg` |
+| Print studio opened | `print`, `print-2` |
+| Title input typed | `edit-title` |
+| Print pulled | `print`, `pull-print` |
+| Gallery opened | `open-gallery` |
+| Gallery closed | `exit-gallery` |
 
-### Celebration & Next Journey
+Some actions fire multiple trigger IDs so different journeys can use the same user action.
 
-On journey completion:
-- Brief warm toast: "Your first print! 初摺" with the journey's Japanese title
-- `suggestedNext` offered as a card: "Continue with Evening Scene?"
-- Accept → loads that journey (with its startingPreset if defined)
-- Dismiss → returns to free exploration
+### Journeys (defined in `assets/pack-registry.js`)
 
-### Journey Activation Points
+**"Your First Print" (初摺)** — 7 steps:
+1. `move` → "Drag to position your element"
+2. `resize` → "Pull corners to resize"
+3. `carve` → "Carve to reveal the wood beneath"
+4. `carve-level` → "Add more carve detail"
+5. `palette` → "Try a different palette"
+6. `print` → "Pull your first print"
+7. `pull-print` → "Pull your print"
+→ Celebration + offer "Evening Scene"
 
-1. **First launch**: auto-start `first-print` journey after Makimono dismiss
-2. **Journey completion**: offer `suggestedNext`
-3. **Style switch**: on first activation of a pack, offer its first journey
-4. **Workshop**: journey cards section — browse and manually start any journey
+**"Evening Scene" (夕景)** — 7 steps:
+1. `open-ink` → "Open the Inking Workbench"
+2. `atmosphere-bg` → "Change the background"
+3. `print-2` → "Pull a print of your evening scene"
+4. `edit-title` → "Give your print a title"
+5. `pull-print` → "Pull your print"
+6. `open-gallery` → "Open the Gallery to see your prints"
+7. `exit-gallery` → "Close the gallery to continue"
+→ Celebration: "Great job! You are on the Mokuri path." + "Visit the Workshop to create new or work on existing prints"
+
+**"Weather Study" (天候)** — 3 steps (defined but not yet wired to activation flow):
+1. `atmosphere` → "Set the mood of your scene"
+2. `elements` → "Browse the element library"
+3. `carve-pattern` → "Try a carve pattern"
+
+### Celebration Toast
+
+Ensō (◯) circle with journey's `titleJa` overlaid, subtitle, and optional completion message. "Try next?" button when `suggestedNext` is set. Persistent — stays until user closes it.
+
+### Audio
+
+Two dedicated sounds in `audio-engine.js`:
+- **`playFreHint()`**: D4 + A4 pentatonic fifth (sine + triangle oscillators), 1.8s decay, gain 0.14 — subtle two-tone chime in spirit of ambient soundtrack
+- **`playFreCelebration()`**: D4 → G4 → A4 → D5 ascending motif (0.22s spacing), final note has bell shimmer (inharmonic partial at 2.76×), 3s decay — ascending resolution from ambient scale
 
 ### Makimono Integration
 
-Rework the visit-counter logic:
-- **First visit**: full Makimono → "Begin Your First Print" button starts the journey
-- **Return with journey in-progress**: no Makimono, resume hints
-- **Return with journey complete**: splash or nothing (keep existing behavior)
-- **About screen**: always accessible via brand click (unchanged)
+- **All launches**: full Makimono welcome → "Begin Creating" button starts `first-print` journey (currently always runs for testing; production should gate on visit count ≤ 1)
+- **Return with journey in-progress**: resumes hints via `freResumeJourney()` on app init
+- **About screen**: unchanged, accessible via brand click
 
-## Implementation Todos
+### Responsive Handling
 
-### Phase 1: Hint Overlay Component
-- [ ] 1a. CSS for hint bubble (`.fre-hint`): paper bg, border, arrow, fade animation
-- [ ] 1b. JS: `freShowHint(hintDef)` — creates/positions hint near target, shows with delay
-- [ ] 1c. JS: `freHideHint()` — fade out and remove
-- [ ] 1d. Dismiss on click, ✕ button, and "Skip guide" link
-- [ ] 1e. Responsive positioning (don't overflow viewport, flip arrow direction)
+- Hints reposition to avoid viewport overflow, flip arrow direction at edges
+- Targets inside scrollable panels (`.carve-studio-inner`, `.ink-studio-inner`, `.print-studio-inner`) auto-scroll into view with 350ms settle delay before hint positioning
+- Toolbar breakpoints: 1180px hides "Studio" label, 1024px hides mode labels — ensures Workshop button visible on iPad mini landscape (1133px CSS width)
 
-### Phase 2: Hint Definitions & Trigger Wiring
-- [ ] 2a. `FRE_HINTS` map with text, target selector, trigger ID for all ~12 features
-- [ ] 2b. Add `freAdvance()` calls at ~10 action points in index.html
-- [ ] 2c. Ensure triggers fire reliably (debounce rapid actions)
+---
 
-### Phase 3: Journey Engine
-- [ ] 3a. Journey state: `_activeJourney`, `_hintIndex`, `_freSkipped`
-- [ ] 3b. `freStartJourney(journeyId)`: load journey from registry, set index 0, show first hint
-- [ ] 3c. `freAdvance(triggerId)`: match against current hint's trigger, advance + show next
-- [ ] 3d. `freResumeJourney()`: read progress from IDB, resume at saved step
-- [ ] 3e. `freCompleteJourney()`: mark done in IDB, show celebration
-- [ ] 3f. `freSkipJourney()`: mark skipped, hide hints, don't offer again
-- [ ] 3g. Persist progress after each step advance
+## Implementation Status
 
-### Phase 4: Journey Activation & Celebration
-- [ ] 4a. First-launch: wire Makimono "Begin" button to `freStartJourney('first-print')`
-- [ ] 4b. Resume on reload: check IDB for in-progress journey on app init
-- [ ] 4c. Completion toast UI with journey title (Japanese + English)
-- [ ] 4d. "Try next?" card offering `suggestedNext` journey
-- [ ] 4e. Style-switch activation: offer pack's first journey on first style change
+### Phase 1: Hint Overlay Component ✅
+- [x] 1a. CSS for hint bubble — pale blue `#e8f0fa`, border, directional arrows, fade animation, pulse glow
+- [x] 1b. `freShowHint()` — position near target, 500ms delay, scroll-into-view support
+- [x] 1c. `freHideHint()` — fade out, remove, clear pulse
+- [x] 1d. Dismiss on click, ✕ button, "Skip guide" link
+- [x] 1e. Responsive positioning — viewport overflow detection, arrow flip, panel scroll
 
-### Phase 5: Workshop Journey Cards
-- [ ] 5a. "Guided Journeys" section in Workshop below presets
-- [ ] 5b. Journey cards: title, titleJa, prompt text, status badge (new/in-progress/complete)
-- [ ] 5c. Click to start journey (loads startingPreset if defined, starts hint sequence)
-- [ ] 5d. Show journeys from active style + core
+### Phase 2: Hint Definitions & Trigger Wiring ✅
+- [x] 2a. `FRE_HINTS` map with 21 hint definitions
+- [x] 2b. `freAdvance()` calls at 25+ action points in index.html
 
-### Phase 6: Polish & Edge Cases
-- [ ] 6a. Handle journey start when workspace has existing content (skip startingPreset?)
-- [ ] 6b. Ensure hints don't conflict with open workbench panels
-- [ ] 6c. Ensure hints work on touch/tablet (larger targets, tap dismiss)
-- [ ] 6d. Audio: subtle chime on journey start, gentle tone on step advance, celebration sound on complete
-- [ ] 6e. Update Makimono visit logic to integrate with journey state
-- [ ] 6f. Bump service worker cache version
-- [ ] 6g. Test across Edge, Safari, iPad
+### Phase 3: Journey Engine ✅
+- [x] 3a. Journey state variables
+- [x] 3b. `freStartJourney()` — load from registry, apply preset, select element
+- [x] 3c. `freAdvance()` — trigger matching, step advance, 800ms delay
+- [x] 3d. `freResumeJourney()` — IDB-based resume on reload
+- [x] 3e. `freCompleteJourney()` — IDB persistence, celebration toast
+- [x] 3f. `freSkipJourney()` — mark skipped, hide hints
 
-## Sequence
+### Phase 4: Journey Activation & Celebration ✅
+- [x] 4a. Makimono "Begin Creating" wired to `freStartJourney('first-print')`
+- [x] 4b. Resume on reload via IDB
+- [x] 4c. Celebration toast with ensō, titleJa, completion message
+- [x] 4d. "Try next?" button offering `suggestedNext` journey
+- [x] 4e. Audio: pentatonic chime on hint show, ascending motif on celebration
 
-Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6
+### Phase 5: Workshop Journey Cards ⬜
+- [ ] 5a. "Guided Journeys" section in Workshop panel below presets
+- [ ] 5b. Journey cards: title, titleJa, prompt text, status badge (new / in-progress / complete)
+- [ ] 5c. Click to start journey (loads startingPreset, starts hint sequence)
+- [ ] 5d. Show journeys from active style pack + core
 
-Phases 1-3 are the core engine. Phase 4 makes it work end-to-end for the first-print journey. Phase 5 adds discoverability. Phase 6 hardens it.
+### Phase 6: Polish & Edge Cases ⬜
+- [ ] 6a. Gate FRE on visit count for production (currently always-on for testing)
+- [ ] 6b. Handle journey start when workspace has existing content
+- [ ] 6c. Third journey wiring: "Weather Study" needs activation path and UI
+- [ ] 6d. iPad mini portrait layout (known issues, deferred)
+- [ ] 6e. Style-switch activation: offer pack's first journey on first style change
+- [ ] 6f. Cross-browser hardening (Edge, Safari, iPad tested; Chrome/Firefox need verification)
+
+---
 
 ## What This Does NOT Include
 
 - Pack unlock/purchase gating
 - Daily/weekly prompt scheduling
-- Retention hooks beyond suggestedNext (e.g., "try a night version" — future)
-- Animated hand/cursor showing gesture (future enhancement)
+- Retention hooks beyond suggestedNext
+- Animated hand/cursor showing gesture
+- Status bar journey progress indicator (e.g., "初摺 3/5")
 
-## Open Questions
+## Resolved Design Decisions
 
-- Should the hint have a subtle pulse/glow on the target element, or just the arrow pointing at it?
-- Should journey progress show in the status bar? (e.g., "初摺 3/5")
-- On completion, should the print be auto-favorited as a milestone marker?
+- **Pulse glow**: ✅ Yes — blue pulse on target element
+- **Font**: system sans-serif italic (matches app UI, reads as instructional)
+- **Color**: pale blue `#e8f0fa` (contrast against warm paper workspace)
+- **Audio**: draws from ambient pentatonic scale, not separate sound design
+- **Celebration**: ensō mark (◯) over colorful emoji — stays on-brand
+- **Element selection**: always last element in preset array (predictable for preset design)
+- **Print visibility**: keep print on screen during gallery hint (don't close print studio)
