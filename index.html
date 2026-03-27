@@ -2418,6 +2418,9 @@ html, body {
   .ink-studio-inner .is-palette-name { font-size: 8px; }
   /* Compact atmosphere for portrait */
   .ink-studio-inner .is-atmo-label { margin-top: 4px; margin-bottom: 2px; }
+  /* Hide palette collapse toggle in portrait (always expanded) */
+  .ink-studio-inner .is-palette-header { pointer-events: none; }
+  .ink-studio-inner #is-palette-chevron { display: none; }
 
   /* ---- Carve Studio: 2 cols — Level+Tools+Pressure | Patterns+Sliders ---- */
   .carve-studio-inner { grid-template-columns: 1fr 1fr; align-items: start; height: auto; }
@@ -8316,9 +8319,10 @@ function buildInkStudioUI() {
   const palette = PALETTES[STATE.paletteId];
   const hasSelection = STATE.selectedIds.size === 1 && STATE.elements.find(e => e.id === primarySelectedId());
 
-  // Auto-collapse palette grid when element selected, auto-expand when nothing selected
+  // Auto-collapse palette grid when element selected (landscape only),
+  // auto-expand when nothing selected. In portrait, always expanded.
   if (STATE._paletteManualToggle === undefined) {
-    STATE._paletteExpanded = !hasSelection;
+    STATE._paletteExpanded = _isPortrait() ? true : !hasSelection;
   }
   const expanded = STATE._paletteExpanded;
 
