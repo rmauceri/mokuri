@@ -2119,11 +2119,11 @@ html, body {
     height: auto; flex-wrap: wrap; overflow: visible;
     padding: 4px 6px; gap: 2px;
   }
-  /* Row 1: brand + phases + workshop fill full width */
+  /* Row 1: brand + phases + separator + gallery/workshop fill full width */
   .toolbar-title { order: 0; }
   .toolbar-mode-group { order: 1; }
-  .toolbar > .toolbar-separator:last-of-type { order: 2; }
-  #btn-file { order: 3; }
+  .toolbar > .toolbar-separator { display: inline-block; order: 2; }
+  .toolbar-nav-group { order: 3; }
   /* Push edit group to row 2 */
   .toolbar-edit-group { order: 5; width: 100%; justify-content: center; padding: 2px 0; }
   /* Hide spacers so rows pack tightly */
@@ -2337,12 +2337,12 @@ html, body {
     padding: 4px 8px;
     gap: 3px;
   }
-  /* Row 1: brand + phase buttons + workshop */
+  /* Row 1: brand + phase buttons + separator + gallery/workshop */
   .toolbar-title { order: 0; font-size: 0; margin-right: 2px; }
   .toolbar-title .toolbar-title-kanji { font-size: 18px; margin-right: 0; }
   .toolbar-mode-group { order: 1; }
-  .toolbar > .toolbar-separator { display: none; }
-  #btn-file { order: 3; }
+  .toolbar > .toolbar-separator { display: inline-block; order: 2; }
+  .toolbar-nav-group { order: 3; }
   .toolbar-spacer { display: none; }
   /* Row 2: edit tools centered */
   .toolbar-edit-group { order: 5; width: 100%; justify-content: center; padding: 2px 0; gap: 2px; }
@@ -2497,19 +2497,23 @@ html, body {
         <span class="mode-icon">摺</span>
         <span class="mode-label">Print</span>
       </button>
+    </div>
+
+    <div class="toolbar-separator"></div>
+
+    <!-- Gallery & Workshop group -->
+    <div class="toolbar-group toolbar-nav-group">
       <button class="mode-btn" id="btn-print-gallery" title="Print Gallery — view saved prints (G)">
         <span class="mode-icon">画</span>
         <span class="mode-label">Gallery</span>
       </button>
+      <button class="mode-btn" id="btn-file" title="Workshop — compositions & presets (W)">
+        <span class="mode-icon">作</span>
+        <span class="mode-label">Workshop</span>
+      </button>
     </div>
 
     <div class="toolbar-spacer"></div>
-
-    <div class="toolbar-separator"></div>
-    <button class="mode-btn" id="btn-file" title="Workshop — compositions & presets (W)">
-      <span class="mode-icon">作</span>
-      <span class="mode-label">Workshop</span>
-    </button>
   </div>
 
   <!-- Main area -->
