@@ -43,21 +43,32 @@ In portrait, the layout flips vertical:
 └─────────────────────────┘
 ```
 
-- **Element panel** becomes a top sheet (below toolbar, slides down)
+- **Element panel** becomes a compact **horizontal shelf** (below toolbar, ~130px tall) — 2 rows of element thumbnails scrolling horizontally with inline category labels as vertical dividers. Open by default, closes when a workbench opens (same mutual-exclusion as landscape).
 - **Workbench panels** (Carve/Ink/Print) become bottom sheets (above status bar, slides up)
 - **Workspace** fills the space between, always visible
 - **No overlap** — panels push the workspace, they don't overlay it
 
+### Element Shelf (Portrait)
+
+The element panel transforms from a tall vertical sidebar into a compact horizontal shelf:
+
+- **2 rows of thumbnails** scrolling horizontally (flex-wrap: wrap + overflow-x: auto on a fixed-height container)
+- **~130px tall** — roughly 2 × 56px thumb + padding/gaps
+- **Inline category labels** — vertical dividers in the scroll flow with rotated or short category names (e.g., "Flora", "Fauna") between element groups
+- **Style selector** — chips row above the thumbnail area (already horizontal)
+- **Open by default** in portrait — closes when a workbench opens, reopens when workbench closes
+- **Full-width** — uses the entire viewport width for maximum browsing
+
 ### Panel Height Rules
 
-Panels should not consume more than ~45% of the viewport, leaving at minimum ~55% for workspace + toolbar + status bar. This prevents the canvas from becoming unusably small.
+Workbench panels should not consume more than ~40% of the viewport, leaving the majority for workspace + element shelf + toolbar + status bar.
 
-- **Element panel (top)**: capped at ~40% viewport height; scrolls internally. The 2-column element grid is already compact and works well vertically.
+- **Element shelf (top)**: fixed ~130px (2 rows), not percentage-based
 - **Workbench panels (bottom)**: height varies by content:
-  - Carve Workbench: shorter (tools + pressure + patterns ≈ 35-40%)
-  - Ink Workbench: medium (palette + zones + atmosphere ≈ 40-45%)
-  - Print Workbench: shorter (paper + ink + impressions + button ≈ 35%)
-- At most **one panel visible at a time** (element panel or one workbench) — same as current behavior
+  - Carve Workbench: ≈ 35% (tools + pressure + patterns)
+  - Ink Workbench: ≈ 40% (palette + zones + atmosphere)
+  - Print Workbench: ≈ 35% (paper + ink + impressions + button)
+- **Mutual exclusion**: element shelf closes when a workbench opens, and vice versa — at most one panel visible at a time
 
 ### Toolbar in Portrait
 
@@ -108,13 +119,14 @@ Alternatively, a more defensive query:
 
 This single property change makes `.panel`, `.workspace`, and studios stack vertically instead of side-by-side.
 
-#### 2. Element Panel → Top Sheet
+#### 2. Element Panel → Horizontal Shelf
 
 ```css
 @media (orientation: portrait) and (max-width: 1024px) {
   .panel {
     width: 100% !important;          /* full width, not --panel-w */
-    max-height: 40vh;
+    height: 130px;                   /* 2 rows of thumbnails */
+    max-height: 130px;
     border-right: none;
     border-bottom: 1px solid var(--panel-border);
     flex-shrink: 0;
@@ -122,16 +134,37 @@ This single property change makes `.panel`, `.workspace`, and studios stack vert
   }
   .panel:not(.open) {
     max-height: 0;
+    height: 0;
     border-bottom-width: 0;
   }
   .panel-inner {
     width: 100%;                      /* not fixed --panel-w */
+    flex-direction: row;              /* horizontal layout */
+    height: 130px;
   }
   .panel-scroll {
-    /* Element grid may want 3 or 4 columns in portrait to use full width */
+    flex-direction: row;              /* horizontal scrolling */
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex-wrap: wrap;                  /* 2 rows */
+    height: 100%;
+    align-content: flex-start;
   }
+  /* Element grid becomes horizontal flow with inline category dividers */
   .element-grid {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;           /* items flow in columns to fill 2 rows */
+    height: 100%;
+    gap: 4px;
+  }
+  /* Category labels become vertical dividers in the scroll */
+  .element-category-label {
+    writing-mode: vertical-lr;
+    text-orientation: mixed;
+    height: 100%;
+    padding: 4px 2px;
+    font-size: 11px;
   }
 }
 ```
@@ -187,22 +220,28 @@ In portrait, workbenches get the full viewport width. This is an opportunity to 
 
 This reduces panel height needed, keeping more workspace visible.
 
-#### 6. Element Panel Content in Portrait
+#### 6. Element Shelf Content
 
-With full viewport width, the element grid can use more columns:
-- **744px** (mini): 4 columns of ~170px thumbs
-- **820px** (Air 11"): 4–5 columns
-- **1024px** (Air 13"): 5–6 columns
-
-The category accordion should stay collapsed by default in portrait to save height.
+The element panel becomes a horizontal 2-row shelf:
+- Thumbnails flow in columns (flex-direction: column) within a fixed-height container, creating 2 rows that scroll horizontally
+- Category labels render as vertical dividers between element groups
+- On wider portrait (1024px), thumbnails may be slightly larger
+- Style selector chips row sits above the thumbnail area
 
 ### JavaScript Changes
 
 #### Panel open/close
 
-Current JS toggles `.open` class which triggers width animation. In portrait, we need the same `.open` toggle to trigger height animation. **The CSS handles this** — the media query overrides `width: var(--studio-w)` with `width: 100%; max-height: Xvh`, so the same JS class toggle should work without changes.
+Current JS toggles `.open` class which triggers width animation. In portrait, we need the same `.open` toggle to trigger height animation. **The CSS handles this** — the media query overrides the transition from `width` to `max-height`, so the same JS class toggle should work without changes.
 
 One caveat: `panel-inner` and studio inner divs have a fixed `width` set to `var(--panel-w)` or `var(--studio-w)`. This needs CSS override to `width: 100%` in portrait.
+
+#### Panel mutual exclusion in portrait
+
+The auto-close logic needs a portrait-aware check:
+- `isPortrait()` helper: `window.matchMedia('(orientation: portrait) and (max-width: 1024px)').matches`
+- In portrait, opening a workbench closes the element shelf (same as current `innerWidth < 850` behavior)
+- Closing all workbenches reopens the element shelf if it was previously open
 
 #### Workspace resize
 
@@ -234,21 +273,31 @@ The foundational CSS that makes panels stack vertically in portrait.
 **1a. Portrait detection media query**
 - Add `@media (orientation: portrait) and (max-width: 1024px)` block
 - Flip `.main` to `flex-direction: column`
-- Override `.panel` width to 100%, add max-height cap, change border direction
 - Override studio widths to 100%, add max-height caps, set order
 
-**1b. Panel inner width fix**
-- Override `.panel-inner`, `.carve-studio-inner`, `.ink-studio-inner`, `.print-studio-inner` to `width: 100%`
+**1b. Element shelf conversion**
+- Override `.panel` to `width: 100%; height: 130px` (2 rows of thumbnails)
+- Convert `.panel-scroll` to horizontal scroll (`overflow-x: auto, overflow-y: hidden`)
+- Element grid flows horizontally in columns to fill 2 rows
+- Category labels become vertical inline dividers in the scroll flow
+- Style selector chips stay above as a horizontal row
+- Panel close/open transitions use `max-height` instead of `width`
 
-**1c. Element grid columns**
-- Widen grid to use available width: `repeat(auto-fill, minmax(100px, 1fr))`
+**1c. Workbench bottom sheets**
+- Override studios to `width: 100%`, max-height caps, `border-top` instead of `border-left`
+- Transition switches from `width` to `max-height`
+- Inner containers get `width: 100%`
 
 **1d. Workspace keeps flex:1**
 - Ensure workspace remains the flexible element between top/bottom panels
 - Verify `fitPaperToView()` resizes correctly after panel open/close
 
-**1e. Remove min-width**
-- Current `.app { min-width: 640px }` needs lowering or removing for portrait phones
+**1e. Panel mutual exclusion**
+- Update auto-close threshold in JS: in portrait, opening a workbench closes the element shelf, and vice versa
+- Element shelf reopens when last workbench closes
+
+**1f. Remove min-width**
+- Current `.app { min-width: 640px }` needs lowering or removing for portrait
 
 ### Phase 2: Toolbar Portrait Adaptation ⬜
 
@@ -367,7 +416,7 @@ Test all 6 viewport configurations in Edge DevTools:
 
 ### Workspace Size
 
-With a 40vh element panel open on iPad mini portrait (1133px tall), the workspace gets ~500px of height minus toolbar (~48px) and status bar (~36px) = ~416px. With paper at 4:3 aspect, that's roughly 555×416 — usable but tight. May need to reduce panel cap to 35vh.
+With the compact element shelf (~130px) on iPad mini portrait (1133px tall), the workspace gets ~1133 - 130 (shelf) - 48 (toolbar) - 36 (status) = ~919px of height. This is generous — more vertical canvas than landscape mode provides. With a workbench open (~40vh ≈ 453px), workspace still gets ~1133 - 453 - 48 - 36 = ~596px, which is comfortable.
 
 ### Panel Open/Close Animation
 
