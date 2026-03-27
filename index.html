@@ -2284,14 +2284,14 @@ html, body {
     min-width: 16px;
   }
 
-  /* Element grid: 2 rows flowing as columns — height must fit 2 thumbs */
+  /* Element grid: 2 rows flowing as columns via CSS Grid (Safari-safe) */
   .element-grid {
-    display: flex;
-    flex-wrap: wrap;
-    flex-direction: column;
-    height: 118px;
+    display: grid;
+    grid-template-rows: repeat(2, 56px);
+    grid-auto-flow: column;
+    grid-auto-columns: 60px;
     gap: 5px;
-    align-content: flex-start;
+    height: 118px;
   }
 
   /* Element thumbnails: touch-friendly size for 2-row fit */
