@@ -2193,7 +2193,7 @@ html, body {
    Panels flip from side columns to top shelf / bottom sheets.
    Element panel becomes a compact 2-row horizontal shelf.
    ============================================================ */
-@media (orientation: portrait) and (max-width: 1024px) {
+@media (max-width: 1024px) and (max-aspect-ratio: 1/1) {
   .app { min-width: 0; }
 
   /* Main layout: stack vertically instead of side-by-side */
@@ -7940,7 +7940,7 @@ function animateViewBox(target, durationMs) {
 
 // Portrait detection helper — matches the CSS media query
 function _isPortrait() {
-  return window.matchMedia('(orientation: portrait) and (max-width: 1024px)').matches;
+  return window.matchMedia('(max-width: 1024px) and (max-aspect-ratio: 1/1)').matches;
 }
 
 function openComposePanel() {
