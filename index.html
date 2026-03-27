@@ -2187,6 +2187,155 @@ html, body {
     margin: 0 4px;
   }
 }
+
+/* ============================================================
+   PORTRAIT MODE — Tablets (iPad mini/Air/13") in portrait
+   Panels flip from side columns to top shelf / bottom sheets.
+   Element panel becomes a compact 2-row horizontal shelf.
+   ============================================================ */
+@media (orientation: portrait) and (max-width: 1024px) {
+  .app { min-width: 0; }
+
+  /* Main layout: stack vertically instead of side-by-side */
+  .main { flex-direction: column; }
+
+  /* --- Element Panel → Horizontal Shelf (top, ~130px) --- */
+  .panel {
+    width: 100% !important;
+    height: 130px;
+    max-height: 130px;
+    border-right: none;
+    border-bottom: 1px solid var(--panel-border);
+    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.25s ease;
+    order: 0;
+  }
+  .panel:not(.open) {
+    max-height: 0;
+    height: 0;
+    border-bottom-width: 0;
+    overflow: hidden;
+  }
+  .panel-inner {
+    width: 100%;
+    flex-direction: column;
+    height: 130px;
+  }
+  .panel-header { display: none; }
+
+  /* Style selector: compact horizontal row */
+  .style-selector {
+    flex-shrink: 0;
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--panel-border);
+  }
+
+  /* Scroll area: horizontal 2-row shelf */
+  .panel-scroll {
+    flex: 1;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 4px 8px;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 6px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Category sections flow horizontally */
+  .element-category {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 4px;
+    margin-bottom: 0;
+    height: 100%;
+  }
+
+  /* Category label becomes vertical divider */
+  .category-label {
+    writing-mode: vertical-lr;
+    text-orientation: mixed;
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    padding: 4px 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid var(--panel-border);
+    flex-shrink: 0;
+    min-width: 14px;
+  }
+
+  /* Element grid: 2 rows flowing as columns */
+  .element-grid {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    height: 100%;
+    gap: 4px;
+    align-content: flex-start;
+  }
+
+  /* Element thumbnails: compact for 2-row fit */
+  .element-grid .element-thumb {
+    width: 56px;
+    height: 42px;
+    aspect-ratio: auto;
+    padding-bottom: 0;
+    flex-shrink: 0;
+  }
+  .element-grid .element-thumb svg {
+    width: 70%;
+    height: 70%;
+  }
+  .element-thumb-label { display: none; }
+
+  /* "All Elements" accordion: flows inline */
+  .all-elements-accordion {
+    flex-direction: row;
+    align-items: stretch;
+  }
+  .all-elements-toggle {
+    writing-mode: vertical-lr;
+    text-orientation: mixed;
+    font-size: 9px;
+    cursor: pointer;
+    padding: 4px 1px;
+    border-right: 1px solid var(--panel-border);
+    min-width: 14px;
+  }
+
+  /* Palette bar: hide in portrait (accessible via Ink workbench) */
+  .palette-bar { display: none; }
+
+  /* --- Workspace: fills middle --- */
+  .workspace { order: 1; flex: 1; min-height: 0; }
+
+  /* --- Workbench Panels → Bottom Sheets --- */
+  .carve-studio,
+  .ink-studio,
+  .print-studio {
+    width: 100% !important;
+    max-height: 0;
+    border-left: none;
+    border-top: 1px solid var(--panel-border);
+    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.25s ease;
+    order: 2;
+  }
+  .carve-studio.open { max-height: 38vh; }
+  .ink-studio.open   { max-height: 42vh; }
+  .print-studio.open { max-height: 38vh; }
+
+  .carve-studio-inner,
+  .ink-studio-inner,
+  .print-studio-inner {
+    width: 100%;
+  }
+}
 </style>
 </head>
 <body>
@@ -7770,8 +7919,23 @@ function animateViewBox(target, durationMs) {
 //  ELEMENTS PANEL (left, toggled via Compose button)
 // ============================================================
 
+// ============================================================
+//  COMPOSE PANEL (left/top element picker)
+// ============================================================
+
+// Portrait detection helper — matches the CSS media query
+function _isPortrait() {
+  return window.matchMedia('(orientation: portrait) and (max-width: 1024px)').matches;
+}
+
 function openComposePanel() {
   if (STATE.composePanelOpen) return;
+  // In portrait, close any open workbench first (mutual exclusion)
+  if (_isPortrait()) {
+    if (STATE.carveStudioOpen) closeCarveStudio();
+    if (STATE.inkStudioOpen) closeInkStudio();
+    if (STATE.printStudioOpen) closePrintStudio();
+  }
   STATE.composePanelOpen = true;
   $('panel').classList.add('open');
   setMode('select');
@@ -7797,8 +7961,8 @@ function openCarveStudio() {
   // Close other right panels first
   if (STATE.printStudioOpen) closePrintStudio();
   if (STATE.inkStudioOpen) closeInkStudio();
-  // Auto-close elements panel on narrow screens
-  if (window.innerWidth < 850) closeComposePanel();
+  // Auto-close elements panel on narrow screens or portrait
+  if (window.innerWidth < 850 || _isPortrait()) closeComposePanel();
 
   STATE.carveStudioOpen = true;
 
@@ -7824,6 +7988,8 @@ function closeCarveStudio() {
   updatePhaseButtons();
   $('status-hint').textContent = 'Place elements on the canvas';
   MokuriAudio.playPanelToggle();
+  // In portrait, reopen element shelf when no workbench is open
+  if (_isPortrait() && !STATE.inkStudioOpen && !STATE.printStudioOpen) openComposePanel();
 }
 
 // Lightweight refresh of pattern swatch SVGs (called during slider drag)
@@ -8038,8 +8204,8 @@ function openInkStudio() {
   // Close other right panels first
   if (STATE.printStudioOpen) closePrintStudio();
   if (STATE.carveStudioOpen) closeCarveStudio();
-  // Auto-close elements panel on narrow screens
-  if (window.innerWidth < 850) closeComposePanel();
+  // Auto-close elements panel on narrow screens or portrait
+  if (window.innerWidth < 850 || _isPortrait()) closeComposePanel();
 
   STATE.inkStudioOpen = true;
 
@@ -8070,6 +8236,8 @@ function closeInkStudio() {
   updatePhaseButtons();
   $('status-hint').textContent = 'Place elements on the canvas';
   MokuriAudio.playPanelToggle();
+  // In portrait, reopen element shelf when no workbench is open
+  if (_isPortrait() && !STATE.carveStudioOpen && !STATE.printStudioOpen) openComposePanel();
 }
 
 function buildInkStudioUI() {
@@ -8466,6 +8634,8 @@ function closePrintStudio(restorePanel) {
     setViewMode('carve');
     setMode('select');
     updatePhaseButtons();
+    // In portrait, reopen element shelf
+    if (_isPortrait()) openComposePanel();
     return;
   }
 
@@ -8480,6 +8650,8 @@ function closePrintStudio(restorePanel) {
     setViewMode('carve');  // restore wood block view from ink/print
     setMode('select');
     updatePhaseButtons();
+    // In portrait, reopen element shelf
+    if (_isPortrait()) openComposePanel();
   }
 }
 
