@@ -2118,19 +2118,16 @@ html, body {
     padding: 4px 6px; gap: 2px;
     justify-content: center;
   }
-  /* Row 1: brand + phases + separator + gallery/workshop */
-  .toolbar-title { order: 0; }
+  .toolbar-title { order: 0; font-size: 0; margin-right: 0; }
+  .toolbar-title .toolbar-title-kanji { font-size: 18px; }
   .toolbar-mode-group { order: 1; }
   .mode-btn .mode-label { display: inline; font-size: 11px; }
   .toolbar > .toolbar-separator { display: none; }
   .toolbar-mode-group + .toolbar-separator { display: inline-block; order: 2; }
   .toolbar-nav-group { order: 3; }
-  /* Push edit group to row 2 */
   .toolbar-edit-group { order: 5; width: 100%; justify-content: center; padding: 2px 0; }
   .toolbar-edit-group .toolbar-separator { display: none; }
-  /* Hide spacers so rows pack tightly */
   .toolbar-spacer { display: none; }
-  /* Touch-friendly sizes */
   .tool-btn { width: 34px; height: 34px; font-size: 15px; }
   .mode-btn { padding: 4px 8px; height: 32px; }
   .mode-btn .mode-icon { font-size: 15px; }
