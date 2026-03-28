@@ -9740,6 +9740,7 @@ function setupInteraction() {
       const el = STATE.elements.find(el => el.id === id);
       if (el) {
         // Ctrl/Cmd+click: toggle additive selection
+        let wasAlreadySelected = false;
         if (e.ctrlKey || e.metaKey) {
           toggleSelection(id);
         } else if (!STATE.selectedIds.has(id)) {
@@ -9762,7 +9763,7 @@ function setupInteraction() {
             selectElement(id);
           }
         } else {
-          // Will check for tap-through on pointerup (if no drag occurs)
+          wasAlreadySelected = true;
         }
         // Set up drag for all selected unlocked elements
         const draggable = STATE.elements.filter(de => STATE.selectedIds.has(de.id) && !de.locked);
@@ -9776,7 +9777,7 @@ function setupInteraction() {
             origPositions: draggable.map(de => ({ id: de.id, x: de.x, y: de.y })),
             clientStartX: e.clientX, clientStartY: e.clientY,
             committed: false,
-            _tapThrough: (hits.length > 1 && selIdx >= 0) ? { hits, curIdx: selIdx, curId: selEl.id } : null,
+            _tapThrough: (wasAlreadySelected && hits.length > 1 && selIdx >= 0) ? { hits, curIdx: selIdx, curId: selEl.id } : null,
           };
           ws.setPointerCapture(e.pointerId);
         }
