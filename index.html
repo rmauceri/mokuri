@@ -5534,10 +5534,12 @@ function getCompositionData() {
 
 function applyCompositionData(data) {
   // Re-register any custom element definitions (e.g. custom hanko)
+  let hasCustomDefs = false;
   if (data.customDefs) {
     for (const def of data.customDefs) {
       if (!MOKURI_ELEMENTS.find(d => d.id === def.id)) {
         MOKURI_ELEMENTS.push(def);
+        hasCustomDefs = true;
       }
     }
   }
@@ -5567,6 +5569,7 @@ function applyCompositionData(data) {
   deselectAll();
   rerenderAll();
   buildPaletteUI();
+  if (hasCustomDefs) buildElementPicker();
   updateToolbarState();
   updateStatus();
 }
@@ -7087,8 +7090,8 @@ function buildElementPicker() {
       cats[def.category].push(def);
     });
 
-    // Sort categories by element count descending (natural priority by affinity density)
-    const orderedCats = Object.entries(cats).sort((a, b) => b[1].length - a[1].length);
+    // Sort categories by element count descending, stable tiebreak by name
+    const orderedCats = Object.entries(cats).sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]));
 
     orderedCats.forEach(([cat, defs]) => {
       const section = document.createElement('div');
