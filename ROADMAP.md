@@ -269,6 +269,7 @@ Remaining FRE work:
 - **Composition guide extensions** — Golden ratio overlay, horizon-line guide synced with atmosphere slider, diagonal composition lines.
 
 ### Platform & Polish
+- **Portrait mode support** ✅ — Full portrait layout for iPad mini/Air/13". Element panel becomes 2-row horizontal shelf (CSS Grid for Safari compatibility). Workbench panels become compact bottom sheets: Print (3-col), Carve (2-col), Ink (3-col with always-expanded palette grid). Two-row toolbar with labeled phase buttons, brand left-aligned, Gallery/Workshop separated from workflow phases. Status bar overflow protection. ViewBox guard for orientation transitions. FRE works in portrait without modification.
 - **Responsive layout** — Two-row mobile toolbar shipped. Further phone refinements needed: bottom sheet panels, modal panels for workbench flyouts on very small screens.
 - **Keyboard shortcuts expansion** — More shortcuts for power users.
 
