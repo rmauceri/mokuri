@@ -2471,8 +2471,8 @@ html, body {
       <button class="tool-btn" id="btn-undo" title="Undo (Ctrl+Z)" disabled style="transform:scaleY(-1)">↩︎</button>
       <button class="tool-btn" id="btn-redo" title="Redo (Ctrl+Y)" disabled style="transform:scaleY(-1)">↪︎</button>
       <div class="toolbar-separator"></div>
-      <button class="tool-btn" id="btn-layer-up" title="Bring Forward (])" disabled>▲</button>
-      <button class="tool-btn" id="btn-layer-down" title="Send Backward ([)" disabled>▼</button>
+      <button class="tool-btn" id="btn-layer-up" title="Bring Forward (]) · Shift: Front" disabled>▲</button>
+      <button class="tool-btn" id="btn-layer-down" title="Send Backward ([) · Shift: Back" disabled>▼</button>
       <button class="tool-btn" id="btn-flip-h" title="Flip Horizontal (H)" disabled>⇄</button>
       <button class="tool-btn" id="btn-flip-v" title="Flip Vertical (F)" disabled>⇅</button>
       <button class="tool-btn" id="btn-duplicate" title="Duplicate (Ctrl+D)" disabled>⧉</button>
@@ -4778,6 +4778,41 @@ function moveLayer(dir) {
     STATE.elements[newIdx] = tmp;
   }
   rerenderAll();
+}
+
+function moveLayerToExtreme(dir) {
+  if (!STATE.selectedIds.size) return;
+  const ids = STATE.selectedIds;
+  const selected = STATE.elements.filter(e => ids.has(e.id) && !e.locked);
+  if (!selected.length) return;
+  pushUndo();
+  const rest = STATE.elements.filter(e => !ids.has(e.id) || e.locked);
+  const moving = STATE.elements.filter(e => ids.has(e.id) && !e.locked);
+  if (dir > 0) {
+    STATE.elements = [...rest, ...moving];
+  } else {
+    STATE.elements = [...moving, ...rest];
+  }
+  rerenderAll();
+}
+
+// Find all elements whose bounding box contains the given SVG point (back-to-front order)
+function elementsAtPoint(svgX, svgY) {
+  const hits = [];
+  for (const el of STATE.elements) {
+    const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+    if (!def) continue;
+    const vb = def.viewBox.split(' ').map(Number);
+    const hw = vb[2] / 2 * Math.abs(el.scaleX);
+    const hh = vb[3] / 2 * Math.abs(el.scaleY);
+    // Rotate point into element's local frame
+    const rad = -(el.rotation || 0) * Math.PI / 180;
+    const dx = svgX - el.x, dy = svgY - el.y;
+    const lx = dx * Math.cos(rad) - dy * Math.sin(rad);
+    const ly = dx * Math.sin(rad) + dy * Math.cos(rad);
+    if (Math.abs(lx) <= hw && Math.abs(ly) <= hh) hits.push(el);
+  }
+  return hits;
 }
 
 // ============================================================
@@ -9709,16 +9744,20 @@ function setupInteraction() {
           toggleSelection(id);
         } else if (!STATE.selectedIds.has(id)) {
           selectElement(id);
+        } else {
+          // Will check for tap-through on pointerup (if no drag occurs)
         }
         // Set up drag for all selected unlocked elements
         const draggable = STATE.elements.filter(de => STATE.selectedIds.has(de.id) && !de.locked);
         if (draggable.length && !el.locked) {
+          const hits = elementsAtPoint(pt.x, pt.y);
           STATE.dragging = {
             type: 'move', elementId: id,
             startX: pt.x, startY: pt.y,
             origPositions: draggable.map(de => ({ id: de.id, x: de.x, y: de.y })),
             clientStartX: e.clientX, clientStartY: e.clientY,
             committed: false,
+            _tapThrough: hits.length > 1 ? { hits, curIdx: hits.indexOf(el), curId: id } : null,
           };
           ws.setPointerCapture(e.pointerId);
         }
@@ -10060,6 +10099,13 @@ function setupInteraction() {
         });
         if (!moved) STATE.undoStack.pop();
         else freAdvance('move');
+      } else if (STATE.dragging._tapThrough) {
+        // Tap-through: no drag occurred, cycle to element below
+        const { hits, curIdx, curId } = STATE.dragging._tapThrough;
+        if (hits.length > 1) {
+          const nextEl = hits[(curIdx - 1 + hits.length) % hits.length];
+          if (nextEl.id !== curId) selectElement(nextEl.id);
+        }
       }
     }
     if (STATE.dragging && STATE.dragging.type === 'group-resize') {
@@ -10113,6 +10159,21 @@ function setupKeyboard() {
     if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) return;
 
     if (e.key === 'Delete' || e.key === 'Backspace') { deleteSelected(); e.preventDefault(); }
+    // Tab: cycle selection through overlapping elements
+    if (e.key === 'Tab' && STATE.selectedIds.size === 1 && STATE.mode === 'select') {
+      const sel = STATE.elements.find(el => el.id === primarySelectedId());
+      if (sel) {
+        const hits = elementsAtPoint(sel.x, sel.y);
+        if (hits.length > 1) {
+          const curIdx = hits.indexOf(sel);
+          const next = e.shiftKey
+            ? hits[(curIdx + 1) % hits.length]
+            : hits[(curIdx - 1 + hits.length) % hits.length];
+          if (next.id !== sel.id) selectElement(next.id);
+        }
+      }
+      e.preventDefault();
+    }
     // Ctrl+Shift+X: toggle dev style packs
     if (e.key === 'X' && (e.ctrlKey || e.metaKey) && e.shiftKey) {
       if (localStorage.getItem('mokuri-dev-styles')) {
@@ -10140,8 +10201,10 @@ function setupKeyboard() {
     }
     if (e.key === 'z' && (e.ctrlKey || e.metaKey) && !e.shiftKey) { undo(); e.preventDefault(); }
     if ((e.key === 'y' && (e.ctrlKey || e.metaKey)) || (e.key === 'z' && (e.ctrlKey || e.metaKey) && e.shiftKey)) { redo(); e.preventDefault(); }
-    if (e.key === ']') { moveLayer(1); e.preventDefault(); }
-    if (e.key === '[') { moveLayer(-1); e.preventDefault(); }
+    if (e.key === ']' && !e.shiftKey) { moveLayer(1); e.preventDefault(); }
+    if (e.key === '[' && !e.shiftKey) { moveLayer(-1); e.preventDefault(); }
+    if (e.key === '}') { moveLayerToExtreme(1); e.preventDefault(); }
+    if (e.key === '{') { moveLayerToExtreme(-1); e.preventDefault(); }
     if (e.key === '=' || e.key === '+') { zoomBy(0.15, workspaceEl.clientWidth / 2, workspaceEl.clientHeight / 2); e.preventDefault(); }
     if (e.key === '-') { zoomBy(-0.15, workspaceEl.clientWidth / 2, workspaceEl.clientHeight / 2); e.preventDefault(); }
     if (e.key === '0') { fitPaperToView(); e.preventDefault(); }
@@ -10280,8 +10343,22 @@ function setupToolbar() {
   $('btn-undo').addEventListener('click', undo);
   $('btn-redo').addEventListener('click', redo);
   $('btn-delete').addEventListener('click', deleteSelected);
-  $('btn-layer-up').addEventListener('click', () => moveLayer(1));
-  $('btn-layer-down').addEventListener('click', () => moveLayer(-1));
+  // Layer buttons: click = step, long-press (400ms) = jump to extreme
+  ['btn-layer-up', 'btn-layer-down'].forEach(btnId => {
+    const btn = $(btnId);
+    const dir = btnId === 'btn-layer-up' ? 1 : -1;
+    let lpTimer = null;
+    let didLong = false;
+    btn.addEventListener('pointerdown', () => {
+      didLong = false;
+      lpTimer = setTimeout(() => { didLong = true; moveLayerToExtreme(dir); }, 400);
+    });
+    btn.addEventListener('pointerup', () => {
+      clearTimeout(lpTimer);
+      if (!didLong) moveLayer(dir);
+    });
+    btn.addEventListener('pointerleave', () => clearTimeout(lpTimer));
+  });
   $('btn-flip-h').addEventListener('click', flipSelectedH);
   $('btn-flip-v').addEventListener('click', flipSelectedV);
   $('btn-duplicate').addEventListener('click', duplicateSelected);
