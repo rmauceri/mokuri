@@ -87,9 +87,10 @@ function getAffinityElements(packId, allElements) {
   scored.sort((a, b) => b.overlap - a.overlap);
 
   // Featured: own elements + core with 2+ tag overlap (minimum affinity threshold)
+  // Custom elements (e.g. custom hanko) always featured
   featured.push(...ownEls);
   for (const { el, overlap } of scored) {
-    if (overlap >= 2) {
+    if (overlap >= 2 || el.custom) {
       featured.push(el);
     } else {
       rest.push(el);

@@ -5496,6 +5496,17 @@ function relativeTime(timestamp) {
 }
 
 function getCompositionData() {
+  // Collect custom element definitions (e.g. custom hanko) used by this composition
+  const customDefs = [];
+  const seenDefIds = new Set();
+  for (const el of STATE.elements) {
+    if (seenDefIds.has(el.defId)) continue;
+    const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+    if (def && def.custom) {
+      customDefs.push(def);
+      seenDefIds.add(el.defId);
+    }
+  }
   return {
     elements: STATE.elements,
     nextId: STATE.nextId,
@@ -5516,11 +5527,20 @@ function getCompositionData() {
     presentationHanko: STATE.presentationHanko,
     presentationHankoPos: STATE.presentationHankoPos,
     presentationDeckle: STATE.presentationDeckle,
+    customDefs: customDefs.length ? customDefs : undefined,
     savedAt: Date.now(),
   };
 }
 
 function applyCompositionData(data) {
+  // Re-register any custom element definitions (e.g. custom hanko)
+  if (data.customDefs) {
+    for (const def of data.customDefs) {
+      if (!MOKURI_ELEMENTS.find(d => d.id === def.id)) {
+        MOKURI_ELEMENTS.push(def);
+      }
+    }
+  }
   STATE.elements = data.elements || [];
   STATE.nextId = data.nextId || (STATE.elements.length ? Math.max(...STATE.elements.map(e => e.id)) + 1 : 1);
   STATE.paletteId = data.paletteId || 'edo';
