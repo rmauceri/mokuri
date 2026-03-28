@@ -2118,8 +2118,9 @@ html, body {
     padding: 4px 6px; gap: 2px;
     justify-content: center;
   }
-  .toolbar-title { order: 0; font-size: 0; margin-right: 0; }
-  .toolbar-title .toolbar-title-kanji { font-size: 18px; }
+  .toolbar-title { order: 0; font-size: 14px; margin-right: 0; }
+  .toolbar-title .toolbar-title-kanji { font-size: 16px; }
+  .toolbar-title .toolbar-title-sub { display: none; }
   /* Spacers flank mode+nav to center them; brand stays at left */
   .toolbar-edit-group + .toolbar-spacer { display: block; order: 0; flex: 1; }
   .toolbar-mode-group { order: 1; }
@@ -2366,6 +2367,8 @@ html, body {
   .mode-btn { padding: 3px 5px; }
   .mode-btn .mode-icon { font-size: 14px; }
   .mode-btn .mode-label { font-size: 10px; letter-spacing: 0.2px; }
+  /* Brand left, modes pushed right via spacer; nav centers on row 2 */
+  .toolbar-edit-group + .toolbar-spacer { display: block; order: 0; flex: 1; }
 }
 
 @media (max-width: 1024px) and (max-aspect-ratio: 1/1) {
@@ -10878,9 +10881,12 @@ async function init() {
   // Toolbar brand opens About (click) / toggles dev styles (long-press)
   const brandEl = $('toolbar-brand');
   let _brandPressTimer = null;
+  let _brandLongPressed = false;
   brandEl.addEventListener('pointerdown', () => {
+    _brandLongPressed = false;
     _brandPressTimer = setTimeout(() => {
       _brandPressTimer = null;
+      _brandLongPressed = true;
       if (localStorage.getItem('mokuri-dev-styles')) {
         localStorage.removeItem('mokuri-dev-styles');
         if (STATE.activeStyle !== 'core') switchActiveStyle('core');
@@ -10892,10 +10898,14 @@ async function init() {
     }, 1500);
   });
   brandEl.addEventListener('pointerup', () => {
-    if (_brandPressTimer) { clearTimeout(_brandPressTimer); _brandPressTimer = null; showMakimono('full'); }
+    if (_brandPressTimer) { clearTimeout(_brandPressTimer); _brandPressTimer = null; }
   });
   brandEl.addEventListener('pointerleave', () => {
     if (_brandPressTimer) { clearTimeout(_brandPressTimer); _brandPressTimer = null; }
+  });
+  brandEl.addEventListener('click', () => {
+    if (!_brandLongPressed) showMakimono('full');
+    _brandLongPressed = false;
   });
 }
 
