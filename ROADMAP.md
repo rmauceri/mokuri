@@ -243,6 +243,7 @@ Transforms style packs from content filters into distinct creative contexts that
 - **Journey activation**: First-switch journey prompt when user activates a style for the first time.
 - **Pack gallery presets**: Curated starting compositions per pack.
 - **Affinity tuning**: Refine tag weights through real use. Consider weighted affinities.
+- **Element category ordering**: Element categories in the picker currently sort by group size + alphabetical tiebreak, which feels random and unintuitive. Each style pack should define an intentional category display order (e.g., landscape → flora → fauna → figures → objects → hanko for core Mokuri) rather than relying on computed sort.
 
 ### Style Packs (Expansion Content)
 Active Style model and two packs shipped. Next candidates:
