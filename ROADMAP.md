@@ -189,6 +189,14 @@ Wire-line overlay showing paper boundaries and rule-of-thirds grid. Helps compos
 - **Non-scaling strokes**: Consistent line weight at any zoom level. `pointer-events: none` for zero interaction interference.
 - **Toggle**: `G` key or toolbar button (⊞). Persisted in localStorage. Off by default.
 
+### Layer Management ✅
+
+Improved z-order control for complex compositions with many overlapping elements.
+
+- **Bring to Front / Send to Back**: `Shift+]` and `Shift+[` keyboard shortcuts jump selected element(s) to the top or bottom of the stack. Long-press (400ms) on ▲/▼ toolbar buttons for touch.
+- **Tap-through selection**: Clicking an already-selected element cycles selection to the element below it in the stack. Full-stack cycling — continues through all overlapping elements and wraps around. Uses rotation-aware bounding box hit testing (`elementsAtPoint()`).
+- **Tab cycling**: `Tab` / `Shift+Tab` cycles through overlapping elements at the selected element's center point.
+
 ---
 
 ### Kacho-e Style Pack (花鳥画) ✅
