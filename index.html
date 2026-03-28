@@ -309,9 +309,7 @@ html, body {
   touch-action: pan-y;
 }
 /* On non-iOS, JS handles scroll vs drag detection — disable browser pan to prevent pointercancel */
-@media (pointer: fine) {
-  .element-thumb { touch-action: none; }
-}
+.element-thumb { touch-action: none; }
 .element-thumb:hover {
   border-color: var(--accent);
   box-shadow: var(--shadow);
@@ -7290,7 +7288,43 @@ function buildElementThumb(def) {
       if (done || me.pointerId !== pointerId) return;
       const dx = me.clientX - startX, dy = me.clientY - startY;
       if (!dragging) {
-        if (isTouch && Math.abs(dy) > Math.abs(dx) + 6) { cleanup(); return; }
+        // Touch scroll detection: if initial movement matches panel scroll direction,
+        // switch to manual scroll mode instead of drag
+        if (isTouch) {
+          const portrait = _isPortrait();
+          const scrollAxis = portrait ? Math.abs(dx) : Math.abs(dy);
+          const dragAxis = portrait ? Math.abs(dy) : Math.abs(dx);
+          if (scrollAxis > dragAxis + 6) {
+            // Switch to manual scroll — continue scrolling until pointerup
+            const scrollEl = thumb.closest('.panel-scroll');
+            done = true;
+            if (scrollEl) {
+              let lastC = portrait ? me.clientX : me.clientY;
+              function scrollMove(se) {
+                if (se.pointerId !== pointerId) return;
+                const cur = portrait ? se.clientX : se.clientY;
+                if (portrait) scrollEl.scrollLeft -= (cur - lastC);
+                else scrollEl.scrollTop -= (cur - lastC);
+                lastC = cur;
+              }
+              function scrollEnd(se) {
+                if (se.pointerId !== pointerId) return;
+                document.removeEventListener('pointermove', scrollMove);
+                document.removeEventListener('pointerup', scrollEnd);
+                document.removeEventListener('pointercancel', scrollEnd);
+              }
+              document.removeEventListener('pointermove', onMove);
+              document.removeEventListener('pointerup', onUp);
+              document.removeEventListener('pointercancel', onCancel);
+              document.addEventListener('pointermove', scrollMove);
+              document.addEventListener('pointerup', scrollEnd);
+              document.addEventListener('pointercancel', scrollEnd);
+            } else {
+              cleanup();
+            }
+            return;
+          }
+        }
         if (dx * dx + dy * dy < DRAG_THRESHOLD * DRAG_THRESHOLD) return;
         dragging = true;
         me.preventDefault();
