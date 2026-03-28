@@ -2111,7 +2111,7 @@ html, body {
   .tool-btn { width: 30px; height: 30px; font-size: 14px; }
 }
 
-/* Phone landscape: two-row toolbar with spelled-out mode labels */
+/* Phone landscape: two-row toolbar — brand left, modes centered */
 @media (max-width: 920px) and (max-height: 500px) {
   .toolbar {
     height: auto; flex-wrap: wrap; overflow: visible;
@@ -2120,14 +2120,16 @@ html, body {
   }
   .toolbar-title { order: 0; font-size: 0; margin-right: 0; }
   .toolbar-title .toolbar-title-kanji { font-size: 18px; }
+  /* Spacers flank mode+nav to center them; brand stays at left */
+  .toolbar-edit-group + .toolbar-spacer { display: block; order: 0; flex: 1; }
   .toolbar-mode-group { order: 1; }
   .mode-btn .mode-label { display: inline; font-size: 11px; }
   .toolbar > .toolbar-separator { display: none; }
   .toolbar-mode-group + .toolbar-separator { display: inline-block; order: 2; }
   .toolbar-nav-group { order: 3; }
+  .toolbar-nav-group + .toolbar-spacer { display: block; order: 4; flex: 1; }
   .toolbar-edit-group { order: 5; width: 100%; justify-content: center; padding: 2px 0; }
   .toolbar-edit-group .toolbar-separator { display: none; }
-  .toolbar-spacer { display: none; }
   .tool-btn { width: 34px; height: 34px; font-size: 15px; }
   .mode-btn { padding: 4px 8px; height: 32px; }
   .mode-btn .mode-icon { font-size: 15px; }
@@ -2354,10 +2356,16 @@ html, body {
   .tool-btn { width: 34px; height: 34px; font-size: 15px; }
 }
 
-/* Narrow portrait (phone): keep brand + phases on one row */
+/* Narrow portrait (phone): compact so brand + phases fit one row */
 @media (max-width: 500px) and (max-aspect-ratio: 1/1) {
-  .toolbar-title { margin-right: 0; }
+  .toolbar { gap: 2px; padding: 4px 6px; }
+  .toolbar-title { margin-right: 0; font-size: 12px; }
+  .toolbar-title .toolbar-title-kanji { font-size: 15px; }
   .toolbar-mode-group + .toolbar-separator { display: none; }
+  .toolbar-mode-group { gap: 1px; }
+  .mode-btn { padding: 3px 5px; }
+  .mode-btn .mode-icon { font-size: 14px; }
+  .mode-btn .mode-label { font-size: 10px; letter-spacing: 0.2px; }
 }
 
 @media (max-width: 1024px) and (max-aspect-ratio: 1/1) {
