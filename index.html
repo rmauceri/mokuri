@@ -2354,11 +2354,9 @@ html, body {
   .tool-btn { width: 34px; height: 34px; font-size: 15px; }
 }
 
-/* Narrow portrait (phone): hide mode labels to keep row 1 on one line */
+/* Narrow portrait (phone): keep brand + phases on one row */
 @media (max-width: 500px) and (max-aspect-ratio: 1/1) {
-  .mode-btn .mode-label { display: none; }
-  .toolbar-title { font-size: 0; }
-  .toolbar-title .toolbar-title-kanji { font-size: 18px; margin-right: 0; }
+  .toolbar-title { margin-right: 0; }
   .toolbar-mode-group + .toolbar-separator { display: none; }
 }
 
