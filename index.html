@@ -6967,7 +6967,7 @@ function buildStyleSelector() {
   const container = $('style-selector');
   container.innerHTML = '';
   const packs = getAllPacks();
-  if (packs.length <= 1) { container.style.display = 'none'; return; }
+  if (packs.length <= 1 || !localStorage.getItem('mokuri-dev-styles')) { container.style.display = 'none'; return; }
 
   packs.forEach(pack => {
     const chip = document.createElement('button');
@@ -10112,6 +10112,13 @@ function setupKeyboard() {
     if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) return;
 
     if (e.key === 'Delete' || e.key === 'Backspace') { deleteSelected(); e.preventDefault(); }
+    // Ctrl+Shift+X: toggle dev style packs
+    if (e.key === 'X' && (e.ctrlKey || e.metaKey) && e.shiftKey) {
+      if (localStorage.getItem('mokuri-dev-styles')) localStorage.removeItem('mokuri-dev-styles');
+      else localStorage.setItem('mokuri-dev-styles', '1');
+      buildStyleSelector(); buildElementPicker();
+      e.preventDefault();
+    }
     if (e.key === 'c' && !e.ctrlKey && !e.metaKey) {
       // C key: open Compose (close any workbench, open compose panel)
       const hasWorkbench = STATE.carveStudioOpen || STATE.inkStudioOpen || STATE.printStudioOpen;
@@ -10713,8 +10720,24 @@ async function init() {
     // Click on backdrop (not card content) dismisses
     if (e.target === $('makimono')) hideMakimono();
   });
-  // Toolbar brand opens About
-  $('toolbar-brand').addEventListener('click', () => showMakimono('full'));
+  // Toolbar brand opens About (click) / toggles dev styles (long-press)
+  const brandEl = $('toolbar-brand');
+  let _brandPressTimer = null;
+  brandEl.addEventListener('pointerdown', () => {
+    _brandPressTimer = setTimeout(() => {
+      _brandPressTimer = null;
+      if (localStorage.getItem('mokuri-dev-styles')) localStorage.removeItem('mokuri-dev-styles');
+      else localStorage.setItem('mokuri-dev-styles', '1');
+      buildStyleSelector();
+      buildElementPicker();
+    }, 1500);
+  });
+  brandEl.addEventListener('pointerup', () => {
+    if (_brandPressTimer) { clearTimeout(_brandPressTimer); _brandPressTimer = null; showMakimono('full'); }
+  });
+  brandEl.addEventListener('pointerleave', () => {
+    if (_brandPressTimer) { clearTimeout(_brandPressTimer); _brandPressTimer = null; }
+  });
 }
 
 init();
