@@ -3114,7 +3114,7 @@ const STATE = {
   guides: localStorage.getItem('mokuri-guides') === 'true',
 
   // Active style — which pack sets the creative context
-  activeStyle: localStorage.getItem('mokuri-activeStyle') || 'core',
+  activeStyle: (localStorage.getItem('mokuri-dev-styles') ? localStorage.getItem('mokuri-activeStyle') : null) || 'core',
 
   // Composition identity (set at runtime, not serialized)
   activeCompositionId: null,
@@ -6968,6 +6968,7 @@ function buildStyleSelector() {
   container.innerHTML = '';
   const packs = getAllPacks();
   if (packs.length <= 1 || !localStorage.getItem('mokuri-dev-styles')) { container.style.display = 'none'; return; }
+  container.style.display = '';
 
   packs.forEach(pack => {
     const chip = document.createElement('button');
@@ -10114,8 +10115,12 @@ function setupKeyboard() {
     if (e.key === 'Delete' || e.key === 'Backspace') { deleteSelected(); e.preventDefault(); }
     // Ctrl+Shift+X: toggle dev style packs
     if (e.key === 'X' && (e.ctrlKey || e.metaKey) && e.shiftKey) {
-      if (localStorage.getItem('mokuri-dev-styles')) localStorage.removeItem('mokuri-dev-styles');
-      else localStorage.setItem('mokuri-dev-styles', '1');
+      if (localStorage.getItem('mokuri-dev-styles')) {
+        localStorage.removeItem('mokuri-dev-styles');
+        if (STATE.activeStyle !== 'core') switchActiveStyle('core');
+      } else {
+        localStorage.setItem('mokuri-dev-styles', '1');
+      }
       buildStyleSelector(); buildElementPicker();
       e.preventDefault();
     }
@@ -10726,8 +10731,12 @@ async function init() {
   brandEl.addEventListener('pointerdown', () => {
     _brandPressTimer = setTimeout(() => {
       _brandPressTimer = null;
-      if (localStorage.getItem('mokuri-dev-styles')) localStorage.removeItem('mokuri-dev-styles');
-      else localStorage.setItem('mokuri-dev-styles', '1');
+      if (localStorage.getItem('mokuri-dev-styles')) {
+        localStorage.removeItem('mokuri-dev-styles');
+        if (STATE.activeStyle !== 'core') switchActiveStyle('core');
+      } else {
+        localStorage.setItem('mokuri-dev-styles', '1');
+      }
       buildStyleSelector();
       buildElementPicker();
     }, 1500);
