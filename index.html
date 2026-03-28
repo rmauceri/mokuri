@@ -9743,21 +9743,40 @@ function setupInteraction() {
         if (e.ctrlKey || e.metaKey) {
           toggleSelection(id);
         } else if (!STATE.selectedIds.has(id)) {
-          selectElement(id);
+          // Check if this is a tap-through continuation: the currently selected
+          // element also overlaps at this point (SVG always hits topmost, but
+          // we want to cycle through the stack, not jump back to top)
+          const curSelId = primarySelectedId();
+          const curSel = curSelId != null ? STATE.elements.find(e => e.id === curSelId) : null;
+          if (curSel) {
+            const hits = elementsAtPoint(pt.x, pt.y);
+            const curIdx = hits.indexOf(curSel);
+            if (curIdx > 0) {
+              // Currently selected element is in the stack — cycle from it
+              const nextEl = hits[(curIdx - 1 + hits.length) % hits.length];
+              selectElement(nextEl.id);
+            } else {
+              selectElement(id);
+            }
+          } else {
+            selectElement(id);
+          }
         } else {
           // Will check for tap-through on pointerup (if no drag occurs)
         }
         // Set up drag for all selected unlocked elements
         const draggable = STATE.elements.filter(de => STATE.selectedIds.has(de.id) && !de.locked);
-        if (draggable.length && !el.locked) {
+        const selEl = STATE.elements.find(e => e.id === primarySelectedId());
+        if (draggable.length && selEl && !selEl.locked) {
           const hits = elementsAtPoint(pt.x, pt.y);
+          const selIdx = hits.indexOf(selEl);
           STATE.dragging = {
-            type: 'move', elementId: id,
+            type: 'move', elementId: selEl.id,
             startX: pt.x, startY: pt.y,
             origPositions: draggable.map(de => ({ id: de.id, x: de.x, y: de.y })),
             clientStartX: e.clientX, clientStartY: e.clientY,
             committed: false,
-            _tapThrough: hits.length > 1 ? { hits, curIdx: hits.indexOf(el), curId: id } : null,
+            _tapThrough: (hits.length > 1 && selIdx >= 0) ? { hits, curIdx: selIdx, curId: selEl.id } : null,
           };
           ws.setPointerCapture(e.pointerId);
         }
