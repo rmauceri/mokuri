@@ -2674,7 +2674,6 @@ html, body {
         </div>
 
         <div class="ps-actions">
-          <div class="ps-back-link" id="cs-back-compose">← Back to Compose · Esc</div>
         </div>
       </div>
     </div>
@@ -2706,7 +2705,6 @@ html, body {
         </div>
 
         <div class="ps-actions">
-          <div class="ps-back-link" id="is-back-compose">← Back to Compose · Esc</div>
         </div>
       </div>
     </div>
@@ -2755,8 +2753,6 @@ html, body {
 
         <div class="ps-actions">
           <button class="ps-pull-btn" id="ps-pull-print">Pull Print</button>
-          <button class="ps-save-btn" id="ps-save-png">💾 Save PNG</button>
-          <div class="ps-back-link" id="ps-back-edit">← Back to Edit · Esc</div>
         </div>
       </div>
     </div>
@@ -7058,7 +7054,10 @@ function buildElementPicker() {
   list.innerHTML = '';
 
   // Two-tier: featured (pack + affinity) vs rest
-  const { featured, rest } = getAffinityElements(STATE.activeStyle, MOKURI_ELEMENTS);
+  // When dev-styles is off, exclude non-core pack elements entirely
+  const devStyles = !!localStorage.getItem('mokuri-dev-styles');
+  const sourceElements = devStyles ? MOKURI_ELEMENTS : MOKURI_ELEMENTS.filter(d => !d.pack || d.pack === 'core');
+  const { featured, rest } = getAffinityElements(STATE.activeStyle, sourceElements);
 
   // Render a set of elements grouped by category
   function renderElementGroup(elements, container) {
@@ -10419,23 +10418,6 @@ function setupToolbar() {
 
   // Printing Workbench
   $('ps-pull-print').addEventListener('click', () => pullPrint());
-  $('ps-save-png').addEventListener('click', () => {
-    const c = $('inline-print-canvas');
-    if (c._printCanvas) {
-      // Export the mirrored version (what user sees)
-      const mirrorCanvas = document.createElement('canvas');
-      mirrorCanvas.width = c.width;
-      mirrorCanvas.height = c.height;
-      const mctx = mirrorCanvas.getContext('2d');
-      mctx.drawImage(c, 0, 0);
-      const title = STATE.presentationTitle || STATE.compositionName || 'mokuri-print';
-      const filename = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-print.png';
-      PrintEngine.exportPng(mirrorCanvas, filename);
-    }
-  });
-  $('ps-back-edit').addEventListener('click', () => closePrintStudio());
-
-  // Carving Workbench — tool buttons
   $('cs-tool-row').addEventListener('click', (e) => {
     const btn = e.target.closest('.cs-tool-btn');
     if (!btn) return;
@@ -10444,10 +10426,6 @@ function setupToolbar() {
     buildCarveStudioUI();
     updateToolCursorClass();
   });
-  $('cs-back-compose').addEventListener('click', () => closeCarveStudio());
-
-  // Inking Workbench — back link
-  $('is-back-compose').addEventListener('click', () => closeInkStudio());
 
   // Light dismiss — click on non-canvas app areas closes right panels
   // (toolbar, status bar, washi bg — but NOT workspace canvas for Carve/Ink)
