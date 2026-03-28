@@ -4822,7 +4822,9 @@ function pushUndo() {
   STATE.redoStack = [];
   if (STATE.undoStack.length > 50) STATE.undoStack.shift();
   updateToolbarState();
-  autoSave();
+  // Defer autoSave so it captures state AFTER the mutation that follows pushUndo
+  clearTimeout(pushUndo._saveTimer);
+  pushUndo._saveTimer = setTimeout(() => autoSave(), 0);
 }
 
 function undo() {
