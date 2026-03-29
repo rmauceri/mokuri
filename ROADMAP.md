@@ -233,6 +233,48 @@ Transforms style packs from content filters into distinct creative contexts that
 - **Smart defaults**: Switching styles auto-selects pack's first palette. Non-destructive — elements already placed stay.
 - **Atmosphere rename**: `sky` → `background`, `ground` → `foreground` throughout STATE, UI, save/load, gallery presets, audio engine. Save/load migration reads both old and new keys.
 
+### Phone Layouts & Status Bar ✅
+
+Full phone support for portrait and landscape orientations.
+
+- **Portrait toolbar** (≤500px width): 3-row layout — brand left-justified with "墨 Mokuri" text, mode buttons with labels (Compose/Carve/Ink/Print), edit tools centered below. Spacer capped at 16px between brand and modes.
+- **Landscape toolbar** (≤920px, ≤500px height): 2-row layout — brand left, mode+nav centered via flex spacers, edit tools below.
+- **Brand tap detection fix**: Switched from `pointerup` (unreliable on touch — `pointerleave` fires on slight finger movement) to `click` event for About screen. Long-press (1500ms) retained for dev-styles toggle with `_brandLongPressed` flag to prevent double-fire.
+- **Status bar phone fixes**: Portrait — single-line with `flex-wrap: nowrap`, hint truncation via `text-overflow: ellipsis`, zoom % and view controls hidden. Landscape — zoom/grid controls visible, spacer div for right-justification.
+- **Style pack indicator removed** from status bar (redundant with Elements panel indicator).
+
+### Audio Background Muting ✅
+
+`AudioContext.suspend()` on `document.visibilitychange` hidden, `resume()` on visible. Stops all audio instantly when switching apps on phone/tablet. Replaces the previous resume-only handler.
+
+### FRE Hardening ✅
+
+Reliability improvements to the guided first-run experience:
+
+- **Fresh canvas on Begin Creating**: `freStartJourney` accepts `opts.freshCanvas` — auto-saves current work, creates new composition, loads journey preset. "Begin Creating" passes `{ freshCanvas: true }`, journey chaining ("Try next") continues on the current canvas.
+- **Print preview cleanup**: `resetToCompose()` called before journey transitions to close print preview.
+- **Cancellation safety**: `switchToComposition()` and `newComposition()` both cancel any active FRE journey.
+- **Async flow**: `freStartJourney` is fully async — callers `await` it so autoSave/setActiveCompositionId chain completes before UI updates.
+
+### User Feedback Collection — Phase A ✅
+
+Google Form–based feedback with automatic app context pre-fill. Form guide: `docs/mokuri_feedback_form_guide.md`.
+
+- **Google Form**: 9-question form (sentiment, category, details, where, device, screenshot, follow-up, email, app context). Structured responses in Google Sheets.
+- **`buildFeedbackUrl()`**: Constructs pre-filled URL with compact context string — version, layout class (phone-portrait/landscape, tablet, desktop), viewport dimensions, session count, element count, active style, current phase. Entry ID: `entry.1359547312`.
+- **Makimono/About link**: `💬 Share Feedback` below "Begin Creating" button — always findable.
+- **FRE celebration link**: `How was this experience? 💬` on final journey (evening-scene) celebration toast.
+- **Post-print nudge**: Centered FRE-style toast after pulling a print (session 2+, not during FRE). "Share Feedback" and "Not Now" buttons. One-time only (`mokuri-feedback-nudge` localStorage flag). Auto-dismisses after 20 seconds.
+- **`testFeedbackNudge()`**: Console helper for previewing the nudge without persisting the shown flag.
+
+### Touch Handle Hit Areas ✅
+
+Invisible 36×36px transparent hit rects behind all resize/rotate handles on `pointer: coarse` devices. Visible handles unchanged — pointer events pass through to the larger invisible targets. Covers single-element corner handles, edge midpoint handles, rotation handle, and group selection corner handles. Mouse behavior unaffected.
+
+### Workshop Inspiration Box (Hidden)
+
+Inspiration prompt section in Workshop panel hidden pending feature redesign. `refreshWorkshopPrompt()` short-circuits to `display:none`. HTML, CSS, and remaining JS preserved for future use.
+
 ---
 
 ## Future Work
@@ -251,15 +293,15 @@ Active Style model and two packs shipped. Next candidates:
 - **Wabi-sabi** — Minimalism mode/preset (not a paid pack). Rougher edges, ink bleed, sparse elements.
 - Additional contrasting packs to validate the Active Style model with non-landscape creative contexts.
 
-### First-Run Experience ✅ (Core Complete)
+### First-Run Experience ✅ (Core Complete + Hardened)
 Two-journey guided onboarding built on the pack journey system:
 - **Journey engine**: start, advance, resume, complete, skip with IndexedDB persistence. Hint-per-step state machine with `freAdvance(triggerId)` calls at 11+ action points throughout the app.
 - **Hint overlay system**: Pale blue italic bubbles with directional arrows, pulse glow on targets, auto-positioning with viewport clamping and overflow fallback. Z-index layered above all panels including gallery modal.
 - **First-print journey** (7 steps): move → resize → carve → carve-level → palette → open print studio → pull print. Loads curated preset, selects last element (top layer), auto-names composition "My First Mokuri Print", deselects before palette step.
 - **Evening-scene journey** (7 steps): open ink → change background atmosphere → open print studio → edit title → pull print → open gallery → exit gallery. Celebration toast with ensō (◯) mark and Workshop guidance.
 - **Audio cues**: Pentatonic chimes from the ambient D-minor scale (D4+A4 fifth for hints, D4→G4→A4→D5 ascending motif with bell shimmer for celebration).
-- **Celebration toast**: Ensō circle with journey titleJa, completion message, persistent until dismissed. Optional "Try next" button chains to suggested journey.
-- **"Begin Creating" always starts FRE** from the Makimono/About screen for easy re-testing.
+- **Celebration toast**: Ensō circle with journey titleJa, completion message, persistent until dismissed. Optional "Try next" button chains to suggested journey. Feedback link on final journey completion.
+- **"Begin Creating" always starts FRE** from the Makimono/About screen — fresh canvas regardless of existing work. Journey chaining continues on current canvas.
 - **iPad tap-to-place**: iOS touch and pen use tap-to-arm then tap-workspace due to confirmed WebKit compositor limitation (pointercancel on all non-mouse drag in scrollable containers).
 
 Remaining FRE work:
@@ -279,17 +321,18 @@ Remaining FRE work:
 
 ### Platform & Polish
 - **Portrait mode support** ✅ — Full portrait layout for iPad mini/Air/13". Element panel becomes 2-row horizontal shelf (CSS Grid for Safari compatibility). Workbench panels become compact bottom sheets: Print (3-col), Carve (2-col), Ink (3-col with always-expanded palette grid). Two-row toolbar with labeled phase buttons, brand left-aligned, Gallery/Workshop separated from workflow phases. Status bar overflow protection. ViewBox guard for orientation transitions. FRE works in portrait without modification.
-- **Responsive layout** — Two-row mobile toolbar shipped. Further phone refinements needed: bottom sheet panels, modal panels for workbench flyouts on very small screens.
+- **Phone support** ✅ — Portrait (≤500px) and landscape (≤920×500) toolbar layouts, status bar single-line with truncation, audio background muting, 36px invisible touch hit areas on handles.
+- **Responsive layout** — Further phone refinements possible: bottom sheet panels, modal panels for workbench flyouts on very small screens.
 - **Keyboard shortcuts expansion** — More shortcuts for power users.
 
 ### User Feedback Collection
 Phased approach — start simple, layer on richer options as distribution expands.
 
-**Phase A: Google Form link (immediate, pre-Capacitor)**
-- Create a short Google Form (structured: what were you doing, what happened, satisfaction rating, free text).
-- Add a 💬 "Send Feedback" button in the About/Makimono screen.
-- Button opens the form URL in a new tab. Pre-fill app version and paper size via URL parameters.
-- Free, zero dependencies, structured responses land in a Google Sheet.
+**Phase A: Google Form link ✅**
+- Google Form with 9 questions (sentiment, category, details, where, device, screenshot, follow-up, email, app context). Responses in Google Sheets.
+- `buildFeedbackUrl()` pre-fills app context (version, layout, viewport, session count, elements, style, phase) via `entry.1359547312`.
+- 💬 link on Makimono/About screen, FRE celebration toast, and one-time post-print nudge.
+- Form guide: `docs/mokuri_feedback_form_guide.md`.
 
 **Phase B: In-app feedback modal (post-Capacitor)**
 - Build a lightweight modal inside Mokuri: emoji rating (😐🙂😊), category chips (Bug / Idea / Question), free-text textarea.
