@@ -6791,7 +6791,7 @@ let _hintIndex = -1;         // current step in featureHints array
 let _freSkipped = false;     // user clicked "Skip guide"
 let _freEditTitleTimer = null; // auto-advance timer for edit-title hint
 
-async function freStartJourney(journeyId) {
+async function freStartJourney(journeyId, opts) {
   const allJourneys = typeof getPackJourneys === 'function' ? getPackJourneys() : [];
   const journey = allJourneys.find(j => j.id === journeyId);
   if (!journey || !journey.featureHints || !journey.featureHints.length) return;
@@ -6805,8 +6805,10 @@ async function freStartJourney(journeyId) {
     MokuriDB.updateJourneyProgress(journeyId, { step: 0, status: 'in-progress' }).catch(() => {});
   }
 
-  // Always start with a fresh canvas: save current work, create new composition, apply preset
-  if (journey.startingPreset != null) {
+  // Fresh canvas: only when explicitly requested (e.g. "Begin Creating")
+  // Journey chaining ("Try next") continues on the current canvas
+  const freshCanvas = opts && opts.freshCanvas;
+  if (freshCanvas && journey.startingPreset != null) {
     const presets = typeof MOKURI_GALLERY_PRESETS !== 'undefined' ? MOKURI_GALLERY_PRESETS : [];
     const preset = presets[journey.startingPreset];
     if (preset) {
@@ -6820,6 +6822,9 @@ async function freStartJourney(journeyId) {
       $('status-hint').textContent = STATE.compositionName;
       await autoSave();
     }
+  } else {
+    // Ensure we're back in compose mode (close print preview etc.)
+    resetToCompose();
   }
 
   // Select the last element (top layer) so hints can target it meaningfully
@@ -10886,8 +10891,8 @@ async function init() {
 
   $('maki-begin').addEventListener('click', () => {
     hideMakimono();
-    // Always start the guided journey from Begin Creating
-    setTimeout(async () => await freStartJourney('first-print'), 700);
+    // Always start with a fresh canvas from Begin Creating
+    setTimeout(async () => await freStartJourney('first-print', { freshCanvas: true }), 700);
   });
   $('makimono').addEventListener('click', (e) => {
     // Click on backdrop (not card content) dismisses
