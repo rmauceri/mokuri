@@ -3113,6 +3113,17 @@ function openFeedback() {
   window.open(buildFeedbackUrl(), '_blank');
 }
 
+// Show the one-time feedback nudge in the status bar
+// persist=true marks it as shown (won't repeat); persist=false is for testing
+function _showFeedbackNudge(persist) {
+  const hint = $('status-hint');
+  if (!hint || _activeJourney) return;
+  const prev = hint.textContent;
+  hint.innerHTML = 'Enjoying Mokuri? <a href="#" style="color:inherit;text-decoration:underline;opacity:0.85;" onclick="event.preventDefault();openFeedback();">Share feedback →</a>';
+  if (persist) localStorage.setItem('mokuri-feedback-nudge', '1');
+  setTimeout(() => { hint.textContent = prev; }, 8000);
+}
+
 // ============================================================
 //  APP STATE
 // ============================================================
@@ -10990,16 +11001,11 @@ async function init() {
   // One-time feedback nudge at session 4+ (after FRE is done)
   const visits = getMokuriVisits();
   if (visits >= 4 && !localStorage.getItem('mokuri-feedback-nudge')) {
-    setTimeout(() => {
-      const hint = $('status-hint');
-      if (hint && !_activeJourney) {
-        const prev = hint.textContent;
-        hint.innerHTML = 'Enjoying Mokuri? <a href="#" style="color:inherit;text-decoration:underline;opacity:0.85;" onclick="event.preventDefault();openFeedback();">Share feedback →</a>';
-        localStorage.setItem('mokuri-feedback-nudge', '1');
-        setTimeout(() => { hint.textContent = prev; }, 8000);
-      }
-    }, 5000);
+    setTimeout(() => _showFeedbackNudge(true), 5000);
   }
+
+  // Dev helper: testFeedbackNudge() in console to preview the nudge
+  window.testFeedbackNudge = () => _showFeedbackNudge(false);
 
   $('maki-begin').addEventListener('click', () => {
     hideMakimono();
