@@ -3113,15 +3113,51 @@ function openFeedback() {
   window.open(buildFeedbackUrl(), '_blank');
 }
 
-// Show the one-time feedback nudge in the status bar
+// Show the one-time feedback nudge as a centered toast
 // persist=true marks it as shown (won't repeat); persist=false is for testing
 function _showFeedbackNudge(persist) {
-  const hint = $('status-hint');
-  if (!hint || _activeJourney) return;
-  const prev = hint.textContent;
-  hint.innerHTML = 'Enjoying Mokuri? <a href="#" style="color:inherit;text-decoration:underline;opacity:0.85;" onclick="event.preventDefault();openFeedback();">Share feedback →</a>';
+  if (_activeJourney) return;
+
+  const toast = document.createElement('div');
+  toast.className = 'fre-hint';
+  toast.style.cssText = 'max-width:260px; text-align:center; left:50%; top:45%; transform:translate(-50%,-50%); padding:20px 24px; font-style:normal;';
+
+  const title = document.createElement('div');
+  title.style.cssText = 'font-size:16px; font-weight:bold; margin-bottom:4px; color:#2a3a4a;';
+  title.textContent = '💬 Help shape Mokuri';
+  toast.appendChild(title);
+
+  const sub = document.createElement('div');
+  sub.style.cssText = 'font-size:12px; color:#5a6e7e; margin-bottom:12px; line-height:1.4;';
+  sub.textContent = 'Your feedback guides what comes next';
+  toast.appendChild(sub);
+
+  const btn = document.createElement('button');
+  btn.style.cssText = 'padding:7px 18px; background:#8a7a6a; color:#fff; border:none; border-radius:4px; font-size:12px; cursor:pointer; font-family:inherit;';
+  btn.textContent = 'Share Feedback';
+  btn.addEventListener('click', () => { toast.remove(); openFeedback(); });
+  toast.appendChild(btn);
+
+  const closeBtn = document.createElement('span');
+  closeBtn.className = 'fre-hint-close';
+  closeBtn.textContent = '×';
+  closeBtn.addEventListener('click', (e) => { e.stopPropagation(); toast.remove(); });
+  toast.appendChild(closeBtn);
+
+  document.body.appendChild(toast);
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => toast.classList.add('visible'));
+  });
+
   if (persist) localStorage.setItem('mokuri-feedback-nudge', '1');
-  setTimeout(() => { hint.textContent = prev; }, 8000);
+
+  // Auto-dismiss after 15 seconds
+  setTimeout(() => {
+    if (toast.parentNode) {
+      toast.classList.remove('visible');
+      setTimeout(() => toast.remove(), 400);
+    }
+  }, 15000);
 }
 
 // ============================================================
