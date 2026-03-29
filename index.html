@@ -548,6 +548,12 @@ html, body {
 }
 
 .status-bar span { margin-right: 16px; }
+.status-bar .status-hint {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
 .status-bar-spacer { flex: 1; }
 
 /* Audio controls */
@@ -2129,8 +2135,9 @@ html, body {
   .tool-btn { width: 34px; height: 34px; font-size: 15px; }
   .mode-btn { padding: 4px 8px; height: 32px; }
   .mode-btn .mode-icon { font-size: 15px; }
-  .status-view-controls { display: none; }
-  .status-view-controls + .audio-sep { display: none; }
+  /* Status bar: hide hint text, keep controls compact */
+  .status-hint { display: none; }
+  #status-zoom { display: none; }
 }
 
 /* Short windows: compact vertical chrome */
@@ -2364,6 +2371,14 @@ html, body {
   .mode-btn .mode-label { font-size: 10px; letter-spacing: 0.2px; }
   /* Brand left, modes pushed right via spacer; nav centers on row 2 */
   .toolbar-edit-group + .toolbar-spacer { display: block; order: 0; flex: 1; max-width: 16px; }
+  /* Status bar: single line, truncate hint, hide zoom/grid controls */
+  .status-bar { height: auto; min-height: 28px; padding: 4px 10px; flex-wrap: nowrap; overflow: hidden; }
+  .status-bar span { margin-right: 8px; font-size: 10px; white-space: nowrap; }
+  .status-hint { flex: 1; min-width: 0; }
+  #status-zoom { display: none; }
+  .status-view-controls { display: none; }
+  .status-view-controls + .audio-sep { display: none; }
+  .status-bar-spacer { display: none; }
 }
 
 @media (max-width: 1024px) and (max-aspect-ratio: 1/1) {
@@ -2773,7 +2788,8 @@ html, body {
   <div class="status-bar">
     <span id="status-elements">0 elements</span>
     <span id="status-zoom">100%</span>
-    <span id="status-hint">Place elements on the canvas</span>
+    <span id="status-hint" class="status-hint">Place elements on the canvas</span>
+    <div class="status-bar-spacer"></div>
     <div class="status-view-controls">
       <button class="status-btn" id="btn-zoom-in" title="Zoom In (+)">+</button>
       <button class="status-btn" id="btn-zoom-out" title="Zoom Out (−)">−</button>
