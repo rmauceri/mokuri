@@ -5725,6 +5725,8 @@ function resetToCompose() {
 async function newComposition(paperW, paperH, presetId) {
   await autoSave();
   resetToCompose();
+  // Cancel any active FRE journey when user creates a new composition
+  if (_activeJourney) freSkipJourney();
 
   const id = generateCompositionId();
   STATE.activeCompositionId = id;
@@ -5778,6 +5780,8 @@ async function newComposition(paperW, paperH, presetId) {
 async function switchToComposition(compositionId) {
   await autoSave();
   resetToCompose();
+  // Cancel any active FRE journey when switching compositions
+  if (_activeJourney) freSkipJourney();
   let entry;
   try {
     if (_useLocalStorage) {
@@ -6787,7 +6791,7 @@ let _hintIndex = -1;         // current step in featureHints array
 let _freSkipped = false;     // user clicked "Skip guide"
 let _freEditTitleTimer = null; // auto-advance timer for edit-title hint
 
-function freStartJourney(journeyId) {
+async function freStartJourney(journeyId) {
   const allJourneys = typeof getPackJourneys === 'function' ? getPackJourneys() : [];
   const journey = allJourneys.find(j => j.id === journeyId);
   if (!journey || !journey.featureHints || !journey.featureHints.length) return;
@@ -6801,13 +6805,20 @@ function freStartJourney(journeyId) {
     MokuriDB.updateJourneyProgress(journeyId, { step: 0, status: 'in-progress' }).catch(() => {});
   }
 
-  // Load starting preset if defined and workspace is empty
-  if (journey.startingPreset != null && STATE.elements.length === 0) {
+  // Always start with a fresh canvas: save current work, create new composition, apply preset
+  if (journey.startingPreset != null) {
     const presets = typeof MOKURI_GALLERY_PRESETS !== 'undefined' ? MOKURI_GALLERY_PRESETS : [];
     const preset = presets[journey.startingPreset];
     if (preset) {
+      await autoSave();
+      resetToCompose();
+      const id = generateCompositionId();
+      STATE.activeCompositionId = id;
+      await setActiveCompositionId(id);
       applyCompositionData(preset);
-      rerenderAll();
+      STATE.compositionName = journey.name || 'Guided Print';
+      $('status-hint').textContent = STATE.compositionName;
+      autoSave();
     }
   }
 
@@ -10876,7 +10887,7 @@ async function init() {
   $('maki-begin').addEventListener('click', () => {
     hideMakimono();
     // Always start the guided journey from Begin Creating
-    setTimeout(() => freStartJourney('first-print'), 700);
+    setTimeout(async () => await freStartJourney('first-print'), 700);
   });
   $('makimono').addEventListener('click', (e) => {
     // Click on backdrop (not card content) dismisses
