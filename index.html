@@ -3118,6 +3118,11 @@ function openFeedback() {
 function _showFeedbackNudge(persist) {
   if (_activeJourney) return;
 
+  const dismiss = () => {
+    toast.classList.remove('visible');
+    setTimeout(() => toast.remove(), 400);
+  };
+
   const toast = document.createElement('div');
   toast.className = 'fre-hint';
   toast.style.cssText = 'max-width:260px; text-align:center; left:50%; top:45%; transform:translate(-50%,-50%); padding:20px 24px; font-style:normal;';
@@ -3132,16 +3137,27 @@ function _showFeedbackNudge(persist) {
   sub.textContent = 'Your feedback guides what comes next';
   toast.appendChild(sub);
 
+  const btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display:flex; gap:8px; justify-content:center;';
+
   const btn = document.createElement('button');
   btn.style.cssText = 'padding:7px 18px; background:#8a7a6a; color:#fff; border:none; border-radius:4px; font-size:12px; cursor:pointer; font-family:inherit;';
   btn.textContent = 'Share Feedback';
-  btn.addEventListener('click', () => { toast.remove(); openFeedback(); });
-  toast.appendChild(btn);
+  btn.addEventListener('click', () => { dismiss(); openFeedback(); });
+  btnRow.appendChild(btn);
+
+  const laterBtn = document.createElement('button');
+  laterBtn.style.cssText = 'padding:7px 14px; background:none; color:#8a7a6a; border:1px solid #c0b8a8; border-radius:4px; font-size:12px; cursor:pointer; font-family:inherit;';
+  laterBtn.textContent = 'Not Now';
+  laterBtn.addEventListener('click', () => dismiss());
+  btnRow.appendChild(laterBtn);
+
+  toast.appendChild(btnRow);
 
   const closeBtn = document.createElement('span');
   closeBtn.className = 'fre-hint-close';
   closeBtn.textContent = '×';
-  closeBtn.addEventListener('click', (e) => { e.stopPropagation(); toast.remove(); });
+  closeBtn.addEventListener('click', (e) => { e.stopPropagation(); dismiss(); });
   toast.appendChild(closeBtn);
 
   document.body.appendChild(toast);
@@ -3151,13 +3167,17 @@ function _showFeedbackNudge(persist) {
 
   if (persist) localStorage.setItem('mokuri-feedback-nudge', '1');
 
-  // Auto-dismiss after 15 seconds
-  setTimeout(() => {
-    if (toast.parentNode) {
-      toast.classList.remove('visible');
-      setTimeout(() => toast.remove(), 400);
-    }
-  }, 15000);
+  // Auto-dismiss after 20 seconds
+  setTimeout(() => { if (toast.parentNode) dismiss(); }, 20000);
+}
+
+// Check whether to show feedback nudge (called after each print pull)
+function _maybeFeedbackNudge() {
+  if (localStorage.getItem('mokuri-feedback-nudge')) return;
+  if (_activeJourney) return;
+  const visits = getMokuriVisits();
+  if (visits < 2) return;  // never during first session
+  setTimeout(() => _showFeedbackNudge(true), 2000);
 }
 
 // ============================================================
@@ -9536,6 +9556,9 @@ async function pullPrint() {
   freAdvance('print');
   freAdvance('pull-print');
 
+  // One-time feedback nudge after printing (not during FRE)
+  _maybeFeedbackNudge();
+
   // Auto-save print to gallery (fire-and-forget)
   // Save the mirrored version (what user sees)
   const mirrorCanvas = document.createElement('canvas');
@@ -11032,12 +11055,6 @@ async function init() {
   // Resume any in-progress journey (unless Makimono is showing)
   if (getMokuriVisits() > 3) {
     freResumeJourney();
-  }
-
-  // One-time feedback nudge at session 4+ (after FRE is done)
-  const visits = getMokuriVisits();
-  if (visits >= 4 && !localStorage.getItem('mokuri-feedback-nudge')) {
-    setTimeout(() => _showFeedbackNudge(true), 5000);
   }
 
   // Dev helper: testFeedbackNudge() in console to preview the nudge
