@@ -6816,9 +6816,9 @@ async function freStartJourney(journeyId) {
       STATE.activeCompositionId = id;
       await setActiveCompositionId(id);
       applyCompositionData(preset);
-      STATE.compositionName = journey.name || 'Guided Print';
+      STATE.compositionName = journey.title || 'Guided Print';
       $('status-hint').textContent = STATE.compositionName;
-      autoSave();
+      await autoSave();
     }
   }
 
@@ -6988,9 +6988,9 @@ function _freShowCelebration(journey) {
       const nextBtn = document.createElement('button');
       nextBtn.style.cssText = 'margin-top:12px; padding:7px 16px; background:#8a7a6a; color:#fff; border:none; border-radius:4px; font-size:12px; cursor:pointer; font-family:inherit;';
       nextBtn.textContent = 'Try: ' + next.title;
-      nextBtn.addEventListener('click', () => {
+      nextBtn.addEventListener('click', async () => {
         toast.remove();
-        freStartJourney(next.id);
+        await freStartJourney(next.id);
       });
       toast.appendChild(nextBtn);
     }
