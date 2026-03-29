@@ -6000,23 +6000,8 @@ function loadScenePreset(presetId) {
 let _currentPrompt = null;
 
 function refreshWorkshopPrompt() {
-  const allPrompts = getPackPrompts().filter(p => {
-    const pack = MOKURI_PACKS.find(pk => (pk.prompts || []).some(pp => pp.id === p.id));
-    if (!pack) return true;
-    return pack.id === 'core' || pack.id === STATE.activeStyle;
-  });
-  if (allPrompts.length === 0) {
-    $('workshop-prompt-area').style.display = 'none';
-    return;
-  }
-  $('workshop-prompt-area').style.display = '';
-  // Pick a random prompt different from current if possible
-  let pick = allPrompts[Math.floor(Math.random() * allPrompts.length)];
-  if (allPrompts.length > 1 && _currentPrompt && pick.id === _currentPrompt.id) {
-    pick = allPrompts[(allPrompts.indexOf(pick) + 1) % allPrompts.length];
-  }
-  _currentPrompt = pick;
-  $('workshop-prompt-text').textContent = '"' + pick.text + '"';
+  // Inspiration box hidden pending feature redesign
+  $('workshop-prompt-area').style.display = 'none';
 }
 
 // ============================================================
