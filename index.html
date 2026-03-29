@@ -2970,6 +2970,8 @@ html, body {
       </div>
       <button class="maki-begin" id="maki-begin">Begin Creating</button>
       <div id="maki-version" style="text-align:center; font-size:10px; color:var(--text-muted); margin-top:8px; opacity:0.6;"></div>
+      <a id="maki-feedback" href="#" onclick="event.preventDefault(); openFeedback();"
+         style="display:block; text-align:center; font-size:11px; color:#8a7a6a; margin-top:6px; opacity:0.7; text-decoration:none; letter-spacing:0.03em;">💬 Share Feedback</a>
     </div>
 
   </div>
@@ -3075,6 +3077,41 @@ if (typeof MOKURI_KACHOE_PRESETS !== 'undefined' && typeof MOKURI_GALLERY_PRESET
 //  VERSION
 // ============================================================
 const MOKURI_VERSION = '0.61';
+
+// ============================================================
+//  FEEDBACK
+// ============================================================
+const MOKURI_FEEDBACK_FORM = 'https://docs.google.com/forms/d/e/1FAIpQLSf5_2ZAFP-6CEZ9NfNA92_G7ihxuzwCNNfTZ2gesn5VTgGEvw/viewform?usp=pp_url';
+const MOKURI_FEEDBACK_ENTRY_CONTEXT = 'entry.1359547312';
+
+function buildFeedbackUrl() {
+  const w = window.innerWidth, h = window.innerHeight;
+  const portrait = h > w;
+  let layout = 'desktop';
+  if (w <= 500 && portrait) layout = 'phone-portrait';
+  else if (w <= 920 && h <= 500) layout = 'phone-landscape';
+  else if (w <= 1024 && portrait) layout = 'tablet-portrait';
+  else if (w <= 1024) layout = 'tablet-landscape';
+
+  const els = STATE.elements.length;
+  const style = STATE.activeStyle || 'core';
+  const phase = STATE.printStudioOpen ? 'print'
+    : STATE.inkStudioOpen ? 'ink'
+    : STATE.carveStudioOpen ? 'carve' : 'compose';
+
+  const parts = [`v${MOKURI_VERSION}`, layout, `${w}x${h}`, `${els} elements`, style, phase];
+
+  // Session count (async in IDB, but may be cached — use sync visits as fallback)
+  const sessions = getMokuriVisits();
+  if (sessions) parts.splice(3, 0, `session:${sessions}`);
+
+  const context = parts.join(' | ');
+  return `${MOKURI_FEEDBACK_FORM}&${MOKURI_FEEDBACK_ENTRY_CONTEXT}=${encodeURIComponent(context)}`;
+}
+
+function openFeedback() {
+  window.open(buildFeedbackUrl(), '_blank');
+}
 
 // ============================================================
 //  APP STATE
@@ -7001,6 +7038,16 @@ function _freShowCelebration(journey) {
     }
   }
 
+  // Feedback link on final journey celebration (no suggestedNext)
+  if (!journey.suggestedNext) {
+    const fbLink = document.createElement('a');
+    fbLink.href = '#';
+    fbLink.style.cssText = 'display:block; margin-top:10px; font-size:11px; color:#8a7a6a; opacity:0.7; text-decoration:none; letter-spacing:0.02em;';
+    fbLink.textContent = 'How was this experience? 💬';
+    fbLink.addEventListener('click', (e) => { e.preventDefault(); openFeedback(); });
+    toast.appendChild(fbLink);
+  }
+
   // Close button — stays until user dismisses
   const closeBtn = document.createElement('span');
   closeBtn.className = 'fre-hint-close';
@@ -10887,6 +10934,20 @@ async function init() {
   // Resume any in-progress journey (unless Makimono is showing)
   if (getMokuriVisits() > 3) {
     freResumeJourney();
+  }
+
+  // One-time feedback nudge at session 4+ (after FRE is done)
+  const visits = getMokuriVisits();
+  if (visits >= 4 && !localStorage.getItem('mokuri-feedback-nudge')) {
+    setTimeout(() => {
+      const hint = $('status-hint');
+      if (hint && !_activeJourney) {
+        const prev = hint.textContent;
+        hint.innerHTML = 'Enjoying Mokuri? <a href="#" style="color:inherit;text-decoration:underline;opacity:0.85;" onclick="event.preventDefault();openFeedback();">Share feedback →</a>';
+        localStorage.setItem('mokuri-feedback-nudge', '1');
+        setTimeout(() => { hint.textContent = prev; }, 8000);
+      }
+    }, 5000);
   }
 
   $('maki-begin').addEventListener('click', () => {
