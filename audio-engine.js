@@ -835,9 +835,12 @@ const MokuriAudio = (() => {
   document.addEventListener('touchstart', initOnGesture);
   document.addEventListener('pointerdown', initOnGesture);
 
-  // Resume AudioContext when returning from background (iOS PWA suspends it)
+  // Suspend AudioContext when app goes to background; resume when returning
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && ctx && ctx.state === 'suspended') {
+    if (!ctx) return;
+    if (document.hidden) {
+      ctx.suspend();
+    } else if (ctx.state === 'suspended') {
       ctx.resume();
     }
   });
