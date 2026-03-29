@@ -434,11 +434,6 @@ html, body {
   font-weight: 600;
 }
 .style-chip-icon { font-size: 12px; margin-right: 2px; }
-.status-style-badge {
-  font-size: 11px;
-  opacity: 0.6;
-}
-
 .zone-selector { min-height: 0; }
 .zone-selector:empty { display: none; }
 
@@ -2777,7 +2772,6 @@ html, body {
   <!-- Status bar -->
   <div class="status-bar">
     <span id="status-elements">0 elements</span>
-    <span id="status-style" class="status-style-badge" title="Active style"></span>
     <span id="status-zoom">100%</span>
     <span id="status-hint">Place elements on the canvas</span>
     <div class="status-view-controls">
@@ -7081,13 +7075,7 @@ function switchActiveStyle(packId) {
 }
 
 function updateStyleBadge() {
-  const badge = $('status-style');
-  if (!badge) return;
-  const pack = getPackById(STATE.activeStyle);
-  if (pack) {
-    const displayName = pack.id === 'core' ? 'Mokuri' : pack.id === 'moribana' ? 'Ikebana' : pack.name.replace(' Collection', '');
-    badge.textContent = (pack.icon || '◆') + ' ' + displayName;
-  }
+  // Style indicator removed from status bar (shown in Elements pane instead)
 }
 
 function buildElementPicker() {
