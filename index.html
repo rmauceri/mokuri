@@ -4503,6 +4503,8 @@ function updateSelection() {
     const wsRect = workspaceEl.getBoundingClientRect();
     const svgPerPx = STATE.viewBox.w / wsRect.width;
     const handleSize = (isCoarse ? 14 : 7) * svgPerPx;
+    // Invisible touch hit area — 36px minimum target on touch
+    const touchHit = isCoarse ? 36 * svgPerPx : 0;
     const corners = [
       { cx: -hw - pad, cy: -hh - pad, cursor: 'nw-resize' },
       { cx: hw + pad, cy: -hh - pad, cursor: 'ne-resize' },
@@ -4510,6 +4512,17 @@ function updateSelection() {
       { cx: -hw - pad, cy: hh + pad, cursor: 'sw-resize' },
     ];
     corners.forEach(c => {
+      if (touchHit) {
+        const hit = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        hit.setAttribute('x', c.cx - touchHit / 2);
+        hit.setAttribute('y', c.cy - touchHit / 2);
+        hit.setAttribute('width', touchHit);
+        hit.setAttribute('height', touchHit);
+        hit.setAttribute('fill', 'transparent');
+        hit.style.cursor = c.cursor;
+        hit.setAttribute('data-handle', c.cursor);
+        g.appendChild(hit);
+      }
       const h = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
       h.setAttribute('x', c.cx - handleSize / 2);
       h.setAttribute('y', c.cy - handleSize / 2);
@@ -4518,7 +4531,8 @@ function updateSelection() {
       h.setAttribute('rx', 2 * svgPerPx);
       h.classList.add('handle');
       h.style.cursor = c.cursor;
-      h.setAttribute('data-handle', c.cursor);
+      if (touchHit) h.setAttribute('pointer-events', 'none');
+      else h.setAttribute('data-handle', c.cursor);
       g.appendChild(h);
     });
 
@@ -4531,9 +4545,20 @@ function updateSelection() {
       { cx: hw + pad, cy: 0, cursor: 'e-resize', horiz: false },
     ];
     edges.forEach(ed => {
-      const h = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
       const w = ed.horiz ? edgeW : edgeH;
       const ht = ed.horiz ? edgeH : edgeW;
+      if (touchHit) {
+        const hit = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        hit.setAttribute('x', ed.cx - touchHit / 2);
+        hit.setAttribute('y', ed.cy - touchHit / 2);
+        hit.setAttribute('width', touchHit);
+        hit.setAttribute('height', touchHit);
+        hit.setAttribute('fill', 'transparent');
+        hit.style.cursor = ed.cursor;
+        hit.setAttribute('data-handle', ed.cursor);
+        g.appendChild(hit);
+      }
+      const h = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
       h.setAttribute('x', ed.cx - w / 2);
       h.setAttribute('y', ed.cy - ht / 2);
       h.setAttribute('width', w);
@@ -4541,7 +4566,8 @@ function updateSelection() {
       h.setAttribute('rx', 2 * svgPerPx);
       h.classList.add('handle-edge');
       h.style.cursor = ed.cursor;
-      h.setAttribute('data-handle', ed.cursor);
+      if (touchHit) h.setAttribute('pointer-events', 'none');
+      else h.setAttribute('data-handle', ed.cursor);
       g.appendChild(h);
     });
 
@@ -4554,12 +4580,23 @@ function updateSelection() {
     rotLine.setAttribute('stroke-width', (isCoarse ? 2 : 1.5) * svgPerPx);
     g.appendChild(rotLine);
 
+    if (touchHit) {
+      const rotHit = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      rotHit.setAttribute('cx', 0);
+      rotHit.setAttribute('cy', -hh - pad - rotArm);
+      rotHit.setAttribute('r', touchHit / 2);
+      rotHit.setAttribute('fill', 'transparent');
+      rotHit.setAttribute('data-handle', 'rotate');
+      rotHit.style.cursor = 'grab';
+      g.appendChild(rotHit);
+    }
     const rotHandle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     rotHandle.setAttribute('cx', 0);
     rotHandle.setAttribute('cy', -hh - pad - rotArm);
     rotHandle.setAttribute('r', (isCoarse ? 8 : 5) * svgPerPx);
     rotHandle.classList.add('handle', 'handle-rotate');
-    rotHandle.setAttribute('data-handle', 'rotate');
+    if (touchHit) rotHandle.setAttribute('pointer-events', 'none');
+    else rotHandle.setAttribute('data-handle', 'rotate');
     g.appendChild(rotHandle);
 
     // Dim handles and show lock icon for locked elements
@@ -4630,6 +4667,7 @@ function updateSelection() {
     const wsRect = workspaceEl.getBoundingClientRect();
     const svgPerPx = STATE.viewBox.w / wsRect.width;
     const handleSize = (isCoarse ? 14 : 7) * svgPerPx;
+    const touchHit = isCoarse ? 36 * svgPerPx : 0;
     const groupCorners = [
       { cx: bb.minX - groupPad, cy: bb.minY - groupPad, cursor: 'nw-resize' },
       { cx: bb.maxX + groupPad, cy: bb.minY - groupPad, cursor: 'ne-resize' },
@@ -4637,6 +4675,18 @@ function updateSelection() {
       { cx: bb.minX - groupPad, cy: bb.maxY + groupPad, cursor: 'sw-resize' },
     ];
     groupCorners.forEach(c => {
+      if (touchHit) {
+        const hit = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        hit.setAttribute('x', c.cx - touchHit / 2);
+        hit.setAttribute('y', c.cy - touchHit / 2);
+        hit.setAttribute('width', touchHit);
+        hit.setAttribute('height', touchHit);
+        hit.setAttribute('fill', 'transparent');
+        hit.style.cursor = c.cursor;
+        hit.setAttribute('data-handle', c.cursor);
+        hit.setAttribute('data-group-handle', 'true');
+        selectionLayer.appendChild(hit);
+      }
       const h = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
       h.setAttribute('x', c.cx - handleSize / 2);
       h.setAttribute('y', c.cy - handleSize / 2);
@@ -4645,7 +4695,8 @@ function updateSelection() {
       h.setAttribute('rx', 2 * svgPerPx);
       h.classList.add('handle');
       h.style.cursor = c.cursor;
-      h.setAttribute('data-handle', c.cursor);
+      if (touchHit) h.setAttribute('pointer-events', 'none');
+      else h.setAttribute('data-handle', c.cursor);
       h.setAttribute('data-group-handle', 'true');
       selectionLayer.appendChild(h);
     });
