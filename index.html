@@ -11047,8 +11047,14 @@ async function init() {
 
   $('maki-begin').addEventListener('click', () => {
     hideMakimono();
-    // Always start with a fresh canvas from Begin Creating
-    setTimeout(async () => await freStartJourney('first-print', { freshCanvas: true }), 700);
+    // Start FRE only if first-print journey hasn't been completed
+    setTimeout(async () => {
+      try {
+        const progress = await MokuriDB.getJourneyProgress();
+        if (progress['first-print'] && progress['first-print'].status === 'complete') return;
+      } catch (e) {}
+      await freStartJourney('first-print', { freshCanvas: true });
+    }, 700);
   });
   $('makimono').addEventListener('click', (e) => {
     // Click on backdrop (not card content) dismisses
