@@ -289,8 +289,8 @@ Inspiration prompt section in Workshop panel hidden pending feature redesign. `r
 
 ### Style Packs (Expansion Content)
 Active Style model and two packs shipped. Next candidates:
-- **Shin-hanga** — Light & Atmosphere pack. Rain layers, fog banks, lantern glow, moonlit reflections, 2-3 mood palettes. Leverages existing atmosphere system.
-- **Wabi-sabi** — Minimalism mode/preset (not a paid pack). Rougher edges, ink bleed, sparse elements.
+- **Tsukiyo (月夜)** — Moonlit Night pack. Night-specific elements (lanterns, fireflies, owl, fox, ancient tree, moon reflection, stars), 3 nocturnal palettes, atmospheric compositions. Full design doc: `docs/tsukiyo_style_pack.md`. Also includes 4 perspective landscape elements added to Core.
+- **Machi (街)** — Town & Architecture pack. Meisho-e tradition — townscapes, built structures, architectural mood pieces. Potential elements: castle keep, machiya (townhouse), shrine gate variants, harbor/wharf, merchant stall, stone wall, tile rooftops. Design challenges: consistent perspective convention (oblique/flat view matching existing buildings), right detail level for carve levels, scale relationships between large structures (castle) and small ones (stall). High creative reward — genuinely new compositional vocabulary for Mokuri. Design doc TBD.
 - Additional contrasting packs to validate the Active Style model with non-landscape creative contexts.
 
 ### First-Run Experience ✅ (Core Complete + Hardened)
