@@ -266,6 +266,10 @@ html, body {
   overflow-x: hidden;
   padding: 8px;
 }
+/* iOS: allow native vertical scroll in element panel (body has touch-action: none) */
+.ios-device .panel-scroll {
+  touch-action: pan-y;
+}
 
 .element-category {
   margin-bottom: 12px;
@@ -308,8 +312,9 @@ html, body {
   position: relative;
   touch-action: pan-y;
 }
-/* On non-iOS, JS handles scroll vs drag detection — disable browser pan to prevent pointercancel */
-.element-thumb { touch-action: none; }
+/* Non-iOS touch/pen: JS handles scroll vs drag — disable browser pan to prevent pointercancel.
+   iOS uses tap-to-place so native scroll must be preserved (touch-action stays pan-y/pan-x). */
+body:not(.ios-device) .element-thumb { touch-action: none; }
 .element-thumb:hover {
   border-color: var(--accent);
   box-shadow: var(--shadow);
@@ -2260,6 +2265,7 @@ html, body {
     -webkit-overflow-scrolling: touch;
     touch-action: pan-x;
   }
+  .ios-device .panel-scroll { touch-action: pan-x; }
 
   /* Category sections flow horizontally */
   .element-category {
@@ -2297,13 +2303,17 @@ html, body {
     height: 118px;
   }
 
-  /* Element thumbnails: touch-friendly size for 2-row fit */
+  /* Element thumbnails: touch-friendly size for 2-row fit.
+     iOS: pan-x for native horizontal scroll (tap-to-place doesn't need drag).
+     Non-iOS: touch-action stays 'none' (set globally) — JS handles scroll vs drag. */
   .element-grid .element-thumb {
     width: 60px;
     height: 56px;
     aspect-ratio: auto;
     padding-bottom: 0;
     flex-shrink: 0;
+  }
+  .ios-device .element-grid .element-thumb {
     touch-action: pan-x;
   }
   .element-grid .element-thumb svg {
@@ -3270,6 +3280,7 @@ const STATE = {
 // iOS/iPadOS detection — tap-to-place instead of drag on these platforms
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+if (IS_IOS) document.body.classList.add('ios-device');
 
 // ============================================================
 //  PALETTES (used at print time only)
