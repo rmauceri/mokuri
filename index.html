@@ -2316,6 +2316,14 @@ html, body {
   .all-elements-accordion {
     flex-direction: row;
     align-items: stretch;
+    height: auto;
+  }
+  .all-elements-content {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    overflow-x: auto;
+    align-items: flex-start;
   }
   .all-elements-toggle {
     writing-mode: vertical-lr;
@@ -7326,6 +7334,7 @@ function buildElementPicker() {
     toggle.style.cursor = 'pointer';
     toggle.style.opacity = '0.6';
     const content = document.createElement('div');
+    content.className = 'all-elements-content';
     content.style.display = 'none';
     toggle.addEventListener('click', () => {
       const open = content.style.display !== 'none';
