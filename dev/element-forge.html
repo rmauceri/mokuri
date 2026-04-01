@@ -950,6 +950,16 @@ function setTool(tool) {
 const EMA_ALPHA_POS = 0.45;
 
 function svgPoint(e) {
+  // Use SVG's native coordinate transform — handles aspect ratio, padding, etc.
+  const pt = svg.createSVGPoint();
+  pt.x = e.clientX;
+  pt.y = e.clientY;
+  const ctm = svg.getScreenCTM();
+  if (ctm) {
+    const transformed = pt.matrixTransform(ctm.inverse());
+    return { x: transformed.x, y: transformed.y };
+  }
+  // Fallback
   const rect = canvasArea.getBoundingClientRect();
   const vb = STATE.viewBox;
   return {
@@ -1025,11 +1035,24 @@ function r(v) { return Math.round(v * 100) / 100; }
 function beginStroke(e) {
   if (STATE.tool !== 'stroke' && STATE.tool !== 'fill') return;
   const pt = svgPoint(e);
+  // Create a live polyline element for fast rendering during drawing
+  const layer = $('layer-active');
+  layer.innerHTML = '';
+  const polyline = document.createElementNS('http://www.w3.org/2000/svg', STATE.tool === 'fill' ? 'polygon' : 'polyline');
+  polyline.setAttribute('fill', STATE.tool === 'fill' ? 'rgba(139,107,74,0.2)' : 'none');
+  polyline.setAttribute('stroke', ZONE_COLORS[STATE.activeZoneIndex % ZONE_COLORS.length]);
+  polyline.setAttribute('stroke-width', STATE.tool === 'fill' ? 1 : STATE.strokeWidth);
+  polyline.setAttribute('stroke-linecap', 'round');
+  polyline.setAttribute('stroke-linejoin', 'round');
+  polyline.setAttribute('pointer-events', 'none');
+  layer.appendChild(polyline);
+
   STATE.drawing = {
     points: [pt],
     smoothed: pt,
+    liveElement: polyline,
+    pointsStr: `${r(pt.x)},${r(pt.y)}`,
   };
-  renderActiveStroke();
 }
 
 function moveStroke(e) {
@@ -1042,8 +1065,10 @@ function moveStroke(e) {
     const smoothed = smoothPoint(STATE.drawing.smoothed, raw);
     STATE.drawing.smoothed = smoothed;
     STATE.drawing.points.push({ ...smoothed });
+    STATE.drawing.pointsStr += ` ${r(smoothed.x)},${r(smoothed.y)}`;
   }
-  renderActiveStroke();
+  // Update the live polyline points attribute directly (no DOM rebuild)
+  STATE.drawing.liveElement.setAttribute('points', STATE.drawing.pointsStr);
 }
 
 function endStroke(e) {
@@ -1087,22 +1112,6 @@ function endStroke(e) {
   renderCanvas();
   updateBudget();
   updatePreviews();
-}
-
-function renderActiveStroke() {
-  const layer = $('layer-active');
-  layer.innerHTML = '';
-  if (!STATE.drawing || STATE.drawing.points.length < 2) return;
-
-  const d = polylineToQBezier(STATE.drawing.points);
-  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  path.setAttribute('d', d);
-  path.setAttribute('fill', STATE.tool === 'fill' ? 'rgba(139,107,74,0.2)' : 'none');
-  path.setAttribute('stroke', ZONE_COLORS[STATE.activeZoneIndex % ZONE_COLORS.length]);
-  path.setAttribute('stroke-width', STATE.tool === 'fill' ? 1 : STATE.strokeWidth);
-  path.setAttribute('stroke-linecap', 'round');
-  path.setAttribute('stroke-linejoin', 'round');
-  layer.appendChild(path);
 }
 
 function clearActiveStroke() {
