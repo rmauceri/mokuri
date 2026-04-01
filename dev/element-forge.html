@@ -747,6 +747,29 @@ button.sm { padding: 3px 8px; font-size: 11px; }
 <script src="../assets/kacho-elements.js"></script>
 <script src="../assets/moribana-elements.js"></script>
 
+<!-- Collect all pack arrays into window before IIFE seals scope -->
+<script>
+window._FORGE_PACKS = [];
+[
+  ['MOKURI_ELEMENTS', 'Core'],
+  ['MOKURI_CORE_ELEMENTS', 'Extended'],
+  ['MOKURI_FAUNA_ELEMENTS', 'Fauna'],
+  ['MOKURI_SCENE_ELEMENTS', 'Scene'],
+  ['MOKURI_HANKO_ELEMENTS', 'Hanko'],
+  ['MOKURI_FORMS_ELEMENTS', 'Forms'],
+  ['MOKURI_FIGURES_ELEMENTS', 'Figures'],
+  ['MOKURI_KACHOE_ELEMENTS', 'Kacho-e'],
+  ['MOKURI_MORIBANA_ELEMENTS', 'Moribana'],
+].forEach(function(entry) {
+  try {
+    var arr = eval(entry[0]);
+    if (Array.isArray(arr) && arr.length > 0) {
+      window._FORGE_PACKS.push({ label: entry[1], elements: arr });
+    }
+  } catch(e) {}
+});
+</script>
+
 <script>
 /* ═══════════════════════════════════════════════════════════════
    Element Forge — Mokuri Element Design Tool
@@ -1376,18 +1399,8 @@ function populateImportDialog() {
 
 function getAllElements() {
   const all = [];
-  const globals = [
-    'MOKURI_ELEMENTS', 'MOKURI_CORE_ELEMENTS',
-    'MOKURI_FAUNA_ELEMENTS', 'MOKURI_SCENE_ELEMENTS',
-    'MOKURI_HANKO_ELEMENTS', 'MOKURI_FORMS_ELEMENTS',
-    'MOKURI_FIGURES_ELEMENTS', 'MOKURI_KACHOE_ELEMENTS',
-    'MOKURI_MORIBANA_ELEMENTS',
-  ];
-  globals.forEach(g => {
-    try {
-      const arr = window[g];
-      if (Array.isArray(arr)) all.push(...arr);
-    } catch(e) {}
+  (window._FORGE_PACKS || []).forEach(pack => {
+    all.push(...pack.elements);
   });
   // Deduplicate by id
   const seen = new Set();
