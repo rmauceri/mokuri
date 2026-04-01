@@ -1310,10 +1310,25 @@ var Potrace = (function() {
     info.isReady = true;
   }
 
+  // Load a pre-computed binary mask (Int8Array of 0/1 values, w×h)
+  function loadBmFromBinaryArray(binArray, w, h) {
+    if (info.isReady) {
+      bm = null;
+      pathlist = [];
+      info.isReady = false;
+    }
+    bm = new Bitmap(w, h);
+    for (var i = 0; i < w * h; i++) {
+      bm.data[i] = binArray[i] ? 1 : 0;
+    }
+    info.isReady = true;
+  }
+
   return{
     loadImageFromFile: loadImageFromFile,
     loadImageFromUrl: loadImageFromUrl,
     loadBmFromImageData: loadBmFromImageData,
+    loadBmFromBinaryArray: loadBmFromBinaryArray,
     setParameter: setParameter,
     process: process,
     getSVG: getSVG,

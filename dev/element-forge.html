@@ -512,6 +512,93 @@ button.sm { padding: 3px 8px; font-size: 11px; }
   min-height: 14px;
 }
 
+/* ── Trace Mode Toggle ── */
+.trace-mode-toggle {
+  display: flex;
+  gap: 0;
+  margin-bottom: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.trace-mode-toggle button {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--muted);
+  transition: background 0.15s, color 0.15s;
+}
+.trace-mode-toggle button.active {
+  background: var(--accent);
+  color: #fff;
+}
+.trace-mode-toggle button:hover:not(.active) {
+  background: var(--bg-deep);
+}
+
+/* ── Color Trace ── */
+.color-palette-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+}
+.color-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 6px;
+  border-radius: 5px;
+  background: var(--bg);
+  font-size: 10px;
+  cursor: pointer;
+  transition: outline 0.12s;
+}
+.color-row:hover { background: var(--bg-deep); }
+.color-row.is-bg { opacity: 0.45; text-decoration: line-through; }
+.color-swatch-lg {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.color-row .color-info {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.color-row .color-pct {
+  font-size: 9px;
+  color: var(--muted);
+}
+.color-row select {
+  font-size: 10px;
+  padding: 1px 2px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--panel);
+  max-width: 60px;
+}
+.color-row .bg-badge {
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--muted);
+  background: var(--panel-strong);
+  padding: 1px 4px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.color-distance-row {
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
 /* ── Toast ── */
 .toast {
   position: fixed;
@@ -649,39 +736,69 @@ button.sm { padding: 3px 8px; font-size: 11px; }
             </div>
 
             <div id="trace-controls" style="display:none; margin-top:10px;">
-              <div class="threshold-group">
-                <div class="slider-row">
-                  <span class="thresh-label">Block</span>
-                  <input type="range" id="thresh-block" min="10" max="250" value="200">
-                  <span class="slider-val" id="thresh-block-val">200</span>
+              <div class="trace-mode-toggle">
+                <button class="active" id="trace-mode-mono">Mono</button>
+                <button id="trace-mode-color">Color</button>
+              </div>
+
+              <!-- Mono trace controls (existing) -->
+              <div id="mono-trace-panel">
+                <div class="threshold-group">
+                  <div class="slider-row">
+                    <span class="thresh-label">Block</span>
+                    <input type="range" id="thresh-block" min="10" max="250" value="200">
+                    <span class="slider-val" id="thresh-block-val">200</span>
+                  </div>
+                  <div class="slider-row">
+                    <span class="thresh-label">Shape</span>
+                    <input type="range" id="thresh-shape" min="10" max="250" value="128">
+                    <span class="slider-val" id="thresh-shape-val">128</span>
+                  </div>
+                  <div class="slider-row">
+                    <span class="thresh-label">Detail</span>
+                    <input type="range" id="thresh-detail" min="10" max="250" value="80">
+                    <span class="slider-val" id="thresh-detail-val">80</span>
+                  </div>
                 </div>
-                <div class="slider-row">
-                  <span class="thresh-label">Shape</span>
-                  <input type="range" id="thresh-shape" min="10" max="250" value="128">
-                  <span class="slider-val" id="thresh-shape-val">128</span>
-                </div>
-                <div class="slider-row">
-                  <span class="thresh-label">Detail</span>
-                  <input type="range" id="thresh-detail" min="10" max="250" value="80">
-                  <span class="slider-val" id="thresh-detail-val">80</span>
+                <div class="trace-actions">
+                  <button class="primary" id="btn-trace">Trace Mono</button>
+                  <button class="sm" id="btn-re-simplify">Re-simplify</button>
                 </div>
               </div>
 
-              <div class="slider-row" style="margin-bottom:4px;">
-                <span class="thresh-label" title="Path simplification (higher = simpler)">Epsilon</span>
-                <input type="range" id="trace-epsilon" min="0.5" max="5" step="0.1" value="1.0">
-                <span class="slider-val" id="trace-epsilon-val">1.0</span>
+              <!-- Color trace controls (new) -->
+              <div id="color-trace-panel" style="display:none;">
+                <div class="slider-row" style="margin-bottom:4px;">
+                  <span class="thresh-label" title="Number of color clusters">Colors</span>
+                  <input type="range" id="color-k" min="3" max="10" step="1" value="5">
+                  <span class="slider-val" id="color-k-val">5</span>
+                </div>
+                <div style="margin-bottom:6px;">
+                  <button class="sm" id="btn-analyze-colors" style="width:100%;">Analyze Colors</button>
+                </div>
+                <div id="color-palette-area" class="color-palette-grid"></div>
+                <div class="slider-row color-distance-row" style="display:none;" id="color-dist-row">
+                  <span class="thresh-label" title="Tolerance for matching pixels to color cluster">Tolerance</span>
+                  <input type="range" id="color-distance" min="10" max="80" step="1" value="35">
+                  <span class="slider-val" id="color-distance-val">35</span>
+                </div>
+                <div class="trace-actions" id="color-trace-actions" style="display:none;">
+                  <button class="primary" id="btn-color-trace">Trace Colors</button>
+                </div>
               </div>
 
-              <div class="slider-row" style="margin-bottom:4px;">
-                <span class="thresh-label" title="Suppress speckles up to this size">Turd</span>
-                <input type="range" id="trace-turd" min="0" max="30" step="1" value="6">
-                <span class="slider-val" id="trace-turd-val">6</span>
-              </div>
-
-              <div class="trace-actions">
-                <button class="primary" id="btn-trace">Trace Image</button>
-                <button class="sm" id="btn-re-simplify">Re-simplify</button>
+              <!-- Shared controls -->
+              <div style="margin-top:8px; border-top:1px solid var(--border); padding-top:8px;">
+                <div class="slider-row" style="margin-bottom:4px;">
+                  <span class="thresh-label" title="Path simplification (higher = simpler)">Epsilon</span>
+                  <input type="range" id="trace-epsilon" min="0.5" max="5" step="0.1" value="1.0">
+                  <span class="slider-val" id="trace-epsilon-val">1.0</span>
+                </div>
+                <div class="slider-row" style="margin-bottom:4px;">
+                  <span class="thresh-label" title="Suppress speckles up to this size">Turd</span>
+                  <input type="range" id="trace-turd" min="0" max="30" step="1" value="6">
+                  <span class="slider-val" id="trace-turd-val">6</span>
+                </div>
               </div>
               <div class="trace-status" id="trace-status"></div>
             </div>
@@ -959,6 +1076,12 @@ const STATE = {
   traceImageEl: null,       // HTMLImageElement for the loaded image
   traceRawPaths: [null, null, null],  // raw SVG d strings from Potrace per level
   tracing: false,
+  traceMode: 'mono',        // 'mono' | 'color'
+
+  // Color trace
+  colorClusters: null,      // [{r,g,b,count,pct}] from k-means
+  colorAssignments: [],     // [{isBg:bool, zone:string, level:0|1|2}] per cluster
+  colorTraceRawPaths: [],   // raw d strings per color cluster
 
   // Viewport
   viewBox: { x: 0, y: 0, w: 160, h: 160 },
@@ -1270,6 +1393,16 @@ function loadTraceImage(src) {
     STATE.traceImageData = null;
     STATE.traceImageEl = null;
     STATE.traceRawPaths = [null, null, null];
+    STATE.colorClusters = null;
+    STATE.colorAssignments = [];
+    STATE.colorTraceRawPaths = [];
+    // Clear color palette UI
+    var colorArea = $('color-palette-area');
+    if (colorArea) colorArea.innerHTML = '';
+    var distRow = $('color-dist-row');
+    if (distRow) distRow.style.display = 'none';
+    var colorActions = $('color-trace-actions');
+    if (colorActions) colorActions.style.display = 'none';
     // Clear reference layer
     $('ref-layer').innerHTML = '';
     return;
@@ -1575,6 +1708,12 @@ function traceAllLevels() {
 
 // Re-simplify existing trace data at a new epsilon
 function reSimplify() {
+  // Try color trace re-simplify first
+  if (STATE.traceMode === 'color' && STATE.colorTraceRawPaths && STATE.colorTraceRawPaths.length > 0) {
+    reSimplifyColor();
+    return;
+  }
+
   var epsilon = parseFloat($('trace-epsilon').value);
   var srcW = STATE.traceImageData ? STATE.traceImageData.width : STATE.viewBoxW;
   var srcH = STATE.traceImageData ? STATE.traceImageData.height : STATE.viewBoxH;
@@ -1603,9 +1742,437 @@ function reSimplify() {
     showToast('Re-simplified at \u03b5=' + epsilon);
   } else {
     showToast('No trace data to re-simplify');
-    // Pop the undo we just pushed since nothing changed
     STATE.undoStack.pop();
   }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ── Color-Aware Tracing ──
+// ═══════════════════════════════════════════════════════════════
+
+// K-means++ color clustering on ImageData
+function kMeansColors(imageData, k, maxIter) {
+  maxIter = maxIter || 20;
+  var data = imageData.data;
+  var n = data.length / 4;
+
+  // Sample pixels (every 2nd pixel for speed on large images)
+  var step = n > 40000 ? 2 : 1;
+  var pixels = [];
+  for (var i = 0; i < n; i += step) {
+    var off = i * 4;
+    pixels.push([data[off], data[off + 1], data[off + 2]]);
+  }
+
+  // K-means++ init: pick first centroid randomly, then pick each subsequent
+  // centroid with probability proportional to distance² from nearest existing centroid
+  var centroids = [];
+  var idx = Math.floor(Math.random() * pixels.length);
+  centroids.push(pixels[idx].slice());
+
+  for (var c = 1; c < k; c++) {
+    var dists = [];
+    var totalDist = 0;
+    for (var p = 0; p < pixels.length; p++) {
+      var minD = Infinity;
+      for (var ci = 0; ci < centroids.length; ci++) {
+        var dr = pixels[p][0] - centroids[ci][0];
+        var dg = pixels[p][1] - centroids[ci][1];
+        var db = pixels[p][2] - centroids[ci][2];
+        var d = dr * dr + dg * dg + db * db;
+        if (d < minD) minD = d;
+      }
+      dists.push(minD);
+      totalDist += minD;
+    }
+    // Weighted random selection
+    var rand = Math.random() * totalDist;
+    var cumulative = 0;
+    for (var p = 0; p < pixels.length; p++) {
+      cumulative += dists[p];
+      if (cumulative >= rand) {
+        centroids.push(pixels[p].slice());
+        break;
+      }
+    }
+  }
+
+  // Iterate: assign pixels → update centroids
+  var assignments = new Int32Array(pixels.length);
+  for (var iter = 0; iter < maxIter; iter++) {
+    var moved = false;
+
+    // Assign each pixel to nearest centroid
+    for (var p = 0; p < pixels.length; p++) {
+      var minD = Infinity, best = 0;
+      for (var ci = 0; ci < k; ci++) {
+        var dr = pixels[p][0] - centroids[ci][0];
+        var dg = pixels[p][1] - centroids[ci][1];
+        var db = pixels[p][2] - centroids[ci][2];
+        var d = dr * dr + dg * dg + db * db;
+        if (d < minD) { minD = d; best = ci; }
+      }
+      if (assignments[p] !== best) { assignments[p] = best; moved = true; }
+    }
+
+    if (!moved) break;
+
+    // Update centroids to mean of assigned pixels
+    var sums = [];
+    var counts = new Int32Array(k);
+    for (var ci = 0; ci < k; ci++) sums.push([0, 0, 0]);
+
+    for (var p = 0; p < pixels.length; p++) {
+      var a = assignments[p];
+      sums[a][0] += pixels[p][0];
+      sums[a][1] += pixels[p][1];
+      sums[a][2] += pixels[p][2];
+      counts[a]++;
+    }
+
+    for (var ci = 0; ci < k; ci++) {
+      if (counts[ci] > 0) {
+        centroids[ci][0] = Math.round(sums[ci][0] / counts[ci]);
+        centroids[ci][1] = Math.round(sums[ci][1] / counts[ci]);
+        centroids[ci][2] = Math.round(sums[ci][2] / counts[ci]);
+      }
+    }
+  }
+
+  // Count actual pixel assignment (on full image, not sampled)
+  var fullCounts = new Int32Array(k);
+  for (var i = 0; i < n; i++) {
+    var off = i * 4;
+    var r = data[off], g = data[off + 1], b = data[off + 2];
+    var minD = Infinity, best = 0;
+    for (var ci = 0; ci < k; ci++) {
+      var dr = r - centroids[ci][0];
+      var dg = g - centroids[ci][1];
+      var db = b - centroids[ci][2];
+      var d = dr * dr + dg * dg + db * db;
+      if (d < minD) { minD = d; best = ci; }
+    }
+    fullCounts[best]++;
+  }
+
+  // Build result sorted by count (largest first)
+  var results = [];
+  for (var ci = 0; ci < k; ci++) {
+    results.push({
+      r: centroids[ci][0],
+      g: centroids[ci][1],
+      b: centroids[ci][2],
+      count: fullCounts[ci],
+      pct: Math.round(fullCounts[ci] / n * 100)
+    });
+  }
+  results.sort(function(a, b) { return b.count - a.count; });
+  return results;
+}
+
+// Analyze colors in the loaded image
+function analyzeColors() {
+  if (!STATE.traceImageData) {
+    showToast('No image loaded');
+    return;
+  }
+  var k = parseInt($('color-k').value) || 5;
+  $('trace-status').textContent = 'Analyzing colors...';
+
+  // Use setTimeout to let UI update
+  setTimeout(function() {
+    var clusters = kMeansColors(STATE.traceImageData, k);
+    STATE.colorClusters = clusters;
+
+    // Auto-detect background: largest cluster is likely background
+    // Also auto-assign zones and levels based on brightness
+    STATE.colorAssignments = clusters.map(function(c, i) {
+      var brightness = 0.2126 * c.r + 0.7153 * c.g + 0.0721 * c.b;
+      return {
+        isBg: i === 0 && brightness > 200,  // largest cluster + very light = background
+        zone: 'body',
+        level: i === 0 ? 0 : (brightness < 80 ? 2 : 1)  // dark=detail, mid=shape, light=block
+      };
+    });
+
+    // Auto-create zones from distinct non-bg colors
+    autoCreateZonesFromColors();
+
+    renderColorPalette();
+    $('color-dist-row').style.display = '';
+    $('color-trace-actions').style.display = '';
+    $('trace-status').textContent = k + ' colors found';
+  }, 10);
+}
+
+// Create zones matching detected colors (for non-bg clusters)
+function autoCreateZonesFromColors() {
+  if (!STATE.colorClusters) return;
+  var nonBg = STATE.colorClusters.filter(function(c, i) {
+    return !STATE.colorAssignments[i].isBg;
+  });
+
+  // Name zones by relative brightness
+  var sorted = nonBg.map(function(c, i) {
+    return { c: c, brightness: 0.2126 * c.r + 0.7153 * c.g + 0.0721 * c.b, origIdx: i };
+  }).sort(function(a, b) { return b.brightness - a.brightness; });
+
+  var zoneNames = ['body', 'mid', 'dark', 'accent', 'detail', 'shadow', 'highlight', 'extra1', 'extra2'];
+
+  // Replace zones with color-derived zones
+  STATE.zones = [];
+  var nonBgIdx = 0;
+  STATE.colorClusters.forEach(function(c, i) {
+    if (!STATE.colorAssignments[i].isBg) {
+      var name = zoneNames[nonBgIdx] || ('zone' + nonBgIdx);
+      STATE.zones.push({ id: name, defaultPaletteSlot: nonBgIdx });
+      STATE.colorAssignments[i].zone = name;
+      nonBgIdx++;
+    }
+  });
+
+  if (STATE.zones.length === 0) {
+    STATE.zones = [{ id: 'body', defaultPaletteSlot: 0 }];
+  }
+  STATE.activeZoneIndex = 0;
+  renderZoneChips();
+}
+
+// Render the color palette swatches UI
+function renderColorPalette() {
+  var area = $('color-palette-area');
+  area.innerHTML = '';
+  if (!STATE.colorClusters) return;
+
+  STATE.colorClusters.forEach(function(c, i) {
+    var assign = STATE.colorAssignments[i];
+    var row = document.createElement('div');
+    row.className = 'color-row' + (assign.isBg ? ' is-bg' : '');
+
+    var swatch = document.createElement('div');
+    swatch.className = 'color-swatch-lg';
+    swatch.style.background = 'rgb(' + c.r + ',' + c.g + ',' + c.b + ')';
+    row.appendChild(swatch);
+
+    var info = document.createElement('div');
+    info.className = 'color-info';
+
+    if (assign.isBg) {
+      info.innerHTML = '<span class="bg-badge">BG</span> <span class="color-pct">' + c.pct + '%</span>';
+    } else {
+      // Zone selector
+      var zoneSel = document.createElement('select');
+      zoneSel.title = 'Assign zone';
+      STATE.zones.forEach(function(z) {
+        var opt = document.createElement('option');
+        opt.value = z.id;
+        opt.textContent = z.id;
+        if (z.id === assign.zone) opt.selected = true;
+        zoneSel.appendChild(opt);
+      });
+      zoneSel.addEventListener('change', function() {
+        STATE.colorAssignments[i].zone = this.value;
+      });
+
+      // Level selector
+      var levelSel = document.createElement('select');
+      levelSel.title = 'Assign carve level';
+      ['block', 'shape', 'detail'].forEach(function(name, li) {
+        var opt = document.createElement('option');
+        opt.value = li;
+        opt.textContent = name;
+        if (li === assign.level) opt.selected = true;
+        levelSel.appendChild(opt);
+      });
+      levelSel.addEventListener('change', function() {
+        STATE.colorAssignments[i].level = parseInt(this.value);
+      });
+
+      info.appendChild(zoneSel);
+      info.appendChild(levelSel);
+
+      var pct = document.createElement('span');
+      pct.className = 'color-pct';
+      pct.textContent = c.pct + '%';
+      info.appendChild(pct);
+    }
+
+    row.appendChild(info);
+
+    // Click to toggle background
+    swatch.addEventListener('click', function(e) {
+      e.stopPropagation();
+      STATE.colorAssignments[i].isBg = !STATE.colorAssignments[i].isBg;
+      if (!STATE.colorAssignments[i].isBg) {
+        // Assign it the first available zone
+        STATE.colorAssignments[i].zone = STATE.zones[0] ? STATE.zones[0].id : 'body';
+      }
+      autoCreateZonesFromColors();
+      renderColorPalette();
+    });
+    swatch.title = 'Click to toggle background';
+
+    area.appendChild(row);
+  });
+}
+
+// Create binary mask for a specific color cluster
+function createColorMask(imageData, clusterColor, tolerance) {
+  var data = imageData.data;
+  var w = imageData.width, h = imageData.height;
+  var mask = new Int8Array(w * h);
+  var tolSq = tolerance * tolerance;
+  var cr = clusterColor.r, cg = clusterColor.g, cb = clusterColor.b;
+
+  for (var i = 0, j = 0; i < data.length; i += 4, j++) {
+    var dr = data[i] - cr;
+    var dg = data[i + 1] - cg;
+    var db = data[i + 2] - cb;
+    if (dr * dr + dg * dg + db * db <= tolSq) {
+      mask[j] = 1;
+    }
+  }
+  return { mask: mask, w: w, h: h };
+}
+
+// Trace a binary mask using Potrace
+function traceMask(mask, w, h, turdSize, callback) {
+  if (typeof Potrace === 'undefined') {
+    callback(null);
+    return;
+  }
+  Potrace.setParameter({
+    turdsize: turdSize,
+    optcurve: true,
+    alphamax: 1,
+    opttolerance: 0.2
+  });
+  Potrace.loadBmFromBinaryArray(mask, w, h);
+  Potrace.process(function() {
+    var svgStr = Potrace.getSVG(1);
+    var dMatch = svgStr.match(/\bd="([^"]*)"/);
+    callback(dMatch ? dMatch[1] : null);
+  });
+}
+
+// Main color trace pipeline
+function traceColors() {
+  if (!STATE.traceImageData || !STATE.colorClusters) {
+    showToast('Analyze colors first');
+    return;
+  }
+  if (STATE.tracing) return;
+  STATE.tracing = true;
+
+  var imageData = STATE.traceImageData;
+  var epsilon = parseFloat($('trace-epsilon').value);
+  var turdSize = parseInt($('trace-turd').value);
+  var tolerance = parseInt($('color-distance').value);
+  var srcW = imageData.width, srcH = imageData.height;
+  var dstW = STATE.viewBoxW, dstH = STATE.viewBoxH;
+
+  // Collect non-background colors with their assignments
+  var tasks = [];
+  STATE.colorClusters.forEach(function(c, i) {
+    if (!STATE.colorAssignments[i].isBg) {
+      tasks.push({ color: c, assign: STATE.colorAssignments[i], index: i });
+    }
+  });
+
+  if (tasks.length === 0) {
+    showToast('All colors marked as background');
+    STATE.tracing = false;
+    return;
+  }
+
+  $('trace-status').textContent = 'Tracing color 1/' + tasks.length + '...';
+  STATE.colorTraceRawPaths = [];
+
+  // Clear existing paths
+  pushUndo('color-trace');
+  STATE.paths = [[], [], []];
+
+  var taskIdx = 0;
+
+  function traceNextColor() {
+    if (taskIdx >= tasks.length) {
+      finishColorTrace();
+      return;
+    }
+
+    var task = tasks[taskIdx];
+    $('trace-status').textContent = 'Tracing color ' + (taskIdx + 1) + '/' + tasks.length +
+      ' (' + task.assign.zone + ')...';
+
+    var maskResult = createColorMask(imageData, task.color, tolerance);
+    traceMask(maskResult.mask, maskResult.w, maskResult.h, turdSize, function(rawD) {
+      // Store raw for re-simplification
+      STATE.colorTraceRawPaths.push({ rawD: rawD, assign: task.assign, index: task.index });
+
+      if (rawD) {
+        var scaled = scaleTracePathParsed(rawD, srcW, srcH, dstW, dstH);
+        var simplified = simplifyTracePath(scaled, epsilon);
+        if (simplified) {
+          var level = task.assign.level;
+          STATE.paths[level].push({
+            d: simplified,
+            type: 'fill',
+            zone: task.assign.zone
+          });
+        }
+      }
+
+      taskIdx++;
+      setTimeout(traceNextColor, 10);
+    });
+  }
+
+  function finishColorTrace() {
+    STATE.tracing = false;
+    STATE.redoStack = [];
+
+    renderCanvas();
+    updateBudget();
+    updatePreviews();
+
+    var totalPaths = STATE.paths[0].length + STATE.paths[1].length + STATE.paths[2].length;
+    $('trace-status').textContent = 'Color trace: ' + totalPaths + ' paths across ' + tasks.length + ' colors';
+    showToast('Color trace complete');
+  }
+
+  traceNextColor();
+}
+
+// Re-simplify color trace data
+function reSimplifyColor() {
+  if (!STATE.colorTraceRawPaths || STATE.colorTraceRawPaths.length === 0) return false;
+
+  var epsilon = parseFloat($('trace-epsilon').value);
+  var srcW = STATE.traceImageData ? STATE.traceImageData.width : STATE.viewBoxW;
+  var srcH = STATE.traceImageData ? STATE.traceImageData.height : STATE.viewBoxH;
+  var dstW = STATE.viewBoxW, dstH = STATE.viewBoxH;
+
+  pushUndo('re-simplify-color');
+  STATE.paths = [[], [], []];
+
+  STATE.colorTraceRawPaths.forEach(function(entry) {
+    if (!entry.rawD) return;
+    var scaled = scaleTracePathParsed(entry.rawD, srcW, srcH, dstW, dstH);
+    var simplified = simplifyTracePath(scaled, epsilon);
+    if (simplified) {
+      STATE.paths[entry.assign.level].push({
+        d: simplified,
+        type: 'fill',
+        zone: entry.assign.zone
+      });
+    }
+  });
+
+  renderCanvas();
+  updateBudget();
+  updatePreviews();
+  showToast('Re-simplified color traces at \u03b5=' + epsilon);
+  return true;
 }
 
 // ── Canvas Rendering ──
@@ -2244,6 +2811,32 @@ function attachEvents() {
   $('btn-trace').addEventListener('click', traceAllLevels);
   $('btn-re-simplify').addEventListener('click', reSimplify);
   $('btn-auto-vb').addEventListener('click', autoViewBoxFromImage);
+
+  // Trace mode toggle
+  $('trace-mode-mono').addEventListener('click', function() {
+    STATE.traceMode = 'mono';
+    $('trace-mode-mono').classList.add('active');
+    $('trace-mode-color').classList.remove('active');
+    $('mono-trace-panel').style.display = '';
+    $('color-trace-panel').style.display = 'none';
+  });
+  $('trace-mode-color').addEventListener('click', function() {
+    STATE.traceMode = 'color';
+    $('trace-mode-color').classList.add('active');
+    $('trace-mode-mono').classList.remove('active');
+    $('mono-trace-panel').style.display = 'none';
+    $('color-trace-panel').style.display = '';
+  });
+
+  // Color trace controls
+  $('btn-analyze-colors').addEventListener('click', analyzeColors);
+  $('btn-color-trace').addEventListener('click', traceColors);
+  $('color-k').addEventListener('input', e => {
+    $('color-k-val').textContent = e.target.value;
+  });
+  $('color-distance').addEventListener('input', e => {
+    $('color-distance-val').textContent = e.target.value;
+  });
 
   // Threshold slider labels
   ['block', 'shape', 'detail'].forEach(name => {
