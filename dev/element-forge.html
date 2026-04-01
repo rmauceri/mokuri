@@ -142,12 +142,22 @@ html, body {
   overflow: hidden;
   background:
     repeating-conic-gradient(rgba(0,0,0,0.04) 0% 25%, transparent 0% 50%) 0 0 / 20px 20px;
+  touch-action: none;
 }
 
 .canvas-area svg {
   width: 100%;
   height: 100%;
   display: block;
+}
+
+/* Disable pointer events on all rendered paths during drawing */
+.canvas-area.drawing .layer-accumulated,
+.canvas-area.drawing .layer-block,
+.canvas-area.drawing .layer-shape,
+.canvas-area.drawing .layer-detail,
+.canvas-area.drawing .ref-layer {
+  pointer-events: none;
 }
 
 /* Paper rect inside SVG */
@@ -1740,6 +1750,8 @@ function attachEvents() {
 
   // Drawing events on canvas
   canvasArea.addEventListener('pointerdown', e => {
+    e.preventDefault();
+
     if (e.button === 1 || (e.button === 0 && e.altKey)) {
       // Pan
       STATE.panning = true;
@@ -1748,8 +1760,17 @@ function attachEvents() {
       return;
     }
 
+    // Pen eraser end
+    if (e.button === 5) {
+      setTool('erase');
+      return;
+    }
+
+    if (e.button !== 0) return;
+
     if (STATE.tool === 'stroke' || STATE.tool === 'fill') {
       canvasArea.setPointerCapture(e.pointerId);
+      canvasArea.classList.add('drawing');
       beginStroke(e);
     } else if (STATE.tool === 'select') {
       // Deselect if clicking empty space
@@ -1759,10 +1780,23 @@ function attachEvents() {
         renderCanvas();
         updatePathInspector();
       }
+    } else if (STATE.tool === 'erase') {
+      // Check if clicking a path
+      const target = e.target.closest('[data-path-index]');
+      if (target) {
+        const idx = parseInt(target.dataset.pathIndex);
+        pushUndo('deletePath');
+        STATE.paths[STATE.activeLevel].splice(idx, 1);
+        STATE.selectedPathIndex = -1;
+        renderCanvas();
+        updateBudget();
+        updatePreviews();
+      }
     }
   });
 
   canvasArea.addEventListener('pointermove', e => {
+    e.preventDefault();
     // Update coords
     const pt = svgPoint(e);
     $('status-coords').textContent = `${Math.round(pt.x)}, ${Math.round(pt.y)}`;
@@ -1783,6 +1817,9 @@ function attachEvents() {
   });
 
   canvasArea.addEventListener('pointerup', e => {
+    e.preventDefault();
+    canvasArea.classList.remove('drawing');
+
     if (STATE.panning) {
       STATE.panning = false;
       STATE.panStart = null;
@@ -1790,6 +1827,9 @@ function attachEvents() {
     }
     endStroke(e);
   });
+
+  // Prevent context menu on canvas (interferes with pen)
+  canvasArea.addEventListener('contextmenu', e => e.preventDefault());
 
   // Keyboard shortcuts
   document.addEventListener('keydown', e => {
