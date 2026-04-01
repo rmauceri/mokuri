@@ -1,0 +1,1818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Element Forge — Mokuri</title>
+<style>
+/* ── Reset & Variables ── */
+* { box-sizing: border-box; margin: 0; }
+
+:root {
+  --bg: #e7dcc9;
+  --bg-deep: #d5c6ab;
+  --panel: rgba(245, 239, 228, 0.94);
+  --panel-strong: #f7f1e6;
+  --border: #c4b89b;
+  --text: #3d3128;
+  --muted: #776c5d;
+  --accent: #8b6b4a;
+  --accent-strong: #6b4f34;
+  --good: #4f6b44;
+  --warn: #a16d2c;
+  --bad: #9a3f30;
+  --paper: #f5efe4;
+  --carved: #d4c9b8;
+  --shadow: 0 10px 30px rgba(58, 48, 40, 0.12);
+  --radius: 14px;
+  --toolbar-h: 48px;
+  --status-h: 28px;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top left, rgba(255,255,255,0.35), transparent 36%),
+    linear-gradient(180deg, #ece3d1 0%, #dfd1bb 100%);
+  color: var(--text);
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+/* ── App Layout ── */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* ── Toolbar ── */
+.toolbar {
+  height: var(--toolbar-h);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  overflow-x: auto;
+}
+
+.toolbar .sep {
+  width: 1px;
+  height: 24px;
+  background: var(--border);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+.toolbar .spacer { flex: 1; }
+
+/* ── Main Area (panels + canvas) ── */
+.main-area {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── Side Panels ── */
+.side-panel {
+  width: 260px;
+  flex-shrink: 0;
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.side-panel.right {
+  border-right: none;
+  border-left: 1px solid var(--border);
+}
+
+.panel-head {
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid rgba(196, 184, 155, 0.8);
+  background: linear-gradient(180deg, rgba(255,255,255,0.3), transparent);
+  flex-shrink: 0;
+}
+
+.panel-head h2 {
+  font-size: 14px;
+  letter-spacing: 0.02em;
+}
+
+.panel-head p {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.panel-body {
+  padding: 12px 14px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.panel-section {
+  margin-bottom: 14px;
+}
+
+.panel-section:last-child { margin-bottom: 0; }
+
+/* ── Subtle label ── */
+.subtle-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+/* ── Canvas Area ── */
+.canvas-area {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
+  background:
+    repeating-conic-gradient(rgba(0,0,0,0.04) 0% 25%, transparent 0% 50%) 0 0 / 20px 20px;
+}
+
+.canvas-area svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Paper rect inside SVG */
+.paper-bg {
+  fill: var(--paper);
+  stroke: var(--border);
+  stroke-width: 0.5;
+}
+
+/* ── Reference image layer ── */
+.ref-layer image {
+  opacity: 0.35;
+}
+
+/* Path layers */
+.layer-block path { opacity: 0.85; }
+.layer-shape path { opacity: 0.9; }
+.layer-detail path { opacity: 0.95; }
+.layer-accumulated path { opacity: 0.25; }
+.layer-active path {
+  stroke: var(--accent);
+  stroke-dasharray: 4 3;
+}
+
+/* ── Selected path ── */
+.path-selected {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ── Status Bar ── */
+.status-bar {
+  height: var(--status-h);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px;
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.status-bar .budget-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.budget-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--good);
+}
+
+.budget-dot.yellow { background: var(--warn); }
+.budget-dot.red { background: var(--bad); }
+
+/* ── Buttons ── */
+button, .btn {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: var(--panel-strong);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+button:hover { background: #fffaf2; border-color: var(--accent); }
+
+button.active {
+  background: rgba(139, 107, 74, 0.18);
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
+
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+button.primary:hover {
+  background: var(--accent-strong);
+}
+
+button.icon-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  border-radius: 8px;
+}
+
+button.sm { padding: 3px 8px; font-size: 11px; }
+
+/* ── Zone Chips ── */
+.zone-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.zone-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1.5px solid var(--border);
+  background: rgba(255,255,255,0.6);
+  font-size: 11px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.zone-chip:hover { border-color: var(--accent); }
+
+.zone-chip.active {
+  border-color: var(--accent);
+  background: rgba(139, 107, 74, 0.12);
+}
+
+.zone-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.15);
+}
+
+/* ── Level Tabs ── */
+.level-tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.level-tab {
+  flex: 1;
+  text-align: center;
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid var(--border);
+  background: rgba(255,255,255,0.5);
+  transition: all 0.15s;
+}
+
+.level-tab:hover { border-color: var(--accent); }
+.level-tab.active {
+  background: rgba(139, 107, 74, 0.15);
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
+
+/* ── Path Inspector ── */
+.path-inspector {
+  font-size: 11px;
+}
+
+.path-inspector .field {
+  margin-bottom: 8px;
+}
+
+.path-inspector .field-label {
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 3px;
+}
+
+.path-inspector textarea {
+  width: 100%;
+  min-height: 60px;
+  resize: vertical;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.65);
+  font: 11px/1.4 Consolas, "SFMono-Regular", Menlo, monospace;
+  color: var(--text);
+}
+
+/* ── Reference Controls ── */
+.ref-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ref-controls input[type="range"] {
+  flex: 1;
+  accent-color: var(--accent);
+}
+
+.ref-controls label {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* ── Drop Zone ── */
+.drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  transition: border-color 0.2s, background 0.2s;
+  cursor: pointer;
+}
+
+.drop-zone.drag-over {
+  border-color: var(--accent);
+  background: rgba(139, 107, 74, 0.08);
+}
+
+.drop-zone input[type="file"] { display: none; }
+
+/* ── Budget Bar ── */
+.budget-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.budget-cell {
+  text-align: center;
+  padding: 6px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.5);
+  border: 1px solid var(--border);
+  font-size: 10px;
+}
+
+.budget-cell .budget-val {
+  font-size: 16px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.budget-cell.green .budget-val { color: var(--good); }
+.budget-cell.yellow .budget-val { color: var(--warn); }
+.budget-cell.red .budget-val { color: var(--bad); }
+
+/* ── Slider row ── */
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.slider-row label {
+  font-size: 11px;
+  color: var(--muted);
+  min-width: 50px;
+}
+
+.slider-row input[type="range"] {
+  flex: 1;
+  accent-color: var(--accent);
+}
+
+.slider-row .slider-val {
+  font-size: 11px;
+  font-weight: 600;
+  min-width: 28px;
+  text-align: right;
+}
+
+/* ── Toast ── */
+.toast {
+  position: fixed;
+  bottom: 48px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--text);
+  color: var(--paper);
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s;
+  z-index: 100;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ── Toolbar ── -->
+  <div class="toolbar">
+    <span style="font-weight:700; font-size:14px;">Element Forge</span>
+    <div class="sep"></div>
+
+    <!-- Tools -->
+    <button class="icon-btn active" id="tool-select" title="Select (V)">⬚</button>
+    <button class="icon-btn" id="tool-stroke" title="Draw Stroke (S)">✎</button>
+    <button class="icon-btn" id="tool-fill" title="Draw Fill (F)">◉</button>
+    <button class="icon-btn" id="tool-erase" title="Erase (E)">✕</button>
+
+    <div class="sep"></div>
+
+    <!-- Level tabs in toolbar -->
+    <div class="level-tabs" id="level-tabs">
+      <div class="level-tab active" data-level="0">Block</div>
+      <div class="level-tab" data-level="1">Shape</div>
+      <div class="level-tab" data-level="2">Detail</div>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- Undo/Redo -->
+    <button class="icon-btn" id="btn-undo" title="Undo (Ctrl+Z)">↩</button>
+    <button class="icon-btn" id="btn-redo" title="Redo (Ctrl+Y)">↪</button>
+
+    <div class="spacer"></div>
+
+    <!-- Zoom -->
+    <button class="icon-btn sm" id="btn-zoom-out" title="Zoom Out">−</button>
+    <span id="zoom-display" style="font-size:11px; min-width:36px; text-align:center;">100%</span>
+    <button class="icon-btn sm" id="btn-zoom-in" title="Zoom In">+</button>
+    <button class="sm" id="btn-zoom-fit" title="Fit to View">Fit</button>
+
+    <div class="sep"></div>
+
+    <!-- Import / Export -->
+    <button class="sm" id="btn-import">Import Element</button>
+    <button class="sm primary" id="btn-export">Export JS</button>
+  </div>
+
+  <!-- ── Main Area ── -->
+  <div class="main-area">
+
+    <!-- ── Left Panel: Element Setup + Zones ── -->
+    <div class="side-panel" id="panel-left">
+      <div class="panel-head">
+        <h2>Element</h2>
+      </div>
+      <div class="panel-body">
+
+        <!-- Element metadata -->
+        <div class="panel-section">
+          <div class="subtle-label">Element ID</div>
+          <input type="text" id="el-id" placeholder="my-element" style="width:100%; padding:5px 8px; border:1px solid var(--border); border-radius:8px; font-size:12px; background:rgba(255,255,255,0.65);">
+        </div>
+
+        <div class="panel-section">
+          <div class="subtle-label">Name</div>
+          <input type="text" id="el-name" placeholder="My Element" style="width:100%; padding:5px 8px; border:1px solid var(--border); border-radius:8px; font-size:12px; background:rgba(255,255,255,0.65);">
+        </div>
+
+        <div class="panel-section">
+          <div class="subtle-label">Category</div>
+          <select id="el-category" style="width:100%; padding:5px 8px; border:1px solid var(--border); border-radius:8px; font-size:12px; background:rgba(255,255,255,0.65);">
+            <option value="landscape">landscape</option>
+            <option value="flora">flora</option>
+            <option value="fauna">fauna</option>
+            <option value="objects">objects</option>
+            <option value="patterns">patterns</option>
+            <option value="basic forms">basic forms</option>
+            <option value="figures">figures</option>
+            <option value="hanko">hanko</option>
+          </select>
+        </div>
+
+        <div class="panel-section">
+          <div class="subtle-label">Suggested Layer</div>
+          <select id="el-layer" style="width:100%; padding:5px 8px; border:1px solid var(--border); border-radius:8px; font-size:12px; background:rgba(255,255,255,0.65);">
+            <option value="background">background</option>
+            <option value="midground" selected>midground</option>
+            <option value="foreground">foreground</option>
+          </select>
+        </div>
+
+        <div class="panel-section">
+          <div class="subtle-label">ViewBox</div>
+          <div style="display:flex; gap:6px;">
+            <input type="number" id="vb-w" value="160" min="10" max="600" style="flex:1; padding:5px 6px; border:1px solid var(--border); border-radius:8px; font-size:12px; background:rgba(255,255,255,0.65); text-align:center;">
+            <span style="color:var(--muted); font-size:12px; line-height:30px;">×</span>
+            <input type="number" id="vb-h" value="160" min="10" max="600" style="flex:1; padding:5px 6px; border:1px solid var(--border); border-radius:8px; font-size:12px; background:rgba(255,255,255,0.65); text-align:center;">
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <div class="subtle-label">Reference Image</div>
+          <div class="drop-zone" id="ref-drop">
+            Drop image or click to browse
+            <input type="file" id="ref-file" accept="image/*">
+          </div>
+          <div class="ref-controls" style="margin-top:8px;">
+            <label>Opacity</label>
+            <input type="range" id="ref-opacity" min="0" max="100" value="35">
+            <span class="slider-val" id="ref-opacity-val">35%</span>
+          </div>
+          <div style="margin-top:6px;">
+            <button class="sm" id="btn-ref-clear" style="display:none;">Clear Reference</button>
+            <button class="sm" id="btn-ref-url">Paste URL</button>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <div class="subtle-label">Color Zones</div>
+          <div class="zone-chips" id="zone-chips"></div>
+          <div style="margin-top:6px; display:flex; gap:4px;">
+            <button class="sm" id="btn-add-zone">+ Zone</button>
+            <button class="sm" id="btn-remove-zone">− Zone</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Canvas ── -->
+    <div class="canvas-area" id="canvas-area">
+      <svg id="forge-svg" xmlns="http://www.w3.org/2000/svg">
+        <defs id="forge-defs"></defs>
+        <!-- Paper background -->
+        <rect class="paper-bg" id="paper-rect"/>
+        <!-- Reference image layer -->
+        <g class="ref-layer" id="ref-layer"></g>
+        <!-- Accumulated lower levels (dimmed) -->
+        <g class="layer-accumulated" id="layer-accumulated"></g>
+        <!-- Block level paths -->
+        <g class="layer-block" id="layer-block"></g>
+        <!-- Shape level paths -->
+        <g class="layer-shape" id="layer-shape"></g>
+        <!-- Detail level paths -->
+        <g class="layer-detail" id="layer-detail"></g>
+        <!-- Active drawing stroke -->
+        <g class="layer-active" id="layer-active"></g>
+      </svg>
+    </div>
+
+    <!-- ── Right Panel: Inspector + Budget ── -->
+    <div class="side-panel right" id="panel-right">
+      <div class="panel-head">
+        <h2>Inspector</h2>
+      </div>
+      <div class="panel-body">
+
+        <!-- Drawing settings -->
+        <div class="panel-section">
+          <div class="subtle-label">Stroke Width</div>
+          <div class="slider-row">
+            <input type="range" id="stroke-width" min="0.5" max="8" step="0.5" value="2">
+            <span class="slider-val" id="stroke-width-val">2</span>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <div class="subtle-label">Curve Fidelity</div>
+          <div class="slider-row">
+            <label>Loose</label>
+            <input type="range" id="curve-fidelity" min="1" max="10" step="1" value="5">
+            <label>Tight</label>
+          </div>
+        </div>
+
+        <!-- Path inspector (shown when path selected) -->
+        <div class="panel-section" id="path-inspector-section" style="display:none;">
+          <div class="subtle-label">Selected Path</div>
+          <div class="path-inspector" id="path-inspector"></div>
+        </div>
+
+        <!-- Path budget -->
+        <div class="panel-section">
+          <div class="subtle-label">Path Budget</div>
+          <div class="budget-bar" id="budget-bar">
+            <div class="budget-cell green">
+              <div>Block</div>
+              <div class="budget-val" id="budget-block">0</div>
+            </div>
+            <div class="budget-cell green">
+              <div>Shape</div>
+              <div class="budget-val" id="budget-shape">0</div>
+            </div>
+            <div class="budget-cell green">
+              <div>Detail</div>
+              <div class="budget-val" id="budget-detail">0</div>
+            </div>
+          </div>
+          <div style="margin-top:6px; font-size:10px; color:var(--muted); text-align:center;">
+            <span id="budget-consolidated">0</span> paths after consolidation ·
+            <span id="budget-bytes">0</span> KB
+          </div>
+        </div>
+
+        <!-- Export preview -->
+        <div class="panel-section">
+          <div class="subtle-label">Level Preview</div>
+          <div style="display:flex; gap:6px;">
+            <div style="flex:1; aspect-ratio:1; border:1px solid var(--border); border-radius:8px; overflow:hidden; background:var(--paper);">
+              <svg id="preview-block" viewBox="0 0 160 160"></svg>
+            </div>
+            <div style="flex:1; aspect-ratio:1; border:1px solid var(--border); border-radius:8px; overflow:hidden; background:var(--paper);">
+              <svg id="preview-shape" viewBox="0 0 160 160"></svg>
+            </div>
+            <div style="flex:1; aspect-ratio:1; border:1px solid var(--border); border-radius:8px; overflow:hidden; background:var(--paper);">
+              <svg id="preview-detail" viewBox="0 0 160 160"></svg>
+            </div>
+          </div>
+          <div style="display:flex; gap:6px; margin-top:2px;">
+            <div style="flex:1; text-align:center; font-size:9px; color:var(--muted);">Block</div>
+            <div style="flex:1; text-align:center; font-size:9px; color:var(--muted);">Shape</div>
+            <div style="flex:1; text-align:center; font-size:9px; color:var(--muted);">Detail</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Status Bar ── -->
+  <div class="status-bar">
+    <span id="status-tool">Select</span>
+    <span>·</span>
+    <span id="status-level">Block</span>
+    <span>·</span>
+    <span id="status-zone">zone: body</span>
+    <div style="flex:1;"></div>
+    <span class="budget-indicator">
+      <span class="budget-dot" id="status-budget-dot"></span>
+      <span id="status-budget-text">Budget: OK</span>
+    </span>
+    <span>·</span>
+    <span id="status-coords">0, 0</span>
+  </div>
+
+</div>
+
+<!-- Toast for copy feedback etc -->
+<div class="toast" id="toast"></div>
+
+<!-- ── Import dialog (hidden) ── -->
+<dialog id="import-dialog" style="border:1px solid var(--border); border-radius:var(--radius); padding:0; background:var(--panel); max-width:520px; width:90vw;">
+  <div class="panel-head">
+    <h2>Import Mokuri Element</h2>
+    <p>Paste an element definition or select from built-in packs.</p>
+  </div>
+  <div style="padding:14px;">
+    <div class="subtle-label">Built-in Elements</div>
+    <select id="import-builtin" style="width:100%; padding:6px 8px; border:1px solid var(--border); border-radius:8px; font-size:12px; margin-bottom:10px; background:rgba(255,255,255,0.65);">
+      <option value="">— Select element —</option>
+    </select>
+
+    <div class="subtle-label" style="margin-top:8px;">Or paste JS definition</div>
+    <textarea id="import-code" style="width:100%; min-height:120px; padding:8px; border:1px solid var(--border); border-radius:8px; font:11px/1.4 Consolas, monospace; background:rgba(255,255,255,0.65); resize:vertical;" placeholder="{ id: 'my-element', ... }"></textarea>
+
+    <div style="display:flex; gap:8px; margin-top:12px; justify-content:flex-end;">
+      <button id="import-cancel">Cancel</button>
+      <button class="primary" id="import-confirm">Import</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- ── URL dialog (hidden) ── -->
+<dialog id="url-dialog" style="border:1px solid var(--border); border-radius:var(--radius); padding:0; background:var(--panel); max-width:420px; width:90vw;">
+  <div class="panel-head">
+    <h2>Reference Image URL</h2>
+  </div>
+  <div style="padding:14px;">
+    <input type="url" id="ref-url-input" placeholder="https://example.com/image.jpg" style="width:100%; padding:6px 8px; border:1px solid var(--border); border-radius:8px; font-size:12px; background:rgba(255,255,255,0.65);">
+    <div style="display:flex; gap:8px; margin-top:12px; justify-content:flex-end;">
+      <button id="url-cancel">Cancel</button>
+      <button class="primary" id="url-confirm">Load</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Element pack scripts for import feature -->
+<script src="../assets/elements.js"></script>
+<script src="../assets/extended-elements.js"></script>
+<script src="../assets/fauna-elements.js"></script>
+<script src="../assets/scene-elements.js"></script>
+<script src="../assets/hanko-elements.js"></script>
+<script src="../assets/forms-elements.js"></script>
+<script src="../assets/figures-elements.js"></script>
+<script src="../assets/kacho-elements.js"></script>
+<script src="../assets/moribana-elements.js"></script>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   Element Forge — Mokuri Element Design Tool
+   Phase 1: Core Drawing Tool
+   ═══════════════════════════════════════════════════════════════ */
+
+(function() {
+'use strict';
+
+// ── Zone preview colors (distinct, not palette-dependent) ──
+const ZONE_COLORS = [
+  '#3f3429', '#b4535a', '#5a7f92', '#6c7d4f', '#d4a853',
+  '#8b5e83', '#c27d4e', '#5c8a6e', '#a05050', '#7a8fb0'
+];
+
+const LEVEL_NAMES = ['block', 'shape', 'detail'];
+
+// ── State ──
+const STATE = {
+  // Element metadata
+  elementId: '',
+  elementName: '',
+  category: 'flora',
+  suggestedLayer: 'midground',
+  viewBoxW: 160,
+  viewBoxH: 160,
+
+  // Zones
+  zones: [
+    { id: 'body', defaultPaletteSlot: 0 },
+    { id: 'detail', defaultPaletteSlot: 1 },
+  ],
+  activeZoneIndex: 0,
+
+  // Levels & paths
+  // paths[levelIndex] = [ { d: string, type: 'fill'|'stroke', zone: string, strokeWidth?: number } ]
+  paths: [[], [], []],
+  activeLevel: 0,
+
+  // Drawing
+  tool: 'select',       // 'select' | 'stroke' | 'fill' | 'erase'
+  strokeWidth: 2,
+  curveFidelity: 5,     // 1=loose, 10=tight
+  drawing: null,        // { points: [{x,y}], ... } during active stroke
+  selectedPathIndex: -1, // index within current level's paths
+
+  // Reference image
+  refImageSrc: null,
+  refOpacity: 0.35,
+
+  // Viewport
+  viewBox: { x: 0, y: 0, w: 160, h: 160 },
+  zoom: 1,
+  panning: false,
+  panStart: null,
+
+  // Undo/redo
+  undoStack: [],
+  redoStack: [],
+};
+
+// ── DOM refs ──
+const $ = id => document.getElementById(id);
+const svg = $('forge-svg');
+const canvasArea = $('canvas-area');
+
+// ── Initialize ──
+function init() {
+  setupViewBox();
+  renderZoneChips();
+  updateBudget();
+  updatePreviews();
+  updateStatusBar();
+  attachEvents();
+  populateImportDialog();
+}
+
+// ── ViewBox / Canvas ──
+function setupViewBox() {
+  const w = STATE.viewBoxW;
+  const h = STATE.viewBoxH;
+  // Add padding around paper
+  const pad = Math.max(w, h) * 0.15;
+  STATE.viewBox = { x: -pad, y: -pad, w: w + pad * 2, h: h + pad * 2 };
+  applyViewBox();
+  const paper = $('paper-rect');
+  paper.setAttribute('x', 0);
+  paper.setAttribute('y', 0);
+  paper.setAttribute('width', w);
+  paper.setAttribute('height', h);
+  // Update preview viewboxes
+  ['preview-block', 'preview-shape', 'preview-detail'].forEach(id => {
+    $(id).setAttribute('viewBox', `0 0 ${w} ${h}`);
+  });
+}
+
+function applyViewBox() {
+  const vb = STATE.viewBox;
+  svg.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
+}
+
+// ── Zone Management ──
+function renderZoneChips() {
+  const container = $('zone-chips');
+  container.innerHTML = '';
+  STATE.zones.forEach((z, i) => {
+    const chip = document.createElement('div');
+    chip.className = 'zone-chip' + (i === STATE.activeZoneIndex ? ' active' : '');
+    chip.innerHTML = `<span class="zone-swatch" style="background:${ZONE_COLORS[i % ZONE_COLORS.length]}"></span>${z.id}`;
+    chip.addEventListener('click', () => {
+      STATE.activeZoneIndex = i;
+      renderZoneChips();
+      updateStatusBar();
+    });
+    container.appendChild(chip);
+  });
+}
+
+function addZone() {
+  const n = STATE.zones.length;
+  if (n >= 10) return;
+  const id = prompt('Zone name:', `zone${n}`);
+  if (!id || !id.trim()) return;
+  pushUndo('addZone');
+  STATE.zones.push({ id: id.trim(), defaultPaletteSlot: n });
+  STATE.activeZoneIndex = STATE.zones.length - 1;
+  renderZoneChips();
+  updateStatusBar();
+}
+
+function removeZone() {
+  if (STATE.zones.length <= 1) return;
+  const idx = STATE.activeZoneIndex;
+  const z = STATE.zones[idx];
+  if (!confirm(`Remove zone "${z.id}"? Paths in this zone will be orphaned.`)) return;
+  pushUndo('removeZone');
+  STATE.zones.splice(idx, 1);
+  STATE.activeZoneIndex = Math.min(idx, STATE.zones.length - 1);
+  renderZoneChips();
+  updateStatusBar();
+}
+
+// ── Level Switching ──
+function setLevel(level) {
+  STATE.activeLevel = level;
+  STATE.selectedPathIndex = -1;
+  document.querySelectorAll('.level-tab').forEach(tab => {
+    tab.classList.toggle('active', parseInt(tab.dataset.level) === level);
+  });
+  renderCanvas();
+  updateStatusBar();
+  updatePathInspector();
+}
+
+// ── Tool Selection ──
+function setTool(tool) {
+  STATE.tool = tool;
+  ['select', 'stroke', 'fill', 'erase'].forEach(t => {
+    $('tool-' + t).classList.toggle('active', t === tool);
+  });
+  canvasArea.style.cursor = tool === 'select' ? 'default' :
+                            tool === 'erase' ? 'crosshair' : 'crosshair';
+  updateStatusBar();
+}
+
+// ── Drawing Engine ──
+// EMA smoothing parameters (matching Mokuri carve pipeline)
+const EMA_ALPHA_POS = 0.45;
+
+function svgPoint(e) {
+  const rect = canvasArea.getBoundingClientRect();
+  const vb = STATE.viewBox;
+  return {
+    x: vb.x + (e.clientX - rect.left) / rect.width * vb.w,
+    y: vb.y + (e.clientY - rect.top) / rect.height * vb.h,
+  };
+}
+
+function smoothPoint(prev, curr) {
+  if (!prev) return curr;
+  return {
+    x: prev.x + EMA_ALPHA_POS * (curr.x - prev.x),
+    y: prev.y + EMA_ALPHA_POS * (curr.y - prev.y),
+  };
+}
+
+// Ramer-Douglas-Peucker simplification
+function rdpSimplify(points, epsilon) {
+  if (points.length <= 2) return points;
+  let maxDist = 0, maxIdx = 0;
+  const first = points[0], last = points[points.length - 1];
+  for (let i = 1; i < points.length - 1; i++) {
+    const d = pointToLineDist(points[i], first, last);
+    if (d > maxDist) { maxDist = d; maxIdx = i; }
+  }
+  if (maxDist > epsilon) {
+    const left = rdpSimplify(points.slice(0, maxIdx + 1), epsilon);
+    const right = rdpSimplify(points.slice(maxIdx), epsilon);
+    return left.slice(0, -1).concat(right);
+  }
+  return [first, last];
+}
+
+function pointToLineDist(p, a, b) {
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq === 0) return Math.hypot(p.x - a.x, p.y - a.y);
+  let t = ((p.x - a.x) * dx + (p.y - a.y) * dy) / lenSq;
+  t = Math.max(0, Math.min(1, t));
+  return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
+}
+
+// Polyline → quadratic Bézier path string
+function polylineToQBezier(points) {
+  if (points.length === 0) return '';
+  if (points.length === 1) return `M${r(points[0].x)},${r(points[0].y)}`;
+  if (points.length === 2) {
+    return `M${r(points[0].x)},${r(points[0].y)} L${r(points[1].x)},${r(points[1].y)}`;
+  }
+
+  let d = `M${r(points[0].x)},${r(points[0].y)}`;
+
+  // For each pair of consecutive points, compute a control point
+  // using Catmull-Rom style: control point at the original midpoint
+  for (let i = 1; i < points.length - 1; i++) {
+    const prev = points[i - 1];
+    const curr = points[i];
+    const next = points[i + 1];
+    const midX = (curr.x + next.x) / 2;
+    const midY = (curr.y + next.y) / 2;
+    d += ` Q${r(curr.x)},${r(curr.y)} ${r(midX)},${r(midY)}`;
+  }
+
+  // Final segment: line to last point
+  const last = points[points.length - 1];
+  d += ` L${r(last.x)},${r(last.y)}`;
+
+  return d;
+}
+
+function r(v) { return Math.round(v * 100) / 100; }
+
+function beginStroke(e) {
+  if (STATE.tool !== 'stroke' && STATE.tool !== 'fill') return;
+  const pt = svgPoint(e);
+  STATE.drawing = {
+    points: [pt],
+    smoothed: pt,
+  };
+  renderActiveStroke();
+}
+
+function moveStroke(e) {
+  if (!STATE.drawing) return;
+
+  // Use coalesced events for full digitizer resolution
+  const events = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+  for (const ce of events) {
+    const raw = svgPoint(ce);
+    const smoothed = smoothPoint(STATE.drawing.smoothed, raw);
+    STATE.drawing.smoothed = smoothed;
+    STATE.drawing.points.push({ ...smoothed });
+  }
+  renderActiveStroke();
+}
+
+function endStroke(e) {
+  if (!STATE.drawing) return;
+  const points = STATE.drawing.points;
+  STATE.drawing = null;
+
+  if (points.length < 2) {
+    clearActiveStroke();
+    return;
+  }
+
+  // Simplify based on fidelity (lower fidelity = more simplification)
+  const epsilon = (11 - STATE.curveFidelity) * 0.3;
+  const simplified = rdpSimplify(points, epsilon);
+
+  // Convert to Q-Bézier path
+  const d = polylineToQBezier(simplified);
+  if (!d) { clearActiveStroke(); return; }
+
+  const zone = STATE.zones[STATE.activeZoneIndex];
+  const pathObj = {
+    d: d,
+    type: STATE.tool === 'fill' ? 'fill' : 'stroke',
+    zone: zone ? zone.id : 'body',
+  };
+  if (pathObj.type === 'stroke') {
+    pathObj.strokeWidth = STATE.strokeWidth;
+  }
+
+  // Close fill paths
+  if (pathObj.type === 'fill' && !d.endsWith('Z')) {
+    pathObj.d += ' Z';
+  }
+
+  pushUndo('addPath');
+  STATE.paths[STATE.activeLevel].push(pathObj);
+  STATE.redoStack = [];
+
+  clearActiveStroke();
+  renderCanvas();
+  updateBudget();
+  updatePreviews();
+}
+
+function renderActiveStroke() {
+  const layer = $('layer-active');
+  layer.innerHTML = '';
+  if (!STATE.drawing || STATE.drawing.points.length < 2) return;
+
+  const d = polylineToQBezier(STATE.drawing.points);
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', d);
+  path.setAttribute('fill', STATE.tool === 'fill' ? 'rgba(139,107,74,0.2)' : 'none');
+  path.setAttribute('stroke', ZONE_COLORS[STATE.activeZoneIndex % ZONE_COLORS.length]);
+  path.setAttribute('stroke-width', STATE.tool === 'fill' ? 1 : STATE.strokeWidth);
+  path.setAttribute('stroke-linecap', 'round');
+  path.setAttribute('stroke-linejoin', 'round');
+  layer.appendChild(path);
+}
+
+function clearActiveStroke() {
+  $('layer-active').innerHTML = '';
+}
+
+// ── Canvas Rendering ──
+function renderCanvas() {
+  const level = STATE.activeLevel;
+
+  // Clear all layers
+  $('layer-accumulated').innerHTML = '';
+  $('layer-block').innerHTML = '';
+  $('layer-shape').innerHTML = '';
+  $('layer-detail').innerHTML = '';
+
+  // Render accumulated lower levels (dimmed)
+  for (let l = 0; l < level; l++) {
+    STATE.paths[l].forEach(p => {
+      const el = createPathElement(p, true);
+      $('layer-accumulated').appendChild(el);
+    });
+  }
+
+  // Render current level paths
+  const layerId = ['layer-block', 'layer-shape', 'layer-detail'][level];
+  STATE.paths[level].forEach((p, i) => {
+    const el = createPathElement(p, false);
+    if (i === STATE.selectedPathIndex) {
+      el.style.outline = '2px solid var(--accent)';
+      el.style.outlineOffset = '2px';
+    }
+    el.dataset.pathIndex = i;
+    el.addEventListener('click', (e) => {
+      if (STATE.tool === 'select') {
+        e.stopPropagation();
+        STATE.selectedPathIndex = i;
+        renderCanvas();
+        updatePathInspector();
+      } else if (STATE.tool === 'erase') {
+        e.stopPropagation();
+        pushUndo('deletePath');
+        STATE.paths[level].splice(i, 1);
+        STATE.selectedPathIndex = -1;
+        renderCanvas();
+        updateBudget();
+        updatePreviews();
+      }
+    });
+    $(layerId).appendChild(el);
+  });
+}
+
+function createPathElement(pathObj, dimmed) {
+  const el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  el.setAttribute('d', pathObj.d);
+
+  const zoneIdx = STATE.zones.findIndex(z => z.id === pathObj.zone);
+  const color = ZONE_COLORS[(zoneIdx >= 0 ? zoneIdx : 0) % ZONE_COLORS.length];
+
+  if (pathObj.type === 'fill') {
+    el.setAttribute('fill', color);
+    el.setAttribute('stroke', 'none');
+  } else {
+    el.setAttribute('fill', 'none');
+    el.setAttribute('stroke', color);
+    el.setAttribute('stroke-width', pathObj.strokeWidth || 2);
+    el.setAttribute('stroke-linecap', 'round');
+    el.setAttribute('stroke-linejoin', 'round');
+  }
+
+  if (dimmed) {
+    el.setAttribute('opacity', '0.25');
+  }
+
+  return el;
+}
+
+// ── Reference Image ──
+function loadRefImage(src) {
+  STATE.refImageSrc = src;
+  const layer = $('ref-layer');
+  layer.innerHTML = '';
+  if (!src) {
+    $('btn-ref-clear').style.display = 'none';
+    return;
+  }
+  const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+  img.setAttribute('href', src);
+  img.setAttribute('x', 0);
+  img.setAttribute('y', 0);
+  img.setAttribute('width', STATE.viewBoxW);
+  img.setAttribute('height', STATE.viewBoxH);
+  img.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+  img.style.opacity = STATE.refOpacity;
+  layer.appendChild(img);
+  $('btn-ref-clear').style.display = '';
+}
+
+// ── Undo/Redo ──
+function pushUndo(action) {
+  STATE.undoStack.push({
+    action,
+    paths: JSON.parse(JSON.stringify(STATE.paths)),
+    zones: JSON.parse(JSON.stringify(STATE.zones)),
+    activeZoneIndex: STATE.activeZoneIndex,
+  });
+  // Cap stack
+  if (STATE.undoStack.length > 80) STATE.undoStack.shift();
+}
+
+function undo() {
+  if (STATE.undoStack.length === 0) return;
+  STATE.redoStack.push({
+    action: 'redo',
+    paths: JSON.parse(JSON.stringify(STATE.paths)),
+    zones: JSON.parse(JSON.stringify(STATE.zones)),
+    activeZoneIndex: STATE.activeZoneIndex,
+  });
+  const snap = STATE.undoStack.pop();
+  STATE.paths = snap.paths;
+  STATE.zones = snap.zones;
+  STATE.activeZoneIndex = snap.activeZoneIndex;
+  STATE.selectedPathIndex = -1;
+  renderZoneChips();
+  renderCanvas();
+  updateBudget();
+  updatePreviews();
+  updatePathInspector();
+}
+
+function redo() {
+  if (STATE.redoStack.length === 0) return;
+  STATE.undoStack.push({
+    action: 'undo',
+    paths: JSON.parse(JSON.stringify(STATE.paths)),
+    zones: JSON.parse(JSON.stringify(STATE.zones)),
+    activeZoneIndex: STATE.activeZoneIndex,
+  });
+  const snap = STATE.redoStack.pop();
+  STATE.paths = snap.paths;
+  STATE.zones = snap.zones;
+  STATE.activeZoneIndex = snap.activeZoneIndex;
+  STATE.selectedPathIndex = -1;
+  renderZoneChips();
+  renderCanvas();
+  updateBudget();
+  updatePreviews();
+  updatePathInspector();
+}
+
+// ── Path Budget ──
+function updateBudget() {
+  const counts = STATE.paths.map(level => level.length);
+  const consolidated = consolidatedPathCount();
+  const totalBytes = Math.round(JSON.stringify(STATE.paths).length / 1024 * 10) / 10;
+
+  ['block', 'shape', 'detail'].forEach((name, i) => {
+    const el = $('budget-' + name);
+    el.textContent = counts[i];
+    const cell = el.closest('.budget-cell');
+    cell.className = 'budget-cell ' + budgetColor(counts[i], [30, 60]);
+  });
+
+  $('budget-consolidated').textContent = consolidated;
+  $('budget-bytes').textContent = totalBytes;
+
+  // Status bar budget
+  const total = consolidated;
+  const dot = $('status-budget-dot');
+  const text = $('status-budget-text');
+  const color = budgetColor(total, [20, 40]);
+  dot.className = 'budget-dot' + (color === 'green' ? '' : ' ' + color);
+  text.textContent = total <= 20 ? 'Budget: OK' : total <= 40 ? 'Budget: Watch' : 'Budget: Heavy';
+}
+
+function budgetColor(count, thresholds) {
+  if (count < thresholds[0]) return 'green';
+  if (count < thresholds[1]) return 'yellow';
+  return 'red';
+}
+
+function consolidatedPathCount() {
+  let count = 0;
+  STATE.paths.forEach(level => {
+    const groups = new Map();
+    level.forEach(p => {
+      const key = `${p.zone}|${p.type}|${p.type === 'stroke' ? (p.strokeWidth || 2) : 'fill'}`;
+      groups.set(key, (groups.get(key) || 0) + 1);
+    });
+    count += groups.size;
+  });
+  return count;
+}
+
+// ── Export ──
+function exportElement() {
+  const el = buildElementDefinition();
+  const js = formatElementJS(el);
+  navigator.clipboard.writeText(js).then(() => {
+    showToast('Copied to clipboard!');
+  }).catch(() => {
+    // Fallback: show in dialog
+    const ta = document.createElement('textarea');
+    ta.value = js;
+    ta.style.cssText = 'position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:9999;font:12px monospace;padding:20px;';
+    document.body.appendChild(ta);
+    ta.select();
+    ta.addEventListener('blur', () => ta.remove());
+  });
+}
+
+function buildElementDefinition() {
+  return {
+    id: $('el-id').value || 'unnamed',
+    name: $('el-name').value || 'Unnamed',
+    category: $('el-category').value,
+    viewBox: `0 0 ${STATE.viewBoxW} ${STATE.viewBoxH}`,
+    suggestedLayer: $('el-layer').value,
+    colorZones: STATE.zones.map(z => ({ id: z.id, defaultPaletteSlot: z.defaultPaletteSlot })),
+    carveLevels: LEVEL_NAMES.map((name, i) => ({
+      name,
+      paths: consolidatePaths(i),
+    })),
+  };
+}
+
+function consolidatePaths(upToLevel) {
+  // Accumulate all paths from level 0 to upToLevel
+  const allPaths = [];
+  for (let l = 0; l <= upToLevel; l++) {
+    allPaths.push(...STATE.paths[l]);
+  }
+
+  // Group by zone + type + strokeWidth
+  const groups = new Map();
+  allPaths.forEach(p => {
+    const key = `${p.zone}|${p.type}|${p.type === 'stroke' ? (p.strokeWidth || 2) : 'fill'}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(p);
+  });
+
+  // Merge each group into compound paths
+  const result = [];
+  groups.forEach((paths, key) => {
+    const [zone, type, widthOrFill] = key.split('|');
+    const compoundD = paths.map(p => p.d).join(' ');
+    const obj = { d: compoundD, type, zone };
+    if (type === 'stroke') {
+      obj.strokeWidth = parseFloat(widthOrFill);
+    }
+    result.push(obj);
+  });
+
+  return result;
+}
+
+function formatElementJS(el) {
+  const indent = '  ';
+  let js = '{\n';
+  js += `${indent}id: '${el.id}',\n`;
+  js += `${indent}name: '${el.name}',\n`;
+  js += `${indent}category: '${el.category}',\n`;
+  js += `${indent}viewBox: '${el.viewBox}',\n`;
+  js += `${indent}suggestedLayer: '${el.suggestedLayer}',\n`;
+
+  js += `${indent}colorZones: [\n`;
+  el.colorZones.forEach(z => {
+    js += `${indent}${indent}{ id: '${z.id}', defaultPaletteSlot: ${z.defaultPaletteSlot} },\n`;
+  });
+  js += `${indent}],\n`;
+
+  js += `${indent}carveLevels: [\n`;
+  el.carveLevels.forEach(level => {
+    js += `${indent}${indent}{ name: '${level.name}', paths: [\n`;
+    level.paths.forEach(p => {
+      js += `${indent}${indent}${indent}{ d: '${p.d}', type: '${p.type}', zone: '${p.zone}'`;
+      if (p.type === 'stroke' && p.strokeWidth) {
+        js += `, strokeWidth: ${p.strokeWidth}`;
+      }
+      js += ` },\n`;
+    });
+    js += `${indent}${indent}]},\n`;
+  });
+  js += `${indent}],\n`;
+
+  js += '}';
+  return js;
+}
+
+// ── Import ──
+function populateImportDialog() {
+  const select = $('import-builtin');
+  // Gather all elements from loaded packs
+  const allElements = getAllElements();
+  allElements.sort((a, b) => (a.category || '').localeCompare(b.category || '') || (a.name || '').localeCompare(b.name || ''));
+  allElements.forEach(el => {
+    const opt = document.createElement('option');
+    opt.value = el.id;
+    opt.textContent = `${el.name} (${el.category})`;
+    select.appendChild(opt);
+  });
+}
+
+function getAllElements() {
+  const all = [];
+  const globals = [
+    'MOKURI_ELEMENTS', 'MOKURI_CORE_ELEMENTS',
+    'MOKURI_FAUNA_ELEMENTS', 'MOKURI_SCENE_ELEMENTS',
+    'MOKURI_HANKO_ELEMENTS', 'MOKURI_FORMS_ELEMENTS',
+    'MOKURI_FIGURES_ELEMENTS', 'MOKURI_KACHOE_ELEMENTS',
+    'MOKURI_MORIBANA_ELEMENTS',
+  ];
+  globals.forEach(g => {
+    try {
+      const arr = window[g];
+      if (Array.isArray(arr)) all.push(...arr);
+    } catch(e) {}
+  });
+  // Deduplicate by id
+  const seen = new Set();
+  return all.filter(el => {
+    if (seen.has(el.id)) return false;
+    seen.add(el.id);
+    return true;
+  });
+}
+
+function importElement(el) {
+  if (!el || !el.carveLevels) return;
+
+  // Set metadata
+  $('el-id').value = el.id || '';
+  $('el-name').value = el.name || '';
+  if (el.category) $('el-category').value = el.category;
+  if (el.suggestedLayer) $('el-layer').value = el.suggestedLayer;
+
+  // Parse viewBox
+  if (el.viewBox) {
+    const parts = el.viewBox.split(/\s+/).map(Number);
+    if (parts.length >= 4) {
+      STATE.viewBoxW = parts[2];
+      STATE.viewBoxH = parts[3];
+      $('vb-w').value = parts[2];
+      $('vb-h').value = parts[3];
+    }
+  }
+
+  // Parse zones
+  if (el.colorZones && el.colorZones.length) {
+    STATE.zones = el.colorZones.map(z => ({ ...z }));
+    STATE.activeZoneIndex = 0;
+  }
+
+  // Parse paths per level
+  // Elements store accumulated paths per level; we need to extract per-level-only paths
+  STATE.paths = [[], [], []];
+
+  // Build set of path `d` strings from previous levels to subtract
+  const prevPathDs = new Set();
+  el.carveLevels.forEach((level, li) => {
+    if (li >= 3) return;
+    const levelPaths = (level.paths || []);
+    levelPaths.forEach(p => {
+      if (!prevPathDs.has(p.d)) {
+        STATE.paths[li].push({
+          d: p.d,
+          type: p.type || 'fill',
+          zone: p.zone || 'body',
+          strokeWidth: p.strokeWidth,
+        });
+      }
+    });
+    // Add all this level's d strings to the "seen" set
+    levelPaths.forEach(p => prevPathDs.add(p.d));
+  });
+
+  setupViewBox();
+  renderZoneChips();
+  renderCanvas();
+  updateBudget();
+  updatePreviews();
+  updateStatusBar();
+  showToast(`Imported: ${el.name || el.id}`);
+}
+
+// ── Preview thumbnails ──
+function updatePreviews() {
+  ['block', 'shape', 'detail'].forEach((name, levelIdx) => {
+    const svgEl = $('preview-' + name);
+    svgEl.innerHTML = '';
+
+    // Accumulate paths up to this level
+    for (let l = 0; l <= levelIdx; l++) {
+      STATE.paths[l].forEach(p => {
+        const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        pathEl.setAttribute('d', p.d);
+        const zoneIdx = STATE.zones.findIndex(z => z.id === p.zone);
+        const color = ZONE_COLORS[(zoneIdx >= 0 ? zoneIdx : 0) % ZONE_COLORS.length];
+        if (p.type === 'fill') {
+          pathEl.setAttribute('fill', color);
+          pathEl.setAttribute('stroke', 'none');
+        } else {
+          pathEl.setAttribute('fill', 'none');
+          pathEl.setAttribute('stroke', color);
+          pathEl.setAttribute('stroke-width', p.strokeWidth || 2);
+          pathEl.setAttribute('stroke-linecap', 'round');
+          pathEl.setAttribute('stroke-linejoin', 'round');
+        }
+        svgEl.appendChild(pathEl);
+      });
+    }
+  });
+}
+
+// ── Path Inspector ──
+function updatePathInspector() {
+  const section = $('path-inspector-section');
+  const container = $('path-inspector');
+
+  if (STATE.selectedPathIndex < 0 || !STATE.paths[STATE.activeLevel][STATE.selectedPathIndex]) {
+    section.style.display = 'none';
+    return;
+  }
+
+  section.style.display = '';
+  const p = STATE.paths[STATE.activeLevel][STATE.selectedPathIndex];
+
+  container.innerHTML = `
+    <div class="field">
+      <div class="field-label">Type</div>
+      <select id="inspect-type" style="width:100%; padding:4px 6px; border:1px solid var(--border); border-radius:6px; font-size:11px;">
+        <option value="fill" ${p.type === 'fill' ? 'selected' : ''}>Fill</option>
+        <option value="stroke" ${p.type === 'stroke' ? 'selected' : ''}>Stroke</option>
+      </select>
+    </div>
+    <div class="field">
+      <div class="field-label">Zone</div>
+      <select id="inspect-zone" style="width:100%; padding:4px 6px; border:1px solid var(--border); border-radius:6px; font-size:11px;">
+        ${STATE.zones.map(z => `<option value="${z.id}" ${z.id === p.zone ? 'selected' : ''}>${z.id}</option>`).join('')}
+      </select>
+    </div>
+    ${p.type === 'stroke' ? `
+    <div class="field">
+      <div class="field-label">Stroke Width</div>
+      <input type="number" id="inspect-sw" value="${p.strokeWidth || 2}" min="0.5" max="12" step="0.5" style="width:60px; padding:4px 6px; border:1px solid var(--border); border-radius:6px; font-size:11px;">
+    </div>` : ''}
+    <div class="field">
+      <div class="field-label">Path Data</div>
+      <textarea id="inspect-d" style="min-height:60px;">${p.d}</textarea>
+    </div>
+    <div style="display:flex; gap:4px;">
+      <button class="sm" id="inspect-apply">Apply</button>
+      <button class="sm" id="inspect-delete" style="color:var(--bad);">Delete</button>
+    </div>
+  `;
+
+  $('inspect-apply').addEventListener('click', () => {
+    pushUndo('editPath');
+    const path = STATE.paths[STATE.activeLevel][STATE.selectedPathIndex];
+    path.type = $('inspect-type').value;
+    path.zone = $('inspect-zone').value;
+    path.d = $('inspect-d').value;
+    if (path.type === 'stroke') {
+      const sw = $('inspect-sw');
+      path.strokeWidth = sw ? parseFloat(sw.value) : 2;
+    }
+    renderCanvas();
+    updateBudget();
+    updatePreviews();
+  });
+
+  $('inspect-delete').addEventListener('click', () => {
+    pushUndo('deletePath');
+    STATE.paths[STATE.activeLevel].splice(STATE.selectedPathIndex, 1);
+    STATE.selectedPathIndex = -1;
+    renderCanvas();
+    updateBudget();
+    updatePreviews();
+    updatePathInspector();
+  });
+}
+
+// ── Status Bar ──
+function updateStatusBar() {
+  $('status-tool').textContent = STATE.tool.charAt(0).toUpperCase() + STATE.tool.slice(1);
+  $('status-level').textContent = LEVEL_NAMES[STATE.activeLevel];
+  const zone = STATE.zones[STATE.activeZoneIndex];
+  $('status-zone').textContent = zone ? `zone: ${zone.id}` : 'no zone';
+}
+
+// ── Pan / Zoom ──
+function zoom(factor) {
+  const cx = STATE.viewBox.x + STATE.viewBox.w / 2;
+  const cy = STATE.viewBox.y + STATE.viewBox.h / 2;
+  STATE.viewBox.w /= factor;
+  STATE.viewBox.h /= factor;
+  STATE.viewBox.x = cx - STATE.viewBox.w / 2;
+  STATE.viewBox.y = cy - STATE.viewBox.h / 2;
+  STATE.zoom *= factor;
+  applyViewBox();
+  $('zoom-display').textContent = Math.round(STATE.zoom * 100) + '%';
+}
+
+function fitToView() {
+  const pad = Math.max(STATE.viewBoxW, STATE.viewBoxH) * 0.15;
+  STATE.viewBox = {
+    x: -pad,
+    y: -pad,
+    w: STATE.viewBoxW + pad * 2,
+    h: STATE.viewBoxH + pad * 2,
+  };
+  STATE.zoom = 1;
+  applyViewBox();
+  $('zoom-display').textContent = '100%';
+}
+
+// ── Toast ──
+function showToast(msg, duration) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), duration || 2000);
+}
+
+// ── Event Binding ──
+function attachEvents() {
+  // Tools
+  $('tool-select').addEventListener('click', () => setTool('select'));
+  $('tool-stroke').addEventListener('click', () => setTool('stroke'));
+  $('tool-fill').addEventListener('click', () => setTool('fill'));
+  $('tool-erase').addEventListener('click', () => setTool('erase'));
+
+  // Level tabs
+  document.querySelectorAll('.level-tab').forEach(tab => {
+    tab.addEventListener('click', () => setLevel(parseInt(tab.dataset.level)));
+  });
+
+  // Undo/redo
+  $('btn-undo').addEventListener('click', undo);
+  $('btn-redo').addEventListener('click', redo);
+
+  // Zoom
+  $('btn-zoom-in').addEventListener('click', () => zoom(1.25));
+  $('btn-zoom-out').addEventListener('click', () => zoom(0.8));
+  $('btn-zoom-fit').addEventListener('click', fitToView);
+
+  // Mouse wheel zoom
+  canvasArea.addEventListener('wheel', e => {
+    e.preventDefault();
+    zoom(e.deltaY < 0 ? 1.1 : 0.9);
+  }, { passive: false });
+
+  // Zone management
+  $('btn-add-zone').addEventListener('click', addZone);
+  $('btn-remove-zone').addEventListener('click', removeZone);
+
+  // Stroke width slider
+  $('stroke-width').addEventListener('input', e => {
+    STATE.strokeWidth = parseFloat(e.target.value);
+    $('stroke-width-val').textContent = STATE.strokeWidth;
+  });
+
+  // Curve fidelity slider
+  $('curve-fidelity').addEventListener('input', e => {
+    STATE.curveFidelity = parseInt(e.target.value);
+  });
+
+  // ViewBox changes
+  $('vb-w').addEventListener('change', e => {
+    STATE.viewBoxW = parseInt(e.target.value) || 160;
+    setupViewBox();
+    renderCanvas();
+  });
+  $('vb-h').addEventListener('change', e => {
+    STATE.viewBoxH = parseInt(e.target.value) || 160;
+    setupViewBox();
+    renderCanvas();
+  });
+
+  // Reference image
+  $('ref-drop').addEventListener('click', () => $('ref-file').click());
+  $('ref-file').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => loadRefImage(reader.result);
+    reader.readAsDataURL(file);
+  });
+
+  $('ref-drop').addEventListener('dragover', e => {
+    e.preventDefault();
+    $('ref-drop').classList.add('drag-over');
+  });
+  $('ref-drop').addEventListener('dragleave', () => {
+    $('ref-drop').classList.remove('drag-over');
+  });
+  $('ref-drop').addEventListener('drop', e => {
+    e.preventDefault();
+    $('ref-drop').classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = () => loadRefImage(reader.result);
+      reader.readAsDataURL(file);
+    }
+  });
+
+  $('ref-opacity').addEventListener('input', e => {
+    STATE.refOpacity = parseInt(e.target.value) / 100;
+    $('ref-opacity-val').textContent = e.target.value + '%';
+    const img = document.querySelector('#ref-layer image');
+    if (img) img.style.opacity = STATE.refOpacity;
+  });
+
+  $('btn-ref-clear').addEventListener('click', () => loadRefImage(null));
+
+  $('btn-ref-url').addEventListener('click', () => {
+    $('url-dialog').showModal();
+  });
+
+  $('url-cancel').addEventListener('click', () => $('url-dialog').close());
+  $('url-confirm').addEventListener('click', () => {
+    const url = $('ref-url-input').value.trim();
+    if (url) loadRefImage(url);
+    $('url-dialog').close();
+  });
+
+  // Import
+  $('btn-import').addEventListener('click', () => $('import-dialog').showModal());
+  $('import-cancel').addEventListener('click', () => $('import-dialog').close());
+  $('import-confirm').addEventListener('click', () => {
+    const select = $('import-builtin');
+    const code = $('import-code').value.trim();
+
+    if (select.value) {
+      const all = getAllElements();
+      const el = all.find(e => e.id === select.value);
+      if (el) importElement(el);
+    } else if (code) {
+      try {
+        const el = (new Function('return (' + code + ')'))();
+        importElement(el);
+      } catch(e) {
+        showToast('Parse error: ' + e.message);
+        return;
+      }
+    }
+    $('import-dialog').close();
+  });
+
+  // Export
+  $('btn-export').addEventListener('click', exportElement);
+
+  // Drawing events on canvas
+  canvasArea.addEventListener('pointerdown', e => {
+    if (e.button === 1 || (e.button === 0 && e.altKey)) {
+      // Pan
+      STATE.panning = true;
+      STATE.panStart = { x: e.clientX, y: e.clientY, vb: { ...STATE.viewBox } };
+      canvasArea.setPointerCapture(e.pointerId);
+      return;
+    }
+
+    if (STATE.tool === 'stroke' || STATE.tool === 'fill') {
+      canvasArea.setPointerCapture(e.pointerId);
+      beginStroke(e);
+    } else if (STATE.tool === 'select') {
+      // Deselect if clicking empty space
+      const target = e.target;
+      if (target === svg || target.classList.contains('paper-bg')) {
+        STATE.selectedPathIndex = -1;
+        renderCanvas();
+        updatePathInspector();
+      }
+    }
+  });
+
+  canvasArea.addEventListener('pointermove', e => {
+    // Update coords
+    const pt = svgPoint(e);
+    $('status-coords').textContent = `${Math.round(pt.x)}, ${Math.round(pt.y)}`;
+
+    if (STATE.panning) {
+      const dx = e.clientX - STATE.panStart.x;
+      const dy = e.clientY - STATE.panStart.y;
+      const rect = canvasArea.getBoundingClientRect();
+      STATE.viewBox.x = STATE.panStart.vb.x - dx / rect.width * STATE.panStart.vb.w;
+      STATE.viewBox.y = STATE.panStart.vb.y - dy / rect.height * STATE.panStart.vb.h;
+      applyViewBox();
+      return;
+    }
+
+    if (STATE.drawing) {
+      moveStroke(e);
+    }
+  });
+
+  canvasArea.addEventListener('pointerup', e => {
+    if (STATE.panning) {
+      STATE.panning = false;
+      STATE.panStart = null;
+      return;
+    }
+    endStroke(e);
+  });
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', e => {
+    // Don't intercept when typing in inputs
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+
+    if (e.ctrlKey && e.key === 'z') { e.preventDefault(); undo(); }
+    else if (e.ctrlKey && e.key === 'y') { e.preventDefault(); redo(); }
+    else if (e.key === 'v' || e.key === 'V') setTool('select');
+    else if (e.key === 's' || e.key === 'S') setTool('stroke');
+    else if (e.key === 'f' || e.key === 'F') setTool('fill');
+    else if (e.key === 'e' || e.key === 'E') setTool('erase');
+    else if (e.key === '1') setLevel(0);
+    else if (e.key === '2') setLevel(1);
+    else if (e.key === '3') setLevel(2);
+    else if (e.key === 'Delete' || e.key === 'Backspace') {
+      if (STATE.selectedPathIndex >= 0) {
+        pushUndo('deletePath');
+        STATE.paths[STATE.activeLevel].splice(STATE.selectedPathIndex, 1);
+        STATE.selectedPathIndex = -1;
+        renderCanvas();
+        updateBudget();
+        updatePreviews();
+        updatePathInspector();
+      }
+    }
+    else if (e.key === '0') fitToView();
+    else if (e.key === '+' || e.key === '=') zoom(1.25);
+    else if (e.key === '-') zoom(0.8);
+  });
+}
+
+// ── Boot ──
+init();
+
+})();
+</script>
+</body>
+</html>
