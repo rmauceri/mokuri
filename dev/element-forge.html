@@ -439,6 +439,79 @@ button.sm { padding: 3px 8px; font-size: 11px; }
   text-align: right;
 }
 
+/* ── Trace Section ── */
+.trace-section {
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.35);
+}
+
+.trace-section.has-image {
+  border-color: var(--accent);
+  background: rgba(139, 107, 74, 0.05);
+}
+
+.trace-preview {
+  width: 100%;
+  aspect-ratio: 4/3;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--paper);
+  overflow: hidden;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.trace-preview img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.trace-preview .placeholder {
+  color: var(--muted);
+  font-size: 11px;
+  text-align: center;
+  padding: 12px;
+}
+
+.threshold-group {
+  margin-bottom: 8px;
+}
+
+.threshold-group .slider-row {
+  margin-bottom: 2px;
+}
+
+.threshold-group .thresh-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  min-width: 44px;
+}
+
+.trace-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.trace-actions button {
+  flex: 1;
+}
+
+.trace-status {
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 6px;
+  text-align: center;
+  min-height: 14px;
+}
+
 /* ── Toast ── */
 .toast {
   position: fixed;
@@ -560,19 +633,67 @@ button.sm { padding: 3px 8px; font-size: 11px; }
         </div>
 
         <div class="panel-section">
-          <div class="subtle-label">Reference Image</div>
-          <div class="drop-zone" id="ref-drop">
-            Drop image or click to browse
-            <input type="file" id="ref-file" accept="image/*">
+          <div class="subtle-label">Trace Image</div>
+          <div class="trace-section" id="trace-section">
+            <div class="trace-preview" id="trace-preview">
+              <div class="placeholder">Drop an image or click to browse</div>
+            </div>
+            <div class="drop-zone" id="ref-drop">
+              Drop image or click to browse
+              <input type="file" id="ref-file" accept="image/*">
+            </div>
+            <div style="margin-top:6px; display:flex; gap:4px;">
+              <button class="sm" id="btn-ref-clear" style="display:none;">Clear</button>
+              <button class="sm" id="btn-ref-url">Paste URL</button>
+              <button class="sm" id="btn-auto-vb" style="display:none;" title="Set viewBox from image">Auto VB</button>
+            </div>
+
+            <div id="trace-controls" style="display:none; margin-top:10px;">
+              <div class="threshold-group">
+                <div class="slider-row">
+                  <span class="thresh-label">Block</span>
+                  <input type="range" id="thresh-block" min="10" max="250" value="200">
+                  <span class="slider-val" id="thresh-block-val">200</span>
+                </div>
+                <div class="slider-row">
+                  <span class="thresh-label">Shape</span>
+                  <input type="range" id="thresh-shape" min="10" max="250" value="128">
+                  <span class="slider-val" id="thresh-shape-val">128</span>
+                </div>
+                <div class="slider-row">
+                  <span class="thresh-label">Detail</span>
+                  <input type="range" id="thresh-detail" min="10" max="250" value="80">
+                  <span class="slider-val" id="thresh-detail-val">80</span>
+                </div>
+              </div>
+
+              <div class="slider-row" style="margin-bottom:4px;">
+                <span class="thresh-label" title="Path simplification (higher = simpler)">Epsilon</span>
+                <input type="range" id="trace-epsilon" min="0.5" max="5" step="0.1" value="1.0">
+                <span class="slider-val" id="trace-epsilon-val">1.0</span>
+              </div>
+
+              <div class="slider-row" style="margin-bottom:4px;">
+                <span class="thresh-label" title="Suppress speckles up to this size">Turd</span>
+                <input type="range" id="trace-turd" min="0" max="30" step="1" value="6">
+                <span class="slider-val" id="trace-turd-val">6</span>
+              </div>
+
+              <div class="trace-actions">
+                <button class="primary" id="btn-trace">Trace Image</button>
+                <button class="sm" id="btn-re-simplify">Re-simplify</button>
+              </div>
+              <div class="trace-status" id="trace-status"></div>
+            </div>
           </div>
-          <div class="ref-controls" style="margin-top:8px;">
+        </div>
+
+        <div class="panel-section">
+          <div class="subtle-label">Reference Overlay</div>
+          <div class="ref-controls">
             <label>Opacity</label>
             <input type="range" id="ref-opacity" min="0" max="100" value="35">
             <span class="slider-val" id="ref-opacity-val">35%</span>
-          </div>
-          <div style="margin-top:6px;">
-            <button class="sm" id="btn-ref-clear" style="display:none;">Clear Reference</button>
-            <button class="sm" id="btn-ref-url">Paste URL</button>
           </div>
         </div>
 
@@ -746,6 +867,9 @@ button.sm { padding: 3px 8px; font-size: 11px; }
   </div>
 </dialog>
 
+<!-- Potrace library (vendored) for auto-trace -->
+<script src="potrace-lib.js"></script>
+
 <!-- Element pack scripts for import feature -->
 <script src="../assets/elements.js"></script>
 <script src="../assets/extended-elements.js"></script>
@@ -829,6 +953,12 @@ const STATE = {
   // Reference image
   refImageSrc: null,
   refOpacity: 0.35,
+
+  // Trace
+  traceImageData: null,     // ImageData from loaded image (scaled)
+  traceImageEl: null,       // HTMLImageElement for the loaded image
+  traceRawPaths: [null, null, null],  // raw SVG d strings from Potrace per level
+  tracing: false,
 
   // Viewport
   viewBox: { x: 0, y: 0, w: 160, h: 160 },
@@ -1116,6 +1246,366 @@ function endStroke(e) {
 
 function clearActiveStroke() {
   $('layer-active').innerHTML = '';
+}
+
+// ── Trace Engine ──
+
+// Load an image for tracing: display preview + reference, prepare ImageData
+function loadTraceImage(src) {
+  STATE.refImageSrc = src;
+
+  // Show/hide UI
+  var clearBtn = $('btn-ref-clear');
+  var autoVbBtn = $('btn-auto-vb');
+  var controls = $('trace-controls');
+  var section = $('trace-section');
+  var preview = $('trace-preview');
+
+  if (!src) {
+    clearBtn.style.display = 'none';
+    autoVbBtn.style.display = 'none';
+    controls.style.display = 'none';
+    section.classList.remove('has-image');
+    preview.innerHTML = '<div class="placeholder">Drop an image or click to browse</div>';
+    STATE.traceImageData = null;
+    STATE.traceImageEl = null;
+    STATE.traceRawPaths = [null, null, null];
+    // Clear reference layer
+    $('ref-layer').innerHTML = '';
+    return;
+  }
+
+  clearBtn.style.display = '';
+  autoVbBtn.style.display = '';
+  controls.style.display = '';
+  section.classList.add('has-image');
+
+  // Show image in preview thumbnail
+  preview.innerHTML = '';
+  var previewImg = document.createElement('img');
+  previewImg.src = src;
+  preview.appendChild(previewImg);
+
+  // Load into an Image element for canvas operations
+  var img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = function() {
+    STATE.traceImageEl = img;
+
+    // Scale image for tracing (max 400px wide for performance)
+    var scale = Math.min(1, 400 / img.naturalWidth);
+    var w = Math.round(img.naturalWidth * scale);
+    var h = Math.round(img.naturalHeight * scale);
+
+    var canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, w, h);
+    STATE.traceImageData = ctx.getImageData(0, 0, w, h);
+
+    $('trace-status').textContent = w + '\u00d7' + h + ' ready to trace';
+
+    // Also load as reference image in the SVG workspace
+    loadRefImage(src);
+  };
+  img.onerror = function() {
+    showToast('Failed to load image');
+    $('trace-status').textContent = 'Load failed';
+  };
+  img.src = src;
+}
+
+// Set viewBox from image aspect ratio (scaled to ~160 wide)
+function autoViewBoxFromImage() {
+  if (!STATE.traceImageEl) return;
+  var img = STATE.traceImageEl;
+  var aspect = img.naturalHeight / img.naturalWidth;
+  var w = 160;
+  var h = Math.round(w * aspect);
+  STATE.viewBoxW = w;
+  STATE.viewBoxH = h;
+  $('vb-w').value = w;
+  $('vb-h').value = h;
+  setupViewBox();
+  renderCanvas();
+  // Re-apply reference
+  if (STATE.refImageSrc) loadRefImage(STATE.refImageSrc);
+  showToast('ViewBox set to ' + w + '\u00d7' + h);
+}
+
+// Run Potrace at a single threshold and return the SVG path d string
+function traceAtThreshold(imageData, threshold, turdSize, callback) {
+  if (typeof Potrace === 'undefined') {
+    showToast('Potrace library not loaded');
+    callback(null);
+    return;
+  }
+
+  Potrace.setParameter({
+    turdsize: turdSize,
+    optcurve: true,
+    alphamax: 1,
+    opttolerance: 0.2
+  });
+
+  Potrace.loadBmFromImageData(imageData, threshold);
+  Potrace.process(function() {
+    var svgStr = Potrace.getSVG(1);
+    // Extract the d attribute from the SVG path element
+    var dMatch = svgStr.match(/\bd="([^"]*)"/);
+    var d = dMatch ? dMatch[1] : null;
+    callback(d);
+  });
+}
+
+// Parse SVG path d string into an array of subpath point arrays
+// Handles M, L, C, Q, Z commands from Potrace output
+function parseSvgPathToSubpaths(d) {
+  if (!d) return [];
+  var subpaths = [];
+  var current = [];
+  var startX = 0, startY = 0;
+  var cx = 0, cy = 0;
+
+  // Tokenize: split on command letters, keeping the letter
+  var tokens = d.match(/[MLCQZmlcqz][^MLCQZmlcqz]*/g);
+  if (!tokens) return [];
+
+  for (var ti = 0; ti < tokens.length; ti++) {
+    var token = tokens[ti];
+    var cmd = token.charAt(0);
+    var args = token.slice(1).trim().replace(/,/g, ' ').split(/\s+/).map(Number).filter(function(n) { return !isNaN(n); });
+
+    switch(cmd) {
+      case 'M':
+        if (current.length > 1) subpaths.push(current);
+        cx = args[0]; cy = args[1];
+        startX = cx; startY = cy;
+        current = [{x: cx, y: cy}];
+        // Implicit L commands after M
+        for (var i = 2; i < args.length; i += 2) {
+          cx = args[i]; cy = args[i+1];
+          current.push({x: cx, y: cy});
+        }
+        break;
+      case 'L':
+        for (var i = 0; i < args.length; i += 2) {
+          cx = args[i]; cy = args[i+1];
+          current.push({x: cx, y: cy});
+        }
+        break;
+      case 'C':
+        // Cubic bezier - sample into points
+        for (var i = 0; i < args.length; i += 6) {
+          var x1 = args[i], y1 = args[i+1];
+          var x2 = args[i+2], y2 = args[i+3];
+          var x3 = args[i+4], y3 = args[i+5];
+          // Sample cubic bezier at intervals
+          var steps = 8;
+          for (var s = 1; s <= steps; s++) {
+            var t = s / steps;
+            var mt = 1 - t;
+            var px = mt*mt*mt*cx + 3*mt*mt*t*x1 + 3*mt*t*t*x2 + t*t*t*x3;
+            var py = mt*mt*mt*cy + 3*mt*mt*t*y1 + 3*mt*t*t*y2 + t*t*t*y3;
+            current.push({x: px, y: py});
+          }
+          cx = x3; cy = y3;
+        }
+        break;
+      case 'Q':
+        // Quadratic bezier - sample
+        for (var i = 0; i < args.length; i += 4) {
+          var qx1 = args[i], qy1 = args[i+1];
+          var qx2 = args[i+2], qy2 = args[i+3];
+          var steps = 6;
+          for (var s = 1; s <= steps; s++) {
+            var t = s / steps;
+            var mt = 1 - t;
+            var px = mt*mt*cx + 2*mt*t*qx1 + t*t*qx2;
+            var py = mt*mt*cy + 2*mt*t*qy1 + t*t*qy2;
+            current.push({x: px, y: py});
+          }
+          cx = qx2; cy = qy2;
+        }
+        break;
+      case 'Z':
+      case 'z':
+        cx = startX; cy = startY;
+        if (current.length > 1) subpaths.push(current);
+        current = [];
+        break;
+    }
+  }
+  if (current.length > 1) subpaths.push(current);
+  return subpaths;
+}
+
+// Convert point array back to SVG fill path (closed, Q-curves)
+function pointsToFillPath(points) {
+  if (points.length < 3) return '';
+  var d = 'M' + r(points[0].x) + ',' + r(points[0].y);
+  for (var i = 1; i < points.length - 1; i++) {
+    var curr = points[i];
+    var next = points[i + 1];
+    var midX = (curr.x + next.x) / 2;
+    var midY = (curr.y + next.y) / 2;
+    d += ' Q' + r(curr.x) + ',' + r(curr.y) + ' ' + r(midX) + ',' + r(midY);
+  }
+  d += ' L' + r(points[points.length - 1].x) + ',' + r(points[points.length - 1].y);
+  d += ' Z';
+  return d;
+}
+
+// Simplify a Potrace SVG d string: parse → sample → RDP → rebuild
+function simplifyTracePath(d, epsilon) {
+  if (!d) return d;
+  var subpaths = parseSvgPathToSubpaths(d);
+  if (subpaths.length === 0) return d;
+  var parts = [];
+  for (var i = 0; i < subpaths.length; i++) {
+    var simplified = rdpSimplify(subpaths[i], epsilon);
+    if (simplified.length >= 3) {
+      parts.push(pointsToFillPath(simplified));
+    }
+  }
+  return parts.join(' ');
+}
+
+// Scale by transforming parsed subpaths to viewBox coordinates
+function scaleTracePathParsed(d, srcW, srcH, dstW, dstH) {
+  if (!d) return d;
+  var sx = dstW / srcW;
+  var sy = dstH / srcH;
+  var subpaths = parseSvgPathToSubpaths(d);
+  if (subpaths.length === 0) return d;
+  var parts = [];
+  for (var i = 0; i < subpaths.length; i++) {
+    var scaled = subpaths[i].map(function(p) {
+      return { x: p.x * sx, y: p.y * sy };
+    });
+    if (scaled.length >= 3) {
+      parts.push(pointsToFillPath(scaled));
+    }
+  }
+  return parts.join(' ');
+}
+
+// Main trace pipeline: trace at 3 thresholds, simplify, scale, populate STATE.paths
+function traceAllLevels() {
+  if (!STATE.traceImageData) {
+    showToast('No image loaded');
+    return;
+  }
+  if (STATE.tracing) return;
+  STATE.tracing = true;
+
+  var imageData = STATE.traceImageData;
+  var thresholds = [
+    parseInt($('thresh-block').value),
+    parseInt($('thresh-shape').value),
+    parseInt($('thresh-detail').value)
+  ];
+  var epsilon = parseFloat($('trace-epsilon').value);
+  var turdSize = parseInt($('trace-turd').value);
+  var srcW = imageData.width;
+  var srcH = imageData.height;
+  var dstW = STATE.viewBoxW;
+  var dstH = STATE.viewBoxH;
+
+  $('trace-status').textContent = 'Tracing block...';
+
+  var levels = [];
+  var levelIdx = 0;
+
+  function traceNext() {
+    if (levelIdx >= 3) {
+      finishTrace();
+      return;
+    }
+    var levelNames = ['block', 'shape', 'detail'];
+    $('trace-status').textContent = 'Tracing ' + levelNames[levelIdx] + '...';
+
+    traceAtThreshold(imageData, thresholds[levelIdx], turdSize, function(rawD) {
+      STATE.traceRawPaths[levelIdx] = rawD;
+
+      // Scale to viewBox coordinates, then simplify
+      var scaled = scaleTracePathParsed(rawD, srcW, srcH, dstW, dstH);
+      var simplified = simplifyTracePath(scaled, epsilon);
+      levels.push(simplified);
+
+      levelIdx++;
+      // Use setTimeout to let UI update between traces
+      setTimeout(traceNext, 10);
+    });
+  }
+
+  function finishTrace() {
+    pushUndo('trace');
+
+    var zone = STATE.zones[0] ? STATE.zones[0].id : 'body';
+
+    // Store each level's traced path
+    // Mokuri accumulation model: each carveLevel includes all lower levels
+    // Higher threshold (block) = more area traced (outer silhouette)
+    // Lower threshold (detail) = less area traced but finer features
+    // So block trace IS the silhouette; shape and detail are subsets
+    for (var i = 0; i < 3; i++) {
+      if (levels[i]) {
+        STATE.paths[i] = [{ d: levels[i], type: 'fill', zone: zone }];
+      } else {
+        STATE.paths[i] = [];
+      }
+    }
+
+    STATE.redoStack = [];
+    STATE.tracing = false;
+
+    renderCanvas();
+    updateBudget();
+    updatePreviews();
+
+    var totalPaths = STATE.paths[0].length + STATE.paths[1].length + STATE.paths[2].length;
+    $('trace-status').textContent = 'Traced: ' + totalPaths + ' paths across 3 levels';
+    showToast('Trace complete');
+  }
+
+  traceNext();
+}
+
+// Re-simplify existing trace data at a new epsilon
+function reSimplify() {
+  var epsilon = parseFloat($('trace-epsilon').value);
+  var srcW = STATE.traceImageData ? STATE.traceImageData.width : STATE.viewBoxW;
+  var srcH = STATE.traceImageData ? STATE.traceImageData.height : STATE.viewBoxH;
+  var dstW = STATE.viewBoxW;
+  var dstH = STATE.viewBoxH;
+  var changed = false;
+  var zone = STATE.zones[0] ? STATE.zones[0].id : 'body';
+
+  pushUndo('re-simplify');
+
+  for (var i = 0; i < 3; i++) {
+    var rawD = STATE.traceRawPaths[i];
+    if (!rawD) continue;
+    var scaled = scaleTracePathParsed(rawD, srcW, srcH, dstW, dstH);
+    var simplified = simplifyTracePath(scaled, epsilon);
+    if (simplified) {
+      STATE.paths[i] = [{ d: simplified, type: 'fill', zone: zone }];
+      changed = true;
+    }
+  }
+
+  if (changed) {
+    renderCanvas();
+    updateBudget();
+    updatePreviews();
+    showToast('Re-simplified at \u03b5=' + epsilon);
+  } else {
+    showToast('No trace data to re-simplify');
+    // Pop the undo we just pushed since nothing changed
+    STATE.undoStack.pop();
+  }
 }
 
 // ── Canvas Rendering ──
@@ -1683,13 +2173,13 @@ function attachEvents() {
     renderCanvas();
   });
 
-  // Reference image
+  // Reference image → now routes through trace pipeline
   $('ref-drop').addEventListener('click', () => $('ref-file').click());
   $('ref-file').addEventListener('change', e => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => loadRefImage(reader.result);
+    reader.onload = () => loadTraceImage(reader.result);
     reader.readAsDataURL(file);
   });
 
@@ -1706,7 +2196,26 @@ function attachEvents() {
     const file = e.dataTransfer.files[0];
     if (file && file.type.startsWith('image/')) {
       const reader = new FileReader();
-      reader.onload = () => loadRefImage(reader.result);
+      reader.onload = () => loadTraceImage(reader.result);
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Also accept drops on the trace preview area
+  $('trace-preview').addEventListener('dragover', e => {
+    e.preventDefault();
+    $('ref-drop').classList.add('drag-over');
+  });
+  $('trace-preview').addEventListener('dragleave', () => {
+    $('ref-drop').classList.remove('drag-over');
+  });
+  $('trace-preview').addEventListener('drop', e => {
+    e.preventDefault();
+    $('ref-drop').classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = () => loadTraceImage(reader.result);
       reader.readAsDataURL(file);
     }
   });
@@ -1718,7 +2227,7 @@ function attachEvents() {
     if (img) img.style.opacity = STATE.refOpacity;
   });
 
-  $('btn-ref-clear').addEventListener('click', () => loadRefImage(null));
+  $('btn-ref-clear').addEventListener('click', () => loadTraceImage(null));
 
   $('btn-ref-url').addEventListener('click', () => {
     $('url-dialog').showModal();
@@ -1727,8 +2236,28 @@ function attachEvents() {
   $('url-cancel').addEventListener('click', () => $('url-dialog').close());
   $('url-confirm').addEventListener('click', () => {
     const url = $('ref-url-input').value.trim();
-    if (url) loadRefImage(url);
+    if (url) loadTraceImage(url);
     $('url-dialog').close();
+  });
+
+  // Trace controls
+  $('btn-trace').addEventListener('click', traceAllLevels);
+  $('btn-re-simplify').addEventListener('click', reSimplify);
+  $('btn-auto-vb').addEventListener('click', autoViewBoxFromImage);
+
+  // Threshold slider labels
+  ['block', 'shape', 'detail'].forEach(name => {
+    $('thresh-' + name).addEventListener('input', e => {
+      $('thresh-' + name + '-val').textContent = e.target.value;
+    });
+  });
+
+  $('trace-epsilon').addEventListener('input', e => {
+    $('trace-epsilon-val').textContent = parseFloat(e.target.value).toFixed(1);
+  });
+
+  $('trace-turd').addEventListener('input', e => {
+    $('trace-turd-val').textContent = e.target.value;
   });
 
   // Import
