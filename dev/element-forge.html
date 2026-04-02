@@ -2160,6 +2160,15 @@ function buildElementDefinition() {
   el.viewBox = `0 0 ${STATE.viewBoxW} ${STATE.viewBoxH}`;
   el.suggestedLayer = $('el-layer').value;
   el.colorZones = STATE.zones.map(z => ({ id: z.id, defaultPaletteSlot: z.defaultPaletteSlot }));
+
+  // Auto-add a 'detail' zone if shape/detail levels have traced fills
+  // that will be converted to strokes, and no detail zone exists yet
+  const hasNonBlockFills = (STATE.paths[1] && STATE.paths[1].some(p => p.type === 'fill'))
+    || (STATE.paths[2] && STATE.paths[2].some(p => p.type === 'fill'));
+  if (hasNonBlockFills && !el.colorZones.find(z => z.id === 'detail') && el.colorZones.length < 2) {
+    el.colorZones.push({ id: 'detail', defaultPaletteSlot: 3 });
+  }
+
   el.carveLevels = LEVEL_NAMES.map((name, i) => ({
     name,
     paths: consolidatePaths(i),
@@ -2168,18 +2177,37 @@ function buildElementDefinition() {
 }
 
 function consolidatePaths(upToLevel) {
-  // Accumulate individual paths from level 0 to upToLevel.
-  // Paths are kept separate (not compound-merged) to match the Mokuri element
-  // convention where identical paths appear at each level, enabling dedup
-  // in the harness and correct rendering in the main app.
+  // Accumulate paths from level 0 to upToLevel, converting traced fills at
+  // shape/detail levels into strokes in the detail zone — matching the Mokuri
+  // element convention where block = silhouette fills, shape/detail = carved strokes.
   const allPaths = [];
+
+  // Determine stroke zone: prefer 'detail', else second zone, else first zone
+  const detailZone = STATE.zones.find(z => z.id === 'detail');
+  const strokeZoneId = detailZone ? 'detail'
+    : (STATE.zones.length > 1 ? STATE.zones[1].id : STATE.zones[0].id);
+
   for (let l = 0; l <= upToLevel; l++) {
     for (const p of STATE.paths[l]) {
-      const obj = { d: p.d, type: p.type, zone: p.zone };
-      if (p.type === 'stroke') {
-        obj.strokeWidth = p.strokeWidth || 2;
+      if (l === 0) {
+        // Block level: keep fills as-is, ensure closed with Z
+        if (p.type === 'fill') {
+          let d = p.d.trim();
+          if (!d.endsWith('Z') && !d.endsWith('z')) d += ' Z';
+          allPaths.push({ d, type: 'fill', zone: p.zone });
+        } else {
+          allPaths.push({ d: p.d, type: p.type, zone: p.zone, strokeWidth: p.strokeWidth || 2 });
+        }
+      } else if (p.type === 'fill') {
+        // Shape/detail fills → convert to strokes in detail zone
+        const sw = l === 1 ? 1.5 : 0.8;
+        allPaths.push({ d: p.d, type: 'stroke', zone: strokeZoneId, strokeWidth: sw });
+      } else {
+        // Existing strokes: keep as-is
+        const obj = { d: p.d, type: p.type, zone: p.zone };
+        if (p.type === 'stroke') obj.strokeWidth = p.strokeWidth || 2;
+        allPaths.push(obj);
       }
-      allPaths.push(obj);
     }
   }
   return allPaths;
