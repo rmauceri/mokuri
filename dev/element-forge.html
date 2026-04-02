@@ -503,6 +503,27 @@ button.sm { padding: 3px 8px; font-size: 11px; }
   margin-bottom: 8px;
 }
 
+.cluster-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  position: relative;
+  transition: border-color 0.15s;
+}
+.cluster-swatch:hover { border-color: var(--accent); }
+.cluster-swatch.merged { opacity: 0.4; pointer-events: none; }
+.cluster-swatch .swatch-label {
+  position: absolute;
+  bottom: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 8px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
 .thresh-preview-canvas {
   display: none;
   width: 100%;
@@ -699,20 +720,33 @@ button.sm { padding: 3px 8px; font-size: 11px; }
                 🟢 Green background detected — block silhouette auto-extracted
               </div>
 
-              <!-- Threshold controls -->
+              <!-- Color segmentation controls -->
               <div class="threshold-group">
                 <div class="slider-row">
-                  <span class="thresh-label">Shape</span>
-                  <input type="range" id="thresh-shape" min="10" max="250" value="128">
-                  <span class="slider-val" id="thresh-shape-val">128</span>
+                  <span class="thresh-label">Colors</span>
+                  <input type="range" id="cluster-count" min="2" max="6" step="1" value="4">
+                  <span class="slider-val" id="cluster-count-val">4</span>
                 </div>
-                <canvas id="thresh-preview-shape" class="thresh-preview-canvas"></canvas>
-                <div class="slider-row">
-                  <span class="thresh-label">Detail</span>
-                  <input type="range" id="thresh-detail" min="10" max="250" value="80">
-                  <span class="slider-val" id="thresh-detail-val">80</span>
+                <div id="cluster-swatches" style="display:flex; flex-wrap:wrap; gap:4px; margin:6px 0;"></div>
+                <canvas id="quantize-preview" class="thresh-preview-canvas"></canvas>
+              </div>
+
+              <!-- Mono fallback controls (hidden when color segmentation active) -->
+              <div id="mono-controls" style="display:none;">
+                <div class="threshold-group">
+                  <div class="slider-row">
+                    <span class="thresh-label">Shape</span>
+                    <input type="range" id="thresh-shape" min="10" max="250" value="128">
+                    <span class="slider-val" id="thresh-shape-val">128</span>
+                  </div>
+                  <canvas id="thresh-preview-shape" class="thresh-preview-canvas"></canvas>
+                  <div class="slider-row">
+                    <span class="thresh-label">Detail</span>
+                    <input type="range" id="thresh-detail" min="10" max="250" value="80">
+                    <span class="slider-val" id="thresh-detail-val">80</span>
+                  </div>
+                  <canvas id="thresh-preview-detail" class="thresh-preview-canvas"></canvas>
                 </div>
-                <canvas id="thresh-preview-detail" class="thresh-preview-canvas"></canvas>
               </div>
 
               <div class="slider-row" style="margin-bottom:4px;">
@@ -728,7 +762,7 @@ button.sm { padding: 3px 8px; font-size: 11px; }
 
               <div class="trace-actions">
                 <button class="primary" id="btn-trace">Trace</button>
-                <button class="sm" id="btn-re-simplify">Re-simplify</button>
+                <button class="sm" id="btn-trace-mono" title="Use grayscale threshold pipeline instead of color segmentation">Mono</button>
               </div>
               <div class="trace-status" id="trace-status"></div>
             </div>
@@ -1020,6 +1054,13 @@ const STATE = {
   hasChromaKey: false,      // true if green or alpha background detected
   chromaMaskData: null,     // ImageData with bg replaced by white (for mono trace)
   alphaData: null,          // raw RGBA ImageData (for alpha-based silhouette)
+  traceMode: 'color',      // 'color' (segmentation) or 'mono' (threshold)
+
+  // Color segmentation
+  quantizedMap: null,       // Uint8Array — cluster index per pixel
+  clusters: null,           // [{ centroid: [L,a,b], srgb: [r,g,b], count: int, zoneId: string }]
+  quantizeW: 0,
+  quantizeH: 0,
 
   // Viewport
   viewBox: { x: 0, y: 0, w: 160, h: 160 },
@@ -1355,9 +1396,13 @@ function loadTraceImage(src) {
     STATE.hasChromaKey = false;
     STATE.chromaMaskData = null;
     STATE.alphaData = null;
+    STATE.quantizedMap = null;
+    STATE.clusters = null;
     $('chroma-status').style.display = 'none';
     $('thresh-preview-shape').style.display = 'none';
     $('thresh-preview-detail').style.display = 'none';
+    $('quantize-preview').style.display = 'none';
+    $('cluster-swatches').innerHTML = '';
     // Clear reference layer
     $('ref-layer').innerHTML = '';
     return;
@@ -1434,9 +1479,13 @@ function loadTraceImage(src) {
     // Also load as reference image in the SVG workspace
     loadRefImage(src);
 
-    // Show initial threshold previews
-    updateThresholdPreview('shape');
-    updateThresholdPreview('detail');
+    // Run initial color quantization (or threshold previews for mono mode)
+    if (STATE.traceMode === 'color') {
+      runQuantization();
+    } else {
+      updateThresholdPreview('shape');
+      updateThresholdPreview('detail');
+    }
   };
   img.onerror = function() {
     showToast('Failed to load image');
@@ -1693,6 +1742,133 @@ function traceAllLevels() {
     return;
   }
   if (STATE.tracing) return;
+
+  if (STATE.traceMode === 'color') {
+    traceColorSegmentation();
+  } else {
+    traceMonoThresholds();
+  }
+}
+
+// ── Color Segmentation Trace Pipeline ──
+function traceColorSegmentation() {
+  if (!STATE.clusters || !STATE.clusters.length) {
+    showToast('Run quantization first');
+    return;
+  }
+  STATE.tracing = true;
+
+  var imageData = STATE.traceImageData;
+  var rawData = STATE.alphaData;
+  var hasAlpha = !!rawData;
+  var hasChroma = STATE.hasChromaKey && !hasAlpha;
+  var epsilon = parseFloat($('trace-epsilon').value);
+  var turdSize = parseInt($('trace-turd').value);
+  var srcW = imageData.width, srcH = imageData.height;
+  var dstW = STATE.viewBoxW, dstH = STATE.viewBoxH;
+  var clusters = STATE.clusters;
+
+  pushUndo('trace');
+  STATE.paths = [[], [], []];
+  STATE.traceRawPaths = [null, null, null];
+
+  // Auto-populate zones from clusters
+  STATE.zones = clusters.map(function(cl, i) {
+    return { id: cl.zoneId, defaultPaletteSlot: i };
+  });
+  STATE.activeZoneIndex = 0;
+  renderZoneChips();
+
+  $('trace-status').textContent = 'Tracing silhouette...';
+
+  // Step 1: Block = full silhouette
+  var silhouette = buildSilhouetteMask(imageData, rawData, hasAlpha, hasChroma);
+  traceBinaryMask(silhouette.mask, silhouette.w, silhouette.h, turdSize, function(blockD) {
+    STATE.traceRawPaths[0] = blockD;
+    if (blockD) {
+      var result = processTracePath(blockD, srcW, srcH, dstW, dstH, epsilon);
+      if (result) STATE.paths[0] = [{ d: result, type: 'fill', zone: clusters[0].zoneId }];
+    }
+
+    // Step 2: Shape = per-cluster fills
+    var clusterIdx = 0;
+    function traceNextCluster() {
+      if (clusterIdx >= clusters.length) {
+        // Step 3: Detail = shape content + boundary strokes
+        traceDetailBoundaries();
+        return;
+      }
+      $('trace-status').textContent = 'Tracing ' + clusters[clusterIdx].zoneId + '...';
+
+      var clMask = buildClusterMask(imageData, rawData, hasAlpha, hasChroma, clusters, clusterIdx);
+      traceBinaryMask(clMask.mask, clMask.w, clMask.h, turdSize, function(clD) {
+        if (clD) {
+          var result = processTracePath(clD, srcW, srcH, dstW, dstH, epsilon);
+          if (result) {
+            STATE.paths[1].push({ d: result, type: 'fill', zone: clusters[clusterIdx].zoneId });
+          }
+        }
+        clusterIdx++;
+        setTimeout(traceNextCluster, 5);
+      });
+    }
+
+    function traceDetailBoundaries() {
+      $('trace-status').textContent = 'Extracting boundaries...';
+      setTimeout(function() {
+        // Copy shape fills into detail
+        for (var i = 0; i < STATE.paths[1].length; i++) {
+          STATE.paths[2].push({
+            d: STATE.paths[1][i].d,
+            type: 'fill',
+            zone: STATE.paths[1][i].zone
+          });
+        }
+
+        // Extract and trace boundary
+        var boundaryMask = extractBoundaryMask(imageData, rawData, hasAlpha, hasChroma, clusters);
+        traceBinaryMask(boundaryMask.mask, boundaryMask.w, boundaryMask.h, Math.max(turdSize, 5), function(boundaryD) {
+          if (boundaryD) {
+            var result = processTracePath(boundaryD, srcW, srcH, dstW, dstH, epsilon);
+            if (result) {
+              // Find the darkest cluster for boundary stroke zone
+              var darkest = 0, darkestL = Infinity;
+              for (var c = 0; c < clusters.length; c++) {
+                if (clusters[c].centroid[0] < darkestL) {
+                  darkestL = clusters[c].centroid[0];
+                  darkest = c;
+                }
+              }
+              STATE.paths[2].push({
+                d: result, type: 'stroke',
+                zone: clusters[darkest].zoneId,
+                strokeWidth: 1
+              });
+            }
+          }
+          finishTrace('color');
+        });
+      }, 10);
+    }
+
+    setTimeout(traceNextCluster, 5);
+  });
+
+  function finishTrace(mode) {
+    STATE.redoStack = [];
+    STATE.tracing = false;
+    renderCanvas();
+    updateBudget();
+    updatePreviews();
+
+    var totalPaths = STATE.paths[0].length + STATE.paths[1].length + STATE.paths[2].length;
+    $('trace-status').textContent = totalPaths + ' paths (' + mode + ', ' + clusters.length + ' zones)';
+    showToast('Trace complete');
+  }
+}
+
+// ── Mono Threshold Trace Pipeline (fallback) ──
+function traceMonoThresholds() {
   STATE.tracing = true;
 
   var imageData = STATE.traceImageData;
@@ -1713,10 +1889,7 @@ function traceAllLevels() {
   STATE.traceRawPaths = [null, null, null];
 
   if (STATE.hasChromaKey) {
-    // Chroma-key workflow: block = silhouette mask, shape/detail = mono on masked image
     $('trace-status').textContent = 'Tracing silhouette...';
-
-    // Build silhouette from alpha channel or chroma key
     var silhouette = STATE.alphaData
       ? createAlphaSilhouetteMask(STATE.alphaData)
       : createChromaSilhouetteMask(imageData);
@@ -1726,84 +1899,50 @@ function traceAllLevels() {
         var result = processTracePath(blockD, srcW, srcH, dstW, dstH, epsilon);
         if (result) STATE.paths[0] = [{ d: result, type: 'fill', zone: zone }];
       }
-
-      // Now trace shape and detail using mono thresholds on chroma-masked image
       var maskedData = STATE.chromaMaskData || createChromaMaskedData(imageData);
-      var levelIdx = 0;
-      var levelNames = ['shape', 'detail'];
-
-      function traceNextLevel() {
-        if (levelIdx >= 2) {
-          finishTrace();
-          return;
-        }
-        $('trace-status').textContent = 'Tracing ' + levelNames[levelIdx] + '...';
-
-        traceAtThreshold(maskedData, thresholds[levelIdx], turdSize, function(rawD) {
-          var stateIdx = levelIdx + 1; // 1=shape, 2=detail
-          STATE.traceRawPaths[stateIdx] = rawD;
-          if (rawD) {
-            var result = processTracePath(rawD, srcW, srcH, dstW, dstH, epsilon);
-            if (result) STATE.paths[stateIdx] = [{ d: result, type: 'fill', zone: zone }];
-          }
-          levelIdx++;
-          setTimeout(traceNextLevel, 10);
-        });
-      }
-
-      setTimeout(traceNextLevel, 10);
+      traceMonoLevels(maskedData, thresholds, epsilon, turdSize, srcW, srcH, dstW, dstH, zone);
     });
   } else {
-    // No chroma key: use highest threshold for block, then shape/detail
-    // Block = very high threshold (captures almost everything as silhouette)
     var blockThreshold = 240;
     $('trace-status').textContent = 'Tracing block...';
-
     traceAtThreshold(imageData, blockThreshold, turdSize, function(blockD) {
       STATE.traceRawPaths[0] = blockD;
       if (blockD) {
         var result = processTracePath(blockD, srcW, srcH, dstW, dstH, epsilon);
         if (result) STATE.paths[0] = [{ d: result, type: 'fill', zone: zone }];
       }
-
-      var levelIdx = 0;
-      var levelNames = ['shape', 'detail'];
-
-      function traceNextLevel() {
-        if (levelIdx >= 2) {
-          finishTrace();
-          return;
-        }
-        $('trace-status').textContent = 'Tracing ' + levelNames[levelIdx] + '...';
-
-        traceAtThreshold(imageData, thresholds[levelIdx], turdSize, function(rawD) {
-          var stateIdx = levelIdx + 1;
-          STATE.traceRawPaths[stateIdx] = rawD;
-          if (rawD) {
-            var result = processTracePath(rawD, srcW, srcH, dstW, dstH, epsilon);
-            if (result) STATE.paths[stateIdx] = [{ d: result, type: 'fill', zone: zone }];
-          }
-          levelIdx++;
-          setTimeout(traceNextLevel, 10);
-        });
-      }
-
-      setTimeout(traceNextLevel, 10);
+      traceMonoLevels(imageData, thresholds, epsilon, turdSize, srcW, srcH, dstW, dstH, zone);
     });
   }
 
-  function finishTrace() {
-    STATE.redoStack = [];
-    STATE.tracing = false;
-
-    renderCanvas();
-    updateBudget();
-    updatePreviews();
-
-    var totalPaths = STATE.paths[0].length + STATE.paths[1].length + STATE.paths[2].length;
-    var mode = STATE.hasChromaKey ? 'chroma-key' : 'mono';
-    $('trace-status').textContent = totalPaths + ' paths (' + mode + ')';
-    showToast('Trace complete');
+  function traceMonoLevels(data, thresholds, epsilon, turdSize, srcW, srcH, dstW, dstH, zone) {
+    var levelIdx = 0;
+    var levelNames = ['shape', 'detail'];
+    function next() {
+      if (levelIdx >= 2) {
+        STATE.redoStack = [];
+        STATE.tracing = false;
+        renderCanvas();
+        updateBudget();
+        updatePreviews();
+        var totalPaths = STATE.paths[0].length + STATE.paths[1].length + STATE.paths[2].length;
+        $('trace-status').textContent = totalPaths + ' paths (mono)';
+        showToast('Trace complete');
+        return;
+      }
+      $('trace-status').textContent = 'Tracing ' + levelNames[levelIdx] + '...';
+      traceAtThreshold(data, thresholds[levelIdx], turdSize, function(rawD) {
+        var stateIdx = levelIdx + 1;
+        STATE.traceRawPaths[stateIdx] = rawD;
+        if (rawD) {
+          var result = processTracePath(rawD, srcW, srcH, dstW, dstH, epsilon);
+          if (result) STATE.paths[stateIdx] = [{ d: result, type: 'fill', zone: zone }];
+        }
+        levelIdx++;
+        setTimeout(next, 10);
+      });
+    }
+    setTimeout(next, 10);
   }
 }
 
@@ -1914,6 +2053,434 @@ function createChromaSilhouetteMask(imageData) {
     }
   }
   return { mask: mask, w: w, h: h };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ── Color Quantization (OKLab + K-Means++) ──
+// ═══════════════════════════════════════════════════════════════
+
+// sRGB [0-255] → linear RGB [0-1]
+function srgbToLinear(c) {
+  c = c / 255;
+  return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+}
+
+// linear RGB [0-1] → sRGB [0-255]
+function linearToSrgb(c) {
+  c = c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
+  return Math.round(Math.max(0, Math.min(255, c * 255)));
+}
+
+// sRGB [0-255] → OKLab [L, a, b]
+function srgbToOklab(r, g, b) {
+  var lr = srgbToLinear(r), lg = srgbToLinear(g), lb = srgbToLinear(b);
+  var l = Math.cbrt(0.4122214708 * lr + 0.5363325363 * lg + 0.0514459929 * lb);
+  var m = Math.cbrt(0.2119034982 * lr + 0.6806995451 * lg + 0.1073969566 * lb);
+  var s = Math.cbrt(0.0883024619 * lr + 0.2817188376 * lg + 0.6299787005 * lb);
+  return [
+    0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s,
+    1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s,
+    0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s
+  ];
+}
+
+// OKLab [L, a, b] → sRGB [0-255]
+function oklabToSrgb(L, a, b) {
+  var l = L + 0.3963377774 * a + 0.2158037573 * b;
+  var m = L - 0.1055613458 * a - 0.0638541728 * b;
+  var s = L - 0.0894841775 * a - 1.2914855480 * b;
+  l = l * l * l; m = m * m * m; s = s * s * s;
+  return [
+    linearToSrgb(+4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s),
+    linearToSrgb(-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s),
+    linearToSrgb(-0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s)
+  ];
+}
+
+// Squared distance in OKLab space
+function oklabDist2(a, b) {
+  var dL = a[0] - b[0], da = a[1] - b[1], db = a[2] - b[2];
+  return dL * dL + da * da + db * db;
+}
+
+// Build subject pixel array: { lab[], srgb[], count, indices[] }
+// Excludes background pixels (chroma-key or alpha)
+function extractSubjectPixels(imageData, rawData, hasAlpha, hasChroma) {
+  var data = imageData.data;
+  var raw = rawData ? rawData.data : null;
+  var w = imageData.width, h = imageData.height;
+  var n = w * h;
+
+  // Downsample for k-means: max 256px wide
+  var dsScale = Math.min(1, 256 / w);
+  var dsW = Math.round(w * dsScale);
+  var dsH = Math.round(h * dsScale);
+
+  // Build downsampled canvas
+  var canvas = document.createElement('canvas');
+  canvas.width = dsW; canvas.height = dsH;
+  var ctx = canvas.getContext('2d');
+
+  // We need to draw the original image at downsampled size
+  // Create an ImageData at full size, put it on a temp canvas, draw scaled
+  var tmpCanvas = document.createElement('canvas');
+  tmpCanvas.width = w; tmpCanvas.height = h;
+  var tmpCtx = tmpCanvas.getContext('2d');
+  tmpCtx.putImageData(imageData, 0, 0);
+  ctx.imageSmoothingEnabled = false; // nearest neighbor to preserve flat colors
+  ctx.drawImage(tmpCanvas, 0, 0, dsW, dsH);
+  var dsData = ctx.getImageData(0, 0, dsW, dsH);
+
+  // Also downsample raw alpha data if available
+  var dsRaw = null;
+  if (raw) {
+    tmpCtx.clearRect(0, 0, w, h);
+    tmpCtx.putImageData(rawData, 0, 0);
+    var rawCanvas = document.createElement('canvas');
+    rawCanvas.width = dsW; rawCanvas.height = dsH;
+    var rawCtx = rawCanvas.getContext('2d');
+    rawCtx.imageSmoothingEnabled = false;
+    rawCtx.drawImage(tmpCanvas, 0, 0, dsW, dsH);
+    dsRaw = rawCtx.getImageData(0, 0, dsW, dsH);
+  }
+
+  var pixels = []; // [{lab, srgb, idx}]
+  var bgMask = new Uint8Array(dsW * dsH); // 1 = background
+
+  var dd = dsData.data;
+  var rd = dsRaw ? dsRaw.data : null;
+
+  for (var i = 0, j = 0; i < dd.length; i += 4, j++) {
+    var isBg = false;
+    if (hasAlpha && rd) {
+      isBg = rd[i + 3] < 60;
+    } else if (hasChroma) {
+      isBg = isChromaGreen(dd[i], dd[i + 1], dd[i + 2]);
+    }
+    if (isBg) {
+      bgMask[j] = 1;
+      continue;
+    }
+    pixels.push({
+      lab: srgbToOklab(dd[i], dd[i + 1], dd[i + 2]),
+      srgb: [dd[i], dd[i + 1], dd[i + 2]],
+      idx: j
+    });
+  }
+
+  return { pixels: pixels, bgMask: bgMask, w: dsW, h: dsH, dsData: dsData };
+}
+
+// K-means++ initialization: pick k centroids with weighted distance sampling
+function kmeansppInit(pixels, k) {
+  var centroids = [];
+  // First centroid: random pixel
+  var idx = Math.floor(Math.random() * pixels.length);
+  centroids.push(pixels[idx].lab.slice());
+
+  for (var c = 1; c < k; c++) {
+    // Compute distance from each pixel to nearest centroid
+    var distances = new Float64Array(pixels.length);
+    var totalDist = 0;
+    for (var i = 0; i < pixels.length; i++) {
+      var minD = Infinity;
+      for (var j = 0; j < centroids.length; j++) {
+        var d = oklabDist2(pixels[i].lab, centroids[j]);
+        if (d < minD) minD = d;
+      }
+      distances[i] = minD;
+      totalDist += minD;
+    }
+    // Weighted random selection
+    var r = Math.random() * totalDist;
+    var cumulative = 0;
+    for (var i = 0; i < pixels.length; i++) {
+      cumulative += distances[i];
+      if (cumulative >= r) {
+        centroids.push(pixels[i].lab.slice());
+        break;
+      }
+    }
+  }
+  return centroids;
+}
+
+// K-means clustering in OKLab space
+// Returns { assignments: Uint8Array, centroids: [[L,a,b]], counts: [int] }
+function kmeansCluster(pixels, k, maxIter) {
+  maxIter = maxIter || 20;
+  if (pixels.length === 0) return { assignments: new Uint8Array(0), centroids: [], counts: [] };
+
+  var centroids = kmeansppInit(pixels, k);
+  var assignments = new Uint8Array(pixels.length);
+  var counts = new Array(k).fill(0);
+
+  for (var iter = 0; iter < maxIter; iter++) {
+    var changed = 0;
+
+    // Assign each pixel to nearest centroid
+    counts.fill(0);
+    for (var i = 0; i < pixels.length; i++) {
+      var minD = Infinity, minC = 0;
+      for (var c = 0; c < k; c++) {
+        var d = oklabDist2(pixels[i].lab, centroids[c]);
+        if (d < minD) { minD = d; minC = c; }
+      }
+      if (assignments[i] !== minC) changed++;
+      assignments[i] = minC;
+      counts[minC]++;
+    }
+
+    // Convergence check
+    if (changed === 0) break;
+
+    // Recompute centroids
+    var sums = [];
+    for (var c = 0; c < k; c++) sums.push([0, 0, 0]);
+    for (var i = 0; i < pixels.length; i++) {
+      var c = assignments[i];
+      sums[c][0] += pixels[i].lab[0];
+      sums[c][1] += pixels[i].lab[1];
+      sums[c][2] += pixels[i].lab[2];
+    }
+    for (var c = 0; c < k; c++) {
+      if (counts[c] > 0) {
+        centroids[c][0] = sums[c][0] / counts[c];
+        centroids[c][1] = sums[c][1] / counts[c];
+        centroids[c][2] = sums[c][2] / counts[c];
+      }
+    }
+  }
+
+  return { assignments: assignments, centroids: centroids, counts: counts };
+}
+
+// Full color quantization pipeline
+// Returns { quantizedMap, clusters, w, h } at downsampled resolution
+function quantizeImage(imageData, rawData, hasAlpha, hasChroma, k) {
+  var subject = extractSubjectPixels(imageData, rawData, hasAlpha, hasChroma);
+  var result = kmeansCluster(subject.pixels, k);
+
+  // Build full quantized map (background = 255, subject = cluster index 0..k-1)
+  var map = new Uint8Array(subject.w * subject.h);
+  map.fill(255); // 255 = background
+  for (var i = 0; i < subject.pixels.length; i++) {
+    map[subject.pixels[i].idx] = result.assignments[i];
+  }
+
+  // Compute average sRGB per cluster
+  var clusterSrgb = [];
+  var srgbSums = [];
+  for (var c = 0; c < k; c++) srgbSums.push([0, 0, 0]);
+  for (var i = 0; i < subject.pixels.length; i++) {
+    var c = result.assignments[i];
+    srgbSums[c][0] += subject.pixels[i].srgb[0];
+    srgbSums[c][1] += subject.pixels[i].srgb[1];
+    srgbSums[c][2] += subject.pixels[i].srgb[2];
+  }
+
+  // Sort clusters by area (largest first) for consistent ordering
+  var clusterOrder = [];
+  for (var c = 0; c < k; c++) {
+    var rgb = result.counts[c] > 0
+      ? [Math.round(srgbSums[c][0] / result.counts[c]),
+         Math.round(srgbSums[c][1] / result.counts[c]),
+         Math.round(srgbSums[c][2] / result.counts[c])]
+      : [128, 128, 128];
+    clusterOrder.push({ idx: c, count: result.counts[c], srgb: rgb, centroid: result.centroids[c] });
+  }
+  clusterOrder.sort(function(a, b) { return b.count - a.count; });
+
+  // Remap indices so largest cluster = 0
+  var remap = new Uint8Array(k);
+  var clusters = [];
+  var zoneNames = ['body', 'marking', 'accent', 'detail', 'highlight', 'extra'];
+  for (var i = 0; i < clusterOrder.length; i++) {
+    remap[clusterOrder[i].idx] = i;
+    clusters.push({
+      centroid: clusterOrder[i].centroid,
+      srgb: clusterOrder[i].srgb,
+      count: clusterOrder[i].count,
+      zoneId: zoneNames[i] || ('zone' + i)
+    });
+  }
+
+  // Apply remap to quantized map
+  for (var j = 0; j < map.length; j++) {
+    if (map[j] < 255) map[j] = remap[map[j]];
+  }
+
+  return { quantizedMap: map, clusters: clusters, w: subject.w, h: subject.h };
+}
+
+// Render quantized image preview to a canvas element
+function renderQuantizePreview(quantResult) {
+  var canvas = $('quantize-preview');
+  if (!quantResult || !quantResult.clusters.length) {
+    canvas.style.display = 'none';
+    return;
+  }
+  var w = quantResult.w, h = quantResult.h;
+  canvas.width = w;
+  canvas.height = h;
+  canvas.style.display = 'block';
+  var ctx = canvas.getContext('2d');
+  var out = ctx.createImageData(w, h);
+  var d = out.data;
+  var map = quantResult.quantizedMap;
+  var clusters = quantResult.clusters;
+
+  for (var j = 0; j < map.length; j++) {
+    var i4 = j * 4;
+    if (map[j] === 255) {
+      // Background: light gray checkerboard
+      var bx = j % w, by = Math.floor(j / w);
+      var check = ((bx >> 3) + (by >> 3)) & 1;
+      d[i4] = d[i4 + 1] = d[i4 + 2] = check ? 220 : 240;
+    } else {
+      var rgb = clusters[map[j]].srgb;
+      d[i4] = rgb[0]; d[i4 + 1] = rgb[1]; d[i4 + 2] = rgb[2];
+    }
+    d[i4 + 3] = 255;
+  }
+  ctx.putImageData(out, 0, 0);
+}
+
+// Render cluster swatches
+function renderClusterSwatches(clusters) {
+  var container = $('cluster-swatches');
+  container.innerHTML = '';
+  if (!clusters) return;
+  clusters.forEach(function(cl, i) {
+    var swatch = document.createElement('div');
+    swatch.className = 'cluster-swatch';
+    swatch.style.background = 'rgb(' + cl.srgb[0] + ',' + cl.srgb[1] + ',' + cl.srgb[2] + ')';
+    swatch.title = cl.zoneId + ' (' + cl.count + 'px)';
+    var label = document.createElement('span');
+    label.className = 'swatch-label';
+    label.textContent = cl.zoneId;
+    swatch.appendChild(label);
+    container.appendChild(swatch);
+  });
+}
+
+// Run quantization and update UI (called on slider change and image load)
+function runQuantization() {
+  if (!STATE.traceImageData) return;
+  var k = parseInt($('cluster-count').value);
+  var result = quantizeImage(
+    STATE.traceImageData, STATE.alphaData,
+    !!STATE.alphaData, STATE.hasChromaKey && !STATE.alphaData,
+    k
+  );
+  STATE.quantizedMap = result.quantizedMap;
+  STATE.clusters = result.clusters;
+  STATE.quantizeW = result.w;
+  STATE.quantizeH = result.h;
+
+  renderQuantizePreview(result);
+  renderClusterSwatches(result.clusters);
+}
+
+// Build binary mask for a single cluster at trace resolution (full image)
+function buildClusterMask(imageData, rawData, hasAlpha, hasChroma, clusters, clusterIdx) {
+  var data = imageData.data;
+  var raw = rawData ? rawData.data : null;
+  var w = imageData.width, h = imageData.height;
+  var mask = new Int8Array(w * h);
+  var centroid = clusters[clusterIdx].centroid;
+
+  // Find nearest cluster for each subject pixel at full resolution
+  for (var i = 0, j = 0; i < data.length; i += 4, j++) {
+    // Skip background
+    var isBg = false;
+    if (hasAlpha && raw) {
+      isBg = raw[i + 3] < 60;
+    } else if (hasChroma) {
+      isBg = isChromaGreen(data[i], data[i + 1], data[i + 2]);
+    }
+    if (isBg) continue;
+
+    // Assign to nearest cluster
+    var lab = srgbToOklab(data[i], data[i + 1], data[i + 2]);
+    var minD = Infinity, minC = 0;
+    for (var c = 0; c < clusters.length; c++) {
+      var d = oklabDist2(lab, clusters[c].centroid);
+      if (d < minD) { minD = d; minC = c; }
+    }
+    if (minC === clusterIdx) mask[j] = 1;
+  }
+  return { mask: mask, w: w, h: h };
+}
+
+// Build binary mask for the full subject silhouette at trace resolution
+function buildSilhouetteMask(imageData, rawData, hasAlpha, hasChroma) {
+  var data = imageData.data;
+  var raw = rawData ? rawData.data : null;
+  var w = imageData.width, h = imageData.height;
+  var mask = new Int8Array(w * h);
+  for (var i = 0, j = 0; i < data.length; i += 4, j++) {
+    var isBg = false;
+    if (hasAlpha && raw) {
+      isBg = raw[i + 3] < 60;
+    } else if (hasChroma) {
+      isBg = isChromaGreen(data[i], data[i + 1], data[i + 2]);
+    }
+    if (!isBg) mask[j] = 1;
+  }
+  return { mask: mask, w: w, h: h };
+}
+
+// Extract boundary pixels between adjacent color clusters
+function extractBoundaryMask(imageData, rawData, hasAlpha, hasChroma, clusters) {
+  var data = imageData.data;
+  var raw = rawData ? rawData.data : null;
+  var w = imageData.width, h = imageData.height;
+
+  // First, build full-resolution cluster assignment map
+  var clusterMap = new Uint8Array(w * h);
+  clusterMap.fill(255); // 255 = background
+  for (var i = 0, j = 0; i < data.length; i += 4, j++) {
+    var isBg = false;
+    if (hasAlpha && raw) {
+      isBg = raw[i + 3] < 60;
+    } else if (hasChroma) {
+      isBg = isChromaGreen(data[i], data[i + 1], data[i + 2]);
+    }
+    if (isBg) continue;
+
+    var lab = srgbToOklab(data[i], data[i + 1], data[i + 2]);
+    var minD = Infinity, minC = 0;
+    for (var c = 0; c < clusters.length; c++) {
+      var d = oklabDist2(lab, clusters[c].centroid);
+      if (d < minD) { minD = d; minC = c; }
+    }
+    clusterMap[j] = minC;
+  }
+
+  // Walk the image and mark pixels where neighbors belong to different clusters
+  var boundary = new Int8Array(w * h);
+  for (var y = 1; y < h - 1; y++) {
+    for (var x = 1; x < w - 1; x++) {
+      var idx = y * w + x;
+      var c = clusterMap[idx];
+      if (c === 255) continue; // skip background
+
+      // Check 4-connected neighbors
+      var right = clusterMap[idx + 1];
+      var down = clusterMap[idx + w];
+      var left = clusterMap[idx - 1];
+      var up = clusterMap[idx - w];
+
+      if ((right !== 255 && right !== c) ||
+          (down !== 255 && down !== c) ||
+          (left !== 255 && left !== c) ||
+          (up !== 255 && up !== c)) {
+        boundary[idx] = 1;
+      }
+    }
+  }
+  return { mask: boundary, w: w, h: h };
 }
 
 // Trace a binary mask using Potrace
@@ -2161,12 +2728,13 @@ function buildElementDefinition() {
   el.suggestedLayer = $('el-layer').value;
   el.colorZones = STATE.zones.map(z => ({ id: z.id, defaultPaletteSlot: z.defaultPaletteSlot }));
 
-  // Auto-add a 'detail' zone if shape/detail levels have traced fills
-  // that will be converted to strokes, and no detail zone exists yet
-  const hasNonBlockFills = (STATE.paths[1] && STATE.paths[1].some(p => p.type === 'fill'))
-    || (STATE.paths[2] && STATE.paths[2].some(p => p.type === 'fill'));
-  if (hasNonBlockFills && !el.colorZones.find(z => z.id === 'detail') && el.colorZones.length < 2) {
-    el.colorZones.push({ id: 'detail', defaultPaletteSlot: 3 });
+  // Auto-add a 'detail' zone for mono mode only
+  if (STATE.traceMode !== 'color') {
+    const hasNonBlockFills = (STATE.paths[1] && STATE.paths[1].some(p => p.type === 'fill'))
+      || (STATE.paths[2] && STATE.paths[2].some(p => p.type === 'fill'));
+    if (hasNonBlockFills && !el.colorZones.find(z => z.id === 'detail') && el.colorZones.length < 2) {
+      el.colorZones.push({ id: 'detail', defaultPaletteSlot: 3 });
+    }
   }
 
   el.carveLevels = LEVEL_NAMES.map((name, i) => ({
@@ -2178,16 +2746,10 @@ function buildElementDefinition() {
 
 function consolidatePaths(upToLevel) {
   // Build Mokuri-compatible carve levels from forge's per-level paths.
-  // Block fills are NOT repeated at shape/detail — the renderer draws block
-  // fills separately as the base silhouette (lines 4282-4290 in index.html).
-  // Non-block fills go to a detail zone for color differentiation in ink mode,
-  // and show as paper-colored carved areas in carve mode.
+  // In color segmentation mode, fills keep their original zone assignment.
+  // In mono mode, non-block fills go to a detail zone.
   const allPaths = [];
-
-  // Determine detail zone for non-block fills
-  const detailZone = STATE.zones.find(z => z.id === 'detail');
-  const detailZoneId = detailZone ? 'detail'
-    : (STATE.zones.length > 1 ? STATE.zones[1].id : STATE.zones[0].id);
+  const isColorMode = STATE.traceMode === 'color';
 
   if (upToLevel === 0) {
     // Block level: silhouette fills, closed with Z
@@ -2201,11 +2763,13 @@ function consolidatePaths(upToLevel) {
       }
     }
   } else {
-    // Shape/detail: only NEW content from levels 1+, in detail zone
+    // Shape/detail: collect NEW content from levels 1+
     for (let l = 1; l <= upToLevel; l++) {
       for (const p of STATE.paths[l]) {
         if (p.type === 'fill') {
-          allPaths.push({ d: p.d, type: 'fill', zone: detailZoneId });
+          // Color mode: keep original zone; mono mode: use fallback detail zone
+          const zone = isColorMode ? p.zone : getFallbackDetailZone();
+          allPaths.push({ d: p.d, type: 'fill', zone: zone });
         } else {
           const obj = { d: p.d, type: p.type, zone: p.zone };
           if (p.type === 'stroke') obj.strokeWidth = p.strokeWidth || 2;
@@ -2215,6 +2779,12 @@ function consolidatePaths(upToLevel) {
     }
   }
   return allPaths;
+}
+
+function getFallbackDetailZone() {
+  const detailZone = STATE.zones.find(z => z.id === 'detail');
+  if (detailZone) return 'detail';
+  return STATE.zones.length > 1 ? STATE.zones[1].id : STATE.zones[0].id;
 }
 
 function formatElementJS(el) {
@@ -2375,6 +2945,7 @@ function updatePreviews() {
       if (p.type === 'fill') {
         pathEl.setAttribute('fill', color);
         pathEl.setAttribute('stroke', 'none');
+        pathEl.setAttribute('fill-rule', 'evenodd');
       } else {
         pathEl.setAttribute('fill', 'none');
         pathEl.setAttribute('stroke', color);
@@ -2622,10 +3193,23 @@ function attachEvents() {
 
   // Trace controls
   $('btn-trace').addEventListener('click', traceAllLevels);
-  $('btn-re-simplify').addEventListener('click', reSimplify);
   $('btn-auto-vb').addEventListener('click', autoViewBoxFromImage);
 
-  // Threshold slider labels + live bitmap preview
+  // Mono fallback button
+  $('btn-trace-mono').addEventListener('click', function() {
+    STATE.traceMode = STATE.traceMode === 'mono' ? 'color' : 'mono';
+    $('btn-trace-mono').textContent = STATE.traceMode === 'mono' ? 'Color' : 'Mono';
+    $('mono-controls').style.display = STATE.traceMode === 'mono' ? '' : 'none';
+    $('cluster-count').parentElement.parentElement.style.display = STATE.traceMode === 'mono' ? 'none' : '';
+  });
+
+  // Cluster count slider
+  $('cluster-count').addEventListener('input', e => {
+    $('cluster-count-val').textContent = e.target.value;
+    runQuantization();
+  });
+
+  // Threshold slider labels + live bitmap preview (mono fallback)
   ['shape', 'detail'].forEach(name => {
     $('thresh-' + name).addEventListener('input', e => {
       $('thresh-' + name + '-val').textContent = e.target.value;
