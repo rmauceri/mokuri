@@ -1054,6 +1054,7 @@ const STATE = {
   hasChromaKey: false,      // true if green or alpha background detected
   chromaMaskData: null,     // ImageData with bg replaced by white (for mono trace)
   alphaData: null,          // raw RGBA ImageData (for alpha-based silhouette)
+  bgLab: null,              // OKLab centroid of detected background color
   traceMode: 'color',      // 'color' (segmentation) or 'mono' (threshold)
 
   // Color segmentation
@@ -1396,6 +1397,7 @@ function loadTraceImage(src) {
     STATE.hasChromaKey = false;
     STATE.chromaMaskData = null;
     STATE.alphaData = null;
+    STATE.bgLab = null;
     STATE.quantizedMap = null;
     STATE.clusters = null;
     $('chroma-status').style.display = 'none';
@@ -1446,18 +1448,21 @@ function loadTraceImage(src) {
     ctx.drawImage(img, 0, 0, w, h);
     var rawData = ctx.getImageData(0, 0, w, h);
 
-    // Detect background type: alpha transparency or chroma-key green
+    // Detect background type: alpha → strict chroma → dominant edge color
     var hasAlpha = detectAlphaBackground(rawData);
     var hasChroma = !hasAlpha && detectChromaKey(compositeData);
+    var dominantBg = null;
+    if (!hasAlpha && !hasChroma) {
+      dominantBg = detectDominantBackground(compositeData);
+    }
 
-    STATE.hasChromaKey = hasAlpha || hasChroma;
+    STATE.hasChromaKey = hasAlpha || hasChroma || !!dominantBg;
+    STATE.bgLab = null;
 
     if (hasAlpha) {
-      // Transparent PNG: use composited (white bg) data for tracing,
-      // silhouette from alpha channel
       STATE.traceImageData = compositeData;
-      STATE.chromaMaskData = compositeData; // already white-composited
-      STATE.alphaData = rawData;            // keep raw for silhouette mask
+      STATE.chromaMaskData = compositeData;
+      STATE.alphaData = rawData;
       $('chroma-status').innerHTML = '\ud83d\uddbc Transparent background detected \u2014 block silhouette auto-extracted';
       $('chroma-status').style.display = '';
       $('trace-status').textContent = w + '\u00d7' + h + ' \u2714 transparent bg';
@@ -1465,9 +1470,21 @@ function loadTraceImage(src) {
       STATE.traceImageData = compositeData;
       STATE.chromaMaskData = createChromaMaskedData(compositeData);
       STATE.alphaData = null;
+      STATE.bgLab = srgbToOklab(0, 255, 0); // pure green
       $('chroma-status').innerHTML = '\ud83d\udfe2 Green background detected \u2014 block silhouette auto-extracted';
       $('chroma-status').style.display = '';
       $('trace-status').textContent = w + '\u00d7' + h + ' \u2714 green bg';
+    } else if (dominantBg) {
+      STATE.traceImageData = compositeData;
+      STATE.chromaMaskData = null;
+      STATE.alphaData = null;
+      STATE.bgLab = dominantBg.bgLab;
+      var bgStr = 'rgb(' + dominantBg.bgRgb.join(',') + ')';
+      $('chroma-status').innerHTML = '\ud83c\udfa8 Background detected: <span style="display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:middle;margin:0 4px;background:' + bgStr + '"></span>' + Math.round(dominantBg.bgRatio * 100) + '% coverage';
+      $('chroma-status').style.display = '';
+      $('chroma-status').style.background = '#e3f2fd';
+      $('chroma-status').style.color = '#1565c0';
+      $('trace-status').textContent = w + '\u00d7' + h + ' \u2714 bg detected';
     } else {
       STATE.traceImageData = compositeData;
       STATE.chromaMaskData = null;
@@ -1994,7 +2011,7 @@ function detectAlphaBackground(rawImageData) {
   return transparentCount / n > 0.15;
 }
 
-// Detect if image has a green (#00FF00-ish) background
+// Detect if image has a green (#00FF00-ish) background (legacy fast check)
 function detectChromaKey(imageData) {
   var data = imageData.data;
   var n = data.length / 4;
@@ -2009,6 +2026,54 @@ function detectChromaKey(imageData) {
 
 function isChromaGreen(r, g, b) {
   return g > 180 && r < 100 && b < 100 && (g - r) > 80 && (g - b) > 80;
+}
+
+// Detect dominant background color by sampling border pixels.
+// Returns { bgLab: [L,a,b], bgRgb: [r,g,b], bgRatio: float } or null.
+function detectDominantBackground(imageData) {
+  var data = imageData.data;
+  var w = imageData.width, h = imageData.height;
+
+  // Sample pixels along all 4 borders (8px deep)
+  var borderPixels = [];
+  var depth = Math.min(8, Math.floor(Math.min(w, h) / 4));
+  for (var y = 0; y < h; y++) {
+    for (var x = 0; x < w; x++) {
+      if (x < depth || x >= w - depth || y < depth || y >= h - depth) {
+        var i = (y * w + x) * 4;
+        borderPixels.push([data[i], data[i+1], data[i+2]]);
+      }
+    }
+  }
+
+  // Find median color of border pixels (robust to outliers)
+  var rs = borderPixels.map(function(p) { return p[0]; }).sort(function(a,b) { return a-b; });
+  var gs = borderPixels.map(function(p) { return p[1]; }).sort(function(a,b) { return a-b; });
+  var bs = borderPixels.map(function(p) { return p[2]; }).sort(function(a,b) { return a-b; });
+  var mid = Math.floor(borderPixels.length / 2);
+  var bgRgb = [rs[mid], gs[mid], bs[mid]];
+  var bgLab = srgbToOklab(bgRgb[0], bgRgb[1], bgRgb[2]);
+
+  // Count how many total pixels are close to this bg color
+  var BG_DIST = 0.012; // OKLab distance² threshold
+  var bgCount = 0;
+  var total = w * h;
+  for (var i = 0; i < data.length; i += 4) {
+    var lab = srgbToOklab(data[i], data[i+1], data[i+2]);
+    if (oklabDist2(lab, bgLab) < BG_DIST) bgCount++;
+  }
+
+  var ratio = bgCount / total;
+  if (ratio > 0.15) {
+    return { bgLab: bgLab, bgRgb: bgRgb, bgRatio: ratio };
+  }
+  return null;
+}
+
+// Test if a pixel matches the detected background color
+function isBgPixel(r, g, b, bgLab) {
+  var lab = srgbToOklab(r, g, b);
+  return oklabDist2(lab, bgLab) < 0.012;
 }
 
 // Create ImageData with green pixels replaced by white
@@ -2154,6 +2219,8 @@ function extractSubjectPixels(imageData, rawData, hasAlpha, hasChroma) {
     var isBg = false;
     if (hasAlpha && rd) {
       isBg = rd[i + 3] < 60;
+    } else if (STATE.bgLab) {
+      isBg = isBgPixel(dd[i], dd[i + 1], dd[i + 2], STATE.bgLab);
     } else if (hasChroma) {
       isBg = isChromaGreen(dd[i], dd[i + 1], dd[i + 2]);
     }
@@ -2396,6 +2463,8 @@ function buildClusterMask(imageData, rawData, hasAlpha, hasChroma, clusters, clu
     var isBg = false;
     if (hasAlpha && raw) {
       isBg = raw[i + 3] < 60;
+    } else if (STATE.bgLab) {
+      isBg = isBgPixel(data[i], data[i + 1], data[i + 2], STATE.bgLab);
     } else if (hasChroma) {
       isBg = isChromaGreen(data[i], data[i + 1], data[i + 2]);
     }
@@ -2423,6 +2492,8 @@ function buildSilhouetteMask(imageData, rawData, hasAlpha, hasChroma) {
     var isBg = false;
     if (hasAlpha && raw) {
       isBg = raw[i + 3] < 60;
+    } else if (STATE.bgLab) {
+      isBg = isBgPixel(data[i], data[i + 1], data[i + 2], STATE.bgLab);
     } else if (hasChroma) {
       isBg = isChromaGreen(data[i], data[i + 1], data[i + 2]);
     }
@@ -2444,6 +2515,8 @@ function extractBoundaryMask(imageData, rawData, hasAlpha, hasChroma, clusters) 
     var isBg = false;
     if (hasAlpha && raw) {
       isBg = raw[i + 3] < 60;
+    } else if (STATE.bgLab) {
+      isBg = isBgPixel(data[i], data[i + 1], data[i + 2], STATE.bgLab);
     } else if (hasChroma) {
       isBg = isChromaGreen(data[i], data[i + 1], data[i + 2]);
     }
