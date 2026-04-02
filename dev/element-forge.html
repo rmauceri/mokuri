@@ -483,6 +483,16 @@ button.sm { padding: 3px 8px; font-size: 11px; }
   margin-bottom: 8px;
 }
 
+.thresh-preview-canvas {
+  display: none;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  margin-bottom: 6px;
+  background: var(--paper);
+}
+
 .threshold-group .slider-row {
   margin-bottom: 2px;
 }
@@ -661,11 +671,13 @@ button.sm { padding: 3px 8px; font-size: 11px; }
                   <input type="range" id="thresh-shape" min="10" max="250" value="128">
                   <span class="slider-val" id="thresh-shape-val">128</span>
                 </div>
+                <canvas id="thresh-preview-shape" class="thresh-preview-canvas"></canvas>
                 <div class="slider-row">
                   <span class="thresh-label">Detail</span>
                   <input type="range" id="thresh-detail" min="10" max="250" value="80">
                   <span class="slider-val" id="thresh-detail-val">80</span>
                 </div>
+                <canvas id="thresh-preview-detail" class="thresh-preview-canvas"></canvas>
               </div>
 
               <div class="slider-row" style="margin-bottom:4px;">
@@ -1281,6 +1293,8 @@ function loadTraceImage(src) {
     STATE.chromaMaskData = null;
     STATE.alphaData = null;
     $('chroma-status').style.display = 'none';
+    $('thresh-preview-shape').style.display = 'none';
+    $('thresh-preview-detail').style.display = 'none';
     // Clear reference layer
     $('ref-layer').innerHTML = '';
     return;
@@ -1356,6 +1370,10 @@ function loadTraceImage(src) {
 
     // Also load as reference image in the SVG workspace
     loadRefImage(src);
+
+    // Show initial threshold previews
+    updateThresholdPreview('shape');
+    updateThresholdPreview('detail');
   };
   img.onerror = function() {
     showToast('Failed to load image');
@@ -1571,6 +1589,39 @@ function processTracePath(rawD, srcW, srcH, dstW, dstH, epsilon) {
     // Direct: scale coordinates, preserve original cubic bezier curves
     return scaleSvgPathDirect(rawD, srcW, srcH, dstW, dstH);
   }
+}
+
+// Live threshold preview — renders thresholded bitmap to a small canvas
+function updateThresholdPreview(level) {
+  var canvasId = level === 'shape' ? 'thresh-preview-shape' : 'thresh-preview-detail';
+  var canvas = $(canvasId);
+  var sourceData = STATE.chromaMaskData || STATE.traceImageData;
+  if (!sourceData) {
+    canvas.style.display = 'none';
+    return;
+  }
+
+  var threshold = parseInt($('thresh-' + level).value);
+  var sw = sourceData.width;
+  var sh = sourceData.height;
+  var src = sourceData.data;
+
+  canvas.width = sw;
+  canvas.height = sh;
+  canvas.style.display = 'block';
+
+  var ctx = canvas.getContext('2d');
+  var out = ctx.createImageData(sw, sh);
+  var d = out.data;
+
+  for (var i = 0; i < src.length; i += 4) {
+    var brightness = (src[i] * 77 + src[i+1] * 150 + src[i+2] * 29) >> 8;
+    // Potrace: color < threshold → 1 (black/traced). Show traced pixels as dark.
+    var val = brightness < threshold ? 40 : 245;
+    d[i] = val; d[i+1] = val; d[i+2] = val; d[i+3] = 255;
+  }
+
+  ctx.putImageData(out, 0, 0);
 }
 
 function traceAllLevels() {
@@ -2472,10 +2523,11 @@ function attachEvents() {
   $('btn-re-simplify').addEventListener('click', reSimplify);
   $('btn-auto-vb').addEventListener('click', autoViewBoxFromImage);
 
-  // Threshold slider labels
+  // Threshold slider labels + live bitmap preview
   ['shape', 'detail'].forEach(name => {
     $('thresh-' + name).addEventListener('input', e => {
       $('thresh-' + name + '-val').textContent = e.target.value;
+      updateThresholdPreview(name);
     });
   });
 
