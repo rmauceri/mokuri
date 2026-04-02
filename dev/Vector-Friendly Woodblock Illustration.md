@@ -1,216 +1,350 @@
-# Vector-Friendly Woodblock Illustration Spec (for SVG / Carving Workflows)
+# Mokuhanga Element Image Spec
+## For AI Image Generation → Element Forge → Mokuri
 
-## Goal
+## Purpose
 
-Generate illustrations that:
+This spec defines how to generate raster images that will be processed by the Mokuri Element Forge into multi-zone SVG elements compatible with the mokuhanga (woodblock print) workflow. The Element Forge traces color regions into separate SVG fill paths, each mapped to an independently inkable color zone.
 
-* Preserve the aesthetic of traditional woodblock prints (e.g., kacho-e / mokuhanga)
-* Are optimized for **clean vectorization into SVG paths**
-* Support **layered carving workflows** (e.g., 2–4 discrete carve levels)
-* Avoid post-processing complexity (node explosion, messy traces)
+**The entire pipeline depends on the source image being structured correctly.** A well-formed image produces a 4-zone, 3-level element in minutes. A poorly-formed image produces unusable output regardless of forge settings.
 
 ---
 
-## Core Principles
+## How Mokuri Elements Work (Context for Image Design)
 
-### 1. Shape-First Design
+A Mokuri element has:
+- **Color zones** (3–5): semantic regions like `body`, `marking`, `fin`, `detail` — each gets its own color in the palette
+- **Carve levels** (3): progressive detail revelation
+  - **Block**: solid silhouette (one fill shape)
+  - **Shape**: internal color regions as separate fills per zone
+  - **Detail**: shape content + fine boundary strokes between zones
+- **Fill paths**: closed shapes filled with a zone color (the colored regions)
+- **Stroke paths**: thin lines representing carved grooves (boundaries, texture)
 
-* Every visual element should be a **closed, fillable shape**
-* Avoid reliance on strokes/lines to define structure
-* Prefer **bold silhouettes and internal regions** over fine linework
-
----
-
-### 2. Limited and Intentional Complexity
-
-* Target **~8–20 total shapes** for the primary subject
-* Each shape should be:
-
-  * Visually meaningful
-  * Structurally independent
-* Eliminate micro-detail that does not contribute to form at a distance
+**Critical insight**: In mokuhanga, color regions meet edge-to-edge. The thin groove between them is carved into the wood block — it is NOT drawn as an outline. The image should show the color regions, not the grooves.
 
 ---
 
-### 3. Carve-Level Thinking (Layered Composition)
+## Core Requirements
 
-Design as if each region will be carved separately:
+### 1. Chroma-Key Background (Required)
 
-#### Base Layer (Level 1)
+- **Solid `#00FF00` (pure green) background** filling the entire canvas
+- Subject is the ONLY non-green content
+- No green (`#00FF00`) anywhere in the subject
+- No shadow, glow, or halo around the subject on the green field
+- Subject should fill roughly 50–70% of the canvas area
 
-* Primary silhouette
-* Largest continuous shape
-* Defines overall form
+### 2. Flat Color Regions (Required)
 
-#### Mid Layer(s) (Level 2)
+Each visual region of the subject must be a **single, uniform flat color**:
 
-* Secondary masses
-* Major internal divisions (e.g., limbs, wings, large pattern areas)
+- ✅ A fin that is entirely one shade of gray (`#9E9E9E`)
+- ❌ A fin that gradates from light gray to dark gray
+- ✅ An orange marking that is one solid orange (`#E85D2C`)
+- ❌ An orange marking with highlights, shadows, or color variation
 
-#### Detail Layer (Level 3)
+**Every distinct flat color in the image will become a separate color zone in the element.** This is the fundamental mapping. The number of colors = the number of zones.
 
-* Small accents
-* High-contrast features
-* Focal details
+### 3. Exactly 3–5 Flat Colors (Required)
 
-> Rule: Every shape should plausibly correspond to a separate “block” in a printmaking workflow.
+The subject must use exactly **3 to 5 distinct flat colors** (excluding the green background):
 
----
+| Zones | Typical Mapping | Example (Koi) |
+|-------|-----------------|---------------|
+| 3 | body, accent, detail | cream, orange, dark gray |
+| 4 | body, marking, fin, detail | cream, orange, gray, dark |
+| 5 | body, belly, marking, fin, detail | cream, pale gold, orange, gray, dark |
 
-### 4. Fill Over Line
+**Rules:**
+- No two colors should be close enough to confuse (maintain ΔE > 30 in Lab space)
+- No near-black and near-dark-gray as separate colors (hard to segment)
+- White/cream counts as a color (it's typically the body zone)
+- The darkest color should be reserved for small accent features (eye, tips) not large areas
 
-**Do:**
+### 4. NO Outlines (Critical)
 
-* Use solid filled regions
-* Define boundaries with shape edges
+**This is the single most important rule.** The image must have **zero drawn outlines**.
 
-**Avoid:**
+In mokuhanga printing:
+- Color regions are printed from separate carved blocks
+- Where two blocks meet, a thin unprinted gap (the carved groove) naturally forms
+- This groove IS the "outline" — it is a byproduct of carving, not a drawn element
 
-* Thin strokes
-* Sketch lines
-* Hatching / cross-hatching
-* Decorative contour lines
+Therefore:
+- ✅ An orange patch directly abutting a cream body — the boundary IS the visual edge
+- ❌ A dark outline around the orange patch separating it from the body
+- ✅ Color regions sharing precise pixel-level edges
+- ❌ A 3–10px dark border around the entire subject
 
-> Lines should only exist if they can be safely expanded into shapes.
+**The forge will extract boundary strokes automatically from where color regions meet.** Any drawn outlines in the source image will be traced as heavy filled regions that blur in the print engine and waste an entire color zone on what should be a carved groove.
 
----
+### 5. Hard Edges Between Colors (Required)
 
-### 5. High-Contrast Region Separation
+Where two color regions meet, the transition must be **pixel-sharp**:
 
-* Ensure adjacent regions have **clear visual boundaries**
-* Avoid gradients and soft transitions
-* Prefer:
+- ✅ One pixel is orange (#E85D2C), the adjacent pixel is cream (#F5F0E0) — no blending
+- ❌ A 2–4px anti-aliased gradient between orange and cream
+- ✅ Clean, hard-edged boundaries like a stencil or screen print
+- ❌ Soft, feathered edges like watercolor or airbrushed illustration
 
-  * Hard edges
-  * Distinct tonal blocks
+**Anti-aliasing destroys color segmentation.** A 3px feathered edge between orange and cream creates a zone of blended pixels that don't cluster cleanly, producing noisy trace boundaries.
 
----
+### 6. No Gradients, Shading, or Texture (Required)
 
-### 6. Controlled Abstraction
+Within each color region:
+- No lighting or shadow gradients
+- No noise, grain, or stipple texture
+- No soft highlights or specular spots
+- No color variation of any kind
 
-Favor:
-
-* Stylized forms
-* Simplified anatomy
-* Rhythmic, repeating shapes
-
-Avoid:
-
-* Hyper-realism
-* Dense texture
-* Irregular, noisy edges
-
-> Think “designed shapes,” not “observed detail.”
-
----
-
-### 7. Vectorization-Aware Geometry
-
-Shapes should:
-
-* Be **closed paths**
-* Avoid tiny gaps or overlaps
-* Minimize:
-
-  * Sharp micro-zigzags
-  * Extremely thin features
-* Maintain:
-
-  * Smooth curves
-  * Moderate node counts
+The region should look like it was filled with a paint bucket tool — perfectly uniform.
 
 ---
 
-### 8. Eliminate Non-Essential Elements
+## Style and Aesthetic
 
-Avoid:
+### 7. Mokuhanga / Ukiyo-e Sensibility (Not Modern Vector/Logo)
 
-* Background textures (paper grain, noise)
-* Environmental detail (unless essential and simplified)
-* Fine decorative elements that won’t survive tracing cleanly
+The correct visual reference is traditional Japanese woodblock prints:
 
-If included:
+**DO reference:**
+- Hokusai, Hiroshige, Hasui Kawase — flat color areas, simplified forms
+- Kacho-e (bird-and-flower prints) — elegant contours, minimal internal detail
+- Shin-hanga — simplified naturalism with clear regional color structure
 
-* Keep them as **large, simple shapes**
+**DO NOT reference:**
+- Sports mascot / logo illustration (heavy outlines, aggressive shading)
+- Modern flat vector illustration (geometric, outlined)
+- Anime / manga (line-dependent illustration)
+- Sticker / die-cut art (always has thick outlines)
 
----
+The aesthetic difference:
+- **Mokuhanga**: shapes define the form; color regions meet; beauty in elegant contours
+- **Logo art**: outlines define the form; color is secondary; beauty in graphic boldness
 
-### 9. Consistent Region Hierarchy
+### 8. Shape-First Anatomy
 
-* Group related forms into unified shapes
-* Avoid fragmenting a single conceptual region into many pieces
-* Maintain clear parent-child relationships between shapes
+Every visual component should be a **fillable closed shape**, not a line:
 
----
+- A fish fin = one solid gray shape with an elegant curved contour
+- A bird's beak = one solid dark shape, possibly two (upper/lower mandible)
+- A flower petal = one solid color shape
+- An eye = a small solid dark shape (dot or almond)
 
-### 10. Chroma-Key Background (Required)
+Features defined by lines in real life (whiskers, individual feathers, gill lines) should either:
+- Be omitted entirely (the forge adds carved detail strokes at the boundary level)
+- Be represented as narrow filled shapes if they are large enough (>4% of subject area)
 
-* Use a **solid `#00FF00` (pure green) background**
-* The subject must be the ONLY non-green content in the image
-* No green (`#00FF00`) should appear anywhere in the subject itself
-* This enables automatic background removal and silhouette extraction during tracing
+### 9. Controlled Abstraction and Simplification
 
-> The green background acts as a chroma key — the tracing tool removes it automatically to isolate the subject silhouette.
+Target **8–20 total color regions** in the subject:
 
----
+- Fewer = better for clean forge output
+- Each region should be visually meaningful at thumbnail size
+- Eliminate micro-detail that won't survive tracing (scales, individual feathers, whiskers, fur texture)
 
-### 11. Color Strategy (Optional but Recommended)
+**Think in printmaking terms**: each color region will be carved as a separate area on a woodblock. If you wouldn't carve it separately, don't make it a separate region.
 
-* Use a **limited palette** (3–5 colors max, excluding the green background)
-* Assign colors by carve level:
-  * **Lightest tone** — block layer (the body/silhouette fill)
-  * **Mid tones** — shape layer (internal divisions, secondary masses)
-  * **Darkest tone** — detail layer (accents, fine features, focal points)
-* Avoid:
+### 10. Smooth, Flowing Contours
 
-  * Gradients
-  * Transparency
-* Prefer:
+The outer boundary and internal region boundaries should have:
+- Smooth, graceful curves (like brush-drawn shapes)
+- No jagged, angular, or geometric edges (unless the subject is architectural)
+- No extremely thin features (nothing less than ~3% of subject width)
+- No tiny disconnected shapes (specks, dots smaller than ~2% of subject area)
 
-  * Flat fills
-  * Reusable color regions
-
----
-
-## Output Characteristics
-
-A well-formed image should:
-
-* Convert cleanly via vectorization tools (e.g., Image Trace, Potrace)
-* Produce:
-
-  * Low node counts
-  * Minimal cleanup
-* Result in:
-
-  * Clearly separable SVG paths
-  * Logical grouping for interaction or recoloring
+These produce cleaner SVG paths with lower node counts.
 
 ---
 
-## Anti-Patterns to Avoid
+## Technical Specifications
 
-* Photorealistic rendering
-* Excessive feathering, hair, or texture detail
-* Stroke-based illustration styles
-* Noisy or textured backgrounds
-* Overlapping semi-transparent regions
-* Extremely thin or fragile geometry
+### 11. Image Dimensions and Format
+
+- **Resolution**: 800×600 to 1200×800 pixels (landscape subjects) or equivalent for portrait
+- **Format**: PNG (lossless — JPEG compression creates color artifacts that break segmentation)
+- **Bit depth**: 8-bit RGB (no alpha channel needed — the green background handles masking)
+
+Larger images don't help — the forge downsamples for tracing. Smaller images lose boundary precision.
+
+### 12. Subject Composition
+
+- Subject centered in frame
+- Subject fills 50–70% of canvas area
+- No rotation needed — the forge handles element orientation
+- Natural pose preferred — swimming, standing, perching, growing (not action poses with extreme foreshortening)
+- **Single subject only** — one fish, one bird, one flower, one building
+
+### 13. Color Value Guidelines
+
+Choose colors with high mutual contrast. Example palettes:
+
+**Fauna (koi, crane, butterfly):**
+| Zone | Role | Example Hex | Notes |
+|------|------|-------------|-------|
+| body | largest area | `#F5F0E0` | cream/warm white |
+| marking | mid-size accents | `#D4622B` | warm orange or red |
+| fin/wing | secondary structure | `#8A8A8A` | neutral mid-gray |
+| accent | small focal points | `#2D2D2D` | near-black for eye, tips |
+
+**Flora (flowers, trees, leaves):**
+| Zone | Role | Example Hex |
+|------|------|-------------|
+| petal | primary surface | `#E8A0B0` |
+| leaf | secondary structure | `#5A7A4A` |
+| stem | connecting structure | `#6B5B3A` |
+| center | focal point | `#C4A030` |
+
+**Structures (temple, bridge, house):**
+| Zone | Role | Example Hex |
+|------|------|-------------|
+| wall/body | main mass | `#C4B8A0` |
+| roof | dominant feature | `#5A4A3A` |
+| beam/frame | structural lines | `#3A3A3A` |
+| accent | doors, windows | `#8A4A2A` |
+
+---
+
+## Carve-Level Thinking
+
+Design the image so that color regions naturally group into carve levels:
+
+### Block Level (Silhouette)
+- The outermost boundary of the ENTIRE subject
+- If you squint and see one shape — that's the block
+- The forge extracts this automatically from the chroma-key silhouette
+
+### Shape Level (Color Structure)
+- The distinct color regions WITHIN the silhouette
+- Body, marking, fin, accent as separate flat fills
+- This is what the color segmentation pipeline produces
+- Each region becomes independently colorable in Mokuri's ink system
+
+### Detail Level (Carved Grooves)
+- The **boundaries between color regions** become thin stroke paths
+- The forge extracts these automatically from where clusters meet
+- NO detail needs to be drawn in the source image
+- Fine carved texture (hatching, stippling) is added by the user in Mokuri's carve tools
+
+**Key insight**: The source image only needs to define block + shape levels. Detail level is derived automatically. Don't try to include carved groove lines in the image — they'll be misinterpreted as filled regions.
+
+---
+
+## Anti-Patterns (What NOT to Generate)
+
+### ❌ Thick Outlines (Logo Style)
+The #1 failure mode. A dark outline around the subject or between color regions:
+- Gets traced as a wide filled region, consuming an entire zone
+- Prints as a blurry, heavy band instead of a crisp carved groove
+- Cannot be separated from adjacent colors by the segmentation pipeline
+
+### ❌ Gradients / Shading
+Gradients within a color region create continuous color variation that:
+- Splits into multiple noisy clusters instead of one clean zone
+- Produces jagged, fragmented trace paths
+- Creates zones with no clear semantic meaning
+
+### ❌ Anti-Aliased Color Boundaries
+Feathered edges between colors create a halo of blended pixels that:
+- Don't belong to either adjacent cluster
+- Produce extra micro-zones or noisy boundaries
+- Result in fuzzy, doubled trace paths
+
+### ❌ Fine Line Detail (Hatching, Feathers, Scales)
+Individual strokes or texture marks:
+- Are too small to trace reliably
+- Create hundreds of tiny fill fragments
+- Overwhelm the element with noise paths
+
+### ❌ Multiple Subjects or Scene Context
+Background elements, water, ground, sky:
+- Should not be in the image (the green background replaces all context)
+- Mokuri handles atmosphere and scene composition separately
+- Each element image = one subject only
+
+### ❌ Near-Duplicate Colors
+Two colors that are visually similar (e.g., #888 and #999):
+- Confuse the color segmentation algorithm
+- Produce unstable cluster assignments
+- Choose colors with obvious, unmistakable differences
+
+---
+
+## Quality Checklist
+
+Before sending an image to the forge, verify:
+
+- [ ] Green (#00FF00) background, no other green in subject
+- [ ] Exactly 3–5 flat colors in the subject
+- [ ] Each color region is perfectly uniform (zero variation)
+- [ ] No outlines of any kind (not even thin ones)
+- [ ] Hard pixel edges between all color regions
+- [ ] No gradients, shading, highlights, or shadows
+- [ ] No texture, grain, or noise
+- [ ] Smooth, elegant contours (mokuhanga aesthetic)
+- [ ] Subject fills 50–70% of canvas
+- [ ] PNG format, 800–1200px wide
+- [ ] Single subject, no background elements
 
 ---
 
 ## Mental Model
 
-> “Design this as if it will be carved into 3 physical blocks, inked separately, and assembled—then converted into editable vector paths. Place it on a pure green (#00FF00) background so the silhouette can be automatically extracted.”
+> "Paint this as if you are preparing color separations for a woodblock print. Each color is a separate carved block. The blocks print edge-to-edge with no outlines. Use 4 flat colors on a green (#00FF00) background. The form should be elegant and simplified, like a Hasui Kawase nature study — not a sports logo or sticker."
 
 ---
 
-## Optional Next Step
+## Prompt Template for AI Image Generation
 
-For fully optimized workflows:
+```
+Create a [subject] illustration for Japanese woodblock print (mokuhanga) color separation.
 
-* Skip raster entirely
-* Generate **direct SVG path data**
-* Pre-group shapes by carve level
+CRITICAL REQUIREMENTS:
+- Solid #00FF00 green background filling the entire canvas
+- Exactly [3-5] flat colors in the subject: [list specific hex colors]
+- Each color region is PERFECTLY UNIFORM — zero gradients, zero shading, zero texture
+- NO outlines of any kind — color regions meet edge-to-edge with pixel-sharp boundaries
+- NO anti-aliasing between color regions — hard stencil-like edges
+
+STYLE: Traditional mokuhanga / shin-hanga aesthetic. Elegant simplified forms,
+smooth flowing contours. NOT logo art, NOT anime, NOT vector illustration with outlines.
+
+COMPOSITION: Single [subject] centered on green background, filling ~60% of canvas.
+Natural [pose/orientation]. [Specific anatomical/structural notes for this subject.]
+
+FORMAT: PNG, 1024x768, 8-bit RGB.
+```
 
 ---
+
+## Worked Example: Koi Fish
+
+### Target Zone Map
+| Zone | Color | Hex | Area |
+|------|-------|-----|------|
+| body | warm cream | `#F0E8D0` | ~50% — main body surface |
+| marking | rich orange | `#D4622B` | ~15% — head cap, back patches |
+| fin | cool gray | `#8A8A8A` | ~20% — pectoral, dorsal, tail fins |
+| accent | warm dark | `#3A2A1A` | ~15% — back ridge, eye, tail tip |
+
+### What the Image Should Look Like
+- Cream body shape — smooth curved outline, perfectly flat fill
+- Orange patches ON the body — flat, hard-edged against the cream
+- Gray fins — flat shapes extending from body, hard-edged
+- Dark accent areas — small flat shapes (eye dot, dorsal ridge, tail tip)
+- All shapes share precise boundaries — no gaps, no outlines, no blending
+- Green background everywhere the fish isn't
+
+### What the Forge Does With It
+1. Chroma key → removes green → extracts full fish silhouette (block level)
+2. Color cluster → identifies 4 clusters (cream, orange, gray, dark)
+3. Per-cluster trace → 4 separate fill paths, one per zone
+4. Boundary extraction → stroke paths where zones meet (detail level)
+5. Assembly → 3-level element with 4 independently inkable zones
+
+### What the User Gets in Mokuri
+- Place element → adjust carve level to reveal detail
+- Switch palette → all 4 zones recolor independently
+- Ink workbench → fine-tune each zone's color from the palette
+- Carve tools → add personal texture (hatching, gouges) on top
+- Print → authentic mokuhanga texture, clean color separation
