@@ -670,13 +670,13 @@ button.sm { padding: 3px 8px; font-size: 11px; }
 
               <div class="slider-row" style="margin-bottom:4px;">
                 <span class="thresh-label" title="Path simplification (higher = simpler)">Epsilon</span>
-                <input type="range" id="trace-epsilon" min="0.5" max="5" step="0.1" value="0.5">
-                <span class="slider-val" id="trace-epsilon-val">0.5</span>
+                <input type="range" id="trace-epsilon" min="0" max="5" step="0.1" value="0">
+                <span class="slider-val" id="trace-epsilon-val">off</span>
               </div>
               <div class="slider-row" style="margin-bottom:4px;">
                 <span class="thresh-label" title="Suppress speckles up to this size">Turd</span>
-                <input type="range" id="trace-turd" min="0" max="30" step="1" value="6">
-                <span class="slider-val" id="trace-turd-val">6</span>
+                <input type="range" id="trace-turd" min="0" max="30" step="1" value="2">
+                <span class="slider-val" id="trace-turd-val">2</span>
               </div>
 
               <div class="trace-actions">
@@ -1300,7 +1300,7 @@ function loadTraceImage(src) {
     STATE.traceImageEl = img;
 
     // Scale image for tracing (max 400px wide for performance)
-    var scale = Math.min(1, 400 / img.naturalWidth);
+    var scale = Math.min(1, 800 / img.naturalWidth);
     var w = Math.round(img.naturalWidth * scale);
     var h = Math.round(img.naturalHeight * scale);
 
@@ -1389,8 +1389,8 @@ function traceAtThreshold(imageData, threshold, turdSize, callback) {
   Potrace.setParameter({
     turdsize: turdSize,
     optcurve: true,
-    alphamax: 1,
-    opttolerance: 0.2
+    alphamax: 1.1,
+    opttolerance: 0.1
   });
 
   Potrace.loadBmFromImageData(imageData, threshold);
@@ -1516,7 +1516,27 @@ function simplifyTracePath(d, epsilon) {
   return parts.join(' ');
 }
 
-// Scale by transforming parsed subpaths to viewBox coordinates
+// Scale SVG path coordinates directly without changing curve types
+// Preserves C (cubic bezier), L, M, Z commands as-is, just scales numbers
+function scaleSvgPathDirect(d, srcW, srcH, dstW, dstH) {
+  if (!d) return d;
+  var sx = dstW / srcW;
+  var sy = dstH / srcH;
+  var isX = true;
+  return d.replace(/([MLCQZmlcqz])|(-?\d+\.?\d*)/g, function(match, cmd, num) {
+    if (cmd) {
+      // Command letter — next number is always x
+      if (cmd !== 'Z' && cmd !== 'z') isX = true;
+      return cmd;
+    }
+    var n = parseFloat(num);
+    var scaled = isX ? n * sx : n * sy;
+    isX = !isX;
+    return scaled.toFixed(2);
+  });
+}
+
+// Legacy: scale by parsing subpaths (used only when simplification is active)
 function scaleTracePathParsed(d, srcW, srcH, dstW, dstH) {
   if (!d) return d;
   var sx = dstW / srcW;
@@ -1536,6 +1556,19 @@ function scaleTracePathParsed(d, srcW, srcH, dstW, dstH) {
 }
 
 // Main trace pipeline: trace at 3 thresholds, simplify, scale, populate STATE.paths
+// Process a raw Potrace d string: scale to viewBox, optionally simplify
+function processTracePath(rawD, srcW, srcH, dstW, dstH, epsilon) {
+  if (!rawD) return null;
+  if (epsilon > 0) {
+    // Destructive pipeline: parse → sample → simplify → Q-curve rebuild
+    var scaled = scaleTracePathParsed(rawD, srcW, srcH, dstW, dstH);
+    return simplifyTracePath(scaled, epsilon);
+  } else {
+    // Direct: scale coordinates, preserve original cubic bezier curves
+    return scaleSvgPathDirect(rawD, srcW, srcH, dstW, dstH);
+  }
+}
+
 function traceAllLevels() {
   if (!STATE.traceImageData) {
     showToast('No image loaded');
@@ -1572,9 +1605,8 @@ function traceAllLevels() {
     traceBinaryMask(silhouette.mask, silhouette.w, silhouette.h, turdSize, function(blockD) {
       STATE.traceRawPaths[0] = blockD;
       if (blockD) {
-        var scaled = scaleTracePathParsed(blockD, srcW, srcH, dstW, dstH);
-        var simplified = simplifyTracePath(scaled, epsilon);
-        if (simplified) STATE.paths[0] = [{ d: simplified, type: 'fill', zone: zone }];
+        var result = processTracePath(blockD, srcW, srcH, dstW, dstH, epsilon);
+        if (result) STATE.paths[0] = [{ d: result, type: 'fill', zone: zone }];
       }
 
       // Now trace shape and detail using mono thresholds on chroma-masked image
@@ -1593,9 +1625,8 @@ function traceAllLevels() {
           var stateIdx = levelIdx + 1; // 1=shape, 2=detail
           STATE.traceRawPaths[stateIdx] = rawD;
           if (rawD) {
-            var scaled = scaleTracePathParsed(rawD, srcW, srcH, dstW, dstH);
-            var simplified = simplifyTracePath(scaled, epsilon);
-            if (simplified) STATE.paths[stateIdx] = [{ d: simplified, type: 'fill', zone: zone }];
+            var result = processTracePath(rawD, srcW, srcH, dstW, dstH, epsilon);
+            if (result) STATE.paths[stateIdx] = [{ d: result, type: 'fill', zone: zone }];
           }
           levelIdx++;
           setTimeout(traceNextLevel, 10);
@@ -1613,9 +1644,8 @@ function traceAllLevels() {
     traceAtThreshold(imageData, blockThreshold, turdSize, function(blockD) {
       STATE.traceRawPaths[0] = blockD;
       if (blockD) {
-        var scaled = scaleTracePathParsed(blockD, srcW, srcH, dstW, dstH);
-        var simplified = simplifyTracePath(scaled, epsilon);
-        if (simplified) STATE.paths[0] = [{ d: simplified, type: 'fill', zone: zone }];
+        var result = processTracePath(blockD, srcW, srcH, dstW, dstH, epsilon);
+        if (result) STATE.paths[0] = [{ d: result, type: 'fill', zone: zone }];
       }
 
       var levelIdx = 0;
@@ -1632,9 +1662,8 @@ function traceAllLevels() {
           var stateIdx = levelIdx + 1;
           STATE.traceRawPaths[stateIdx] = rawD;
           if (rawD) {
-            var scaled = scaleTracePathParsed(rawD, srcW, srcH, dstW, dstH);
-            var simplified = simplifyTracePath(scaled, epsilon);
-            if (simplified) STATE.paths[stateIdx] = [{ d: simplified, type: 'fill', zone: zone }];
+            var result = processTracePath(rawD, srcW, srcH, dstW, dstH, epsilon);
+            if (result) STATE.paths[stateIdx] = [{ d: result, type: 'fill', zone: zone }];
           }
           levelIdx++;
           setTimeout(traceNextLevel, 10);
@@ -1675,10 +1704,9 @@ function reSimplify() {
   for (var i = 0; i < 3; i++) {
     var rawD = STATE.traceRawPaths[i];
     if (!rawD) continue;
-    var scaled = scaleTracePathParsed(rawD, srcW, srcH, dstW, dstH);
-    var simplified = simplifyTracePath(scaled, epsilon);
-    if (simplified) {
-      STATE.paths[i] = [{ d: simplified, type: 'fill', zone: zone }];
+    var result = processTracePath(rawD, srcW, srcH, dstW, dstH, epsilon);
+    if (result) {
+      STATE.paths[i] = [{ d: result, type: 'fill', zone: zone }];
       changed = true;
     }
   }
@@ -1779,8 +1807,8 @@ function traceBinaryMask(mask, w, h, turdSize, callback) {
   Potrace.setParameter({
     turdsize: turdSize,
     optcurve: true,
-    alphamax: 1,
-    opttolerance: 0.2
+    alphamax: 1.1,
+    opttolerance: 0.1
   });
   Potrace.loadBmFromBinaryArray(mask, w, h);
   Potrace.process(function() {
@@ -2435,7 +2463,8 @@ function attachEvents() {
   });
 
   $('trace-epsilon').addEventListener('input', e => {
-    $('trace-epsilon-val').textContent = parseFloat(e.target.value).toFixed(1);
+    var ev = parseFloat(e.target.value);
+    $('trace-epsilon-val').textContent = ev === 0 ? 'off' : ev.toFixed(1);
   });
 
   $('trace-turd').addEventListener('input', e => {
