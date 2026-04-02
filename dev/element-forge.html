@@ -751,8 +751,8 @@ button.sm { padding: 3px 8px; font-size: 11px; }
 
               <div class="slider-row" style="margin-bottom:4px;">
                 <span class="thresh-label" title="Path simplification (higher = simpler)">Epsilon</span>
-                <input type="range" id="trace-epsilon" min="0" max="5" step="0.1" value="0">
-                <span class="slider-val" id="trace-epsilon-val">off</span>
+                <input type="range" id="trace-epsilon" min="0" max="5" step="0.1" value="2">
+                <span class="slider-val" id="trace-epsilon-val">2.0</span>
               </div>
               <div class="slider-row" style="margin-bottom:4px;">
                 <span class="thresh-label" title="Suppress speckles up to this size">Turd</span>
@@ -1284,7 +1284,7 @@ function polylineToQBezier(points) {
   return d;
 }
 
-function r(v) { return Math.round(v * 100) / 100; }
+function r(v) { return Math.round(v); }
 
 function beginStroke(e) {
   if (STATE.tool !== 'stroke' && STATE.tool !== 'fill') return;
@@ -1683,7 +1683,7 @@ function scaleSvgPathDirect(d, srcW, srcH, dstW, dstH) {
     var n = parseFloat(num);
     var scaled = isX ? n * sx : n * sy;
     isX = !isX;
-    return scaled.toFixed(2);
+    return scaled.toFixed(0);
   });
 }
 
@@ -1833,14 +1833,8 @@ function traceColorSegmentation() {
     function traceDetailBoundaries() {
       $('trace-status').textContent = 'Extracting boundaries...';
       setTimeout(function() {
-        // Copy shape fills into detail
-        for (var i = 0; i < STATE.paths[1].length; i++) {
-          STATE.paths[2].push({
-            d: STATE.paths[1][i].d,
-            type: 'fill',
-            zone: STATE.paths[1][i].zone
-          });
-        }
+        // Detail level only adds boundary strokes — shape fills are accumulated
+        // by consolidatePaths() which iterates levels 1..upToLevel
 
         // Extract and trace boundary
         var boundaryMask = extractBoundaryMask(imageData, rawData, hasAlpha, hasChroma, clusters);
