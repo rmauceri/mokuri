@@ -264,6 +264,26 @@ button.icon-btn {
 
 button.sm { padding: 3px 8px; font-size: 11px; }
 
+/* ── Tag Chips ── */
+.tag-chip {
+  display: inline-block;
+  padding: 2px 7px;
+  font-size: 10px;
+  border-radius: 9px;
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.45);
+  color: var(--muted);
+  transition: all 0.15s;
+}
+.tag-chip:hover { border-color: var(--accent); }
+.tag-chip.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
 /* ── Zone Chips ── */
 .zone-chips {
   display: flex;
@@ -644,8 +664,8 @@ button.sm { padding: 3px 8px; font-size: 11px; }
         </div>
 
         <div class="panel-section">
-          <div class="subtle-label">Tags <span style="color:var(--muted); font-size:10px;">(comma-separated)</span></div>
-          <input type="text" id="el-tags" placeholder="fauna, organic, water" style="width:100%; padding:5px 8px; border:1px solid var(--border); border-radius:8px; font-size:12px; background:rgba(255,255,255,0.65);">
+          <div class="subtle-label">Tags</div>
+          <div id="el-tags-chips" style="display:flex; flex-wrap:wrap; gap:3px;"></div>
         </div>
 
         <div class="panel-section">
@@ -952,6 +972,12 @@ const ZONE_COLORS = [
 
 const LEVEL_NAMES = ['block', 'shape', 'detail'];
 
+const TAG_VOCABULARY = [
+  'landscape', 'flora', 'fauna', 'water', 'structural', 'atmospheric',
+  'vessel', 'minimal', 'organic', 'geometric', 'figure', 'intimate',
+  'seasonal-spring', 'seasonal-autumn', 'seasonal-winter', 'decorative', 'signing'
+];
+
 // ── State ──
 const STATE = {
   // Element metadata
@@ -961,6 +987,7 @@ const STATE = {
   suggestedLayer: 'midground',
   viewBoxW: 160,
   viewBoxH: 160,
+  selectedTags: new Set(),
 
   // Zones
   zones: [
@@ -1014,6 +1041,7 @@ const canvasArea = $('canvas-area');
 function init() {
   setupViewBox();
   renderZoneChips();
+  renderTagChips();
   updateBudget();
   updatePreviews();
   updateStatusBar();
@@ -1084,6 +1112,26 @@ function removeZone() {
   STATE.activeZoneIndex = Math.min(idx, STATE.zones.length - 1);
   renderZoneChips();
   updateStatusBar();
+}
+
+// ── Tag Chips ──
+function renderTagChips() {
+  const container = $('el-tags-chips');
+  container.innerHTML = '';
+  TAG_VOCABULARY.forEach(tag => {
+    const chip = document.createElement('span');
+    chip.className = 'tag-chip' + (STATE.selectedTags.has(tag) ? ' active' : '');
+    chip.textContent = tag;
+    chip.addEventListener('click', () => {
+      if (STATE.selectedTags.has(tag)) {
+        STATE.selectedTags.delete(tag);
+      } else {
+        STATE.selectedTags.add(tag);
+      }
+      renderTagChips();
+    });
+    container.appendChild(chip);
+  });
 }
 
 // ── Level Switching ──
@@ -2099,22 +2147,24 @@ function exportElement() {
 
 function buildElementDefinition() {
   const pack = $('el-pack').value;
-  const tagsRaw = $('el-tags').value.trim();
-  const tags = tagsRaw ? tagsRaw.split(/\s*,\s*/).filter(t => t) : [];
-  return {
+  const category = $('el-category').value;
+  const tags = Array.from(STATE.selectedTags);
+  const el = {
     id: $('el-id').value || 'unnamed',
     name: $('el-name').value || 'Unnamed',
-    category: $('el-category').value,
-    pack: pack !== 'core' ? pack : undefined,
-    tags: tags.length ? tags : undefined,
-    viewBox: `0 0 ${STATE.viewBoxW} ${STATE.viewBoxH}`,
-    suggestedLayer: $('el-layer').value,
-    colorZones: STATE.zones.map(z => ({ id: z.id, defaultPaletteSlot: z.defaultPaletteSlot })),
-    carveLevels: LEVEL_NAMES.map((name, i) => ({
-      name,
-      paths: consolidatePaths(i),
-    })),
+    category: category,
   };
+  if (pack !== 'core') el.pack = pack;
+  if (category === 'hanko') el.hanko = true;
+  if (tags.length) el.tags = tags;
+  el.viewBox = `0 0 ${STATE.viewBoxW} ${STATE.viewBoxH}`;
+  el.suggestedLayer = $('el-layer').value;
+  el.colorZones = STATE.zones.map(z => ({ id: z.id, defaultPaletteSlot: z.defaultPaletteSlot }));
+  el.carveLevels = LEVEL_NAMES.map((name, i) => ({
+    name,
+    paths: consolidatePaths(i),
+  }));
+  return el;
 }
 
 function consolidatePaths(upToLevel) {
@@ -2143,6 +2193,9 @@ function formatElementJS(el) {
   js += `${indent}category: '${el.category}',\n`;
   if (el.pack) {
     js += `${indent}pack: '${el.pack}',\n`;
+  }
+  if (el.hanko) {
+    js += `${indent}hanko: true,\n`;
   }
   if (el.tags && el.tags.length) {
     js += `${indent}tags: [${el.tags.map(t => `'${t}'`).join(', ')}],\n`;
@@ -2211,7 +2264,8 @@ function importElement(el) {
   if (el.category) $('el-category').value = el.category;
   if (el.suggestedLayer) $('el-layer').value = el.suggestedLayer;
   $('el-pack').value = el.pack || 'core';
-  $('el-tags').value = Array.isArray(el.tags) ? el.tags.join(', ') : '';
+  STATE.selectedTags = new Set(Array.isArray(el.tags) ? el.tags : []);
+  renderTagChips();
 
   // Parse viewBox
   if (el.viewBox) {
