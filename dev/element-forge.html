@@ -959,8 +959,9 @@ const STATE = {
   traceImageEl: null,       // HTMLImageElement for the loaded image
   traceRawPaths: [null, null, null],  // raw SVG d strings from Potrace per level
   tracing: false,
-  hasChromaKey: false,      // true if green background detected
-  chromaMaskData: null,     // ImageData with green pixels replaced by white (for mono trace)
+  hasChromaKey: false,      // true if green or alpha background detected
+  chromaMaskData: null,     // ImageData with bg replaced by white (for mono trace)
+  alphaData: null,          // raw RGBA ImageData (for alpha-based silhouette)
 
   // Viewport
   viewBox: { x: 0, y: 0, w: 160, h: 160 },
@@ -1274,6 +1275,7 @@ function loadTraceImage(src) {
     STATE.traceRawPaths = [null, null, null];
     STATE.hasChromaKey = false;
     STATE.chromaMaskData = null;
+    STATE.alphaData = null;
     $('chroma-status').style.display = 'none';
     // Clear reference layer
     $('ref-layer').innerHTML = '';
@@ -1306,19 +1308,46 @@ function loadTraceImage(src) {
     canvas.width = w;
     canvas.height = h;
     var ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0, w, h);
-    STATE.traceImageData = ctx.getImageData(0, 0, w, h);
 
-    // Detect chroma key
-    STATE.hasChromaKey = detectChromaKey(STATE.traceImageData);
-    if (STATE.hasChromaKey) {
-      STATE.chromaMaskData = createChromaMaskedData(STATE.traceImageData);
+    // Draw on white background so transparent pixels become white (not black)
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(img, 0, 0, w, h);
+    var compositeData = ctx.getImageData(0, 0, w, h);
+
+    // Also get raw RGBA (no white fill) to detect alpha
+    ctx.clearRect(0, 0, w, h);
+    ctx.drawImage(img, 0, 0, w, h);
+    var rawData = ctx.getImageData(0, 0, w, h);
+
+    // Detect background type: alpha transparency or chroma-key green
+    var hasAlpha = detectAlphaBackground(rawData);
+    var hasChroma = !hasAlpha && detectChromaKey(compositeData);
+
+    STATE.hasChromaKey = hasAlpha || hasChroma;
+
+    if (hasAlpha) {
+      // Transparent PNG: use composited (white bg) data for tracing,
+      // silhouette from alpha channel
+      STATE.traceImageData = compositeData;
+      STATE.chromaMaskData = compositeData; // already white-composited
+      STATE.alphaData = rawData;            // keep raw for silhouette mask
+      $('chroma-status').innerHTML = '\ud83d\uddbc Transparent background detected \u2014 block silhouette auto-extracted';
+      $('chroma-status').style.display = '';
+      $('trace-status').textContent = w + '\u00d7' + h + ' \u2714 transparent bg';
+    } else if (hasChroma) {
+      STATE.traceImageData = compositeData;
+      STATE.chromaMaskData = createChromaMaskedData(compositeData);
+      STATE.alphaData = null;
+      $('chroma-status').innerHTML = '\ud83d\udfe2 Green background detected \u2014 block silhouette auto-extracted';
       $('chroma-status').style.display = '';
       $('trace-status').textContent = w + '\u00d7' + h + ' \u2714 green bg';
     } else {
+      STATE.traceImageData = compositeData;
       STATE.chromaMaskData = null;
+      STATE.alphaData = null;
       $('chroma-status').style.display = 'none';
-      $('trace-status').textContent = w + '\u00d7' + h + ' ready to trace';
+      $('trace-status').textContent = w + '\u00d7' + h + ' ready to trace (no bg detected)';
     }
 
     // Also load as reference image in the SVG workspace
@@ -1536,7 +1565,10 @@ function traceAllLevels() {
     // Chroma-key workflow: block = silhouette mask, shape/detail = mono on masked image
     $('trace-status').textContent = 'Tracing silhouette...';
 
-    var silhouette = createSilhouetteMask(imageData);
+    // Build silhouette from alpha channel or chroma key
+    var silhouette = STATE.alphaData
+      ? createAlphaSilhouetteMask(STATE.alphaData)
+      : createChromaSilhouetteMask(imageData);
     traceBinaryMask(silhouette.mask, silhouette.w, silhouette.h, turdSize, function(blockD) {
       STATE.traceRawPaths[0] = blockD;
       if (blockD) {
@@ -1663,11 +1695,21 @@ function reSimplify() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// ── Chroma-Key Detection ──
+// ── Background Detection (Alpha + Chroma-Key) ──
 // ═══════════════════════════════════════════════════════════════
 
+// Detect if image has significant alpha transparency (>15% of pixels mostly transparent)
+function detectAlphaBackground(rawImageData) {
+  var data = rawImageData.data;
+  var n = data.length / 4;
+  var transparentCount = 0;
+  for (var i = 3; i < data.length; i += 4) {
+    if (data[i] < 30) transparentCount++;  // alpha < 30 = effectively transparent
+  }
+  return transparentCount / n > 0.15;
+}
+
 // Detect if image has a green (#00FF00-ish) background
-// Returns true if >15% of pixels are near pure green
 function detectChromaKey(imageData) {
   var data = imageData.data;
   var n = data.length / 4;
@@ -1680,26 +1722,21 @@ function detectChromaKey(imageData) {
   return greenCount / n > 0.15;
 }
 
-// Check if a pixel is chroma-key green (tolerant range)
 function isChromaGreen(r, g, b) {
   return g > 180 && r < 100 && b < 100 && (g - r) > 80 && (g - b) > 80;
 }
 
-// Create ImageData with green pixels replaced by white (for mono tracing)
-// and non-green pixels preserved as-is for threshold-based tracing
+// Create ImageData with green pixels replaced by white
 function createChromaMaskedData(imageData) {
   var data = imageData.data;
   var w = imageData.width, h = imageData.height;
   var canvas = document.createElement('canvas');
-  canvas.width = w;
-  canvas.height = h;
+  canvas.width = w; canvas.height = h;
   var ctx = canvas.getContext('2d');
   var newData = ctx.createImageData(w, h);
   var nd = newData.data;
-
   for (var i = 0; i < data.length; i += 4) {
     if (isChromaGreen(data[i], data[i + 1], data[i + 2])) {
-      // Replace green with white (so it doesn't get traced)
       nd[i] = 255; nd[i + 1] = 255; nd[i + 2] = 255; nd[i + 3] = 255;
     } else {
       nd[i] = data[i]; nd[i + 1] = data[i + 1]; nd[i + 2] = data[i + 2]; nd[i + 3] = data[i + 3];
@@ -1708,12 +1745,23 @@ function createChromaMaskedData(imageData) {
   return newData;
 }
 
-// Create a binary silhouette mask: everything NOT green = 1, green = 0
-function createSilhouetteMask(imageData) {
+// Create silhouette mask from alpha channel (opaque pixels = 1)
+// Uses a threshold to handle semi-transparent anti-aliasing edges
+function createAlphaSilhouetteMask(rawImageData) {
+  var data = rawImageData.data;
+  var w = rawImageData.width, h = rawImageData.height;
+  var mask = new Int8Array(w * h);
+  for (var i = 3, j = 0; i < data.length; i += 4, j++) {
+    mask[j] = data[i] > 60 ? 1 : 0;  // alpha > 60 = part of subject
+  }
+  return { mask: mask, w: w, h: h };
+}
+
+// Create silhouette mask from chroma-key (non-green pixels = 1)
+function createChromaSilhouetteMask(imageData) {
   var data = imageData.data;
   var w = imageData.width, h = imageData.height;
   var mask = new Int8Array(w * h);
-
   for (var i = 0, j = 0; i < data.length; i += 4, j++) {
     if (!isChromaGreen(data[i], data[i + 1], data[i + 2])) {
       mask[j] = 1;
