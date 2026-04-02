@@ -304,13 +304,26 @@
     const viewBox = parseViewBox(element.viewBox);
     const zonesById = {};
     const zones = Array.isArray(element.colorZones) ? element.colorZones : [];
-    const paths = getComposedLevelPaths(element, levelIndex);
 
     for (let i = 0; i < zones.length; i += 1) {
       zonesById[zones[i].id] = zones[i];
     }
 
-    const pathMarkup = paths.map(function (path) {
+    // Build set of path keys from lower levels so we can identify what's new
+    const lowerKeys = new Set();
+    if (levelIndex > 0) {
+      var lowerPaths = getComposedLevelPaths(element, levelIndex - 1);
+      for (var lp = 0; lp < lowerPaths.length; lp += 1) {
+        var p = lowerPaths[lp];
+        if (p && typeof p.d === 'string') {
+          lowerKeys.add((p.type || '') + '::' + (p.zone || '') + '::' + p.d.trim());
+        }
+      }
+    }
+
+    const allPaths = getComposedLevelPaths(element, levelIndex);
+
+    const pathMarkup = allPaths.map(function (path) {
       if (!path || typeof path.d !== 'string' || !path.d.trim()) {
         return '';
       }
@@ -318,13 +331,16 @@
       const zone = zonesById[path.zone] || { defaultPaletteSlot: 0 };
       const color = slotColor(zone.defaultPaletteSlot);
       const d = escapeAttribute(path.d);
+      var pathKey = (path.type || '') + '::' + (path.zone || '') + '::' + path.d.trim();
+      var isNew = !lowerKeys.has(pathKey);
+      var opacity = isNew ? '' : ' opacity="0.18"';
 
       if (path.type === 'stroke') {
         const strokeWidth = Number(path.strokeWidth);
-        return '<path d="' + d + '" fill="none" stroke="' + color + '" stroke-width="' + (Number.isFinite(strokeWidth) ? strokeWidth : 1) + '" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path>';
+        return '<path d="' + d + '" fill="none" stroke="' + color + '"' + opacity + ' stroke-width="' + (Number.isFinite(strokeWidth) ? strokeWidth : 1) + '" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path>';
       }
 
-      return '<path d="' + d + '" fill="' + color + '" stroke="none"></path>';
+      return '<path d="' + d + '" fill="' + color + '" stroke="none"' + opacity + '></path>';
     }).join('');
 
     return '<svg viewBox="' + viewBox.join(' ') + '" aria-hidden="true">' + pathMarkup + '</svg>';
