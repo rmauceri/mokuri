@@ -1427,8 +1427,10 @@ function loadTraceImage(src) {
   img.onload = function() {
     STATE.traceImageEl = img;
 
-    // Scale image for tracing (max 400px wide for performance)
-    var scale = Math.min(1, 800 / img.naturalWidth);
+    // Scale image for tracing — higher res = more Potrace detail but larger paths.
+    // 400px is ~2.5x oversample for a 160px viewBox: enough for clean edges,
+    // not so much that we trace anti-aliasing noise.
+    var scale = Math.min(1, 400 / Math.max(img.naturalWidth, img.naturalHeight));
     var w = Math.round(img.naturalWidth * scale);
     var h = Math.round(img.naturalHeight * scale);
 
