@@ -1660,6 +1660,12 @@ function traceAllLevels() {
   var dstH = STATE.viewBoxH;
   var zone = STATE.zones[0] ? STATE.zones[0].id : 'body';
 
+  // Shape/detail traces become stroke paths (outlines) to match Mokuri convention:
+  // block = solid fills, shape = fills + structural outlines, detail = fills + fine outlines
+  var diagonal = Math.sqrt(dstW * dstW + dstH * dstH);
+  var shapeStrokeW = Math.round(Math.max(0.8, diagonal / 120) * 10) / 10;
+  var detailStrokeW = Math.round(Math.max(0.4, diagonal / 220) * 10) / 10;
+
   pushUndo('trace');
   STATE.paths = [[], [], []];
   STATE.traceRawPaths = [null, null, null];
@@ -1696,7 +1702,10 @@ function traceAllLevels() {
           STATE.traceRawPaths[stateIdx] = rawD;
           if (rawD) {
             var result = processTracePath(rawD, srcW, srcH, dstW, dstH, epsilon);
-            if (result) STATE.paths[stateIdx] = [{ d: result, type: 'fill', zone: zone }];
+            if (result) {
+              var sw = stateIdx === 1 ? shapeStrokeW : detailStrokeW;
+              STATE.paths[stateIdx] = [{ d: result, type: 'stroke', zone: zone, strokeWidth: sw }];
+            }
           }
           levelIdx++;
           setTimeout(traceNextLevel, 10);
@@ -1733,7 +1742,10 @@ function traceAllLevels() {
           STATE.traceRawPaths[stateIdx] = rawD;
           if (rawD) {
             var result = processTracePath(rawD, srcW, srcH, dstW, dstH, epsilon);
-            if (result) STATE.paths[stateIdx] = [{ d: result, type: 'fill', zone: zone }];
+            if (result) {
+              var sw = stateIdx === 1 ? shapeStrokeW : detailStrokeW;
+              STATE.paths[stateIdx] = [{ d: result, type: 'stroke', zone: zone, strokeWidth: sw }];
+            }
           }
           levelIdx++;
           setTimeout(traceNextLevel, 10);
@@ -1768,6 +1780,8 @@ function reSimplify() {
   var dstH = STATE.viewBoxH;
   var changed = false;
   var zone = STATE.zones[0] ? STATE.zones[0].id : 'body';
+  var diagonal = Math.sqrt(dstW * dstW + dstH * dstH);
+  var strokeWidths = [0, Math.round(Math.max(0.8, diagonal / 120) * 10) / 10, Math.round(Math.max(0.4, diagonal / 220) * 10) / 10];
 
   pushUndo('re-simplify');
 
@@ -1776,7 +1790,11 @@ function reSimplify() {
     if (!rawD) continue;
     var result = processTracePath(rawD, srcW, srcH, dstW, dstH, epsilon);
     if (result) {
-      STATE.paths[i] = [{ d: result, type: 'fill', zone: zone }];
+      if (i === 0) {
+        STATE.paths[i] = [{ d: result, type: 'fill', zone: zone }];
+      } else {
+        STATE.paths[i] = [{ d: result, type: 'stroke', zone: zone, strokeWidth: strokeWidths[i] }];
+      }
       changed = true;
     }
   }
