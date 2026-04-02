@@ -4182,10 +4182,68 @@ function svgToElementLocal(svgX, svgY, el) {
 // ============================================================
 //  ELEMENT RENDERING — Carve (wood) or Ink (color) mode
 // ============================================================
+function getElementCarvePathKey(path) {
+  return [
+    path && path.type || 'fill',
+    path && path.zone || '',
+    path && path.strokeWidth || '',
+    path && path.d || '',
+  ].join('|');
+}
+
+function elementHasDeltaCarveLevels(def) {
+  if (!def || !Array.isArray(def.carveLevels)) return false;
+  if (def.carveLevelMode === 'delta') return true;
+  const seen = new Set();
+  for (const level of def.carveLevels) {
+    const paths = level && Array.isArray(level.paths) ? level.paths : [];
+    for (const path of paths) {
+      const key = getElementCarvePathKey(path);
+      if (seen.has(key)) return false;
+    }
+    for (const path of paths) {
+      seen.add(getElementCarvePathKey(path));
+    }
+  }
+  return true;
+}
+
+function getElementBlockPaths(def) {
+  return def && def.carveLevels && def.carveLevels[0] && Array.isArray(def.carveLevels[0].paths)
+    ? def.carveLevels[0].paths
+    : [];
+}
+
+function getElementOverlayPaths(def, carveLevel) {
+  if (!def || !Array.isArray(def.carveLevels) || !def.carveLevels.length) return [];
+  const levelIndex = Math.min(Math.max(carveLevel || 0, 0), def.carveLevels.length - 1);
+  if (levelIndex === 0) return [];
+  if (elementHasDeltaCarveLevels(def)) {
+    const paths = [];
+    for (let i = 1; i <= levelIndex; i++) {
+      const level = def.carveLevels[i];
+      if (level && Array.isArray(level.paths)) paths.push(...level.paths);
+    }
+    return paths;
+  }
+  const blockKeys = new Set(getElementBlockPaths(def).map(getElementCarvePathKey));
+  const level = def.carveLevels[levelIndex];
+  return (level && Array.isArray(level.paths) ? level.paths : [])
+    .filter(path => !blockKeys.has(getElementCarvePathKey(path)));
+}
+
+function getElementVisiblePaths(def, carveLevel) {
+  const blockPaths = getElementBlockPaths(def);
+  if (!def || !Array.isArray(def.carveLevels) || !def.carveLevels.length) return blockPaths;
+  const levelIndex = Math.min(Math.max(carveLevel || 0, 0), def.carveLevels.length - 1);
+  return levelIndex === 0 ? blockPaths : blockPaths.concat(getElementOverlayPaths(def, levelIndex));
+}
+
 function renderElementSvg(el, layerIndex) {
   const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
   if (!def) return null;
-  const carve = def.carveLevels[Math.min(el.carveLevel, def.carveLevels.length - 1)];
+  const blockPaths = getElementBlockPaths(def);
+  const overlayPaths = getElementOverlayPaths(def, el.carveLevel);
   const isBlock = el.carveLevel === 0;
   const inkMode = STATE.viewMode === 'ink';
   const palette = inkMode ? PALETTES[STATE.paletteId] : null;
@@ -4269,7 +4327,7 @@ function renderElementSvg(el, layerIndex) {
 
   if (isBlock) {
     // Uncarved block — fills use zone color (ink mode) or wood tone (carve mode)
-    carve.paths.forEach(p => {
+    blockPaths.forEach(p => {
       if (p.type !== 'fill') return;
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       path.setAttribute('d', p.d);
@@ -4279,7 +4337,6 @@ function renderElementSvg(el, layerIndex) {
     });
   } else {
     // Base silhouette from block level
-    const blockPaths = def.carveLevels[0].paths;
     blockPaths.forEach(p => {
       if (p.type !== 'fill') return;
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -4290,7 +4347,7 @@ function renderElementSvg(el, layerIndex) {
     });
 
     // Carved detail overlays
-    carve.paths.forEach(p => {
+    overlayPaths.forEach(p => {
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       path.setAttribute('d', p.d);
 
@@ -4704,8 +4761,7 @@ function updateSelection() {
 
     // Zone highlight in ink mode — add dashed outline on active zone paths
     if (STATE.viewMode === 'ink' && STATE.activeZone) {
-      const carve = def.carveLevels[Math.min(el.carveLevel, def.carveLevels.length - 1)];
-      const allPaths = [...def.carveLevels[0].paths, ...carve.paths];
+      const allPaths = getElementVisiblePaths(def, el.carveLevel);
       const zonePaths = allPaths.filter(p => p.zone === STATE.activeZone && p.type === 'fill');
       if (zonePaths.length) {
         const offsetX = -vb[2] / 2;
@@ -5662,9 +5718,9 @@ function generateThumbnailSvg(data) {
       const rot = el.rotation || 0;
       s += `<g transform="translate(${tx},${ty}) rotate(${rot}) scale(${sx},${sy}) translate(${-vb[2]/2},${-vb[3]/2})">`;
 
-      // Render block-level fill paths with palette colors
-      const lvl = def.carveLevels[Math.min(el.carveLevel || 0, def.carveLevels.length - 1)];
-      for (const p of lvl.paths) {
+      // Render the visible paths for the active carve level.
+      const visiblePaths = getElementVisiblePaths(def, el.carveLevel || 0);
+      for (const p of visiblePaths) {
         if (p.type === 'fill') {
           let col;
           if (def.hanko) {
@@ -7410,7 +7466,7 @@ function buildElementThumb(def) {
 
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('viewBox', def.viewBox);
-  def.carveLevels[0].paths.forEach(p => {
+  getElementBlockPaths(def).forEach(p => {
     if (p.type !== 'fill') return;
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     path.setAttribute('d', p.d);
@@ -7418,8 +7474,8 @@ function buildElementThumb(def) {
     path.setAttribute('stroke', 'none');
     svg.appendChild(path);
   });
-  const detailCarve = def.carveLevels[def.carveLevels.length - 1];
-  detailCarve.paths.forEach(p => {
+  const detailPaths = getElementOverlayPaths(def, def.carveLevels.length - 1);
+  detailPaths.forEach(p => {
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     path.setAttribute('d', p.d);
     if (p.type === 'fill') {
@@ -7820,9 +7876,9 @@ function updateHankoPreview() {
   const def = generateHankoInitials(text, hankoCreatorShape);
   if (!def) return;
   // Render detail level
-  const detail = def.carveLevels[def.carveLevels.length - 1];
+  const detail = getElementVisiblePaths(def, def.carveLevels.length - 1);
   let svgInner = '';
-  detail.paths.forEach(p => {
+  detail.forEach(p => {
     if (p.type === 'fill') {
       svgInner += `<path d="${p.d}" fill="#c23b22" stroke="#8b1a1a" stroke-width="0.8"/>`;
     } else {

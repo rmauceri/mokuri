@@ -2808,6 +2808,7 @@ function buildElementDefinition() {
     }
   }
 
+  el.carveLevelMode = 'delta';
   el.carveLevels = LEVEL_NAMES.map((name, i) => ({
     name,
     paths: consolidatePaths(i),
@@ -2816,9 +2817,8 @@ function buildElementDefinition() {
 }
 
 function consolidatePaths(upToLevel) {
-  // Build Mokuri-compatible carve levels from forge's per-level paths.
-  // In color segmentation mode, fills keep their original zone assignment.
-  // In mono mode, non-block fills go to a detail zone.
+  // Export delta carve levels: each level stores only its new paths.
+  // Mokuri accumulates lower levels at render time.
   const allPaths = [];
   const isColorMode = STATE.traceMode === 'color';
 
@@ -2834,18 +2834,14 @@ function consolidatePaths(upToLevel) {
       }
     }
   } else {
-    // Shape/detail: collect NEW content from levels 1+
-    for (let l = 1; l <= upToLevel; l++) {
-      for (const p of STATE.paths[l]) {
-        if (p.type === 'fill') {
-          // Color mode: keep original zone; mono mode: use fallback detail zone
-          const zone = isColorMode ? p.zone : getFallbackDetailZone();
-          allPaths.push({ d: p.d, type: 'fill', zone: zone });
-        } else {
-          const obj = { d: p.d, type: p.type, zone: p.zone };
-          if (p.type === 'stroke') obj.strokeWidth = p.strokeWidth || 2;
-          allPaths.push(obj);
-        }
+    for (const p of STATE.paths[upToLevel]) {
+      if (p.type === 'fill') {
+        const zone = isColorMode ? p.zone : getFallbackDetailZone();
+        allPaths.push({ d: p.d, type: 'fill', zone: zone });
+      } else {
+        const obj = { d: p.d, type: p.type, zone: p.zone };
+        if (p.type === 'stroke') obj.strokeWidth = p.strokeWidth || 2;
+        allPaths.push(obj);
       }
     }
   }
@@ -2875,6 +2871,9 @@ function formatElementJS(el) {
   }
   js += `${indent}viewBox: '${el.viewBox}',\n`;
   js += `${indent}suggestedLayer: '${el.suggestedLayer}',\n`;
+  if (el.carveLevelMode) {
+    js += `${indent}carveLevelMode: '${el.carveLevelMode}',\n`;
+  }
 
   js += `${indent}colorZones: [\n`;
   el.colorZones.forEach(z => {
@@ -2957,28 +2956,56 @@ function importElement(el) {
     STATE.activeZoneIndex = 0;
   }
 
-  // Parse paths per level
-  // Elements store accumulated paths per level; we need to extract per-level-only paths
+  // Parse paths per level.
+  // Legacy elements store cumulative levels; forge exports store delta levels.
   STATE.paths = [[], [], []];
+  const pathKey = (p) => [p && p.type || 'fill', p && p.zone || '', p && p.strokeWidth || '', p && p.d || ''].join('|');
+  const isDeltaMode = (() => {
+    if (el.carveLevelMode === 'delta') return true;
+    const seen = new Set();
+    for (const level of el.carveLevels) {
+      const levelPaths = level && Array.isArray(level.paths) ? level.paths : [];
+      for (const p of levelPaths) {
+        const key = pathKey(p);
+        if (seen.has(key)) return false;
+      }
+      for (const p of levelPaths) seen.add(pathKey(p));
+    }
+    return true;
+  })();
 
-  // Build set of path `d` strings from previous levels to subtract
-  const prevPathDs = new Set();
-  el.carveLevels.forEach((level, li) => {
-    if (li >= 3) return;
-    const levelPaths = (level.paths || []);
-    levelPaths.forEach(p => {
-      if (!prevPathDs.has(p.d)) {
+  if (isDeltaMode) {
+    el.carveLevels.forEach((level, li) => {
+      if (li >= 3) return;
+      const levelPaths = level && Array.isArray(level.paths) ? level.paths : [];
+      levelPaths.forEach(p => {
         STATE.paths[li].push({
           d: p.d,
           type: p.type || 'fill',
           zone: p.zone || 'body',
           strokeWidth: p.strokeWidth,
         });
-      }
+      });
     });
-    // Add all this level's d strings to the "seen" set
-    levelPaths.forEach(p => prevPathDs.add(p.d));
-  });
+  } else {
+    const prevPathKeys = new Set();
+    el.carveLevels.forEach((level, li) => {
+      if (li >= 3) return;
+      const levelPaths = level && Array.isArray(level.paths) ? level.paths : [];
+      levelPaths.forEach(p => {
+        const key = pathKey(p);
+        if (!prevPathKeys.has(key)) {
+          STATE.paths[li].push({
+            d: p.d,
+            type: p.type || 'fill',
+            zone: p.zone || 'body',
+            strokeWidth: p.strokeWidth,
+          });
+        }
+      });
+      levelPaths.forEach(p => prevPathKeys.add(pathKey(p)));
+    });
+  }
 
   setupViewBox();
   renderZoneChips();

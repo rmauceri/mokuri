@@ -316,10 +316,52 @@ const PrintEngine = (() => {
       });
     }
 
+    const getCarvePathKey = (path) => [
+      path && path.type || 'fill',
+      path && path.zone || '',
+      path && path.strokeWidth || '',
+      path && path.d || '',
+    ].join('|');
+    const hasDeltaCarveLevels = (def) => {
+      if (!def || !Array.isArray(def.carveLevels)) return false;
+      if (def.carveLevelMode === 'delta') return true;
+      const seen = new Set();
+      for (const level of def.carveLevels) {
+        const paths = level && Array.isArray(level.paths) ? level.paths : [];
+        for (const path of paths) {
+          const key = getCarvePathKey(path);
+          if (seen.has(key)) return false;
+        }
+        for (const path of paths) seen.add(getCarvePathKey(path));
+      }
+      return true;
+    };
+    const getBlockPaths = (def) => def && def.carveLevels && def.carveLevels[0] && Array.isArray(def.carveLevels[0].paths)
+      ? def.carveLevels[0].paths
+      : [];
+    const getOverlayPaths = (def, carveLevel) => {
+      if (!def || !Array.isArray(def.carveLevels) || !def.carveLevels.length) return [];
+      const levelIndex = Math.min(Math.max(carveLevel || 0, 0), def.carveLevels.length - 1);
+      if (levelIndex === 0) return [];
+      if (hasDeltaCarveLevels(def)) {
+        const paths = [];
+        for (let i = 1; i <= levelIndex; i++) {
+          const level = def.carveLevels[i];
+          if (level && Array.isArray(level.paths)) paths.push(...level.paths);
+        }
+        return paths;
+      }
+      const blockKeys = new Set(getBlockPaths(def).map(getCarvePathKey));
+      const level = def.carveLevels[levelIndex];
+      return (level && Array.isArray(level.paths) ? level.paths : [])
+        .filter(path => !blockKeys.has(getCarvePathKey(path)));
+    };
+
     elements.forEach(el => {
       const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
       if (!def) return;
-      const carve = def.carveLevels[Math.min(el.carveLevel, def.carveLevels.length - 1)];
+      const blockPaths = getBlockPaths(def);
+      const overlayPaths = getOverlayPaths(def, el.carveLevel);
       const isBlock = el.carveLevel === 0;
       const vb = def.viewBox.split(' ').map(Number);
       const offX = -vb[2] / 2;
@@ -396,10 +438,10 @@ const PrintEngine = (() => {
       };
 
       if (isBlock) {
-        renderFills(carve.paths);
+        renderFills(blockPaths);
       } else {
-        renderFills(def.carveLevels[0].paths);
-        carve.paths.forEach(p => {
+        renderFills(blockPaths);
+        overlayPaths.forEach(p => {
           const col = zoneColor(p.zone);
           const pd = perturb(p.d);
           const isCharZone = isHanko && p.zone === 'char';
@@ -442,7 +484,7 @@ const PrintEngine = (() => {
 
       // Pattern overlay on block silhouette — carving texture showing through ink
       if (printPatternFill && !isBlock) {
-        const blockFill = def.carveLevels[0].paths.find(p => p.type === 'fill');
+        const blockFill = blockPaths.find(p => p.type === 'fill');
         if (blockFill) {
           svgContent += `<path d="${perturb(blockFill.d)}" fill="${printPatternFill}" fill-opacity="0.45" stroke="none"/>`;
         }
