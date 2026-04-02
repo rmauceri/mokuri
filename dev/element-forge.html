@@ -2177,36 +2177,40 @@ function buildElementDefinition() {
 }
 
 function consolidatePaths(upToLevel) {
-  // Accumulate paths from level 0 to upToLevel, converting traced fills at
-  // shape/detail levels into strokes in the detail zone — matching the Mokuri
-  // element convention where block = silhouette fills, shape/detail = carved strokes.
+  // Build Mokuri-compatible carve levels from forge's per-level paths.
+  // Block fills are NOT repeated at shape/detail — the renderer draws block
+  // fills separately as the base silhouette (lines 4282-4290 in index.html).
+  // Non-block fills go to a detail zone for color differentiation in ink mode,
+  // and show as paper-colored carved areas in carve mode.
   const allPaths = [];
 
-  // Determine stroke zone: prefer 'detail', else second zone, else first zone
+  // Determine detail zone for non-block fills
   const detailZone = STATE.zones.find(z => z.id === 'detail');
-  const strokeZoneId = detailZone ? 'detail'
+  const detailZoneId = detailZone ? 'detail'
     : (STATE.zones.length > 1 ? STATE.zones[1].id : STATE.zones[0].id);
 
-  for (let l = 0; l <= upToLevel; l++) {
-    for (const p of STATE.paths[l]) {
-      if (l === 0) {
-        // Block level: keep fills as-is, ensure closed with Z
-        if (p.type === 'fill') {
-          let d = p.d.trim();
-          if (!d.endsWith('Z') && !d.endsWith('z')) d += ' Z';
-          allPaths.push({ d, type: 'fill', zone: p.zone });
-        } else {
-          allPaths.push({ d: p.d, type: p.type, zone: p.zone, strokeWidth: p.strokeWidth || 2 });
-        }
-      } else if (p.type === 'fill') {
-        // Shape/detail fills → convert to strokes in detail zone
-        const sw = l === 1 ? 1.5 : 0.8;
-        allPaths.push({ d: p.d, type: 'stroke', zone: strokeZoneId, strokeWidth: sw });
+  if (upToLevel === 0) {
+    // Block level: silhouette fills, closed with Z
+    for (const p of STATE.paths[0]) {
+      if (p.type === 'fill') {
+        let d = p.d.trim();
+        if (!d.endsWith('Z') && !d.endsWith('z')) d += ' Z';
+        allPaths.push({ d, type: 'fill', zone: p.zone });
       } else {
-        // Existing strokes: keep as-is
-        const obj = { d: p.d, type: p.type, zone: p.zone };
-        if (p.type === 'stroke') obj.strokeWidth = p.strokeWidth || 2;
-        allPaths.push(obj);
+        allPaths.push({ d: p.d, type: p.type, zone: p.zone, strokeWidth: p.strokeWidth || 2 });
+      }
+    }
+  } else {
+    // Shape/detail: only NEW content from levels 1+, in detail zone
+    for (let l = 1; l <= upToLevel; l++) {
+      for (const p of STATE.paths[l]) {
+        if (p.type === 'fill') {
+          allPaths.push({ d: p.d, type: 'fill', zone: detailZoneId });
+        } else {
+          const obj = { d: p.d, type: p.type, zone: p.zone };
+          if (p.type === 'stroke') obj.strokeWidth = p.strokeWidth || 2;
+          allPaths.push(obj);
+        }
       }
     }
   }
