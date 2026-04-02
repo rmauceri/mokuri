@@ -1427,12 +1427,12 @@ function loadTraceImage(src) {
   img.onload = function() {
     STATE.traceImageEl = img;
 
-    // Scale image to match the target viewBox with 2x oversample.
-    // Tracing at viewBox resolution produces paths that map nearly 1:1,
-    // keeping Potrace output compact. 2x gives clean edges without noise.
+    // Scale image to match the target viewBox (1:1 mapping).
+    // Each pixel = 1 viewBox unit, so Potrace output maps directly
+    // to the element coordinate space with no rescaling bloat.
     var vbMax = Math.max(STATE.viewBoxW, STATE.viewBoxH);
     var imgMax = Math.max(img.naturalWidth, img.naturalHeight);
-    var scale = Math.min(1, (vbMax * 2) / imgMax);
+    var scale = Math.min(1, vbMax / imgMax);
     var w = Math.round(img.naturalWidth * scale);
     var h = Math.round(img.naturalHeight * scale);
 
