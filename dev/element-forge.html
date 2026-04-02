@@ -176,7 +176,7 @@ html, body {
 .layer-block path { opacity: 0.85; }
 .layer-shape path { opacity: 0.9; }
 .layer-detail path { opacity: 0.95; }
-.layer-accumulated path { opacity: 0.25; }
+.layer-accumulated path { }
 .layer-active path {
   stroke: var(--accent);
   stroke-dasharray: 4 3;
@@ -1872,19 +1872,22 @@ function createPathElement(pathObj, dimmed) {
   const zoneIdx = STATE.zones.findIndex(z => z.id === pathObj.zone);
   const color = ZONE_COLORS[(zoneIdx >= 0 ? zoneIdx : 0) % ZONE_COLORS.length];
 
-  if (pathObj.type === 'fill') {
+  if (dimmed) {
+    // Lower levels: light gray outline only — clearly distinct from active level
+    el.setAttribute('fill', 'none');
+    el.setAttribute('stroke', '#c4b89b');
+    el.setAttribute('stroke-width', 0.5);
+    el.setAttribute('opacity', '0.5');
+  } else if (pathObj.type === 'fill') {
     el.setAttribute('fill', color);
     el.setAttribute('stroke', 'none');
+    el.setAttribute('fill-rule', 'evenodd');
   } else {
     el.setAttribute('fill', 'none');
     el.setAttribute('stroke', color);
     el.setAttribute('stroke-width', pathObj.strokeWidth || 2);
     el.setAttribute('stroke-linecap', 'round');
     el.setAttribute('stroke-linejoin', 'round');
-  }
-
-  if (dimmed) {
-    el.setAttribute('opacity', '0.25');
   }
 
   return el;
@@ -2194,26 +2197,36 @@ function updatePreviews() {
     const svgEl = $('preview-' + name);
     svgEl.innerHTML = '';
 
-    // Accumulate paths up to this level
-    for (let l = 0; l <= levelIdx; l++) {
+    // Show lower levels dimmed in light gray
+    for (let l = 0; l < levelIdx; l++) {
       STATE.paths[l].forEach(p => {
         const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         pathEl.setAttribute('d', p.d);
-        const zoneIdx = STATE.zones.findIndex(z => z.id === p.zone);
-        const color = ZONE_COLORS[(zoneIdx >= 0 ? zoneIdx : 0) % ZONE_COLORS.length];
-        if (p.type === 'fill') {
-          pathEl.setAttribute('fill', color);
-          pathEl.setAttribute('stroke', 'none');
-        } else {
-          pathEl.setAttribute('fill', 'none');
-          pathEl.setAttribute('stroke', color);
-          pathEl.setAttribute('stroke-width', p.strokeWidth || 2);
-          pathEl.setAttribute('stroke-linecap', 'round');
-          pathEl.setAttribute('stroke-linejoin', 'round');
-        }
+        pathEl.setAttribute('fill', p.type === 'fill' ? '#d5cfc5' : 'none');
+        pathEl.setAttribute('stroke', p.type === 'stroke' ? '#d5cfc5' : 'none');
+        if (p.type === 'stroke') pathEl.setAttribute('stroke-width', p.strokeWidth || 2);
         svgEl.appendChild(pathEl);
       });
     }
+
+    // Show THIS level's paths in zone color (the new content)
+    STATE.paths[levelIdx].forEach(p => {
+      const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      pathEl.setAttribute('d', p.d);
+      const zoneIdx = STATE.zones.findIndex(z => z.id === p.zone);
+      const color = ZONE_COLORS[(zoneIdx >= 0 ? zoneIdx : 0) % ZONE_COLORS.length];
+      if (p.type === 'fill') {
+        pathEl.setAttribute('fill', color);
+        pathEl.setAttribute('stroke', 'none');
+      } else {
+        pathEl.setAttribute('fill', 'none');
+        pathEl.setAttribute('stroke', color);
+        pathEl.setAttribute('stroke-width', p.strokeWidth || 2);
+        pathEl.setAttribute('stroke-linecap', 'round');
+        pathEl.setAttribute('stroke-linejoin', 'round');
+      }
+      svgEl.appendChild(pathEl);
+    });
   });
 }
 
