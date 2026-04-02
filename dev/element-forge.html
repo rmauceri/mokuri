@@ -634,6 +634,21 @@ button.sm { padding: 3px 8px; font-size: 11px; }
         </div>
 
         <div class="panel-section">
+          <div class="subtle-label">Pack</div>
+          <select id="el-pack" style="width:100%; padding:5px 8px; border:1px solid var(--border); border-radius:8px; font-size:12px; background:rgba(255,255,255,0.65);">
+            <option value="core">core</option>
+            <option value="kacho-e">kacho-e</option>
+            <option value="moribana">moribana</option>
+            <option value="tsukiyo">tsukiyo</option>
+          </select>
+        </div>
+
+        <div class="panel-section">
+          <div class="subtle-label">Tags <span style="color:var(--muted); font-size:10px;">(comma-separated)</span></div>
+          <input type="text" id="el-tags" placeholder="fauna, organic, water" style="width:100%; padding:5px 8px; border:1px solid var(--border); border-radius:8px; font-size:12px; background:rgba(255,255,255,0.65);">
+        </div>
+
+        <div class="panel-section">
           <div class="subtle-label">ViewBox</div>
           <div style="display:flex; gap:6px;">
             <input type="number" id="vb-w" value="160" min="10" max="600" style="flex:1; padding:5px 6px; border:1px solid var(--border); border-radius:8px; font-size:12px; background:rgba(255,255,255,0.65); text-align:center;">
@@ -2083,10 +2098,15 @@ function exportElement() {
 }
 
 function buildElementDefinition() {
+  const pack = $('el-pack').value;
+  const tagsRaw = $('el-tags').value.trim();
+  const tags = tagsRaw ? tagsRaw.split(/\s*,\s*/).filter(t => t) : [];
   return {
     id: $('el-id').value || 'unnamed',
     name: $('el-name').value || 'Unnamed',
     category: $('el-category').value,
+    pack: pack !== 'core' ? pack : undefined,
+    tags: tags.length ? tags : undefined,
     viewBox: `0 0 ${STATE.viewBoxW} ${STATE.viewBoxH}`,
     suggestedLayer: $('el-layer').value,
     colorZones: STATE.zones.map(z => ({ id: z.id, defaultPaletteSlot: z.defaultPaletteSlot })),
@@ -2098,33 +2118,21 @@ function buildElementDefinition() {
 }
 
 function consolidatePaths(upToLevel) {
-  // Accumulate all paths from level 0 to upToLevel
+  // Accumulate individual paths from level 0 to upToLevel.
+  // Paths are kept separate (not compound-merged) to match the Mokuri element
+  // convention where identical paths appear at each level, enabling dedup
+  // in the harness and correct rendering in the main app.
   const allPaths = [];
   for (let l = 0; l <= upToLevel; l++) {
-    allPaths.push(...STATE.paths[l]);
-  }
-
-  // Group by zone + type + strokeWidth
-  const groups = new Map();
-  allPaths.forEach(p => {
-    const key = `${p.zone}|${p.type}|${p.type === 'stroke' ? (p.strokeWidth || 2) : 'fill'}`;
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key).push(p);
-  });
-
-  // Merge each group into compound paths
-  const result = [];
-  groups.forEach((paths, key) => {
-    const [zone, type, widthOrFill] = key.split('|');
-    const compoundD = paths.map(p => p.d).join(' ');
-    const obj = { d: compoundD, type, zone };
-    if (type === 'stroke') {
-      obj.strokeWidth = parseFloat(widthOrFill);
+    for (const p of STATE.paths[l]) {
+      const obj = { d: p.d, type: p.type, zone: p.zone };
+      if (p.type === 'stroke') {
+        obj.strokeWidth = p.strokeWidth || 2;
+      }
+      allPaths.push(obj);
     }
-    result.push(obj);
-  });
-
-  return result;
+  }
+  return allPaths;
 }
 
 function formatElementJS(el) {
@@ -2133,6 +2141,12 @@ function formatElementJS(el) {
   js += `${indent}id: '${el.id}',\n`;
   js += `${indent}name: '${el.name}',\n`;
   js += `${indent}category: '${el.category}',\n`;
+  if (el.pack) {
+    js += `${indent}pack: '${el.pack}',\n`;
+  }
+  if (el.tags && el.tags.length) {
+    js += `${indent}tags: [${el.tags.map(t => `'${t}'`).join(', ')}],\n`;
+  }
   js += `${indent}viewBox: '${el.viewBox}',\n`;
   js += `${indent}suggestedLayer: '${el.suggestedLayer}',\n`;
 
@@ -2196,6 +2210,8 @@ function importElement(el) {
   $('el-name').value = el.name || '';
   if (el.category) $('el-category').value = el.category;
   if (el.suggestedLayer) $('el-layer').value = el.suggestedLayer;
+  $('el-pack').value = el.pack || 'core';
+  $('el-tags').value = Array.isArray(el.tags) ? el.tags.join(', ') : '';
 
   // Parse viewBox
   if (el.viewBox) {
