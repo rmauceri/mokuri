@@ -751,13 +751,13 @@ button.sm { padding: 3px 8px; font-size: 11px; }
 
               <div class="slider-row" style="margin-bottom:4px;">
                 <span class="thresh-label" title="Path simplification (higher = simpler)">Epsilon</span>
-                <input type="range" id="trace-epsilon" min="0" max="5" step="0.1" value="2">
-                <span class="slider-val" id="trace-epsilon-val">2.0</span>
+                <input type="range" id="trace-epsilon" min="0" max="5" step="0.1" value="0.8">
+                <span class="slider-val" id="trace-epsilon-val">0.8</span>
               </div>
               <div class="slider-row" style="margin-bottom:4px;">
                 <span class="thresh-label" title="Suppress speckles up to this size">Turd</span>
-                <input type="range" id="trace-turd" min="0" max="30" step="1" value="2">
-                <span class="slider-val" id="trace-turd-val">2</span>
+                <input type="range" id="trace-turd" min="0" max="30" step="1" value="5">
+                <span class="slider-val" id="trace-turd-val">5</span>
               </div>
 
               <div class="trace-actions">
@@ -1541,7 +1541,7 @@ function traceAtThreshold(imageData, threshold, turdSize, callback) {
     turdsize: turdSize,
     optcurve: true,
     alphamax: 1.1,
-    opttolerance: 0.1
+    opttolerance: 0.4
   });
 
   Potrace.loadBmFromImageData(imageData, threshold);
@@ -2560,7 +2560,7 @@ function traceBinaryMask(mask, w, h, turdSize, callback) {
     turdsize: turdSize,
     optcurve: true,
     alphamax: 1.1,
-    opttolerance: 0.1
+    opttolerance: 0.4
   });
   Potrace.loadBmFromBinaryArray(mask, w, h);
   Potrace.process(function() {
