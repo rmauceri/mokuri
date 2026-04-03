@@ -7466,12 +7466,14 @@ function buildElementThumb(def) {
 
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('viewBox', def.viewBox);
+  // Draw block silhouette in paper color (white background for detail view)
   getElementBlockPaths(def).forEach(p => {
     if (p.type !== 'fill') return;
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     path.setAttribute('d', p.d);
-    path.setAttribute('fill', thumbColor);
-    path.setAttribute('stroke', 'none');
+    path.setAttribute('fill', PAPER_COLOR);
+    path.setAttribute('stroke', isHanko ? '#8b1a1a' : CARVED_STROKE);
+    path.setAttribute('stroke-width', 0.8);
     svg.appendChild(path);
   });
   const detailPaths = getElementOverlayPaths(def, def.carveLevels.length - 1);
