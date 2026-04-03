@@ -235,10 +235,14 @@ const PrintEngine = (() => {
         atmoDefs += `</linearGradient>`;
         const segs = 12;
         let skyPath = `M0,0 L${paperW},0 L${paperW},${horizonY}`;
-        for (let i = segs; i >= 0; i--) {
-          const x = (i / segs) * paperW;
-          const wb = Math.sin(i * 1.3 + 2.7) * paperH * 0.015 + Math.sin(i * 2.9) * paperH * 0.008;
-          skyPath += ` L${x.toFixed(1)},${(horizonY + wb).toFixed(1)}`;
+        if (atmosphere.smoothHorizon) {
+          skyPath += ` L0,${horizonY}`;
+        } else {
+          for (let i = segs; i >= 0; i--) {
+            const x = (i / segs) * paperW;
+            const wb = Math.sin(i * 1.3 + 2.7) * paperH * 0.015 + Math.sin(i * 2.9) * paperH * 0.008;
+            skyPath += ` L${x.toFixed(1)},${(horizonY + wb).toFixed(1)}`;
+          }
         }
         skyPath += ' Z';
         atmoBody += `<path d="${skyPath}" fill="url(#${gid})"/>`;
@@ -254,10 +258,14 @@ const PrintEngine = (() => {
         atmoDefs += `</linearGradient>`;
         const segs = 12;
         let gPath = `M0,${paperH} L${paperW},${paperH} L${paperW},${horizonY}`;
-        for (let i = segs; i >= 0; i--) {
-          const x = (i / segs) * paperW;
-          const wb = Math.sin(i * 1.3 + 2.7) * paperH * 0.015 + Math.sin(i * 2.9) * paperH * 0.008;
-          gPath += ` L${x.toFixed(1)},${(horizonY + wb).toFixed(1)}`;
+        if (atmosphere.smoothHorizon) {
+          gPath += ` L0,${horizonY}`;
+        } else {
+          for (let i = segs; i >= 0; i--) {
+            const x = (i / segs) * paperW;
+            const wb = Math.sin(i * 1.3 + 2.7) * paperH * 0.015 + Math.sin(i * 2.9) * paperH * 0.008;
+            gPath += ` L${x.toFixed(1)},${(horizonY + wb).toFixed(1)}`;
+          }
         }
         gPath += ' Z';
         atmoBody += `<path d="${gPath}" fill="url(#${gid})"/>`;

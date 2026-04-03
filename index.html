@@ -3095,7 +3095,7 @@ if (typeof MOKURI_KACHOE_PRESETS !== 'undefined' && typeof MOKURI_GALLERY_PRESET
 //  VERSION
 // ============================================================
 // Display version — KEEP IN SYNC with CACHE_NAME in sw.js (mokuri-v77 → 0.77)
-const MOKURI_VERSION = '0.78';
+const MOKURI_VERSION = '0.79';
 
 // ============================================================
 //  FEEDBACK
@@ -3251,10 +3251,11 @@ const STATE = {
   impressions: 1,       // 1-3
 
   // Atmosphere
-  background: 'none',   // 'none' | 'dawn' | 'day' | 'dusk' | 'night' | 'overcast' | 'golden' | 'pink'
-  foreground: 'none',   // 'none' | 'earth' | 'grass' | 'snow' | 'sand' | 'water'
+  background: 'none',   // 'none' | 'dawn' | 'day' | 'dusk' | 'night' | 'overcast' | 'warm' | 'sakura' | 'haze'
+  foreground: 'none',   // 'none' | 'earth' | 'grass' | 'snow' | 'sand' | 'water' | 'stone'
   horizon: 0.62,        // 0-1, fraction from top (0.62 = 62% down)
   mist: 0,              // 0-3 mist bands
+  smoothHorizon: false, // true = clean gradient edge (interior/still-life), false = organic wobble (landscape)
 
   // Composition guides
   guides: localStorage.getItem('mokuri-guides') === 'true',
@@ -3423,7 +3424,7 @@ const MAT_COLOR = '#d8d3cb';
 //  ATMOSPHERE — Background & Foreground types
 // ============================================================
 const BACKGROUND_TYPES = {
-  none:     { name: 'None', stops: null },
+  none:     { name: '紙 Paper', stops: null },
   dawn:     { name: '暁 Dawn',     stops: [
     { offset: 0, color: '#2a3a5c', opacity: 0.85 },
     { offset: 0.35, color: '#6a5a7a', opacity: 0.7 },
@@ -3445,7 +3446,7 @@ const BACKGROUND_TYPES = {
     { offset: 0.85, color: '#d4943a', opacity: 0.45 },
     { offset: 1, color: '#e0c070', opacity: 0.3 },
   ]},
-  golden:   { name: '金 Golden',   stops: [
+  warm:     { name: '暖 Warm',     stops: [
     { offset: 0, color: '#8a6a20', opacity: 0.55 },
     { offset: 0.35, color: '#b8922e', opacity: 0.45 },
     { offset: 0.65, color: '#d4b050', opacity: 0.35 },
@@ -3463,11 +3464,17 @@ const BACKGROUND_TYPES = {
     { offset: 0.7, color: '#a0a098', opacity: 0.22 },
     { offset: 1, color: '#b8b4a8', opacity: 0.15 },
   ]},
-  pink:     { name: '桃 Pink',     stops: [
+  sakura:   { name: '桜 Sakura',   stops: [
     { offset: 0, color: '#8a4a6a', opacity: 0.5 },
     { offset: 0.35, color: '#b86a80', opacity: 0.4 },
     { offset: 0.65, color: '#d4949a', opacity: 0.3 },
     { offset: 1, color: '#e8d0cc', opacity: 0.15 },
+  ]},
+  haze:     { name: '霞 Haze',     stops: [
+    { offset: 0, color: '#b8a878', opacity: 0.20 },
+    { offset: 0.4, color: '#c8b890', opacity: 0.15 },
+    { offset: 0.7, color: '#d8c8a0', opacity: 0.10 },
+    { offset: 1, color: '#e8d8b0', opacity: 0.05 },
   ]},
 };
 
@@ -3498,6 +3505,11 @@ const FOREGROUND_TYPES = {
     { offset: 0.3, color: '#3a6a8a', opacity: 0.45 },
     { offset: 0.7, color: '#4a7a98', opacity: 0.35 },
     { offset: 1, color: '#5a8aa4', opacity: 0.25 },
+  ]},
+  stone: { name: '石 Stone', stops: [
+    { offset: 0, color: '#6a6a72', opacity: 0.40 },
+    { offset: 0.4, color: '#7a7a80', opacity: 0.35 },
+    { offset: 1, color: '#8a8a90', opacity: 0.25 },
   ]},
 };
 
@@ -4040,13 +4052,17 @@ function renderAtmosphere() {
       defsSvg += `<stop offset="${s.offset}" stop-color="${s.color}" stop-opacity="${s.opacity}"/>`;
     });
     defsSvg += `</linearGradient>`;
-    // Organic bottom edge — a gentle undulating path instead of hard line
+    // Horizon edge — organic wobble for landscapes, clean line for interiors
     const segments = 12;
     let skyPath = `M0,0 L${W},0 L${W},${horizonY}`;
-    for (let i = segments; i >= 0; i--) {
-      const x = (i / segments) * W;
-      const wobble = Math.sin(i * 1.3 + 2.7) * H * 0.015 + Math.sin(i * 2.9) * H * 0.008;
-      skyPath += ` L${x.toFixed(1)},${(horizonY + wobble).toFixed(1)}`;
+    if (STATE.smoothHorizon) {
+      skyPath += ` L0,${horizonY}`;
+    } else {
+      for (let i = segments; i >= 0; i--) {
+        const x = (i / segments) * W;
+        const wobble = Math.sin(i * 1.3 + 2.7) * H * 0.015 + Math.sin(i * 2.9) * H * 0.008;
+        skyPath += ` L${x.toFixed(1)},${(horizonY + wobble).toFixed(1)}`;
+      }
     }
     skyPath += ' Z';
     bodySvg += `<path d="${skyPath}" fill="url(#${gid})"/>`;
@@ -4060,13 +4076,17 @@ function renderAtmosphere() {
       defsSvg += `<stop offset="${s.offset}" stop-color="${s.color}" stop-opacity="${s.opacity}"/>`;
     });
     defsSvg += `</linearGradient>`;
-    // Organic top edge
+    // Horizon edge — organic wobble for landscapes, clean line for interiors
     const segments = 12;
     let groundPath = `M0,${H} L${W},${H} L${W},${horizonY}`;
-    for (let i = segments; i >= 0; i--) {
-      const x = (i / segments) * W;
-      const wobble = Math.sin(i * 1.3 + 2.7) * H * 0.015 + Math.sin(i * 2.9) * H * 0.008;
-      groundPath += ` L${x.toFixed(1)},${(horizonY + wobble).toFixed(1)}`;
+    if (STATE.smoothHorizon) {
+      groundPath += ` L0,${horizonY}`;
+    } else {
+      for (let i = segments; i >= 0; i--) {
+        const x = (i / segments) * W;
+        const wobble = Math.sin(i * 1.3 + 2.7) * H * 0.015 + Math.sin(i * 2.9) * H * 0.008;
+        groundPath += ` L${x.toFixed(1)},${(horizonY + wobble).toFixed(1)}`;
+      }
     }
     groundPath += ' Z';
     bodySvg += `<path d="${groundPath}" fill="url(#${gid})"/>`;
@@ -5657,7 +5677,7 @@ function generateCompositionId() {
 function generateCompositionName(data) {
   const parts = [];
   const bg = data.background || data.sky;
-  const skyNames = { dawn: 'Dawn', day: 'Daylight', dusk: 'Dusk', night: 'Night', overcast: 'Overcast', golden: 'Golden', pink: 'Pink' };
+  const skyNames = { dawn: 'Dawn', day: 'Daylight', dusk: 'Dusk', night: 'Night', overcast: 'Overcast', warm: 'Warm', sakura: 'Sakura', haze: 'Haze' };
   if (bg && bg !== 'none' && skyNames[bg]) parts.push(skyNames[bg]);
 
   if (data.elements && data.elements.length) {
@@ -5674,7 +5694,7 @@ function generateCompositionName(data) {
 
   const fg = data.foreground || data.ground;
   if (!parts.length && fg && fg !== 'none') {
-    const groundNames = { earth: 'Earth', grass: 'Meadow', snow: 'Snow', sand: 'Sand', water: 'Water' };
+    const groundNames = { earth: 'Earth', grass: 'Meadow', snow: 'Snow', sand: 'Sand', water: 'Water', stone: 'Stone' };
     if (groundNames[fg]) parts.push(groundNames[fg]);
   }
 
@@ -5693,13 +5713,13 @@ function generateThumbnailSvg(data) {
   // Atmosphere
   const bgType = data.background || data.sky;
   if (bgType && bgType !== 'none') {
-    const cols = { dawn: '#e8a87c', day: '#87ceeb', dusk: '#c47a90', night: '#1a1a3a', overcast: '#8a8a98', golden: '#c9a84c', pink: '#e8a0b8' };
+    const cols = { dawn: '#e8a87c', day: '#87ceeb', dusk: '#c47a90', night: '#1a1a3a', overcast: '#8a8a98', warm: '#c9a84c', sakura: '#e8a0b8', haze: '#c8b890' };
     const hy = Math.round((data.horizon || 0.62) * vh);
     s += `<rect width="${vw}" height="${hy}" fill="${cols[bgType] || '#87ceeb'}" opacity="0.3"/>`;
   }
   const fgType = data.foreground || data.ground;
   if (fgType && fgType !== 'none') {
-    const cols = { earth: '#8b6b4a', grass: '#4a6a3a', snow: '#d8dce8', sand: '#c4a868', water: '#2a5a7a' };
+    const cols = { earth: '#8b6b4a', grass: '#4a6a3a', snow: '#d8dce8', sand: '#c4a868', water: '#2a5a7a', stone: '#7a7a80' };
     const hy = Math.round((data.horizon || 0.62) * vh);
     s += `<rect y="${hy}" width="${vw}" height="${vh - hy}" fill="${cols[fgType] || '#8b6b4a'}" opacity="0.3"/>`;
   }
@@ -5779,6 +5799,7 @@ function getCompositionData() {
     foreground: STATE.foreground,
     horizon: STATE.horizon,
     mist: STATE.mist,
+    smoothHorizon: STATE.smoothHorizon,
     backgroundCarveStrokes: STATE.backgroundCarveStrokes,
     presentationMargin: STATE.presentationMargin,
     presentationTitle: STATE.presentationTitle,
@@ -5811,9 +5832,12 @@ function applyCompositionData(data) {
   STATE.inkLoad = data.inkLoad || 'standard';
   STATE.impressions = data.impressions || 1;
   STATE.background = data.sky || data.background || 'none';
+  if (STATE.background === 'golden') STATE.background = 'warm';
+  if (STATE.background === 'pink') STATE.background = 'sakura';
   STATE.foreground = data.ground || data.foreground || 'none';
   STATE.horizon = data.horizon ?? 0.62;
   STATE.mist = data.mist || 0;
+  STATE.smoothHorizon = data.smoothHorizon || false;
   STATE.backgroundCarveStrokes = data.backgroundCarveStrokes || [];
   STATE.presentationMargin = data.presentationMargin || 'standard';
   STATE.presentationTitle = data.presentationTitle || '';
@@ -9401,6 +9425,7 @@ async function pullPrint() {
         ground: FOREGROUND_TYPES[STATE.foreground]?.stops ? FOREGROUND_TYPES[STATE.foreground] : null,
         horizon: STATE.horizon,
         mist: STATE.mist,
+        smoothHorizon: STATE.smoothHorizon,
         paperBase: PAPER_TYPES[STATE.paperType].base,
       },
       backgroundCarveStrokes: STATE.backgroundCarveStrokes,
