@@ -46,6 +46,16 @@ function getPackJourneys(packId) {
   return MOKURI_PACKS.flatMap(p => p.journeys || []);
 }
 
+function getPackAtmospherePresets(packId) {
+  const pack = packId ? getPackById(packId) : null;
+  if (pack) return pack.atmospherePresets || [];
+  return MOKURI_PACKS.flatMap(p => p.atmospherePresets || []);
+}
+
+function getAllAtmospherePresets() {
+  return MOKURI_PACKS.flatMap(p => p.atmospherePresets || []);
+}
+
 /**
  * Get elements with affinity to a pack, sorted by match strength.
  * Returns pack's own elements first, then core elements whose tags
@@ -142,6 +152,15 @@ registerPack({
   ],
 
   presetIds: null, // all MOKURI_GALLERY_PRESETS belong to core
+
+  atmospherePresets: [
+    { id: 'mountain-dawn', name: 'Mountain Dawn', nameJa: '山暁', background: 'dawn', foreground: 'earth', horizon: 0.55, mist: 1, smoothHorizon: false },
+    { id: 'clear-day', name: 'Clear Day', nameJa: '晴昼', background: 'day', foreground: 'grass', horizon: 0.65, mist: 0, smoothHorizon: false },
+    { id: 'coastal', name: 'Coastal', nameJa: '海辺', background: 'day', foreground: 'water', horizon: 0.38, mist: 0, smoothHorizon: false },
+    { id: 'golden-hour', name: 'Golden Hour', nameJa: '夕映', background: 'dusk', foreground: 'earth', horizon: 0.62, mist: 0, smoothHorizon: false },
+    { id: 'snowscape', name: 'Snowscape', nameJa: '雪景', background: 'overcast', foreground: 'snow', horizon: 0.55, mist: 2, smoothHorizon: false },
+    { id: 'open-paper', name: 'Open Paper', nameJa: '白紙', background: 'none', foreground: 'none', horizon: 0.62, mist: 0, smoothHorizon: false },
+  ],
 
   journeys: [
     {

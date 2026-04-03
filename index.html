@@ -1984,6 +1984,23 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
   width: 100%; accent-color: var(--accent);
   margin-top: 4px;
 }
+/* Atmosphere preset chips */
+.is-atmo-presets { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 2px; }
+.is-atmo-preset-chip {
+  padding: 4px 8px; font-size: 10px;
+  border-radius: 6px; border: 1px solid var(--panel-border);
+  background: transparent; color: var(--text-muted);
+  cursor: pointer; transition: all 0.15s; line-height: 1.3;
+}
+.is-atmo-preset-chip .preset-ja { font-weight: 600; }
+.is-atmo-preset-chip:hover { border-color: var(--accent); color: var(--text); }
+.is-atmo-preset-chip.active { border-color: var(--accent); background: var(--accent); color: #fff; }
+.is-atmo-preset-sep { width: 1px; align-self: stretch; background: var(--panel-border); margin: 2px; }
+.is-atmo-adjust-toggle {
+  background: none; border: none; color: var(--text-muted);
+  font-size: 10px; cursor: pointer; padding: 4px 0; margin-top: 6px; display: block;
+}
+.is-atmo-adjust-toggle:hover { color: var(--text); }
 
 /* Print animation layers */
 .print-anim-layer {
@@ -3095,7 +3112,7 @@ if (typeof MOKURI_KACHOE_PRESETS !== 'undefined' && typeof MOKURI_GALLERY_PRESET
 //  VERSION
 // ============================================================
 // Display version — KEEP IN SYNC with CACHE_NAME in sw.js (mokuri-v77 → 0.77)
-const MOKURI_VERSION = '0.79';
+const MOKURI_VERSION = '0.80';
 
 // ============================================================
 //  FEEDBACK
@@ -8746,10 +8763,24 @@ function buildInkStudioUI() {
     chipContainer.style.display = expanded ? '' : 'none';
     chipContainer.innerHTML = '';
     if (expanded) {
-      Object.entries(PALETTES).forEach(([pid, pal]) => {
-        // Filter palettes: active style + core
+      const entries = Object.entries(PALETTES);
+      const activeStyle = STATE.activeStyle || 'core';
+      const showGrouped = activeStyle !== 'core';
+      // Pack palettes first, then core
+      const packEntries = showGrouped ? entries.filter(([, p]) => (p.pack || 'core') === activeStyle) : [];
+      const coreEntries = entries.filter(([, p]) => (p.pack || 'core') === 'core');
+      const otherEntries = showGrouped ? entries.filter(([, p]) => { const pk = p.pack || 'core'; return pk !== 'core' && pk !== activeStyle; }) : [];
+      const ordered = [...packEntries, ...coreEntries, ...otherEntries];
+
+      ordered.forEach(([pid, pal], i) => {
         const palPack = pal.pack || 'core';
-        if (palPack !== 'core' && palPack !== STATE.activeStyle) return;
+        if (palPack !== 'core' && palPack !== activeStyle) return;
+        // Divider between pack palettes and core
+        if (showGrouped && i === packEntries.length && packEntries.length > 0) {
+          const sep = document.createElement('div');
+          sep.style.cssText = 'width:100%; height:1px; background:var(--panel-border); margin:4px 0;';
+          chipContainer.appendChild(sep);
+        }
         const chip = document.createElement('div');
         chip.className = 'is-palette-chip' + (pid === STATE.paletteId ? ' active' : '');
         chip.title = pal.name;
@@ -8964,11 +8995,75 @@ function buildInkStudioUI() {
   if (atmoContent) {
     atmoContent.innerHTML = '';
 
+    // Gather atmosphere presets: active pack first, then core (if different)
+    const activePackId = STATE.activeStyle || 'core';
+    const activePack = typeof getPackById === 'function' ? getPackById(activePackId) : null;
+    const activePresets = activePack ? (activePack.atmospherePresets || []) : [];
+    const corePresets = activePackId !== 'core' ? ((typeof getPackById === 'function' ? getPackById('core') : null)?.atmospherePresets || []) : [];
+    const allPresets = [...activePresets, ...corePresets];
+
+    function matchesAtmoPreset(p) {
+      return STATE.background === p.background
+        && STATE.foreground === p.foreground
+        && Math.abs(STATE.horizon - p.horizon) < 0.02
+        && STATE.mist === p.mist
+        && (STATE.smoothHorizon || false) === (p.smoothHorizon || false);
+    }
+
+    // Preset chips
+    if (allPresets.length > 0) {
+      const presetRow = document.createElement('div');
+      presetRow.className = 'is-atmo-presets';
+      allPresets.forEach((p, i) => {
+        const chip = document.createElement('button');
+        chip.className = 'is-atmo-preset-chip' + (matchesAtmoPreset(p) ? ' active' : '');
+        chip.innerHTML = '<span class="preset-ja">' + p.nameJa + '</span> ' + p.name;
+        chip.title = p.name;
+        chip.addEventListener('click', () => {
+          STATE.background = p.background;
+          STATE.foreground = p.foreground;
+          STATE.horizon = p.horizon;
+          STATE.mist = p.mist;
+          STATE.smoothHorizon = p.smoothHorizon || false;
+          rerenderAll();
+          buildInkStudioUI();
+          autoSave();
+          MokuriAudio.setAmbienceForAtmosphere(STATE.background, STATE.foreground);
+        });
+        presetRow.appendChild(chip);
+        // Separator between pack presets and core presets
+        if (i === activePresets.length - 1 && corePresets.length > 0) {
+          const sep = document.createElement('div');
+          sep.className = 'is-atmo-preset-sep';
+          presetRow.appendChild(sep);
+        }
+      });
+      atmoContent.appendChild(presetRow);
+    }
+
+    // Collapsible raw controls
+    const hasPresets = allPresets.length > 0;
+    let rawExpanded = !hasPresets;
+    const adjustToggle = document.createElement('button');
+    adjustToggle.className = 'is-atmo-adjust-toggle';
+    adjustToggle.textContent = rawExpanded ? 'Adjust ▾' : 'Adjust ▸';
+    if (hasPresets) atmoContent.appendChild(adjustToggle);
+
+    const rawSection = document.createElement('div');
+    rawSection.style.display = rawExpanded ? '' : 'none';
+    if (hasPresets) {
+      adjustToggle.addEventListener('click', () => {
+        rawExpanded = !rawExpanded;
+        rawSection.style.display = rawExpanded ? '' : 'none';
+        adjustToggle.textContent = rawExpanded ? 'Adjust ▾' : 'Adjust ▸';
+      });
+    }
+
     // Sky
     const skyLabel = document.createElement('label');
     skyLabel.className = 'is-atmo-label';
     skyLabel.textContent = 'Background';
-    atmoContent.appendChild(skyLabel);
+    rawSection.appendChild(skyLabel);
     const skyRow = document.createElement('div');
     skyRow.className = 'is-atmo-chips';
     skyRow.id = 'is-atmo-bg-chips';
@@ -8987,13 +9082,13 @@ function buildInkStudioUI() {
       });
       skyRow.appendChild(chip);
     });
-    atmoContent.appendChild(skyRow);
+    rawSection.appendChild(skyRow);
 
     // Ground
     const groundLabel = document.createElement('label');
     groundLabel.className = 'is-atmo-label';
     groundLabel.textContent = 'Foreground';
-    atmoContent.appendChild(groundLabel);
+    rawSection.appendChild(groundLabel);
     const groundRow = document.createElement('div');
     groundRow.className = 'is-atmo-chips';
     Object.entries(FOREGROUND_TYPES).forEach(([id, g]) => {
@@ -9011,13 +9106,13 @@ function buildInkStudioUI() {
       });
       groundRow.appendChild(chip);
     });
-    atmoContent.appendChild(groundRow);
+    rawSection.appendChild(groundRow);
 
     // Horizon slider
     const horizLabel = document.createElement('label');
     horizLabel.className = 'is-atmo-label';
     horizLabel.innerHTML = `Horizon <span style="color:var(--text)">${Math.round(STATE.horizon * 100)}%</span>`;
-    atmoContent.appendChild(horizLabel);
+    rawSection.appendChild(horizLabel);
     const horizSlider = document.createElement('input');
     horizSlider.type = 'range';
     horizSlider.className = 'is-atmo-slider';
@@ -9030,13 +9125,13 @@ function buildInkStudioUI() {
       rerenderAll();
     });
     horizSlider.addEventListener('change', () => autoSave());
-    atmoContent.appendChild(horizSlider);
+    rawSection.appendChild(horizSlider);
 
     // Mist
     const mistLabel = document.createElement('label');
     mistLabel.className = 'is-atmo-label';
     mistLabel.textContent = 'Mist Bands';
-    atmoContent.appendChild(mistLabel);
+    rawSection.appendChild(mistLabel);
     const mistRow = document.createElement('div');
     mistRow.className = 'is-atmo-chips';
     [0, 1, 2, 3].forEach(n => {
@@ -9051,7 +9146,9 @@ function buildInkStudioUI() {
       });
       mistRow.appendChild(chip);
     });
-    atmoContent.appendChild(mistRow);
+    rawSection.appendChild(mistRow);
+
+    atmoContent.appendChild(rawSection);
   }
 }
 

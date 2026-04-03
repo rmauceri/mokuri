@@ -40,6 +40,12 @@ registerPack({
   ],
   paletteIds: ['seiji', 'shino', 'raku'],
   presetIds: null,
+  atmospherePresets: [
+    { id: 'mb-clean-paper', name: 'Clean Paper', nameJa: '白紙', background: 'none', foreground: 'none', horizon: 0.62, mist: 0, smoothHorizon: true },
+    { id: 'mb-warm-studio', name: 'Warm Studio', nameJa: '暖室', background: 'warm', foreground: 'sand', horizon: 0.50, mist: 0, smoothHorizon: true },
+    { id: 'mb-cool-studio', name: 'Cool Studio', nameJa: '冷室', background: 'overcast', foreground: 'stone', horizon: 0.50, mist: 0, smoothHorizon: true },
+    { id: 'mb-display-niche', name: 'Display Niche', nameJa: '床間', background: 'night', foreground: 'water', horizon: 0.50, mist: 0, smoothHorizon: true },
+  ],
   journeys: [
     {
       id: 'hajimete-ikebana',

@@ -33,6 +33,12 @@ registerPack({
   elementIds: ['heron-standing', 'bush-warbler', 'swallow-flight', 'kingfisher', 'egret', 'peony', 'lotus-pod', 'lotus-cluster', 'lily-pad', 'morning-glory', 'wisteria'],
   paletteIds: ['haru', 'natsu'],
   presetIds: null,
+  atmospherePresets: [
+    { id: 'ke-spring-air', name: 'Spring Air', nameJa: '春風', background: 'sakura', foreground: 'none', horizon: 0.80, mist: 0, smoothHorizon: false },
+    { id: 'ke-pond-edge', name: 'Pond Edge', nameJa: '池畔', background: 'day', foreground: 'water', horizon: 0.35, mist: 0, smoothHorizon: false },
+    { id: 'ke-morning-haze', name: 'Morning Haze', nameJa: '朝霞', background: 'haze', foreground: 'grass', horizon: 0.70, mist: 1, smoothHorizon: false },
+    { id: 'ke-empty-space', name: 'Empty Space', nameJa: '間', background: 'none', foreground: 'none', horizon: 0.62, mist: 0, smoothHorizon: false },
+  ],
   journeys: [
     {
       id: 'first-kacho',
