@@ -4255,8 +4255,7 @@ function renderElementSvg(el, layerIndex) {
   const recessTone = WOOD_RECESS_TONES[layerIndex % WOOD_RECESS_TONES.length];
   const zoneColor = (zoneId) => {
     if (!inkMode) {
-      if (def.hanko && zoneId === 'char') return PAPER_COLOR;
-      return def.hanko ? HANKO_VERMILLION : recessTone;
+      return recessTone;
     }
     if (def.hanko) {
       if (zoneId === 'char') return PAPER_COLOR;
