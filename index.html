@@ -9041,21 +9041,21 @@ function buildInkStudioUI() {
       atmoContent.appendChild(presetRow);
     }
 
-    // Collapsible raw controls
+    // Collapsible raw controls (background/foreground only)
     const hasPresets = allPresets.length > 0;
-    let rawExpanded = !hasPresets;
+    if (STATE._atmoRawExpanded === undefined) STATE._atmoRawExpanded = !hasPresets;
     const adjustToggle = document.createElement('button');
     adjustToggle.className = 'is-atmo-adjust-toggle';
-    adjustToggle.textContent = rawExpanded ? 'Adjust ▾' : 'Adjust ▸';
+    adjustToggle.textContent = STATE._atmoRawExpanded ? 'Adjust ▾' : 'Adjust ▸';
     if (hasPresets) atmoContent.appendChild(adjustToggle);
 
     const rawSection = document.createElement('div');
-    rawSection.style.display = rawExpanded ? '' : 'none';
+    rawSection.style.display = STATE._atmoRawExpanded ? '' : 'none';
     if (hasPresets) {
       adjustToggle.addEventListener('click', () => {
-        rawExpanded = !rawExpanded;
-        rawSection.style.display = rawExpanded ? '' : 'none';
-        adjustToggle.textContent = rawExpanded ? 'Adjust ▾' : 'Adjust ▸';
+        STATE._atmoRawExpanded = !STATE._atmoRawExpanded;
+        rawSection.style.display = STATE._atmoRawExpanded ? '' : 'none';
+        adjustToggle.textContent = STATE._atmoRawExpanded ? 'Adjust ▾' : 'Adjust ▸';
       });
     }
 
@@ -9108,11 +9108,13 @@ function buildInkStudioUI() {
     });
     rawSection.appendChild(groundRow);
 
-    // Horizon slider
+    atmoContent.appendChild(rawSection);
+
+    // Horizon slider (always visible)
     const horizLabel = document.createElement('label');
     horizLabel.className = 'is-atmo-label';
     horizLabel.innerHTML = `Horizon <span style="color:var(--text)">${Math.round(STATE.horizon * 100)}%</span>`;
-    rawSection.appendChild(horizLabel);
+    atmoContent.appendChild(horizLabel);
     const horizSlider = document.createElement('input');
     horizSlider.type = 'range';
     horizSlider.className = 'is-atmo-slider';
@@ -9125,13 +9127,13 @@ function buildInkStudioUI() {
       rerenderAll();
     });
     horizSlider.addEventListener('change', () => autoSave());
-    rawSection.appendChild(horizSlider);
+    atmoContent.appendChild(horizSlider);
 
-    // Mist
+    // Mist (always visible)
     const mistLabel = document.createElement('label');
     mistLabel.className = 'is-atmo-label';
     mistLabel.textContent = 'Mist Bands';
-    rawSection.appendChild(mistLabel);
+    atmoContent.appendChild(mistLabel);
     const mistRow = document.createElement('div');
     mistRow.className = 'is-atmo-chips';
     [0, 1, 2, 3].forEach(n => {
@@ -9146,9 +9148,7 @@ function buildInkStudioUI() {
       });
       mistRow.appendChild(chip);
     });
-    rawSection.appendChild(mistRow);
-
-    atmoContent.appendChild(rawSection);
+    atmoContent.appendChild(mistRow);
   }
 }
 
