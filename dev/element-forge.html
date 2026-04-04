@@ -1907,28 +1907,50 @@ function traceWithImageTracer() {
         }
       });
 
-      // Compute total element area for thresholding
-      var totalArea = dstW * dstH;
-      var shapeThreshold = totalArea * 0.02;  // 2% of viewBox = "significant"
-      var detailThreshold = totalArea * 0.001; // 0.1% = minimum for detail
+      // Identify the dominant zone (largest total pixel area — typically body/background fill)
+      var dominantZone = null, dominantArea = 0;
+      clusters.forEach(function(cl) {
+        var total = 0;
+        zonePaths[cl.zoneId].forEach(function(p) { total += p.area; });
+        if (total > dominantArea) { dominantArea = total; dominantZone = cl.zoneId; }
+      });
 
-      // Shape (level 1): large fills per zone (skip darkest zone — it's outline)
+      // Thresholds for path classification
+      var totalArea = dstW * dstH;
+      var shapeThreshold = totalArea * 0.005; // 0.5% — catches fins and smaller features
+      var detailThreshold = totalArea * 0.001; // 0.1% — minimum for detail
+
+      // Shape (level 1): non-dominant zone fills (spots, fins, markings)
+      // The dominant zone (body) is already covered by the block silhouette,
+      // so Shape adds the features that sit on top of or cut into the body.
       clusters.forEach(function(cl) {
         var paths = zonePaths[cl.zoneId];
-        var largePaths = paths.filter(function(p) { return p.area >= shapeThreshold; });
-        if (largePaths.length > 0) {
-          var ds = largePaths.map(function(p) { return p.d; });
-          STATE.paths[1].push({ d: ds.join(' '), type: 'fill', zone: cl.zoneId });
+        if (cl.zoneId === dominantZone) {
+          // Dominant zone: skip at shape level — block silhouette covers it
+          return;
+        }
+        // Include paths that are significant features (fins, spots, markings)
+        var shapePaths = paths.filter(function(p) { return p.area >= shapeThreshold; });
+        if (shapePaths.length > 0) {
+          STATE.paths[1].push({
+            d: shapePaths.map(function(p) { return p.d; }).join(' '),
+            type: 'fill', zone: cl.zoneId
+          });
         }
       });
 
-      // Detail (level 2): all fills (large + small) per zone, plus strokes from darkest
+      // Detail (level 2): everything from Shape + small features + darkest strokes
       clusters.forEach(function(cl) {
         var paths = zonePaths[cl.zoneId];
         var usablePaths = paths.filter(function(p) { return p.area >= detailThreshold; });
 
+        if (cl.zoneId === dominantZone) {
+          // Dominant zone at detail: skip (block covers it)
+          return;
+        }
+
         if (cl.zoneId === darkestZone) {
-          // Split darkest zone: large fills stay as fills, small become strokes
+          // Darkest zone: large fills stay as fills, small become strokes
           var largePaths = usablePaths.filter(function(p) { return p.area >= shapeThreshold; });
           var smallPaths = usablePaths.filter(function(p) { return p.area < shapeThreshold; });
           if (largePaths.length > 0) {
@@ -1944,6 +1966,7 @@ function traceWithImageTracer() {
             });
           }
         } else {
+          // Non-dominant, non-darkest: all usable paths as fills
           if (usablePaths.length > 0) {
             STATE.paths[2].push({
               d: usablePaths.map(function(p) { return p.d; }).join(' '),
