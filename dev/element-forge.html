@@ -1919,8 +1919,9 @@ function traceWithImageTracer() {
       var totalArea = dstW * dstH;
       var shapeThreshold = totalArea * 0.005; // 0.5% — catches fins and smaller features
       var detailThreshold = totalArea * 0.001; // 0.1% — minimum for detail
-      // Minimum dimension threshold — paths thinner than this are slivers/outline fragments
-      var thinThreshold = Math.max(dstW, dstH) * 0.02; // 2% of element size
+      // Minimum dimension thresholds for thin-sliver filtering
+      var thinThreshold = Math.max(dstW, dstH) * 0.02; // 2% — universal (all zones)
+      var outlineThreshold = Math.max(dstW, dstH) * 0.05; // 5% — aggressive (darkest zone only)
 
       // Shape (level 1): non-dominant zone fills (spots, fins, markings)
       // Filter out thin slivers from all zones — only solid filled regions.
@@ -1956,9 +1957,14 @@ function traceWithImageTracer() {
         });
 
         if (cl.zoneId === darkestZone) {
+          // Aggressive thin filter for darkest zone (outline residue)
+          var darkUsable = usablePaths.filter(function(p) {
+            var minDim = Math.min(p.w, p.h);
+            return minDim >= outlineThreshold;
+          });
           // Compact darkest paths → fills, everything else → strokes
-          var fillPaths = usablePaths.filter(function(p) { return p.aspect <= 2.5 && p.area >= shapeThreshold; });
-          var strokePaths = usablePaths.filter(function(p) { return p.aspect > 2.5 || p.area < shapeThreshold; });
+          var fillPaths = darkUsable.filter(function(p) { return p.aspect <= 2.5 && p.area >= shapeThreshold; });
+          var strokePaths = darkUsable.filter(function(p) { return p.aspect > 2.5 || p.area < shapeThreshold; });
           if (fillPaths.length > 0) {
             STATE.paths[2].push({
               d: fillPaths.map(function(p) { return p.d; }).join(' '),
@@ -1983,7 +1989,7 @@ function traceWithImageTracer() {
 
       // Diagnostic: log darkest zone path metrics to console
       console.group('ImageTracer: darkest zone "' + darkestZone + '" path metrics');
-      console.log('thinThreshold:', thinThreshold.toFixed(1), 'shapeThreshold:', shapeThreshold.toFixed(0));
+      console.log('thinThreshold:', thinThreshold.toFixed(1), 'outlineThreshold:', outlineThreshold.toFixed(1), 'shapeThreshold:', shapeThreshold.toFixed(0));
       (zonePaths[darkestZone] || []).forEach(function(p, i) {
         var minDim = Math.min(p.w, p.h);
         console.log('#' + i, 'area:', p.area.toFixed(0), 'aspect:', p.aspect.toFixed(1),
