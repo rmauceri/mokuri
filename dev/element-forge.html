@@ -749,6 +749,11 @@ button.sm { padding: 3px 8px; font-size: 11px; }
                 </div>
               </div>
 
+              <div class="slider-row" style="margin-bottom:6px;">
+                <span class="thresh-label">Engine</span>
+                <button class="sm" id="btn-trace-engine" style="font-size:10px; min-width:90px;">Potrace</button>
+              </div>
+
               <div class="slider-row" style="margin-bottom:4px;">
                 <span class="thresh-label" title="Path simplification (higher = simpler)">Epsilon</span>
                 <input type="range" id="trace-epsilon" min="0" max="5" step="0.1" value="0.8">
@@ -955,6 +960,9 @@ button.sm { padding: 3px 8px; font-size: 11px; }
 <!-- Potrace library (vendored) for auto-trace -->
 <script src="potrace-lib.js"></script>
 
+<!-- ImageTracer.js for alternative vectorization -->
+<script src="https://cdn.jsdelivr.net/npm/imagetracerjs@1.2.6/imagetracer_v1.2.6.js"></script>
+
 <!-- Element pack scripts for import feature -->
 <script src="../assets/elements.js"></script>
 <script src="../assets/extended-elements.js"></script>
@@ -1056,6 +1064,7 @@ const STATE = {
   alphaData: null,          // raw RGBA ImageData (for alpha-based silhouette)
   bgLab: null,              // OKLab centroid of detected background color
   traceMode: 'color',      // 'color' (segmentation) or 'mono' (threshold)
+  traceEngine: 'potrace',  // 'potrace' or 'imagetracer'
 
   // Color segmentation
   quantizedMap: null,       // Uint8Array — cluster index per pixel
@@ -1764,11 +1773,234 @@ function traceAllLevels() {
   }
   if (STATE.tracing) return;
 
-  if (STATE.traceMode === 'color') {
+  if (STATE.traceEngine === 'imagetracer' && STATE.traceMode === 'color') {
+    traceWithImageTracer();
+  } else if (STATE.traceMode === 'color') {
     traceColorSegmentation();
   } else {
     traceMonoThresholds();
   }
+}
+
+// ── ImageTracer Color Pipeline ──
+function traceWithImageTracer() {
+  if (typeof ImageTracer === 'undefined') {
+    showToast('ImageTracer library not loaded');
+    return;
+  }
+  if (!STATE.clusters || !STATE.clusters.length) {
+    showToast('Run quantization first');
+    return;
+  }
+  STATE.tracing = true;
+  $('trace-status').textContent = 'ImageTracer: tracing...';
+
+  var clusters = STATE.clusters;
+  var srcW = STATE.traceImageData.width, srcH = STATE.traceImageData.height;
+  var dstW = STATE.viewBoxW, dstH = STATE.viewBoxH;
+
+  pushUndo('trace');
+  STATE.paths = [[], [], []];
+  STATE.traceRawPaths = [null, null, null];
+
+  // Auto-populate zones from clusters
+  STATE.zones = clusters.map(function(cl, i) {
+    return { id: cl.zoneId, defaultPaletteSlot: i };
+  });
+  STATE.activeZoneIndex = 0;
+  renderZoneChips();
+
+  // Build palette from forge clusters + transparent background
+  var pal = clusters.map(function(cl) {
+    return { r: cl.srgb[0], g: cl.srgb[1], b: cl.srgb[2], a: 255 };
+  });
+
+  // Detect background color for tracing
+  var bgColor = null;
+  if (STATE.bgLab) {
+    // Approximate: convert bgLab back — we know green bg = [0,255,0]
+    if (STATE.hasChromaKey && !STATE.alphaData) {
+      bgColor = { r: 0, g: 255, b: 0, a: 255 };
+    }
+  }
+  if (STATE.alphaData) {
+    // For alpha images, use white as the composited background
+    bgColor = { r: 255, g: 255, b: 255, a: 255 };
+  }
+  if (!bgColor && STATE.bgLab) {
+    // Detected dominant background — use white (composited)
+    bgColor = { r: 255, g: 255, b: 255, a: 255 };
+  }
+  // Add bg color to palette so ImageTracer doesn't merge bg pixels into zones
+  if (bgColor) pal.push(bgColor);
+
+  var options = {
+    // Palette: use forge's quantized colors
+    colorsampling: 0,  // disable auto-sampling, use our palette
+    numberofcolors: pal.length,
+    mincolorratio: 0,
+    pal: pal,
+
+    // Tracing quality
+    ltres: 0.5,
+    qtres: 0.5,
+    pathomit: 4,
+
+    // Output
+    viewbox: true,
+    linefilter: false,
+    desc: false,
+    lcpr: 0,
+    qcpr: 0
+  };
+
+  // Build a data URL from the scaled trace image data (matches Potrace coordinate space)
+  var traceCanvas = document.createElement('canvas');
+  traceCanvas.width = srcW;
+  traceCanvas.height = srcH;
+  var traceCtx = traceCanvas.getContext('2d');
+  traceCtx.putImageData(STATE.traceImageData, 0, 0);
+  var traceDataUrl = traceCanvas.toDataURL('image/png');
+
+  // ImageTracer traces from the scaled image — output coords match srcW×srcH
+  ImageTracer.imageToSVG(traceDataUrl, function(svgStr) {
+    // Parse the SVG string to extract per-color path groups
+    var parser = new DOMParser();
+    var svgDoc = parser.parseFromString(svgStr, 'image/svg+xml');
+    var allPaths = svgDoc.querySelectorAll('path');
+
+    // Map each path's fill color to the nearest cluster
+    var clusterPaths = {};
+    clusters.forEach(function(cl) { clusterPaths[cl.zoneId] = []; });
+    var bgPathCount = 0;
+
+    allPaths.forEach(function(pathEl) {
+      var d = pathEl.getAttribute('d');
+      if (!d || d.trim().length < 4) return;
+
+      var fill = pathEl.getAttribute('fill') || pathEl.getAttribute('style') || '';
+      var rgb = parseFillColor(fill);
+      if (!rgb) return;
+
+      // Check if this is a background path
+      if (bgColor && colorDist(rgb, [bgColor.r, bgColor.g, bgColor.b]) < 30) {
+        bgPathCount++;
+        return; // skip background
+      }
+
+      // Find nearest cluster
+      var minDist = Infinity, bestZone = clusters[0].zoneId;
+      for (var c = 0; c < clusters.length; c++) {
+        var dist = colorDist(rgb, clusters[c].srgb);
+        if (dist < minDist) { minDist = dist; bestZone = clusters[c].zoneId; }
+      }
+
+      // Scale path from image coords to viewBox coords
+      var scaled = scalePathDString(d, srcW, srcH, dstW, dstH);
+      if (scaled) clusterPaths[bestZone].push(scaled);
+    });
+
+    // Build Mokuri levels:
+    // Block (level 0): single combined silhouette from all zones
+    var allDs = [];
+    clusters.forEach(function(cl) {
+      clusterPaths[cl.zoneId].forEach(function(d) { allDs.push(d); });
+    });
+    if (allDs.length > 0) {
+      STATE.paths[0] = [{ d: allDs.join(' '), type: 'fill', zone: clusters[0].zoneId }];
+    }
+
+    // Shape (level 1): per-zone fills
+    clusters.forEach(function(cl) {
+      var ds = clusterPaths[cl.zoneId];
+      if (ds.length > 0) {
+        STATE.paths[1].push({ d: ds.join(' '), type: 'fill', zone: cl.zoneId });
+      }
+    });
+
+    // Detail (level 2): copy shape fills (same as level 1 for ImageTracer)
+    // The user can add stroke details manually in the editor
+    STATE.paths[2] = STATE.paths[1].map(function(p) {
+      return { d: p.d, type: p.type, zone: p.zone };
+    });
+
+    STATE.redoStack = [];
+    STATE.tracing = false;
+    renderCanvas();
+    updateBudget();
+    updatePreviews();
+
+    var totalPaths = STATE.paths[0].length + STATE.paths[1].length + STATE.paths[2].length;
+    $('trace-status').textContent = totalPaths + ' paths (ImageTracer, ' + clusters.length + ' zones, ' + bgPathCount + ' bg paths removed)';
+    showToast('ImageTracer trace complete');
+  }, options);
+}
+
+// Parse fill color from SVG path attributes
+function parseFillColor(fillStr) {
+  // Handle fill="rgb(r,g,b)" or fill="#rrggbb" or style="fill:..."
+  var m = fillStr.match(/rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/);
+  if (m) return [parseInt(m[1]), parseInt(m[2]), parseInt(m[3])];
+  m = fillStr.match(/#([0-9a-f]{6})/i);
+  if (m) {
+    var hex = m[1];
+    return [parseInt(hex.substr(0,2),16), parseInt(hex.substr(2,2),16), parseInt(hex.substr(4,2),16)];
+  }
+  m = fillStr.match(/#([0-9a-f]{3})\b/i);
+  if (m) {
+    var h = m[1];
+    return [parseInt(h[0]+h[0],16), parseInt(h[1]+h[1],16), parseInt(h[2]+h[2],16)];
+  }
+  return null;
+}
+
+// Euclidean RGB distance
+function colorDist(a, b) {
+  var dr = a[0]-b[0], dg = a[1]-b[1], db = a[2]-b[2];
+  return Math.sqrt(dr*dr + dg*dg + db*db);
+}
+
+// Scale SVG path d string coordinates from source to destination dimensions
+function scalePathDString(d, srcW, srcH, dstW, dstH) {
+  if (!d) return null;
+  var sx = dstW / srcW, sy = dstH / srcH;
+  // Replace all numbers in the d string, scaling x/y alternately
+  var tokens = d.match(/[a-zA-Z]|[-+]?[0-9]*\.?[0-9]+/g);
+  if (!tokens) return null;
+  var result = [];
+  var isX = true; // first number after a command is X
+  for (var i = 0; i < tokens.length; i++) {
+    var t = tokens[i];
+    if (/^[a-zA-Z]$/.test(t)) {
+      result.push(t);
+      // Reset: next number is X for most commands
+      if (t === 'V' || t === 'v') { isX = false; }
+      else if (t === 'H' || t === 'h') { isX = true; }
+      else { isX = true; }
+    } else {
+      var val = parseFloat(t);
+      var cmd = '';
+      // Find the governing command
+      for (var j = i - 1; j >= 0; j--) {
+        if (/^[a-zA-Z]$/.test(tokens[j])) { cmd = tokens[j]; break; }
+      }
+      var isRel = cmd === cmd.toLowerCase() && cmd !== '';
+      if (cmd === 'H' || cmd === 'h') {
+        result.push((isRel ? val * sx : val * sx).toFixed(1));
+      } else if (cmd === 'V' || cmd === 'v') {
+        result.push((isRel ? val * sy : val * sy).toFixed(1));
+      } else {
+        // Alternate x, y
+        if (isX) {
+          result.push((val * sx).toFixed(1));
+        } else {
+          result.push((val * sy).toFixed(1));
+        }
+        isX = !isX;
+      }
+    }
+  }
+  return result.join(' ');
 }
 
 // ── Color Segmentation Trace Pipeline ──
@@ -3292,6 +3524,16 @@ function attachEvents() {
   // Trace controls
   $('btn-trace').addEventListener('click', traceAllLevels);
   $('btn-auto-vb').addEventListener('click', autoViewBoxFromImage);
+
+  // Engine toggle
+  $('btn-trace-engine').addEventListener('click', function() {
+    STATE.traceEngine = STATE.traceEngine === 'potrace' ? 'imagetracer' : 'potrace';
+    $('btn-trace-engine').textContent = STATE.traceEngine === 'potrace' ? 'Potrace' : 'ImageTracer';
+    // Epsilon/turd only apply to potrace
+    var potraceOnly = STATE.traceEngine === 'potrace';
+    $('trace-epsilon').closest('.slider-row').style.display = potraceOnly ? '' : 'none';
+    $('trace-turd').closest('.slider-row').style.display = potraceOnly ? '' : 'none';
+  });
 
   // Mono fallback button
   $('btn-trace-mono').addEventListener('click', function() {
