@@ -172,6 +172,7 @@ Authentic print presentation features wrapping the existing print output — mar
 ### Atmosphere Expansion ✅
 
 - **Golden & Pink sky types**: Two new atmosphere options added to the existing 6 sky types, expanding creative range for warm/romantic scene lighting.
+- **Atmosphere system redesign** (v0.79–0.80): Renamed golden→warm, pink→sakura, none→Paper. Added Haze background and Stone foreground. smoothHorizon flag for clean gradient edges (interior/still-life contexts). 14 atmosphere presets across Core, Kacho-e, and Moribana packs. Preset chip UI in Inking Workbench with collapsible raw controls. Palette visual grouping by pack. Full design doc: `docs/mokuri_atmosphere_proposal.md`.
 
 ### Rendering & Interaction Polish ✅
 
@@ -275,13 +276,22 @@ Invisible 36×36px transparent hit rects behind all resize/rotate handles on `po
 
 Inspiration prompt section in Workshop panel hidden pending feature redesign. `refreshWorkshopPrompt()` short-circuits to `display:none`. HTML, CSS, and remaining JS preserved for future use.
 
+### Style Pack Design Documents ✅
+
+- **Kacho-e** (`docs/kachoe_style_pack.md`): Comprehensive design doc — 11 element specs, seasonal pairing guide, palette analysis, gallery preset proposals, quality gap assessment.
+- **Machi** (`docs/machi_style_pack.md`): Architecture pack design doc — 12 elements, 2 palettes, 4 gallery presets, 2 journeys, 10 prompts. Meisho-e tradition.
+
+### Hanko Rendering Fix ✅
+
+Fixed hanko elements rendering in vermillion color during Compose and Carve modes. All elements now correctly use wood recess tones in non-ink modes; hanko vermillion only applies in Ink mode.
+
 ---
 
 ## Future Work
 
 ### Active Style — Remaining Phases
 
-- **Atmosphere presets**: Named scene combinations per pack (e.g., "Mountain Dawn", "Clean Studio"). Preset chips in Inking Workbench above raw toggles.
+- **Atmosphere presets** ✅: 14 named presets across Core (6), Kacho-e (4), and Moribana (4). Preset chip row in Inking Workbench above collapsible raw controls. Pack presets shown first with separator. Includes smoothHorizon support for interior contexts, option renames (golden→warm, pink→sakura), new Haze background and Stone foreground. Palette visual grouping (pack palettes above divider).
 - **Journey activation**: First-switch journey prompt when user activates a style for the first time.
 - **Pack gallery presets**: Curated starting compositions per pack.
 - **Affinity tuning**: Refine tag weights through real use. Consider weighted affinities.
