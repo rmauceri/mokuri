@@ -1923,13 +1923,14 @@ function traceWithImageTracer() {
       var thinThreshold = Math.max(dstW, dstH) * 0.02; // 2% of element size
 
       // Shape (level 1): non-dominant zone fills (spots, fins, markings)
-      // Darkest zone: only compact filled shapes (aspect < 2.5) — excludes
-      // gill lines, outlines, and other linear features.
+      // Filter out thin slivers from all zones — only solid filled regions.
       clusters.forEach(function(cl) {
         var paths = zonePaths[cl.zoneId];
         if (cl.zoneId === dominantZone) return;
         var shapePaths = paths.filter(function(p) {
           if (p.area < shapeThreshold) return false;
+          var minDim = Math.min(p.w, p.h);
+          if (minDim < thinThreshold) return false;
           // Darkest zone at Shape level: only compact filled regions
           if (cl.zoneId === darkestZone && p.aspect > 2.5) return false;
           return true;
@@ -1943,25 +1944,21 @@ function traceWithImageTracer() {
       });
 
       // Detail (level 2): everything from Shape + small features + darkest strokes
-      // Filter out outline residue: darkest-zone paths whose minimum dimension
-      // is very small (thin slivers) — these are PNG outline fragments.
+      // Thin slivers filtered from all zones to reduce noise.
       clusters.forEach(function(cl) {
         var paths = zonePaths[cl.zoneId];
-        var usablePaths = paths.filter(function(p) { return p.area >= detailThreshold; });
-
-        if (cl.zoneId === dominantZone) {
-          return;
-        }
+        if (cl.zoneId === dominantZone) return;
+        // Universal thin-sliver filter
+        var usablePaths = paths.filter(function(p) {
+          if (p.area < detailThreshold) return false;
+          var minDim = Math.min(p.w, p.h);
+          return minDim >= thinThreshold;
+        });
 
         if (cl.zoneId === darkestZone) {
-          // Filter thin slivers (outline residue)
-          var cleanPaths = usablePaths.filter(function(p) {
-            var minDim = Math.min(p.w, p.h);
-            return minDim >= thinThreshold;
-          });
           // Compact darkest paths → fills, everything else → strokes
-          var fillPaths = cleanPaths.filter(function(p) { return p.aspect <= 2.5 && p.area >= shapeThreshold; });
-          var strokePaths = cleanPaths.filter(function(p) { return p.aspect > 2.5 || p.area < shapeThreshold; });
+          var fillPaths = usablePaths.filter(function(p) { return p.aspect <= 2.5 && p.area >= shapeThreshold; });
+          var strokePaths = usablePaths.filter(function(p) { return p.aspect > 2.5 || p.area < shapeThreshold; });
           if (fillPaths.length > 0) {
             STATE.paths[2].push({
               d: fillPaths.map(function(p) { return p.d; }).join(' '),
@@ -1975,7 +1972,6 @@ function traceWithImageTracer() {
             });
           }
         } else {
-          // Non-dominant, non-darkest: all usable paths as fills
           if (usablePaths.length > 0) {
             STATE.paths[2].push({
               d: usablePaths.map(function(p) { return p.d; }).join(' '),
