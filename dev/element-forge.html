@@ -1919,19 +1919,19 @@ function traceWithImageTracer() {
       var totalArea = dstW * dstH;
       var shapeThreshold = totalArea * 0.005; // 0.5% — catches fins and smaller features
       var detailThreshold = totalArea * 0.001; // 0.1% — minimum for detail
+      // Minimum dimension threshold — paths thinner than this are slivers/outline fragments
+      var thinThreshold = Math.max(dstW, dstH) * 0.02; // 2% of element size
 
       // Shape (level 1): non-dominant zone fills (spots, fins, markings)
-      // The dominant zone (body) is already covered by the block silhouette,
-      // so Shape adds the features that sit on top of or cut into the body.
-      // Highly elongated paths (aspect > 5) from the darkest zone are strokes,
-      // not shapes — they go to Detail instead.
+      // Darkest zone: only compact filled shapes (aspect < 2.5) — excludes
+      // gill lines, outlines, and other linear features.
       clusters.forEach(function(cl) {
         var paths = zonePaths[cl.zoneId];
         if (cl.zoneId === dominantZone) return;
         var shapePaths = paths.filter(function(p) {
           if (p.area < shapeThreshold) return false;
-          // Elongated darkest-zone paths are line features (gill, outline) → Detail
-          if (cl.zoneId === darkestZone && p.aspect > 5) return false;
+          // Darkest zone at Shape level: only compact filled regions
+          if (cl.zoneId === darkestZone && p.aspect > 2.5) return false;
           return true;
         });
         if (shapePaths.length > 0) {
@@ -1943,9 +1943,8 @@ function traceWithImageTracer() {
       });
 
       // Detail (level 2): everything from Shape + small features + darkest strokes
-      // Filter out outline residue: darkest-zone paths that are thin and near
-      // the element boundary are artifacts from the PNG outline.
-      var edgeMargin = Math.max(dstW, dstH) * 0.08;
+      // Filter out outline residue: darkest-zone paths whose minimum dimension
+      // is very small (thin slivers) — these are PNG outline fragments.
       clusters.forEach(function(cl) {
         var paths = zonePaths[cl.zoneId];
         var usablePaths = paths.filter(function(p) { return p.area >= detailThreshold; });
@@ -1955,27 +1954,23 @@ function traceWithImageTracer() {
         }
 
         if (cl.zoneId === darkestZone) {
-          // Filter outline residue, then split fills vs strokes
-          var interiorPaths = usablePaths.filter(function(p) {
-            // Skip thin edge-hugging fragments (outline residue)
-            if (p.aspect > 4 && p.area < shapeThreshold) {
-              var nearEdge = p.cx < edgeMargin || p.cx > dstW - edgeMargin ||
-                             p.cy < edgeMargin || p.cy > dstH - edgeMargin;
-              if (nearEdge) return false;
-            }
-            return true;
+          // Filter thin slivers (outline residue)
+          var cleanPaths = usablePaths.filter(function(p) {
+            var minDim = Math.min(p.w, p.h);
+            return minDim >= thinThreshold;
           });
-          var largePaths = interiorPaths.filter(function(p) { return p.area >= shapeThreshold && p.aspect <= 5; });
-          var smallPaths = interiorPaths.filter(function(p) { return p.area < shapeThreshold || p.aspect > 5; });
-          if (largePaths.length > 0) {
+          // Compact darkest paths → fills, everything else → strokes
+          var fillPaths = cleanPaths.filter(function(p) { return p.aspect <= 2.5 && p.area >= shapeThreshold; });
+          var strokePaths = cleanPaths.filter(function(p) { return p.aspect > 2.5 || p.area < shapeThreshold; });
+          if (fillPaths.length > 0) {
             STATE.paths[2].push({
-              d: largePaths.map(function(p) { return p.d; }).join(' '),
+              d: fillPaths.map(function(p) { return p.d; }).join(' '),
               type: 'fill', zone: cl.zoneId
             });
           }
-          if (smallPaths.length > 0) {
+          if (strokePaths.length > 0) {
             STATE.paths[2].push({
-              d: smallPaths.map(function(p) { return p.d; }).join(' '),
+              d: strokePaths.map(function(p) { return p.d; }).join(' '),
               type: 'stroke', zone: cl.zoneId, strokeWidth: 1
             });
           }
@@ -1989,6 +1984,17 @@ function traceWithImageTracer() {
           }
         }
       });
+
+      // Diagnostic: log darkest zone path metrics to console
+      console.group('ImageTracer: darkest zone "' + darkestZone + '" path metrics');
+      console.log('thinThreshold:', thinThreshold.toFixed(1), 'shapeThreshold:', shapeThreshold.toFixed(0));
+      (zonePaths[darkestZone] || []).forEach(function(p, i) {
+        var minDim = Math.min(p.w, p.h);
+        console.log('#' + i, 'area:', p.area.toFixed(0), 'aspect:', p.aspect.toFixed(1),
+          'minDim:', minDim.toFixed(1), 'w:', p.w.toFixed(1), 'h:', p.h.toFixed(1),
+          'cx:', p.cx.toFixed(1), 'cy:', p.cy.toFixed(1));
+      });
+      console.groupEnd();
 
       STATE.redoStack = [];
       STATE.tracing = false;
