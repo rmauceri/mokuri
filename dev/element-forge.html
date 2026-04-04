@@ -1902,8 +1902,8 @@ function traceWithImageTracer() {
 
         var scaled = scalePathDString(d, srcW, srcH, dstW, dstH);
         if (scaled) {
-          var area = estimatePathArea(scaled);
-          zonePaths[clusters[bestIdx].zoneId].push({ d: scaled, area: area });
+          var bounds = estimatePathBounds(scaled);
+          zonePaths[clusters[bestIdx].zoneId].push({ d: scaled, area: bounds.area, aspect: bounds.aspect, cx: bounds.cx, cy: bounds.cy, w: bounds.w, h: bounds.h });
         }
       });
 
@@ -1923,14 +1923,17 @@ function traceWithImageTracer() {
       // Shape (level 1): non-dominant zone fills (spots, fins, markings)
       // The dominant zone (body) is already covered by the block silhouette,
       // so Shape adds the features that sit on top of or cut into the body.
+      // Highly elongated paths (aspect > 5) from the darkest zone are strokes,
+      // not shapes — they go to Detail instead.
       clusters.forEach(function(cl) {
         var paths = zonePaths[cl.zoneId];
-        if (cl.zoneId === dominantZone) {
-          // Dominant zone: skip at shape level — block silhouette covers it
-          return;
-        }
-        // Include paths that are significant features (fins, spots, markings)
-        var shapePaths = paths.filter(function(p) { return p.area >= shapeThreshold; });
+        if (cl.zoneId === dominantZone) return;
+        var shapePaths = paths.filter(function(p) {
+          if (p.area < shapeThreshold) return false;
+          // Elongated darkest-zone paths are line features (gill, outline) → Detail
+          if (cl.zoneId === darkestZone && p.aspect > 5) return false;
+          return true;
+        });
         if (shapePaths.length > 0) {
           STATE.paths[1].push({
             d: shapePaths.map(function(p) { return p.d; }).join(' '),
@@ -1940,19 +1943,30 @@ function traceWithImageTracer() {
       });
 
       // Detail (level 2): everything from Shape + small features + darkest strokes
+      // Filter out outline residue: darkest-zone paths that are thin and near
+      // the element boundary are artifacts from the PNG outline.
+      var edgeMargin = Math.max(dstW, dstH) * 0.08;
       clusters.forEach(function(cl) {
         var paths = zonePaths[cl.zoneId];
         var usablePaths = paths.filter(function(p) { return p.area >= detailThreshold; });
 
         if (cl.zoneId === dominantZone) {
-          // Dominant zone at detail: skip (block covers it)
           return;
         }
 
         if (cl.zoneId === darkestZone) {
-          // Darkest zone: large fills stay as fills, small become strokes
-          var largePaths = usablePaths.filter(function(p) { return p.area >= shapeThreshold; });
-          var smallPaths = usablePaths.filter(function(p) { return p.area < shapeThreshold; });
+          // Filter outline residue, then split fills vs strokes
+          var interiorPaths = usablePaths.filter(function(p) {
+            // Skip thin edge-hugging fragments (outline residue)
+            if (p.aspect > 4 && p.area < shapeThreshold) {
+              var nearEdge = p.cx < edgeMargin || p.cx > dstW - edgeMargin ||
+                             p.cy < edgeMargin || p.cy > dstH - edgeMargin;
+              if (nearEdge) return false;
+            }
+            return true;
+          });
+          var largePaths = interiorPaths.filter(function(p) { return p.area >= shapeThreshold && p.aspect <= 5; });
+          var smallPaths = interiorPaths.filter(function(p) { return p.area < shapeThreshold || p.aspect > 5; });
           if (largePaths.length > 0) {
             STATE.paths[2].push({
               d: largePaths.map(function(p) { return p.d; }).join(' '),
@@ -1989,13 +2003,11 @@ function traceWithImageTracer() {
   });
 }
 
-// Estimate the area of an SVG path from its bounding box
-function estimatePathArea(d) {
-  var nums = d.match(/[-+]?[0-9]*\.?[0-9]+/g);
-  if (!nums || nums.length < 4) return 0;
-  var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-  // Parse as alternating x,y coordinates (rough approximation)
+// Estimate bounding box metrics of an SVG path
+function estimatePathBounds(d) {
   var tokens = d.match(/[a-zA-Z]|[-+]?[0-9]*\.?[0-9]+/g);
+  if (!tokens || tokens.length < 4) return { area: 0, aspect: 1, cx: 0, cy: 0, w: 0, h: 0 };
+  var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
   var isX = true;
   for (var i = 0; i < tokens.length; i++) {
     var t = tokens[i];
@@ -2005,13 +2017,7 @@ function estimatePathArea(d) {
       continue;
     }
     var val = parseFloat(t);
-    if (t === 'H' || t === 'h') {
-      if (val < minX) minX = val;
-      if (val > maxX) maxX = val;
-    } else if (t === 'V' || t === 'v') {
-      if (val < minY) minY = val;
-      if (val > maxY) maxY = val;
-    } else if (isX) {
+    if (isX) {
       if (val < minX) minX = val;
       if (val > maxX) maxX = val;
       isX = false;
@@ -2021,8 +2027,21 @@ function estimatePathArea(d) {
       isX = true;
     }
   }
-  if (minX === Infinity || minY === Infinity) return 0;
-  return Math.max(0, (maxX - minX) * (maxY - minY));
+  if (minX === Infinity || minY === Infinity) return { area: 0, aspect: 1, cx: 0, cy: 0, w: 0, h: 0 };
+  var w = maxX - minX, h = maxY - minY;
+  var shortSide = Math.min(w, h), longSide = Math.max(w, h);
+  return {
+    area: Math.max(0, w * h),
+    aspect: longSide / Math.max(shortSide, 0.1), // >5 = very elongated
+    cx: (minX + maxX) / 2,
+    cy: (minY + maxY) / 2,
+    w: w, h: h
+  };
+}
+
+// Backward-compatible wrapper
+function estimatePathArea(d) {
+  return estimatePathBounds(d).area;
 }
 
 // Parse fill color from SVG path attributes
