@@ -2076,12 +2076,12 @@ function traceWithImageTracer() {
         });
 
         if (cl.zoneId === darkestZone) {
-          // Darkest zone: compact paths → fills, elongated → strokes
+          // Darkest zone: most paths as fills, only very elongated as strokes
           usablePaths.forEach(function(p) {
-            if (p.aspect <= 2.5 && p.area >= shapeThreshold) {
-              STATE.paths[2].push({ d: p.d, type: 'fill', zone: cl.zoneId });
-            } else {
+            if (p.aspect > 5) {
               STATE.paths[2].push({ d: p.d, type: 'stroke', zone: cl.zoneId, strokeWidth: 1 });
+            } else {
+              STATE.paths[2].push({ d: p.d, type: 'fill', zone: cl.zoneId });
             }
           });
         } else {
