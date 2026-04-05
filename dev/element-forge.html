@@ -774,8 +774,8 @@ button.sm { padding: 3px 8px; font-size: 11px; }
               </div>
               <div class="slider-row" style="margin-bottom:4px;">
                 <span class="thresh-label" title="Smooth traced paths (higher = smoother curves)">Smooth</span>
-                <input type="range" id="trace-smooth" min="0" max="10" step="1" value="5">
-                <span class="slider-val" id="trace-smooth-val">5</span>
+                <input type="range" id="trace-smooth" min="0" max="50" step="1" value="10">
+                <span class="slider-val" id="trace-smooth-val">10</span>
               </div>
 
               <div class="trace-actions">
@@ -2083,9 +2083,10 @@ function traceWithImageTracer() {
       });
 
       // Smooth traced paths: parse polygons → RDP simplify → Q-curve rebuild
+      // Exponential curve: low values = subtle, high values = aggressive
       var smoothVal = parseInt($('trace-smooth').value);
       if (smoothVal > 0) {
-        var smoothEps = smoothVal * 0.5;
+        var smoothEps = 0.1 * Math.pow(1.08, smoothVal);
         for (var lv = 1; lv <= 2; lv++) {
           STATE.paths[lv].forEach(function(pathObj) {
             var smoothed = simplifyTracePath(pathObj.d, smoothEps);
