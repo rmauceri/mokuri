@@ -26,12 +26,22 @@ A Mokuri element has:
 
 ## Core Requirements
 
-### 1. Chroma-Key Background (Required)
+### 1. Background Removal (Required)
 
+Use ONE of these approaches — either works:
+
+**Option A: Chroma-Key Green**
 - **Solid `#00FF00` (pure green) background** filling the entire canvas
-- Subject is the ONLY non-green content
 - No green (`#00FF00`) anywhere in the subject
-- No shadow, glow, or halo around the subject on the green field
+
+**Option B: Transparent PNG**
+- Fully transparent background (alpha = 0)
+- Subject on a transparent field with no semi-transparent edge pixels
+- Save as 32-bit PNG with alpha channel
+
+For both options:
+- Subject is the ONLY non-background content
+- No shadow, glow, or halo around the subject
 - Subject should fill roughly 50–70% of the canvas area
 
 ### 2. Flat Color Regions (Required)
@@ -47,19 +57,24 @@ Each visual region of the subject must be a **single, uniform flat color**:
 
 ### 3. Exactly 3–5 Flat Colors (Required)
 
-The subject must use exactly **3 to 5 distinct flat colors** (excluding the green background):
+The subject must use exactly **3 to 5 distinct flat colors** (excluding the background). **4 is the sweet spot** — it maps cleanly to the forge's semantic zone roles:
 
-| Zones | Typical Mapping | Example (Koi) |
-|-------|-----------------|---------------|
-| 3 | body, accent, detail | cream, orange, dark gray |
-| 4 | body, marking, fin, detail | cream, orange, gray, dark |
-| 5 | body, belly, marking, fin, detail | cream, pale gold, orange, gray, dark |
+| Zones | Zone Roles | Example (Koi) |
+|-------|------------|---------------|
+| 3 | body, marking, detail | cream, orange, dark gray |
+| **4** | **body, marking, accent, detail** | **cream, orange, gray, dark** |
+| 5 | body, marking, accent, fin, detail | cream, orange, pale gold, gray, dark |
+
+**How the forge assigns zones automatically:**
+- **body** (palette slot 0) = the color covering the largest area
+- **detail** (palette slot 3) = the darkest color — used for small features like eyes, tips, gill lines
+- **marking / accent** (palette slots 1, 2) = remaining colors, ordered by area
 
 **Rules:**
 - No two colors should be close enough to confuse (maintain ΔE > 30 in Lab space)
 - No near-black and near-dark-gray as separate colors (hard to segment)
 - White/cream counts as a color (it's typically the body zone)
-- The darkest color should be reserved for small accent features (eye, tips) not large areas
+- **The darkest color must be reserved for small accent features** (eye, tips, fine lines) — not large areas. If the darkest color covers a large area, the forge's zone assignment breaks down.
 
 ### 4. NO Outlines (Critical)
 
@@ -78,16 +93,16 @@ Therefore:
 
 **The forge will extract boundary strokes automatically from where color regions meet.** Any drawn outlines in the source image will be traced as heavy filled regions that blur in the print engine and waste an entire color zone on what should be a carved groove.
 
-### 5. Hard Edges Between Colors (Required)
+### 5. Clean Edges Between Colors (Required)
 
-Where two color regions meet, the transition must be **pixel-sharp**:
+Where two color regions meet, the transition should be **as sharp as possible**:
 
-- ✅ One pixel is orange (#E85D2C), the adjacent pixel is cream (#F5F0E0) — no blending
-- ❌ A 2–4px anti-aliased gradient between orange and cream
+- ✅ One pixel is orange (#E85D2C), the adjacent pixel is cream (#F5F0E0) — clean boundary
+- ❌ A wide (4px+) feathered gradient between orange and cream
 - ✅ Clean, hard-edged boundaries like a stencil or screen print
-- ❌ Soft, feathered edges like watercolor or airbrushed illustration
+- ❌ Soft, airbrushed edges like watercolor illustration
 
-**Anti-aliasing destroys color segmentation.** A 3px feathered edge between orange and cream creates a zone of blended pixels that don't cluster cleanly, producing noisy trace boundaries.
+**Note on anti-aliasing**: Minor 1–2px anti-aliasing at color boundaries is tolerable — the forge can handle slight edge softness. What destroys output is heavy feathering (4px+) or gradient transitions between regions. Aim for stencil-sharp, accept that slight softening may occur.
 
 ### 6. No Gradients, Shading, or Texture (Required)
 
@@ -137,9 +152,9 @@ Features defined by lines in real life (whiskers, individual feathers, gill line
 
 ### 9. Controlled Abstraction and Simplification
 
-Target **8–20 total color regions** in the subject:
+Target **8–20 total shape regions** in the subject (note: shapes, not colors — a single color like orange may form multiple separate shapes such as spots, patches, etc.):
 
-- Fewer = better for clean forge output
+- Fewer shapes = better for clean forge output
 - Each region should be visually meaningful at thumbnail size
 - Eliminate micro-detail that won't survive tracing (scales, individual feathers, whiskers, fur texture)
 
@@ -163,9 +178,9 @@ These produce cleaner SVG paths with lower node counts.
 
 - **Resolution**: 800×600 to 1200×800 pixels (landscape subjects) or equivalent for portrait
 - **Format**: PNG (lossless — JPEG compression creates color artifacts that break segmentation)
-- **Bit depth**: 8-bit RGB (no alpha channel needed — the green background handles masking)
+- **Bit depth**: 8-bit RGB for chroma-key, or 32-bit RGBA for transparent background
 
-Larger images don't help — the forge downsamples for tracing. Smaller images lose boundary precision.
+Very large images (2000px+) don't produce better results — they increase tracing time and generate more micro-artifact paths. Very small images (<600px) lose boundary precision between color regions.
 
 ### 12. Subject Composition
 
@@ -274,14 +289,15 @@ Two colors that are visually similar (e.g., #888 and #999):
 
 Before sending an image to the forge, verify:
 
-- [ ] Green (#00FF00) background, no other green in subject
-- [ ] Exactly 3–5 flat colors in the subject
+- [ ] Green (#00FF00) background OR fully transparent PNG
+- [ ] Exactly 3–5 flat colors in the subject (4 is ideal)
 - [ ] Each color region is perfectly uniform (zero variation)
 - [ ] No outlines of any kind (not even thin ones)
-- [ ] Hard pixel edges between all color regions
+- [ ] Clean edges between color regions (minimal anti-aliasing OK, no heavy feathering)
 - [ ] No gradients, shading, highlights, or shadows
 - [ ] No texture, grain, or noise
 - [ ] Smooth, elegant contours (mokuhanga aesthetic)
+- [ ] Darkest color used only for small features (eye, tips, fine lines)
 - [ ] Subject fills 50–70% of canvas
 - [ ] PNG format, 800–1200px wide
 - [ ] Single subject, no background elements
@@ -300,11 +316,14 @@ Before sending an image to the forge, verify:
 Create a [subject] illustration for Japanese woodblock print (mokuhanga) color separation.
 
 CRITICAL REQUIREMENTS:
-- Solid #00FF00 green background filling the entire canvas
-- Exactly [3-5] flat colors in the subject: [list specific hex colors]
+- Solid #00FF00 green background filling the entire canvas (or fully transparent PNG)
+- Exactly [4] flat colors in the subject: [list specific hex colors and their roles]
+  - Largest area color = body zone
+  - Darkest color = detail zone (use ONLY for small features: eye, tips, fine lines)
+  - Remaining colors = marking/accent zones
 - Each color region is PERFECTLY UNIFORM — zero gradients, zero shading, zero texture
-- NO outlines of any kind — color regions meet edge-to-edge with pixel-sharp boundaries
-- NO anti-aliasing between color regions — hard stencil-like edges
+- NO outlines of any kind — color regions meet edge-to-edge with clean boundaries
+- Minimize anti-aliasing between color regions — aim for stencil-sharp edges
 
 STYLE: Traditional mokuhanga / shin-hanga aesthetic. Elegant simplified forms,
 smooth flowing contours. NOT logo art, NOT anime, NOT vector illustration with outlines.
