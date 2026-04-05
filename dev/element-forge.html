@@ -759,7 +759,7 @@ button.sm { padding: 3px 8px; font-size: 11px; }
 
               <div class="slider-row" style="margin-bottom:6px;">
                 <span class="thresh-label">Engine</span>
-                <button class="sm" id="btn-trace-engine" style="font-size:10px; min-width:90px;">Potrace</button>
+                <button class="sm" id="btn-trace-engine" style="font-size:10px; min-width:90px;">ImageTracer</button>
               </div>
 
               <div class="slider-row" style="margin-bottom:4px;">
@@ -1092,7 +1092,7 @@ const STATE = {
   alphaData: null,          // raw RGBA ImageData (for alpha-based silhouette)
   bgLab: null,              // OKLab centroid of detected background color
   traceMode: 'color',      // 'color' (segmentation) or 'mono' (threshold)
-  traceEngine: 'potrace',  // 'potrace' or 'imagetracer'
+  traceEngine: 'imagetracer',  // 'potrace' or 'imagetracer'
 
   // Color segmentation
   quantizedMap: null,       // Uint8Array — cluster index per pixel
@@ -3253,7 +3253,7 @@ function consolidatedPathCount() {
 function estimatePathArea(d) {
   var tmp = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   tmp.setAttribute('d', d);
-  var svg = $('canvas-svg');
+  var svg = $('forge-svg');
   svg.appendChild(tmp);
   try {
     var bb = tmp.getBBox();
@@ -3871,6 +3871,9 @@ function attachEvents() {
     $('trace-epsilon').closest('.slider-row').style.display = potraceOnly ? '' : 'none';
     $('trace-turd').closest('.slider-row').style.display = potraceOnly ? '' : 'none';
   });
+  // Default engine is ImageTracer — hide potrace-only controls
+  $('trace-epsilon').closest('.slider-row').style.display = 'none';
+  $('trace-turd').closest('.slider-row').style.display = 'none';
 
   // Mono fallback button
   $('btn-trace-mono').addEventListener('click', function() {
