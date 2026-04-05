@@ -860,7 +860,7 @@ button.sm { padding: 3px 8px; font-size: 11px; }
           <div class="path-inspector" id="path-inspector"></div>
         </div>
 
-        <!-- Clean small paths -->
+        <!-- Cleanup tools -->
         <div class="panel-section" id="clean-paths-section">
           <div class="subtle-label">Cleanup</div>
           <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
@@ -868,9 +868,18 @@ button.sm { padding: 3px 8px; font-size: 11px; }
             <input type="range" id="clean-threshold" min="1" max="2000" value="100" style="flex:1;">
             <span id="clean-threshold-val" style="font-size:11px; min-width:30px;">100</span>
           </div>
-          <div style="display:flex; gap:4px; align-items:center;">
-            <button class="sm" id="clean-paths-btn">Remove Small Paths</button>
+          <div style="display:flex; gap:4px; align-items:center; margin-bottom:6px;">
+            <button class="sm" id="clean-paths-btn">Remove Small</button>
             <span id="clean-count" style="font-size:10px; color:var(--muted);"></span>
+          </div>
+          <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
+            <label style="font-size:11px; color:var(--fg-dim); white-space:nowrap;">Margin</label>
+            <input type="range" id="clean-margin" min="1" max="20" value="5" style="flex:1;">
+            <span id="clean-margin-val" style="font-size:11px; min-width:25px;">5%</span>
+          </div>
+          <div style="display:flex; gap:4px; align-items:center;">
+            <button class="sm" id="clean-edges-btn">Clean Edges</button>
+            <span id="clean-edge-count" style="font-size:10px; color:var(--muted);"></span>
           </div>
         </div>
 
@@ -3089,7 +3098,7 @@ function renderCanvas() {
   });
 
   // Update cleanup count for current level
-  if ($('clean-threshold')) updateCleanCount();
+  if ($('clean-threshold')) { updateCleanCount(); updateEdgeCleanCount(); }
 }
 
 function createPathElement(pathObj, dimmed) {
@@ -3239,21 +3248,34 @@ function consolidatedPathCount() {
   return count;
 }
 
-// Path area estimation using SVG getBBox
-function estimatePathArea(d) {
+// Path bbox using SVG getBBox
+function getPathBBox(d) {
   var tmp = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   tmp.setAttribute('d', d);
   var svg = $('forge-svg');
   svg.appendChild(tmp);
   try {
     var bb = tmp.getBBox();
-    return bb.width * bb.height;
-  } catch(e) { return 0; }
+    return { x: bb.x, y: bb.y, w: bb.width, h: bb.height, area: bb.width * bb.height };
+  } catch(e) { return { x: 0, y: 0, w: 0, h: 0, area: 0 }; }
   finally { svg.removeChild(tmp); }
 }
 
+function estimatePathArea(d) {
+  return getPathBBox(d).area;
+}
+
+function isEdgePath(bb, margin) {
+  var w = STATE.viewBoxW, h = STATE.viewBoxH;
+  var mx = w * margin, my = h * margin;
+  // Path center is within margin of any edge
+  var cx = bb.x + bb.w / 2;
+  var cy = bb.y + bb.h / 2;
+  return cx < mx || cx > (w - mx) || cy < my || cy > (h - my);
+}
+
 function updateCleanCount() {
-  var threshold = parseInt($('clean-threshold').value) || 25;
+  var threshold = parseInt($('clean-threshold').value) || 100;
   $('clean-threshold-val').textContent = threshold;
   var count = 0;
   STATE.paths[STATE.activeLevel].forEach(function(p) {
@@ -3262,8 +3284,21 @@ function updateCleanCount() {
   $('clean-count').textContent = count > 0 ? count + ' match' + (count > 1 ? 'es' : '') : '';
 }
 
+function updateEdgeCleanCount() {
+  var marginPct = parseInt($('clean-margin').value) || 5;
+  $('clean-margin-val').textContent = marginPct + '%';
+  var margin = marginPct / 100;
+  var threshold = parseInt($('clean-threshold').value) || 100;
+  var count = 0;
+  STATE.paths[STATE.activeLevel].forEach(function(p) {
+    var bb = getPathBBox(p.d);
+    if (bb.area < threshold && isEdgePath(bb, margin)) count++;
+  });
+  $('clean-edge-count').textContent = count > 0 ? count + ' match' + (count > 1 ? 'es' : '') : '';
+}
+
 function cleanSmallPaths() {
-  var threshold = parseInt($('clean-threshold').value) || 25;
+  var threshold = parseInt($('clean-threshold').value) || 100;
   var before = STATE.paths[STATE.activeLevel].length;
   pushUndo('deletePath');
   STATE.paths[STATE.activeLevel] = STATE.paths[STATE.activeLevel].filter(function(p) {
@@ -3277,6 +3312,27 @@ function cleanSmallPaths() {
   updatePreviews();
   updatePathInspector();
   if (removed > 0) showToast('Removed ' + removed + ' small path' + (removed > 1 ? 's' : ''));
+}
+
+function cleanEdgePaths() {
+  var marginPct = parseInt($('clean-margin').value) || 5;
+  var margin = marginPct / 100;
+  var threshold = parseInt($('clean-threshold').value) || 100;
+  var before = STATE.paths[STATE.activeLevel].length;
+  pushUndo('deletePath');
+  STATE.paths[STATE.activeLevel] = STATE.paths[STATE.activeLevel].filter(function(p) {
+    var bb = getPathBBox(p.d);
+    // Only remove if small AND at edge — preserves interior details
+    return !(bb.area < threshold && isEdgePath(bb, margin));
+  });
+  var removed = before - STATE.paths[STATE.activeLevel].length;
+  STATE.selectedPathIndex = -1;
+  STATE.selectedPathSet.clear();
+  renderCanvas();
+  updateBudget();
+  updatePreviews();
+  updatePathInspector();
+  if (removed > 0) showToast('Removed ' + removed + ' edge artifact' + (removed > 1 ? 's' : ''));
 }
 
 // ── Export ──
@@ -3901,8 +3957,10 @@ function attachEvents() {
   });
 
   // Clean paths controls
-  $('clean-threshold').addEventListener('input', e => updateCleanCount());
+  $('clean-threshold').addEventListener('input', e => { updateCleanCount(); updateEdgeCleanCount(); });
   $('clean-paths-btn').addEventListener('click', () => cleanSmallPaths());
+  $('clean-margin').addEventListener('input', e => updateEdgeCleanCount());
+  $('clean-edges-btn').addEventListener('click', () => cleanEdgePaths());
 
   // Import
   $('btn-import').addEventListener('click', () => $('import-dialog').showModal());
