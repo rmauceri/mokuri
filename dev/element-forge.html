@@ -3108,7 +3108,7 @@ function createPathElement(pathObj, dimmed) {
   } else if (pathObj.type === 'fill') {
     el.setAttribute('fill', color);
     el.setAttribute('stroke', 'none');
-    el.setAttribute('fill-rule', 'evenodd');
+    el.setAttribute('fill-rule', 'nonzero');
   } else {
     el.setAttribute('fill', 'none');
     el.setAttribute('stroke', color);
@@ -3556,7 +3556,7 @@ function updatePreviews() {
       if (p.type === 'fill') {
         pathEl.setAttribute('fill', color);
         pathEl.setAttribute('stroke', 'none');
-        pathEl.setAttribute('fill-rule', 'evenodd');
+        pathEl.setAttribute('fill-rule', 'nonzero');
       } else {
         pathEl.setAttribute('fill', 'none');
         pathEl.setAttribute('stroke', color);
