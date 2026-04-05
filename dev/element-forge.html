@@ -865,8 +865,8 @@ button.sm { padding: 3px 8px; font-size: 11px; }
           <div class="subtle-label">Cleanup</div>
           <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
             <label style="font-size:11px; color:var(--fg-dim); white-space:nowrap;">Area &lt;</label>
-            <input type="range" id="clean-threshold" min="1" max="200" value="25" style="flex:1;">
-            <span id="clean-threshold-val" style="font-size:11px; min-width:30px;">25</span>
+            <input type="range" id="clean-threshold" min="1" max="2000" value="100" style="flex:1;">
+            <span id="clean-threshold-val" style="font-size:11px; min-width:30px;">100</span>
           </div>
           <div style="display:flex; gap:4px; align-items:center;">
             <button class="sm" id="clean-paths-btn">Remove Small Paths</button>
@@ -2039,6 +2039,7 @@ function traceWithImageTracer() {
       var thinThreshold = Math.max(dstW, dstH) * 0.02; // 2% — universal thin-sliver filter
 
       // Shape (level 1): non-dominant zone fills (spots, fins, markings)
+      // Each traced region becomes its own path for individual selection/deletion
       clusters.forEach(function(cl) {
         var paths = zonePaths[cl.zoneId];
         if (cl.zoneId === dominantZone) return;
@@ -2049,15 +2050,13 @@ function traceWithImageTracer() {
           if (cl.zoneId === darkestZone && p.aspect > 2.5) return false;
           return true;
         });
-        if (shapePaths.length > 0) {
-          STATE.paths[1].push({
-            d: shapePaths.map(function(p) { return p.d; }).join(' '),
-            type: 'fill', zone: cl.zoneId
-          });
-        }
+        shapePaths.forEach(function(p) {
+          STATE.paths[1].push({ d: p.d, type: 'fill', zone: cl.zoneId });
+        });
       });
 
       // Detail (level 2): everything from Shape + small features + darkest strokes
+      // Each traced region becomes its own path for individual selection/deletion
       clusters.forEach(function(cl) {
         var paths = zonePaths[cl.zoneId];
         if (cl.zoneId === dominantZone) return;
@@ -2069,27 +2068,17 @@ function traceWithImageTracer() {
 
         if (cl.zoneId === darkestZone) {
           // Darkest zone: compact paths → fills, elongated → strokes
-          var fillPaths = usablePaths.filter(function(p) { return p.aspect <= 2.5 && p.area >= shapeThreshold; });
-          var strokePaths = usablePaths.filter(function(p) { return p.aspect > 2.5 || p.area < shapeThreshold; });
-          if (fillPaths.length > 0) {
-            STATE.paths[2].push({
-              d: fillPaths.map(function(p) { return p.d; }).join(' '),
-              type: 'fill', zone: cl.zoneId
-            });
-          }
-          if (strokePaths.length > 0) {
-            STATE.paths[2].push({
-              d: strokePaths.map(function(p) { return p.d; }).join(' '),
-              type: 'stroke', zone: cl.zoneId, strokeWidth: 1
-            });
-          }
+          usablePaths.forEach(function(p) {
+            if (p.aspect <= 2.5 && p.area >= shapeThreshold) {
+              STATE.paths[2].push({ d: p.d, type: 'fill', zone: cl.zoneId });
+            } else {
+              STATE.paths[2].push({ d: p.d, type: 'stroke', zone: cl.zoneId, strokeWidth: 1 });
+            }
+          });
         } else {
-          if (usablePaths.length > 0) {
-            STATE.paths[2].push({
-              d: usablePaths.map(function(p) { return p.d; }).join(' '),
-              type: 'fill', zone: cl.zoneId
-            });
-          }
+          usablePaths.forEach(function(p) {
+            STATE.paths[2].push({ d: p.d, type: 'fill', zone: cl.zoneId });
+          });
         }
       });
 
