@@ -3060,6 +3060,8 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
 <script src="assets/kacho-pack.js"></script>
 <script src="assets/moribana-elements.js"></script>
 <script src="assets/moribana-pack.js"></script>
+<script src="assets/test-elements.js"></script>
+<script src="assets/test-pack.js"></script>
 <script src="print-engine.js"></script>
 <script src="audio-engine.js"></script>
 <script>
@@ -3102,6 +3104,9 @@ if (typeof MOKURI_KACHOE_ELEMENTS !== 'undefined') {
 if (typeof MOKURI_MORIBANA_ELEMENTS !== 'undefined') {
   MOKURI_ELEMENTS.push(...MOKURI_MORIBANA_ELEMENTS);
 }
+if (typeof MOKURI_TEST_ELEMENTS !== 'undefined') {
+  MOKURI_ELEMENTS.push(...MOKURI_TEST_ELEMENTS);
+}
 
 // Merge expansion pack gallery presets
 if (typeof MOKURI_KACHOE_PRESETS !== 'undefined' && typeof MOKURI_GALLERY_PRESETS !== 'undefined') {
@@ -3112,7 +3117,7 @@ if (typeof MOKURI_KACHOE_PRESETS !== 'undefined' && typeof MOKURI_GALLERY_PRESET
 //  VERSION
 // ============================================================
 // Display version — KEEP IN SYNC with CACHE_NAME in sw.js (mokuri-v77 → 0.77)
-const MOKURI_VERSION = '0.80';
+const MOKURI_VERSION = '0.81';
 
 // ============================================================
 //  FEEDBACK
