@@ -1132,11 +1132,24 @@ function renderZoneChips() {
     const chip = document.createElement('div');
     chip.className = 'zone-chip' + (i === STATE.activeZoneIndex ? ' active' : '');
     chip.innerHTML = `<span class="zone-swatch" style="background:${ZONE_COLORS[i % ZONE_COLORS.length]}"></span>${z.id}`;
-    chip.addEventListener('click', () => {
-      STATE.activeZoneIndex = i;
-      renderZoneChips();
-      updateStatusBar();
+    var clickTimer = null;
+    chip.addEventListener('click', (e) => {
+      if (clickTimer) {
+        clearTimeout(clickTimer);
+        clickTimer = null;
+        renameZone(i);
+        return;
+      }
+      clickTimer = setTimeout(() => {
+        clickTimer = null;
+        STATE.activeZoneIndex = i;
+        container.querySelectorAll('.zone-chip').forEach((c, j) => {
+          c.classList.toggle('active', j === i);
+        });
+        updateStatusBar();
+      }, 300);
     });
+    chip.title = 'Click to select, double-click to rename';
     container.appendChild(chip);
   });
 }
@@ -1163,6 +1176,37 @@ function removeZone() {
   STATE.activeZoneIndex = Math.min(idx, STATE.zones.length - 1);
   renderZoneChips();
   updateStatusBar();
+}
+
+var ZONE_SLOT_PRESETS = { body: 0, marking: 1, accent: 2, detail: 3 };
+
+function renameZone(idx) {
+  var z = STATE.zones[idx];
+  var oldId = z.id;
+  var newId = prompt('Rename zone "' + oldId + '":\n(Common names: body, marking, accent, detail)', oldId);
+  if (!newId || !newId.trim() || newId.trim() === oldId) return;
+  newId = newId.trim();
+  pushUndo('renameZone');
+  // Update all path references
+  for (var lv = 0; lv < STATE.paths.length; lv++) {
+    STATE.paths[lv].forEach(function(p) {
+      if (p.zone === oldId) p.zone = newId;
+    });
+  }
+  // Update cluster zoneId if it matches
+  if (STATE.clusters) {
+    STATE.clusters.forEach(function(cl) {
+      if (cl.zoneId === oldId) cl.zoneId = newId;
+    });
+  }
+  z.id = newId;
+  // Auto-assign palette slot for known names
+  if (ZONE_SLOT_PRESETS[newId] !== undefined) {
+    z.defaultPaletteSlot = ZONE_SLOT_PRESETS[newId];
+  }
+  renderZoneChips();
+  renderCanvas();
+  updatePreviews();
 }
 
 // ── Tag Chips ──
@@ -1793,7 +1837,7 @@ function traceWithImageTracer() {
     return;
   }
   STATE.tracing = true;
-  $('trace-status').textContent = 'ImageTracer: building silhouette...';
+  $('trace-status').textContent = 'ImageTracer: analyzing clusters...';
 
   var clusters = STATE.clusters;
   var imageData = STATE.traceImageData;
@@ -1808,14 +1852,7 @@ function traceWithImageTracer() {
   STATE.paths = [[], [], []];
   STATE.traceRawPaths = [null, null, null];
 
-  // Auto-populate zones from clusters
-  STATE.zones = clusters.map(function(cl, i) {
-    return { id: cl.zoneId, defaultPaletteSlot: i };
-  });
-  STATE.activeZoneIndex = 0;
-  renderZoneChips();
-
-  // Identify the darkest cluster (used for outline/stroke detection)
+  // Identify the darkest cluster (outline/stroke features)
   var darkestIdx = 0, darkestL = Infinity;
   for (var c = 0; c < clusters.length; c++) {
     if (clusters[c].centroid[0] < darkestL) {
@@ -1823,15 +1860,69 @@ function traceWithImageTracer() {
       darkestIdx = c;
     }
   }
+
+  // Build silhouette mask and count pixels per cluster
+  var silhouette = buildSilhouetteMask(imageData, rawData, hasAlpha, hasChroma);
+  var mw = silhouette.w, mh = silhouette.h;
+  var pixelCounts = new Array(clusters.length).fill(0);
+  var pixelData = imageData.data;
+  for (var pi = 0; pi < mw * mh; pi++) {
+    if (!silhouette.mask[pi]) continue;
+    var pr = pixelData[pi * 4], pg = pixelData[pi * 4 + 1], pb = pixelData[pi * 4 + 2];
+    var bestC = 0, bestD = Infinity;
+    for (var ci = 0; ci < clusters.length; ci++) {
+      var cd = colorDist([pr, pg, pb], clusters[ci].srgb);
+      if (cd < bestD) { bestD = cd; bestC = ci; }
+    }
+    pixelCounts[bestC]++;
+  }
+  var domIdx = 0, domPixels = 0;
+  for (var ci = 0; ci < clusters.length; ci++) {
+    if (pixelCounts[ci] > domPixels) { domPixels = pixelCounts[ci]; domIdx = ci; }
+  }
+
+  // Assign semantic zone roles based on cluster characteristics
+  // body = dominant (largest area), detail = darkest, remaining = marking/accent by size
+  var ZONE_ROLES = { body: 0, marking: 1, accent: 2, detail: 3 };
+  clusters[domIdx].zoneId = 'body';
+  if (darkestIdx !== domIdx) {
+    clusters[darkestIdx].zoneId = 'detail';
+  }
+  var remaining = [];
+  for (var i = 0; i < clusters.length; i++) {
+    if (i === domIdx || (i === darkestIdx && darkestIdx !== domIdx)) continue;
+    remaining.push({ idx: i, pixels: pixelCounts[i] });
+  }
+  remaining.sort(function(a, b) { return b.pixels - a.pixels; });
+  var featureNames = ['marking', 'accent'];
+  for (var ri = 0; ri < remaining.length; ri++) {
+    clusters[remaining[ri].idx].zoneId = ri < featureNames.length
+      ? featureNames[ri] : 'marking_' + (ri + 1);
+  }
+
   var darkestZone = clusters[darkestIdx].zoneId;
 
-  // Step 1: Block silhouette via Potrace (clean, no internal edges)
-  var silhouette = buildSilhouetteMask(imageData, rawData, hasAlpha, hasChroma);
+  // Set up zones with semantic names and palette slots
+  STATE.zones = clusters.map(function(cl) {
+    var slot = ZONE_ROLES[cl.zoneId];
+    if (slot === undefined) slot = Math.min(Object.keys(ZONE_ROLES).length, 4);
+    return { id: cl.zoneId, defaultPaletteSlot: slot };
+  });
+  STATE.activeZoneIndex = 0;
+  renderZoneChips();
+
+  console.log('ImageTracer zones:', clusters.map(function(cl, i) {
+    return cl.zoneId + ' (' + pixelCounts[i] + 'px' +
+      (i === domIdx ? ', dominant' : '') + (i === darkestIdx ? ', darkest' : '') + ')';
+  }).join(', '));
+
+  // Step 1: Block silhouette via Potrace
+  $('trace-status').textContent = 'ImageTracer: building silhouette...';
   traceBinaryMask(silhouette.mask, silhouette.w, silhouette.h, turdSize, function(blockD) {
     STATE.traceRawPaths[0] = blockD;
     if (blockD) {
       var result = processTracePath(blockD, srcW, srcH, dstW, dstH, 0.8);
-      if (result) STATE.paths[0] = [{ d: result, type: 'fill', zone: clusters[0].zoneId }];
+      if (result) STATE.paths[0] = [{ d: result, type: 'fill', zone: 'body' }];
     }
 
     // Step 2: ImageTracer for per-zone color paths
@@ -1907,24 +1998,16 @@ function traceWithImageTracer() {
         }
       });
 
-      // Identify the dominant zone (largest total pixel area — typically body/background fill)
-      var dominantZone = null, dominantArea = 0;
-      clusters.forEach(function(cl) {
-        var total = 0;
-        zonePaths[cl.zoneId].forEach(function(p) { total += p.area; });
-        if (total > dominantArea) { dominantArea = total; dominantZone = cl.zoneId; }
-      });
+      // Use pixel-count dominant zone (computed from image data, consistent with block)
+      var dominantZone = clusters[domIdx].zoneId;
 
       // Thresholds for path classification
       var totalArea = dstW * dstH;
       var shapeThreshold = totalArea * 0.005; // 0.5% — catches fins and smaller features
       var detailThreshold = totalArea * 0.001; // 0.1% — minimum for detail
-      // Minimum dimension thresholds for thin-sliver filtering
-      var thinThreshold = Math.max(dstW, dstH) * 0.02; // 2% — universal (all zones)
-      var outlineThreshold = Math.max(dstW, dstH) * 0.05; // 5% — aggressive (darkest zone only)
+      var thinThreshold = Math.max(dstW, dstH) * 0.02; // 2% — universal thin-sliver filter
 
       // Shape (level 1): non-dominant zone fills (spots, fins, markings)
-      // Filter out thin slivers from all zones — only solid filled regions.
       clusters.forEach(function(cl) {
         var paths = zonePaths[cl.zoneId];
         if (cl.zoneId === dominantZone) return;
@@ -1932,7 +2015,6 @@ function traceWithImageTracer() {
           if (p.area < shapeThreshold) return false;
           var minDim = Math.min(p.w, p.h);
           if (minDim < thinThreshold) return false;
-          // Darkest zone at Shape level: only compact filled regions
           if (cl.zoneId === darkestZone && p.aspect > 2.5) return false;
           return true;
         });
@@ -1945,11 +2027,9 @@ function traceWithImageTracer() {
       });
 
       // Detail (level 2): everything from Shape + small features + darkest strokes
-      // Thin slivers filtered from all zones to reduce noise.
       clusters.forEach(function(cl) {
         var paths = zonePaths[cl.zoneId];
         if (cl.zoneId === dominantZone) return;
-        // Universal thin-sliver filter
         var usablePaths = paths.filter(function(p) {
           if (p.area < detailThreshold) return false;
           var minDim = Math.min(p.w, p.h);
@@ -1957,14 +2037,9 @@ function traceWithImageTracer() {
         });
 
         if (cl.zoneId === darkestZone) {
-          // Aggressive thin filter for darkest zone (outline residue)
-          var darkUsable = usablePaths.filter(function(p) {
-            var minDim = Math.min(p.w, p.h);
-            return minDim >= outlineThreshold;
-          });
-          // Compact darkest paths → fills, everything else → strokes
-          var fillPaths = darkUsable.filter(function(p) { return p.aspect <= 2.5 && p.area >= shapeThreshold; });
-          var strokePaths = darkUsable.filter(function(p) { return p.aspect > 2.5 || p.area < shapeThreshold; });
+          // Darkest zone: compact paths → fills, elongated → strokes
+          var fillPaths = usablePaths.filter(function(p) { return p.aspect <= 2.5 && p.area >= shapeThreshold; });
+          var strokePaths = usablePaths.filter(function(p) { return p.aspect > 2.5 || p.area < shapeThreshold; });
           if (fillPaths.length > 0) {
             STATE.paths[2].push({
               d: fillPaths.map(function(p) { return p.d; }).join(' '),
@@ -1986,17 +2061,6 @@ function traceWithImageTracer() {
           }
         }
       });
-
-      // Diagnostic: log darkest zone path metrics to console
-      console.group('ImageTracer: darkest zone "' + darkestZone + '" path metrics');
-      console.log('thinThreshold:', thinThreshold.toFixed(1), 'outlineThreshold:', outlineThreshold.toFixed(1), 'shapeThreshold:', shapeThreshold.toFixed(0));
-      (zonePaths[darkestZone] || []).forEach(function(p, i) {
-        var minDim = Math.min(p.w, p.h);
-        console.log('#' + i, 'area:', p.area.toFixed(0), 'aspect:', p.aspect.toFixed(1),
-          'minDim:', minDim.toFixed(1), 'w:', p.w.toFixed(1), 'h:', p.h.toFixed(1),
-          'cx:', p.cx.toFixed(1), 'cy:', p.cy.toFixed(1));
-      });
-      console.groupEnd();
 
       STATE.redoStack = [];
       STATE.tracing = false;
