@@ -182,12 +182,6 @@ html, body {
   stroke-dasharray: 4 3;
 }
 
-/* ── Selected path ── */
-.path-selected {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
 /* ── Status Bar ── */
 .status-bar {
   height: var(--status-h);
@@ -369,6 +363,20 @@ button.sm { padding: 3px 8px; font-size: 11px; }
   background: rgba(255,255,255,0.65);
   font: 11px/1.4 Consolas, "SFMono-Regular", Menlo, monospace;
   color: var(--text);
+}
+
+/* ── Trace Mode — hide manual-only controls ── */
+.trace-mode #tool-stroke,
+.trace-mode #tool-fill { display: none; }
+.trace-mode .manual-only { display: none !important; }
+
+/* ── Path Hover & Selection ── */
+.path-hover {
+  filter: drop-shadow(0 0 3px rgba(59, 130, 246, 0.8));
+  cursor: pointer;
+}
+.path-selected {
+  filter: drop-shadow(0 0 3px rgba(139, 107, 74, 0.9));
 }
 
 /* ── Reference Controls ── */
@@ -764,6 +772,11 @@ button.sm { padding: 3px 8px; font-size: 11px; }
                 <input type="range" id="trace-turd" min="0" max="30" step="1" value="5">
                 <span class="slider-val" id="trace-turd-val">5</span>
               </div>
+              <div class="slider-row" style="margin-bottom:4px;">
+                <span class="thresh-label" title="Smooth traced paths (higher = smoother curves)">Smooth</span>
+                <input type="range" id="trace-smooth" min="0" max="10" step="1" value="5">
+                <span class="slider-val" id="trace-smooth-val">5</span>
+              </div>
 
               <div class="trace-actions">
                 <button class="primary" id="btn-trace">Trace</button>
@@ -823,8 +836,8 @@ button.sm { padding: 3px 8px; font-size: 11px; }
       </div>
       <div class="panel-body">
 
-        <!-- Drawing settings -->
-        <div class="panel-section">
+        <!-- Drawing settings (manual mode only) -->
+        <div class="panel-section manual-only">
           <div class="subtle-label">Stroke Width</div>
           <div class="slider-row">
             <input type="range" id="stroke-width" min="0.5" max="8" step="0.5" value="2">
@@ -832,7 +845,7 @@ button.sm { padding: 3px 8px; font-size: 11px; }
           </div>
         </div>
 
-        <div class="panel-section">
+        <div class="panel-section manual-only">
           <div class="subtle-label">Curve Fidelity</div>
           <div class="slider-row">
             <label>Loose</label>
@@ -845,6 +858,20 @@ button.sm { padding: 3px 8px; font-size: 11px; }
         <div class="panel-section" id="path-inspector-section" style="display:none;">
           <div class="subtle-label">Selected Path</div>
           <div class="path-inspector" id="path-inspector"></div>
+        </div>
+
+        <!-- Clean small paths -->
+        <div class="panel-section" id="clean-paths-section">
+          <div class="subtle-label">Cleanup</div>
+          <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
+            <label style="font-size:11px; color:var(--fg-dim); white-space:nowrap;">Area &lt;</label>
+            <input type="range" id="clean-threshold" min="1" max="200" value="25" style="flex:1;">
+            <span id="clean-threshold-val" style="font-size:11px; min-width:30px;">25</span>
+          </div>
+          <div style="display:flex; gap:4px; align-items:center;">
+            <button class="sm" id="clean-paths-btn">Remove Small Paths</button>
+            <span id="clean-count" style="font-size:10px; color:var(--muted);"></span>
+          </div>
         </div>
 
         <!-- Path budget -->
@@ -1049,6 +1076,7 @@ const STATE = {
   curveFidelity: 5,     // 1=loose, 10=tight
   drawing: null,        // { points: [{x,y}], ... } during active stroke
   selectedPathIndex: -1, // index within current level's paths
+  selectedPathSet: new Set(), // multi-select indices
 
   // Reference image
   refImageSrc: null,
@@ -1233,6 +1261,7 @@ function renderTagChips() {
 function setLevel(level) {
   STATE.activeLevel = level;
   STATE.selectedPathIndex = -1;
+  STATE.selectedPathSet.clear();
   document.querySelectorAll('.level-tab').forEach(tab => {
     tab.classList.toggle('active', parseInt(tab.dataset.level) === level);
   });
@@ -1443,6 +1472,7 @@ function loadTraceImage(src) {
     autoVbBtn.style.display = 'none';
     controls.style.display = 'none';
     section.classList.remove('has-image');
+    document.body.classList.remove('trace-mode');
     preview.innerHTML = '<div class="placeholder">Drop an image or click to browse</div>';
     STATE.traceImageData = null;
     STATE.traceImageEl = null;
@@ -1467,6 +1497,7 @@ function loadTraceImage(src) {
   autoVbBtn.style.display = '';
   controls.style.display = '';
   section.classList.add('has-image');
+  document.body.classList.add('trace-mode');
 
   // Show image in preview thumbnail
   preview.innerHTML = '';
@@ -2061,6 +2092,18 @@ function traceWithImageTracer() {
           }
         }
       });
+
+      // Smooth traced paths: parse polygons → RDP simplify → Q-curve rebuild
+      var smoothVal = parseInt($('trace-smooth').value);
+      if (smoothVal > 0) {
+        var smoothEps = smoothVal * 0.5;
+        for (var lv = 1; lv <= 2; lv++) {
+          STATE.paths[lv].forEach(function(pathObj) {
+            var smoothed = simplifyTracePath(pathObj.d, smoothEps);
+            if (smoothed && smoothed.length > 0) pathObj.d = smoothed;
+          });
+        }
+      }
 
       STATE.redoStack = [];
       STATE.tracing = false;
@@ -3008,15 +3051,37 @@ function renderCanvas() {
   const layerId = ['layer-block', 'layer-shape', 'layer-detail'][level];
   STATE.paths[level].forEach((p, i) => {
     const el = createPathElement(p, false);
-    if (i === STATE.selectedPathIndex) {
-      el.style.outline = '2px solid var(--accent)';
-      el.style.outlineOffset = '2px';
+    if (STATE.selectedPathSet.has(i) || i === STATE.selectedPathIndex) {
+      el.classList.add('path-selected');
     }
     el.dataset.pathIndex = i;
+    el.style.cursor = (STATE.tool === 'select' || STATE.tool === 'erase') ? 'pointer' : '';
+    // Hover highlight
+    el.addEventListener('mouseenter', () => {
+      if (STATE.tool === 'select' || STATE.tool === 'erase') {
+        el.classList.add('path-hover');
+      }
+    });
+    el.addEventListener('mouseleave', () => {
+      el.classList.remove('path-hover');
+    });
     el.addEventListener('click', (e) => {
       if (STATE.tool === 'select') {
         e.stopPropagation();
-        STATE.selectedPathIndex = i;
+        if (e.shiftKey) {
+          // Multi-select toggle
+          if (STATE.selectedPathSet.has(i)) {
+            STATE.selectedPathSet.delete(i);
+          } else {
+            STATE.selectedPathSet.add(i);
+          }
+          STATE.selectedPathIndex = STATE.selectedPathSet.size > 0
+            ? Array.from(STATE.selectedPathSet).pop() : -1;
+        } else {
+          STATE.selectedPathSet.clear();
+          STATE.selectedPathSet.add(i);
+          STATE.selectedPathIndex = i;
+        }
         renderCanvas();
         updatePathInspector();
       } else if (STATE.tool === 'erase') {
@@ -3024,6 +3089,7 @@ function renderCanvas() {
         pushUndo('deletePath');
         STATE.paths[level].splice(i, 1);
         STATE.selectedPathIndex = -1;
+        STATE.selectedPathSet.clear();
         renderCanvas();
         updateBudget();
         updatePreviews();
@@ -3031,6 +3097,9 @@ function renderCanvas() {
     });
     $(layerId).appendChild(el);
   });
+
+  // Update cleanup count for current level
+  if ($('clean-threshold')) updateCleanCount();
 }
 
 function createPathElement(pathObj, dimmed) {
@@ -3107,6 +3176,7 @@ function undo() {
   STATE.zones = snap.zones;
   STATE.activeZoneIndex = snap.activeZoneIndex;
   STATE.selectedPathIndex = -1;
+  STATE.selectedPathSet.clear();
   renderZoneChips();
   renderCanvas();
   updateBudget();
@@ -3127,6 +3197,7 @@ function redo() {
   STATE.zones = snap.zones;
   STATE.activeZoneIndex = snap.activeZoneIndex;
   STATE.selectedPathIndex = -1;
+  STATE.selectedPathSet.clear();
   renderZoneChips();
   renderCanvas();
   updateBudget();
@@ -3176,6 +3247,46 @@ function consolidatedPathCount() {
     count += groups.size;
   });
   return count;
+}
+
+// Path area estimation using SVG getBBox
+function estimatePathArea(d) {
+  var tmp = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  tmp.setAttribute('d', d);
+  var svg = $('canvas-svg');
+  svg.appendChild(tmp);
+  try {
+    var bb = tmp.getBBox();
+    return bb.width * bb.height;
+  } catch(e) { return 0; }
+  finally { svg.removeChild(tmp); }
+}
+
+function updateCleanCount() {
+  var threshold = parseInt($('clean-threshold').value) || 25;
+  $('clean-threshold-val').textContent = threshold;
+  var count = 0;
+  STATE.paths[STATE.activeLevel].forEach(function(p) {
+    if (estimatePathArea(p.d) < threshold) count++;
+  });
+  $('clean-count').textContent = count > 0 ? count + ' match' + (count > 1 ? 'es' : '') : '';
+}
+
+function cleanSmallPaths() {
+  var threshold = parseInt($('clean-threshold').value) || 25;
+  var before = STATE.paths[STATE.activeLevel].length;
+  pushUndo('deletePath');
+  STATE.paths[STATE.activeLevel] = STATE.paths[STATE.activeLevel].filter(function(p) {
+    return estimatePathArea(p.d) >= threshold;
+  });
+  var removed = before - STATE.paths[STATE.activeLevel].length;
+  STATE.selectedPathIndex = -1;
+  STATE.selectedPathSet.clear();
+  renderCanvas();
+  updateBudget();
+  updatePreviews();
+  updatePathInspector();
+  if (removed > 0) showToast('Removed ' + removed + ' small path' + (removed > 1 ? 's' : ''));
 }
 
 // ── Export ──
@@ -3473,6 +3584,51 @@ function updatePathInspector() {
   const section = $('path-inspector-section');
   const container = $('path-inspector');
 
+  // Multi-select summary
+  if (STATE.selectedPathSet.size > 1) {
+    section.style.display = '';
+    container.innerHTML = `
+      <div style="font-size:12px; color:var(--fg-dim); margin-bottom:8px;">
+        ${STATE.selectedPathSet.size} paths selected
+      </div>
+      <div class="field">
+        <div class="field-label">Zone (all)</div>
+        <select id="inspect-zone-multi" style="width:100%; padding:4px 6px; border:1px solid var(--border); border-radius:6px; font-size:11px;">
+          <option value="">— mixed —</option>
+          ${STATE.zones.map(z => `<option value="${z.id}">${z.id}</option>`).join('')}
+        </select>
+      </div>
+      <div style="display:flex; gap:4px;">
+        <button class="sm" id="inspect-apply-multi">Apply Zone</button>
+        <button class="sm" id="inspect-delete-multi" style="color:var(--bad);">Delete All</button>
+      </div>
+    `;
+    $('inspect-apply-multi').addEventListener('click', () => {
+      const zone = $('inspect-zone-multi').value;
+      if (!zone) return;
+      pushUndo('editPath');
+      STATE.selectedPathSet.forEach(idx => {
+        STATE.paths[STATE.activeLevel][idx].zone = zone;
+      });
+      renderCanvas();
+      updatePreviews();
+    });
+    $('inspect-delete-multi').addEventListener('click', () => {
+      pushUndo('deletePath');
+      var toDelete = Array.from(STATE.selectedPathSet).sort(function(a, b) { return b - a; });
+      toDelete.forEach(function(idx) {
+        STATE.paths[STATE.activeLevel].splice(idx, 1);
+      });
+      STATE.selectedPathIndex = -1;
+      STATE.selectedPathSet.clear();
+      renderCanvas();
+      updateBudget();
+      updatePreviews();
+      updatePathInspector();
+    });
+    return;
+  }
+
   if (STATE.selectedPathIndex < 0 || !STATE.paths[STATE.activeLevel][STATE.selectedPathIndex]) {
     section.style.display = 'none';
     return;
@@ -3529,6 +3685,7 @@ function updatePathInspector() {
     pushUndo('deletePath');
     STATE.paths[STATE.activeLevel].splice(STATE.selectedPathIndex, 1);
     STATE.selectedPathIndex = -1;
+    STATE.selectedPathSet.clear();
     renderCanvas();
     updateBudget();
     updatePreviews();
@@ -3746,6 +3903,14 @@ function attachEvents() {
     $('trace-turd-val').textContent = e.target.value;
   });
 
+  $('trace-smooth').addEventListener('input', e => {
+    $('trace-smooth-val').textContent = e.target.value;
+  });
+
+  // Clean paths controls
+  $('clean-threshold').addEventListener('input', e => updateCleanCount());
+  $('clean-paths-btn').addEventListener('click', () => cleanSmallPaths());
+
   // Import
   $('btn-import').addEventListener('click', () => $('import-dialog').showModal());
   $('import-cancel').addEventListener('click', () => $('import-dialog').close());
@@ -3801,6 +3966,7 @@ function attachEvents() {
       const target = e.target;
       if (target === svg || target.classList.contains('paper-bg')) {
         STATE.selectedPathIndex = -1;
+        STATE.selectedPathSet.clear();
         renderCanvas();
         updatePathInspector();
       }
@@ -3812,6 +3978,7 @@ function attachEvents() {
         pushUndo('deletePath');
         STATE.paths[STATE.activeLevel].splice(idx, 1);
         STATE.selectedPathIndex = -1;
+        STATE.selectedPathSet.clear();
         renderCanvas();
         updateBudget();
         updatePreviews();
@@ -3870,15 +4037,32 @@ function attachEvents() {
     else if (e.key === '2') setLevel(1);
     else if (e.key === '3') setLevel(2);
     else if (e.key === 'Delete' || e.key === 'Backspace') {
-      if (STATE.selectedPathIndex >= 0) {
+      var toDelete = Array.from(STATE.selectedPathSet);
+      if (toDelete.length === 0 && STATE.selectedPathIndex >= 0) {
+        toDelete = [STATE.selectedPathIndex];
+      }
+      if (toDelete.length > 0) {
         pushUndo('deletePath');
-        STATE.paths[STATE.activeLevel].splice(STATE.selectedPathIndex, 1);
+        // Delete in reverse order to preserve indices
+        toDelete.sort(function(a, b) { return b - a; });
+        toDelete.forEach(function(idx) {
+          STATE.paths[STATE.activeLevel].splice(idx, 1);
+        });
         STATE.selectedPathIndex = -1;
+        STATE.selectedPathSet.clear();
         renderCanvas();
         updateBudget();
         updatePreviews();
         updatePathInspector();
       }
+    }
+    else if (e.ctrlKey && e.key === 'a') {
+      e.preventDefault();
+      STATE.selectedPathSet.clear();
+      STATE.paths[STATE.activeLevel].forEach(function(_, i) { STATE.selectedPathSet.add(i); });
+      STATE.selectedPathIndex = STATE.selectedPathSet.size > 0 ? 0 : -1;
+      renderCanvas();
+      updatePathInspector();
     }
     else if (e.key === '0') fitToView();
     else if (e.key === '+' || e.key === '=') zoom(1.25);
