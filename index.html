@@ -977,6 +977,19 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
 /* ============================================================
    PRINT GALLERY (画 Gallery) — unified viewer
    ============================================================ */
+/* ── Toast notification ── */
+#mokuri-toast {
+  position: fixed; bottom: 52px; left: 50%; transform: translateX(-50%) translateY(8px);
+  background: #3a2f24; color: #e8d9c0; border: 1px solid #6b5740;
+  padding: 9px 20px; border-radius: 8px; font-size: 13px;
+  z-index: 9999; pointer-events: none;
+  opacity: 0; transition: opacity 0.2s, transform 0.2s;
+  white-space: nowrap;
+}
+#mokuri-toast.visible {
+  opacity: 1; transform: translateX(-50%) translateY(0);
+}
+
 .pgallery-modal {
   position: fixed; inset: 0; z-index: 1100;
   background: #241e18;
@@ -2929,6 +2942,7 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
     </div>
   </div>
 </div>
+<div id="mokuri-toast"></div>
 
 <!-- Makimono (巻物) — Welcome / About / FRE scroll -->
 <div class="makimono" id="makimono">
@@ -5527,7 +5541,7 @@ async function initStorage() {
 
 // ── Print storage helpers ──
 
-const MAX_SAVED_PRINTS = 50;
+const MAX_SAVED_PRINTS = 100;
 
 function canvasToBlob(canvas, type, quality) {
   return new Promise((resolve) => {
@@ -5553,7 +5567,7 @@ async function savePrintToGallery(canvas, opts) {
   try {
     const count = await MokuriDB.getPrintCount();
     if (count >= MAX_SAVED_PRINTS) {
-      $('status-hint').textContent = 'Print gallery full (' + MAX_SAVED_PRINTS + ') — delete prints to make room';
+      showFlash('⚠ Print gallery full (' + MAX_SAVED_PRINTS + ') — open the gallery and delete prints to make room');
       return;
     }
     const imageBlob = await canvasToBlob(canvas);
@@ -6445,6 +6459,15 @@ let _pgalleryFilter = 'all';
 let _pgalleryPrints = [];
 let _pgalleryIndex = 0;
 
+let _toastTimer = null;
+function showFlash(msg, duration) {
+  const el = $('mokuri-toast');
+  el.textContent = msg;
+  el.classList.add('visible');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('visible'), duration || 3000);
+}
+
 function mokConfirm(message, okLabel) {
   return new Promise((resolve) => {
     $('mokuri-confirm-text').textContent = message;
@@ -6466,6 +6489,7 @@ function mokConfirm(message, okLabel) {
 }
 
 function openPrintGallery() {
+  _pgalleryIndex = 0;
   buildPrintGalleryUI();
   $('pgallery-modal').classList.add('visible');
   MokuriAudio.playModalOpen();
@@ -10727,10 +10751,30 @@ function setupKeyboard() {
       openWorkshop();
       e.preventDefault();
     }
-    // Lightbox arrow navigation
+    // Lightbox arrow navigation + delete
     if ($('pgallery-modal').classList.contains('visible')) {
       if (e.key === 'ArrowLeft') { galleryNav(-1); e.preventDefault(); }
       if (e.key === 'ArrowRight') { galleryNav(1); e.preventDefault(); }
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        const print = currentPrint();
+        if (print) {
+          e.preventDefault();
+          mokConfirm('Delete this print?', 'Delete').then(async ok => {
+            if (!ok) return;
+            try {
+              await MokuriDB.deletePrint(print.id);
+              _pgalleryPrints.splice(_pgalleryIndex, 1);
+              if (_pgalleryPrints.length === 0) {
+                buildPrintGalleryUI();
+              } else {
+                if (_pgalleryIndex >= _pgalleryPrints.length) _pgalleryIndex = _pgalleryPrints.length - 1;
+                buildThumbnailStrip();
+                renderCurrentPrint();
+              }
+            } catch (err) {}
+          });
+        }
+      }
     }
 
     // Dev: Ctrl+Shift+G — export current composition as gallery.js preset to clipboard
