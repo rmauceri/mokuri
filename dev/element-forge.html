@@ -705,8 +705,23 @@ button.sm { padding: 3px 8px; font-size: 11px; }
         </div>
 
         <div class="panel-section">
-          <div class="subtle-label">Trace Image</div>
+          <div class="subtle-label">Import</div>
           <div class="trace-section" id="trace-section">
+            <!-- SVG import — primary path -->
+            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:6px;">
+              <button class="sm" id="btn-load-svg" style="flex-shrink:0;">🖼 Import SVG</button>
+              <span id="svg-status" style="font-size:11px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:130px;"></span>
+            </div>
+            <input type="file" id="svg-file" accept=".svg,image/svg+xml" style="display:none">
+
+            <!-- Divider -->
+            <div style="display:flex; align-items:center; gap:6px; margin:6px 0; color:var(--muted); font-size:11px;">
+              <div style="flex:1; height:1px; background:var(--border);"></div>
+              <span>or trace image</span>
+              <div style="flex:1; height:1px; background:var(--border);"></div>
+            </div>
+
+            <!-- PNG trace — secondary path -->
             <div class="trace-preview" id="trace-preview">
               <div class="placeholder">Drop an image or click to browse</div>
             </div>
@@ -735,16 +750,6 @@ button.sm { padding: 3px 8px; font-size: 11px; }
                 </div>
                 <div id="cluster-swatches" style="display:flex; flex-wrap:wrap; gap:4px; margin:6px 0;"></div>
                 <canvas id="quantize-preview" class="thresh-preview-canvas"></canvas>
-              </div>
-
-              <!-- SVG Import -->
-              <div class="panel-section" style="margin-top:8px;">
-                <div class="subtle-label">Import SVG</div>
-                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                  <button class="sm" id="btn-load-svg">🖼 Import SVG</button>
-                  <span id="svg-status" style="font-size:11px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:140px;"></span>
-                </div>
-                <input type="file" id="svg-file" accept=".svg,image/svg+xml" style="display:none">
               </div>
 
               <!-- Mono fallback controls (hidden when color segmentation active) -->
