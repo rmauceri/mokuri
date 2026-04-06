@@ -2089,6 +2089,18 @@ function traceWithImageTracer() {
         }
       });
 
+      // Ensure all fill paths are closed (ImageTracer may omit Z)
+      for (var lv = 0; lv <= 2; lv++) {
+        STATE.paths[lv].forEach(function(p) {
+          if (p.type === 'fill') {
+            var trimmed = p.d.trim();
+            if (!trimmed.endsWith('Z') && !trimmed.endsWith('z')) {
+              p.d = trimmed + ' Z';
+            }
+          }
+        });
+      }
+
       // Smooth traced paths: parse polygons → RDP simplify → Q-curve rebuild
       // Exponential curve: low values = subtle, high values = aggressive
       var smoothVal = parseInt($('trace-smooth').value);
