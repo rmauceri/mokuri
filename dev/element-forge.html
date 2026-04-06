@@ -2089,18 +2089,6 @@ function traceWithImageTracer() {
         }
       });
 
-      // Ensure all fill paths are closed (ImageTracer may omit Z)
-      for (var lv = 0; lv <= 2; lv++) {
-        STATE.paths[lv].forEach(function(p) {
-          if (p.type === 'fill') {
-            var trimmed = p.d.trim();
-            if (!trimmed.endsWith('Z') && !trimmed.endsWith('z')) {
-              p.d = trimmed + ' Z';
-            }
-          }
-        });
-      }
-
       // Smooth traced paths: parse polygons → RDP simplify → Q-curve rebuild
       // Exponential curve: low values = subtle, high values = aggressive
       var smoothVal = parseInt($('trace-smooth').value);
@@ -2112,6 +2100,26 @@ function traceWithImageTracer() {
             if (smoothed && smoothed.length > 0) pathObj.d = smoothed;
           });
         }
+      }
+
+      // Split multi-subpath d strings into separate path objects
+      // Prevents nonzero fill-rule holes from opposite winding directions
+      for (var lv = 0; lv <= 2; lv++) {
+        var expanded = [];
+        STATE.paths[lv].forEach(function(p) {
+          if (p.type !== 'fill') { expanded.push(p); return; }
+          // Split on M commands (each M...Z is a subpath)
+          var subs = p.d.match(/M[^M]+/g);
+          if (!subs || subs.length <= 1) { expanded.push(p); return; }
+          subs.forEach(function(sub) {
+            var trimmed = sub.trim();
+            if (trimmed.length > 4) {
+              if (!trimmed.endsWith('Z') && !trimmed.endsWith('z')) trimmed += ' Z';
+              expanded.push({ d: trimmed, type: 'fill', zone: p.zone });
+            }
+          });
+        });
+        STATE.paths[lv] = expanded;
       }
 
       STATE.redoStack = [];
@@ -3278,10 +3286,8 @@ function estimatePathArea(d) {
 function isEdgePath(bb, margin) {
   var w = STATE.viewBoxW, h = STATE.viewBoxH;
   var mx = w * margin, my = h * margin;
-  // Path center is within margin of any edge
-  var cx = bb.x + bb.w / 2;
-  var cy = bb.y + bb.h / 2;
-  return cx < mx || cx > (w - mx) || cy < my || cy > (h - my);
+  // Path bbox touches the edge zone (any edge of the bbox is within margin)
+  return bb.x < mx || (bb.x + bb.w) > (w - mx) || bb.y < my || (bb.y + bb.h) > (h - my);
 }
 
 function updateCleanCount() {
