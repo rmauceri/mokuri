@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mokuri Element Forge - Test Bench</title>
+    <script src="https://cdn.jsdelivr.net/npm/imagetracerjs@1.2.6/imagetracer_v1.2.6.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #1a1a1a; color: #e0e0e0; padding: 2rem; }
+        .container { display: flex; gap: 20px; flex-wrap: wrap; }
+        .box { flex: 1; min-width: 300px; background: #2a2a2a; padding: 15px; border-radius: 8px; }
+        img, svg { max-width: 100%; height: auto; background: #00FF00; border: 1px solid #444; }
+        pre { background: #000; padding: 10px; overflow-x: auto; font-size: 12px; color: #0f0; }
+        button { padding: 10px 20px; cursor: pointer; background: #d4622b; border: none; color: white; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>Mokuri Element Forge: PNG → SVG</h1>
+    <p>Upload a 4-zone PNG with #00FF00 background to test the vectorization quality.</p>
+
+    <input type="file" id="upload" accept="image/png" style="margin-bottom: 20px;">
+    
+    <div class="container">
+        <div class="box">
+            <h3>1. Source PNG</h3>
+            <img id="source-img" src="" alt="Waiting for upload...">
+        </div>
+
+        <div class="box">
+            <h3>2. Processed SVG (Shape Level)</h3>
+            <div id="svg-container"></div>
+            <button id="download-btn" style="display:none; margin-top:10px;">Download SVG</button>
+        </div>
+    </div>
+
+    <div class="box" style="margin-top: 20px;">
+        <h3>3. Path Data (for JS Element Definition)</h3>
+        <pre id="path-output">Path data will appear here...</pre>
+    </div>
+
+    <script>
+        const upload = document.getElementById('upload');
+        const sourceImg = document.getElementById('source-img');
+        const svgContainer = document.getElementById('svg-container');
+        const pathOutput = document.getElementById('path-output');
+
+        upload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(event) {
+                sourceImg.src = event.target.result;
+                
+                // Wait for image to load before tracing
+                sourceImg.onload = function() {
+                    processImage(sourceImg);
+                };
+            };
+            reader.readAsDataURL(file);
+        });
+
+        function processImage(imgElement) {
+            // Options tuned for Mokuri Spec:
+            // - pal: manually defined to match your hex codes
+            // - layers: true to ensure color zones are separate paths
+            const options = {
+                // 1. DISABLE SMOOTHING
+                // This stops the tracer from trying to "blend" the eye into the background.
+                ltres: 0.01, 
+                qtres: 0.01,
+                pathomit: 0,
+
+                // 2. STRENGTHEN THE PALETTE
+                colorsampling: 0,
+                numberofcolors: 5, // Force exactly 5 buckets
+                mincolorratio: 0,  // CRITICAL: Don't ignore colors even if they represent 0.01% of the image
+                
+                pal: [
+                    {r:240, g:232, b:208, a:255}, // Body
+                    {r:212, g:98, b:43, a:255},   // Marking
+                    {r:138, g:138, b:138, a:255}, // Fin
+                    {r:58, g:42, b:26, a:255},    // Accent (Black)
+                    {r:0, g:255, b:0, a:255}      // CHANGE: Set Alpha to 255 for the trace!
+                ],
+
+                // 3. POST-TRACE TRANSPARENCY
+                // If you set Alpha to 0 in the palette, the tracer often treats those pixels 
+                // as "null space." It's better to trace the green as a solid shape, 
+                // and then simply hide that path in your CSS/SVG later.
+                viewbox: true,
+                linefilter: false
+            };
+
+            // Run the trace
+            ImageTracer.imageToSVG(imgElement.src, function(svgstr) {
+                svgContainer.innerHTML = svgstr;
+                pathOutput.textContent = svgstr;
+                document.getElementById('download-btn').style.display = 'block';
+            }, options);
+        }
+    </script>
+</body>
+</html>
