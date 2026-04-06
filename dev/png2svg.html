@@ -44,6 +44,7 @@
         const sourceImg = document.getElementById('source-img');
         const svgContainer = document.getElementById('svg-container');
         const pathOutput = document.getElementById('path-output');
+        let _lastSvgStr = null;
 
         upload.addEventListener('change', function(e) {
             const file = e.target.files[0];
@@ -94,11 +95,25 @@
 
             // Run the trace
             ImageTracer.imageToSVG(imgElement.src, function(svgstr) {
+                _lastSvgStr = svgstr;
                 svgContainer.innerHTML = svgstr;
                 pathOutput.textContent = svgstr;
                 document.getElementById('download-btn').style.display = 'block';
             }, options);
         }
+
+    document.getElementById('download-btn').addEventListener('click', function() {
+        if (!_lastSvgStr) return;
+        const blob = new Blob([_lastSvgStr], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'traced.svg';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    });
     </script>
 </body>
 </html>

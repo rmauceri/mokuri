@@ -1122,7 +1122,13 @@ const STATE = {
   quantizeW: 0,
   quantizeH: 0,
 
+  // SVG import source dimensions (for Auto VB)
+  svgSourceW: 0,
+  svgSourceH: 0,
+
   // Viewport
+  viewBoxX: 0,
+  viewBoxY: 0,
   viewBox: { x: 0, y: 0, w: 160, h: 160 },
   zoom: 1,
   panning: false,
@@ -1152,20 +1158,22 @@ function init() {
 
 // ── ViewBox / Canvas ──
 function setupViewBox() {
+  const x = STATE.viewBoxX || 0;
+  const y = STATE.viewBoxY || 0;
   const w = STATE.viewBoxW;
   const h = STATE.viewBoxH;
   // Add padding around paper
   const pad = Math.max(w, h) * 0.15;
-  STATE.viewBox = { x: -pad, y: -pad, w: w + pad * 2, h: h + pad * 2 };
+  STATE.viewBox = { x: x - pad, y: y - pad, w: w + pad * 2, h: h + pad * 2 };
   applyViewBox();
   const paper = $('paper-rect');
-  paper.setAttribute('x', 0);
-  paper.setAttribute('y', 0);
+  paper.setAttribute('x', x);
+  paper.setAttribute('y', y);
   paper.setAttribute('width', w);
   paper.setAttribute('height', h);
   // Update preview viewboxes
   ['preview-block', 'preview-shape', 'preview-detail'].forEach(id => {
-    $(id).setAttribute('viewBox', `0 0 ${w} ${h}`);
+    $(id).setAttribute('viewBox', `${x} ${y} ${w} ${h}`);
   });
 }
 
@@ -1288,6 +1296,26 @@ function setLevel(level) {
     tab.classList.toggle('active', parseInt(tab.dataset.level) === level);
   });
   renderCanvas();
+  updateStatusBar();
+  updatePathInspector();
+}
+
+// Move selected paths to a different carve level
+function movePathsToLevel(indices, targetLevel) {
+  if (targetLevel === STATE.activeLevel) return;
+  pushUndo('moveLevel');
+  const pathsToMove = indices.map(i => STATE.paths[STATE.activeLevel][i]);
+  [...indices].sort((a, b) => b - a).forEach(i => STATE.paths[STATE.activeLevel].splice(i, 1));
+  pathsToMove.forEach(p => STATE.paths[targetLevel].push(p));
+  STATE.selectedPathIndex = -1;
+  STATE.selectedPathSet.clear();
+  document.querySelectorAll('.level-tab').forEach(tab => {
+    tab.classList.toggle('active', parseInt(tab.dataset.level) === targetLevel);
+  });
+  STATE.activeLevel = targetLevel;
+  renderCanvas();
+  updateBudget();
+  updatePreviews();
   updateStatusBar();
   updatePathInspector();
 }
@@ -1623,20 +1651,66 @@ function loadTraceImage(src) {
 
 // Set viewBox from image aspect ratio (scaled to ~160 wide)
 function autoViewBoxFromImage() {
-  if (!STATE.traceImageEl) return;
-  var img = STATE.traceImageEl;
-  var aspect = img.naturalHeight / img.naturalWidth;
-  var w = 160;
-  var h = Math.round(w * aspect);
-  STATE.viewBoxW = w;
-  STATE.viewBoxH = h;
-  $('vb-w').value = w;
-  $('vb-h').value = h;
-  setupViewBox();
-  renderCanvas();
-  // Re-apply reference
-  if (STATE.refImageSrc) loadRefImage(STATE.refImageSrc);
-  showToast('ViewBox set to ' + w + '\u00d7' + h);
+  if (STATE.traceImageEl) {
+    // PNG trace: use image aspect ratio — paths are always in [0,0,W,H] space
+    STATE.viewBoxX = 0;
+    STATE.viewBoxY = 0;
+    var aspect = STATE.traceImageEl.naturalHeight / STATE.traceImageEl.naturalWidth;
+    var w = 160;
+    var h = Math.round(w * aspect);
+    STATE.viewBoxW = w;
+    STATE.viewBoxH = h;
+    $('vb-w').value = w;
+    $('vb-h').value = h;
+    setupViewBox();
+    renderCanvas();
+    if (STATE.refImageSrc) loadRefImage(STATE.refImageSrc);
+    showToast('ViewBox set to ' + w + '\u00d7' + h);
+  } else if (STATE.svgSourceW) {
+    // SVG import: measure actual path content bbox and frame it exactly
+    const allPaths = STATE.paths.flat();
+    if (allPaths.length === 0) { showToast('No paths to frame'); return; }
+
+    const tmpSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    tmpSvg.style.cssText = 'position:fixed;left:-9999px;top:-9999px;visibility:hidden;pointer-events:none;width:1px;height:1px;';
+    tmpSvg.setAttribute('viewBox', '0 0 100000 100000');
+    document.body.appendChild(tmpSvg);
+
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    allPaths.forEach(p => {
+      const el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      el.setAttribute('d', p.d);
+      tmpSvg.appendChild(el);
+      try {
+        const bb = el.getBBox();
+        if (bb.width > 0 || bb.height > 0) {
+          minX = Math.min(minX, bb.x);
+          minY = Math.min(minY, bb.y);
+          maxX = Math.max(maxX, bb.x + bb.width);
+          maxY = Math.max(maxY, bb.y + bb.height);
+        }
+      } catch(e) {}
+    });
+    document.body.removeChild(tmpSvg);
+
+    if (!isFinite(minX) || maxX <= minX || maxY <= minY) {
+      showToast('Could not compute content bounds');
+      return;
+    }
+
+    // Add 5% margin on each side
+    const cw = maxX - minX, ch = maxY - minY;
+    const mx = cw * 0.05, my = ch * 0.05;
+    STATE.viewBoxX = Math.round((minX - mx) * 10) / 10;
+    STATE.viewBoxY = Math.round((minY - my) * 10) / 10;
+    STATE.viewBoxW = Math.round((cw + mx * 2) * 10) / 10;
+    STATE.viewBoxH = Math.round((ch + my * 2) * 10) / 10;
+    $('vb-w').value = STATE.viewBoxW;
+    $('vb-h').value = STATE.viewBoxH;
+    setupViewBox();
+    renderCanvas();
+    showToast('ViewBox set to ' + STATE.viewBoxW + '\u00d7' + STATE.viewBoxH);
+  }
 }
 
 // Run Potrace at a single threshold and return the SVG path d string
@@ -3068,10 +3142,36 @@ function parseSvgPaths(svgText) {
   const vb = vbAttr ? vbAttr.trim().split(/[\s,]+/).map(Number) : [0, 0, 1000, 1000];
   const sourceW = vb[2] || 1000, sourceH = vb[3] || 1000;
 
+  // Normalize any fill value to lowercase #rrggbb hex, or null if transparent/unsupported
+  function normalizeFill(fill) {
+    if (!fill) return null;
+    fill = fill.trim().toLowerCase();
+    if (fill === 'none' || fill === 'transparent') return null;
+    if (fill.startsWith('#')) {
+      if (fill.length === 4) fill = '#' + fill[1]+fill[1]+fill[2]+fill[2]+fill[3]+fill[3];
+      return fill;
+    }
+    const rgb = fill.match(/^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/);
+    if (rgb) return '#' + [rgb[1],rgb[2],rgb[3]].map(n => parseInt(n).toString(16).padStart(2,'0')).join('');
+    return null;
+  }
+
+  // Get effective fill: inline style > fill attr > inherited from parent chain
+  function getEffectiveFill(el) {
+    const style = el.getAttribute('style') || '';
+    const styleMatch = style.match(/(?:^|;)\s*fill\s*:\s*([^;]+)/i);
+    if (styleMatch) { const f = normalizeFill(styleMatch[1]); if (f) return f; }
+    const attr = el.getAttribute('fill');
+    if (attr) { const f = normalizeFill(attr); if (f) return f; }
+    const parent = el.parentElement;
+    if (parent && parent.tagName.toLowerCase() !== 'svg') return getEffectiveFill(parent);
+    return null;
+  }
+
   const paths = [];
   svgEl.querySelectorAll('path').forEach(p => {
-    const fill = p.getAttribute('fill');
-    if (!fill || fill === 'none' || fill === 'transparent') return;
+    const fill = getEffectiveFill(p);
+    if (!fill) return;
     const d = p.getAttribute('d');
     if (!d) return;
 
@@ -3322,6 +3422,12 @@ function loadSvgFile(file) {
     }
 
     buildStateFromSvgZones(zones, sourceW, sourceH);
+
+    STATE.svgSourceW = sourceW;
+    STATE.svgSourceH = sourceH;
+    STATE.viewBoxX = 0;
+    STATE.viewBoxY = 0;
+    $('btn-auto-vb').style.display = '';
 
     $('svg-status').textContent = file.name;
     renderZoneChips();
@@ -3668,7 +3774,7 @@ function buildElementDefinition() {
   if (pack !== 'core') el.pack = pack;
   if (category === 'hanko') el.hanko = true;
   if (tags.length) el.tags = tags;
-  el.viewBox = `0 0 ${STATE.viewBoxW} ${STATE.viewBoxH}`;
+  el.viewBox = `${STATE.viewBoxX || 0} ${STATE.viewBoxY || 0} ${STATE.viewBoxW} ${STATE.viewBoxH}`;
   el.suggestedLayer = $('el-layer').value;
   el.colorZones = STATE.zones.map(z => ({ id: z.id, defaultPaletteSlot: z.defaultPaletteSlot }));
 
@@ -3816,6 +3922,8 @@ function importElement(el) {
   if (el.viewBox) {
     const parts = el.viewBox.split(/\s+/).map(Number);
     if (parts.length >= 4) {
+      STATE.viewBoxX = parts[0] || 0;
+      STATE.viewBoxY = parts[1] || 0;
       STATE.viewBoxW = parts[2];
       STATE.viewBoxH = parts[3];
       $('vb-w').value = parts[2];
@@ -3948,8 +4056,15 @@ function updatePathInspector() {
           ${STATE.zones.map(z => `<option value="${z.id}">${z.id}</option>`).join('')}
         </select>
       </div>
-      <div style="display:flex; gap:4px;">
+      <div class="field">
+        <div class="field-label">Move to Level</div>
+        <select id="inspect-level-multi" style="width:100%; padding:4px 6px; border:1px solid var(--border); border-radius:6px; font-size:11px;">
+          ${LEVEL_NAMES.map((n, i) => `<option value="${i}" ${i === STATE.activeLevel ? 'selected' : ''}>${n.charAt(0).toUpperCase() + n.slice(1)}</option>`).join('')}
+        </select>
+      </div>
+      <div style="display:flex; gap:4px; flex-wrap:wrap;">
         <button class="sm" id="inspect-apply-multi">Apply Zone</button>
+        <button class="sm" id="inspect-move-multi">Move Level</button>
         <button class="sm" id="inspect-delete-multi" style="color:var(--bad);">Delete All</button>
       </div>
     `;
@@ -3962,6 +4077,10 @@ function updatePathInspector() {
       });
       renderCanvas();
       updatePreviews();
+    });
+    $('inspect-move-multi').addEventListener('click', () => {
+      const target = parseInt($('inspect-level-multi').value);
+      movePathsToLevel(Array.from(STATE.selectedPathSet), target);
     });
     $('inspect-delete-multi').addEventListener('click', () => {
       pushUndo('deletePath');
@@ -4001,6 +4120,12 @@ function updatePathInspector() {
         ${STATE.zones.map(z => `<option value="${z.id}" ${z.id === p.zone ? 'selected' : ''}>${z.id}</option>`).join('')}
       </select>
     </div>
+    <div class="field">
+      <div class="field-label">Level</div>
+      <select id="inspect-level" style="width:100%; padding:4px 6px; border:1px solid var(--border); border-radius:6px; font-size:11px;">
+        ${LEVEL_NAMES.map((n, i) => `<option value="${i}" ${i === STATE.activeLevel ? 'selected' : ''}>${n.charAt(0).toUpperCase() + n.slice(1)}</option>`).join('')}
+      </select>
+    </div>
     ${p.type === 'stroke' ? `
     <div class="field">
       <div class="field-label">Stroke Width</div>
@@ -4025,6 +4150,11 @@ function updatePathInspector() {
     if (path.type === 'stroke') {
       const sw = $('inspect-sw');
       path.strokeWidth = sw ? parseFloat(sw.value) : 2;
+    }
+    const targetLevel = parseInt($('inspect-level').value);
+    if (targetLevel !== STATE.activeLevel) {
+      movePathsToLevel([STATE.selectedPathIndex], targetLevel);
+      return; // movePathsToLevel re-renders everything
     }
     renderCanvas();
     updateBudget();
