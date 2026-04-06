@@ -7521,7 +7521,7 @@ function buildElementThumb(def) {
     path.setAttribute('stroke-width', 0.8);
     svg.appendChild(path);
   });
-  const detailPaths = getElementOverlayPaths(def, def.carveLevels.length - 1);
+  const detailPaths = getElementVisiblePaths(def, def.carveLevels.length - 1);
   detailPaths.forEach(p => {
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     path.setAttribute('d', p.d);

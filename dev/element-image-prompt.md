@@ -1,114 +1,141 @@
-# Element Image Generation Batch
-## 9 Fauna Elements for Mokuri (Koi × 3, Rabbit × 3, Turtle × 3)
+# Mokuri Element SVG Generation Guide
+## Recraft.ai — Fauna Elements
 
-Read the attached **Mokuhanga Element Image Spec** completely before generating any images. Every rule in that spec applies to every image below. This message defines the specific subjects, poses, and color maps.
-
----
-
-## Global Rules (Apply to ALL 9 images)
-
-- **Format**: PNG, 1024×768, 8-bit RGB
-- **Background**: Solid `#00FF00` filling the entire canvas
-- **Every color region is PERFECTLY FLAT** — zero gradients, zero shading, zero texture, zero highlights
-- **NO outlines whatsoever** — not around the subject, not between color regions, not even thin ones
-- **Hard pixel edges** between all color regions — no anti-aliasing, no feathering, no blending
-- **Color regions meet edge-to-edge** — the boundary between two colors IS the visual edge
-- **Subject centered**, filling ~60% of canvas area
-- **Style**: Traditional Japanese woodblock print (mokuhanga / kacho-e). Elegant, simplified, graceful. Think Hasui Kawase or Ohara Koson nature studies. NOT logo art, NOT anime, NOT sticker art.
-- **Single subject per image** — no ground, no water, no background elements (only green)
+This guide defines how to generate SVG source files for Mokuri elements using Recraft.ai. The output SVGs are imported into the Element Forge which segments color zones and exports Mokuri-compatible elements.
 
 ---
 
-## Koi (3 poses)
+## Recraft Settings (apply to every generation)
 
-These are ornamental carp for kacho-e pond compositions. Smooth, flowing forms with decorative color patches.
-
-**Color map (4 zones):**
-| Zone | Hex | Where |
-|------|-----|-------|
-| body | `#F0E8D0` | Main body surface — the largest area |
-| marking | `#D4622B` | Color patches on back, head cap — 2-3 distinct patches |
-| fin | `#8A8A8A` | All fins and tail — flowing, translucent-looking shapes |
-| accent | `#3A2A1A` | Eye, dorsal ridge, tail tip — small focal points |
-
-### Koi 1 — Swimming (side view)
-Gentle S-curve body, gliding left to right. Tail trailing softly. Pectoral fins slightly spread. Calm, unhurried movement. The classic koi profile.
-
-### Koi 2 — Turning (three-quarter view)
-Body curving in a C-shape as the fish turns. Head angled toward viewer. Tail sweeping around. Shows the rounded belly and dorsal markings. Dynamic but graceful.
-
-### Koi 3 — Overhead (top-down view)
-Viewed from directly above, as if looking into a pond. Symmetrical body, fins spread wide to the sides. Tail fan visible. Markings visible on the broad back. Serene, meditative pose.
+- **Output format**: SVG (vector)
+- **Style**: Vector illustration → **Icon** or **Flat vector**
+- **Canvas**: 1024×768 (landscape) or 768×1024 (portrait as appropriate)
+- **Background**: solid flat color, clearly distinct from all subject colors (teal `#00AAAA` works well)
+- **Prompt upsampling**: OFF
 
 ---
 
-## Rabbit (3 poses)
+## Critical SVG Constraints
 
-Japanese hare (usagi) in the tradition of rabbit-themed ukiyo-e. Round, soft body forms. Long ears are a key identifying feature — keep them as simple filled shapes.
+These are the most important rules. Violating them causes poor import quality.
 
-**Color map (4 zones):**
-| Zone | Hex | Where |
-|------|-----|-------|
-| body | `#E8DDD0` | Main fur body — warm off-white, the largest area |
-| inner | `#D4A88C` | Inner ears, belly shadow area, paw pads — warm pink-tan |
-| marking | `#A08870` | Back, ear tips, tail — warm brown-gray |
-| accent | `#3A2A1A` | Eye, nose, whisker dots — tiny focal points |
+### Shape Rules
+- **Each color zone is ONE solid non-overlapping shape** — the body is a single filled path, not multiple layered shapes
+- **Fins and tails are solid opaque fills** — NOT layered translucent strands, NOT feathered edges, NOT multiple overlapping shapes
+- **Total path count: 4–10 shapes** — the entire subject should be expressible as a handful of bold fills
+- **No decorative sub-division within a zone** — scale texture, fur texture, feather detail are NOT represented as separate shapes; they are added later by the user with carving tools
+- **Non-overlapping** — shapes for different zones sit next to each other with hard edges; they do not overlap
 
-### Rabbit 1 — Seated (profile)
-Sitting upright on haunches, facing right. Ears tall and alert. Classic moon-rabbit silhouette. Round body, tucked front paws. Calm, watchful posture.
+### Style Rules
+- **Stencil / mon / family crest aesthetic** — think Japanese kamon (family crest) silhouettes, not illustration
+- **Bold, simplified forms** — exaggerate proportions for graphic impact; eliminate anatomical complexity
+- **Flat opaque fills only** — no gradients, no shading, no highlights, no transparency
+- **No outlines** — color zone boundaries ARE the visual edges; no drawn outlines around or between shapes
+- **Mokuhanga kacho-e spirit** — Ohara Koson, Kōno Bairei nature studies; elegant and reduced
 
-### Rabbit 2 — Resting (three-quarter)
-Lying down with legs tucked under body, head turned slightly toward viewer. Ears relaxed, one slightly forward. Peaceful, settled pose. Compact rounded form.
-
-### Rabbit 3 — Leaping
-Mid-hop, body stretched with hind legs extended behind and front paws reaching forward. Ears streaming back. Energetic but still elegant — a flowing arc shape, not cartoonish bouncing.
-
----
-
-## Turtle (3 poses)
-
-Freshwater turtle (kame) — a symbol of longevity in Japanese art. Domed shell with visible plate pattern as distinct color regions (not drawn lines). Sturdy limbs, small head.
-
-**Color map (4 zones):**
-| Zone | Hex | Where |
-|------|-----|-------|
-| shell | `#5A6B4A` | Carapace (top shell) — muted olive-green, the dominant area |
-| plate | `#8A9A6A` | Shell plate highlights — lighter green, 3-5 distinct plates on shell |
-| skin | `#6B5B3A` | Head, legs, tail — warm brown |
-| accent | `#2D2D2D` | Eye, claw tips, mouth line — dark focal points |
-
-### Turtle 1 — Walking (side view)
-Steady stride, one front leg forward, shell slightly tilted. Head extended and alert. Tail visible behind shell. Classic profile showing the full dome of the shell and sturdy legs.
-
-### Turtle 2 — Swimming (three-quarter, from above)
-Gliding through water with legs extended as flippers. Shell visible from a slightly elevated angle. Head reaching forward. Graceful, unhurried aquatic movement.
-
-### Turtle 3 — Resting on rock (three-quarter)
-Basking with legs slightly splayed, head raised and tilted up. Shell prominent and fully visible. Compact, grounded pose. The timeless "turtle sunning itself" composition.
+### What to AVOID
+- ❌ Fins as overlapping strands or rays (common Recraft interpretation — explicitly exclude)
+- ❌ Body fur as textured or gradient fill
+- ❌ Sub-shapes within a zone (e.g., individual scales as separate paths)
+- ❌ Drop shadows, glows, or any layer effects
+- ❌ More than ~10 total shapes in the composition
 
 ---
 
-## Delivery
+## Color Zones
 
-Generate all 9 images as separate PNG files. Name them:
+Each subject uses 4 named zones. Hex values are guidance — Recraft approximates colors, which is fine; the forge handles color detection automatically.
+
+### Koi (ornamental carp)
+| Zone | Hex | Shape description |
+|------|-----|-------------------|
+| body | `#F0E8D0` | ONE solid C-curve or S-curve body fill — the largest shape |
+| marking | `#D4622B` | 1–2 solid orange patches on head and back — distinct non-overlapping blobs |
+| fin | `#8A8A8A` | All fins and tail as SOLID fills — dorsal fin = 1 shape, tail = 1 shape, pectoral = 1 shape |
+| accent | `#3A2A1A` | Single dot for eye only |
+
+### Rabbit (usagi / Japanese hare)
+| Zone | Hex | Shape description |
+|------|-----|-------------------|
+| body | `#E8DDD0` | ONE solid body+head fill — the largest shape |
+| inner | `#D4A88C` | Inner ear fills (1–2 shapes), small belly patch |
+| marking | `#A08870` | Back/rump marking (1 shape), ear tips |
+| accent | `#3A2A1A` | Single dot for eye only |
+
+### Turtle (kame / freshwater turtle)
+| Zone | Hex | Shape description |
+|------|-----|-------------------|
+| shell | `#5A6B4A` | ONE solid oval shell fill — dominant shape |
+| plate | `#8A9A6A` | 3–5 distinct non-overlapping plate highlights on shell surface |
+| skin | `#6B5B3A` | Head (1 shape), each visible leg (1 shape each), tail |
+| accent | `#2D2D2D` | Single dot for eye only |
+
+---
+
+## Poses
+
+### Koi — 3 poses
+
+**Koi 1 — Swimming (side view)**
+Gentle S-curve body gliding left to right. 1 orange head cap, 1 orange back patch. Dorsal fin pointing up (1 solid triangle shape). Fan tail (1 solid fan shape). 2 small pectoral fins (each 1 solid teardrop shape). Classic koi profile, ~8 total shapes.
+
+**Koi 2 — Turning (three-quarter view)**
+C-curve body as fish turns, head angled toward viewer. 1 large orange head marking. Tail sweeping to one side. Fins foreshortened. ~7 total shapes.
+
+**Koi 3 — Overhead (top-down view)**
+Symmetrical body viewed from above. Fins spread wide as simple solid shapes left and right. Tail fan at one end. Orange marking on broad back. ~8 total shapes.
+
+---
+
+### Rabbit — 3 poses
+
+**Rabbit 1 — Seated (profile)**
+Upright on haunches, facing right. 2 tall ears (outer = body color, inner = pink fill). Round body. Tucked front paws as a single shape. Small tail. ~7 total shapes.
+
+**Rabbit 2 — Resting (three-quarter)**
+Lying down, legs tucked under, head turned slightly toward viewer. 2 relaxed ears. Compact oval body form. ~6 total shapes.
+
+**Rabbit 3 — Leaping**
+Body stretched in arc, hind legs back, front paws forward. Ears streaming behind as 2 elongated shapes. ~7 total shapes.
+
+---
+
+### Turtle — 3 poses
+
+**Turtle 1 — Walking (side view)**
+Shell slightly tilted. Head extended (1 teardrop shape). 2 visible legs (each 1 stubby oval). Tail (1 small shape). 3–4 plate highlights on shell. ~9 total shapes.
+
+**Turtle 2 — Swimming (three-quarter, from above)**
+Shell seen from slightly above. 4 legs extended as simple paddle shapes. Head forward. ~9 total shapes.
+
+**Turtle 3 — Resting (three-quarter)**
+Legs splayed, head raised. Shell prominent. ~9 total shapes.
+
+---
+
+## Short Prompt Template
+
+Use this pattern for each image. Keep it concise — Recraft responds better to constraint-first short prompts.
+
 ```
-koi-swimming.png
-koi-turning.png
-koi-overhead.png
-rabbit-seated.png
-rabbit-resting.png
-rabbit-leaping.png
-turtle-walking.png
-turtle-swimming.png
-turtle-resting.png
+Japanese woodblock print [SUBJECT], [POSE DESCRIPTION]. Solid teal background.
+Exactly [N] flat opaque non-overlapping shapes: [zone descriptions].
+STENCIL STYLE — each zone is ONE solid fill, fins are solid shapes not strands,
+no overlapping paths, no gradients, no outlines. Kamon / mon aesthetic.
+Bold simplified forms. Mokuhanga kacho-e.
 ```
 
-After generating each image, verify against the spec checklist:
-- [ ] #00FF00 background, no green in subject
-- [ ] Exactly 4 flat colors matching the hex values above
-- [ ] Zero gradients, shading, or texture within any color region
-- [ ] Zero outlines of any kind
-- [ ] Hard pixel edges between all color regions
-- [ ] Smooth, elegant contours (mokuhanga aesthetic)
-- [ ] Subject centered, ~60% of canvas
-- [ ] 1024×768 PNG
+**Example — Koi Swimming:**
+> Japanese woodblock print koi fish, S-curve swimming left to right. Solid teal background. 8 flat opaque shapes: cream body (1 shape), orange head cap + back patch (2 shapes), gray dorsal fin + tail fan + 2 pectoral fins (4 shapes), dark eye dot. STENCIL STYLE — each zone is ONE solid fill, fins are solid not stranded, no overlapping, no gradients, no outlines. Kamon / mon aesthetic. Mokuhanga kacho-e.
+
+---
+
+## Import Checklist (verify before importing to forge)
+
+- [ ] SVG output (not PNG)
+- [ ] Subject has 4–10 total path shapes
+- [ ] Each zone is a single non-overlapping fill
+- [ ] Fins/tail are solid opaque shapes (not strands)
+- [ ] No gradient fills, no semi-transparency
+- [ ] Background is a solid flat color visually distinct from subject
+- [ ] Subject centered, ~60% of canvas area

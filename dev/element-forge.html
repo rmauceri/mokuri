@@ -737,6 +737,16 @@ button.sm { padding: 3px 8px; font-size: 11px; }
                 <canvas id="quantize-preview" class="thresh-preview-canvas"></canvas>
               </div>
 
+              <!-- SVG Import -->
+              <div class="panel-section" style="margin-top:8px;">
+                <div class="subtle-label">Import SVG</div>
+                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                  <button class="sm" id="btn-load-svg">🖼 Import SVG</button>
+                  <span id="svg-status" style="font-size:11px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:140px;"></span>
+                </div>
+                <input type="file" id="svg-file" accept=".svg,image/svg+xml" style="display:none">
+              </div>
+
               <!-- Mono fallback controls (hidden when color segmentation active) -->
               <div id="mono-controls" style="display:none;">
                 <div class="threshold-group">
@@ -3041,6 +3051,284 @@ function traceBinaryMask(mask, w, h, turdSize, callback) {
   });
 }
 
+// ── SVG Import Pipeline ──
+
+function parseSvgPaths(svgText) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(svgText, 'image/svg+xml');
+  const svgEl = doc.querySelector('svg');
+  if (!svgEl) return { paths: [], sourceW: 1000, sourceH: 1000 };
+
+  const vbAttr = svgEl.getAttribute('viewBox');
+  const vb = vbAttr ? vbAttr.trim().split(/[\s,]+/).map(Number) : [0, 0, 1000, 1000];
+  const sourceW = vb[2] || 1000, sourceH = vb[3] || 1000;
+
+  const paths = [];
+  svgEl.querySelectorAll('path').forEach(p => {
+    const fill = p.getAttribute('fill');
+    if (!fill || fill === 'none' || fill === 'transparent') return;
+    const d = p.getAttribute('d');
+    if (!d) return;
+
+    let matrix = null;
+    const transform = p.getAttribute('transform');
+    if (transform) {
+      const m = transform.match(/matrix\(([^)]+)\)/);
+      if (m) matrix = m[1].trim().split(/[\s,]+/).map(Number);
+    }
+
+    paths.push({ d, fill, matrix });
+  });
+
+  return { paths, sourceW, sourceH };
+}
+
+function transformPathCoords(d, matrix, sx, sy) {
+  const [ma, mb, mc, md, me, mf] = matrix || [1, 0, 0, 1, 0, 0];
+
+  function tx(x, y) { return Math.round(sx * (ma * x + mc * y + me) * 10) / 10; }
+  function ty(x, y) { return Math.round(sy * (mb * x + md * y + mf) * 10) / 10; }
+
+  const tokens = d.match(/[MLHVCSQTAZmlhvcsqtaz]|[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?/g) || [];
+  const out = [];
+  let i = 0;
+  let cmd = '';
+  let cx = 0, cy = 0;
+
+  const n = (count) => {
+    const nums = [];
+    for (let k = 0; k < count; k++) nums.push(parseFloat(tokens[i++] || '0'));
+    return nums;
+  };
+
+  while (i < tokens.length) {
+    const t = tokens[i];
+    if (/[MLHVCSQTAZmlhvcsqtaz]/.test(t)) {
+      cmd = t;
+      out.push(t);
+      i++;
+      continue;
+    }
+
+    switch (cmd.toUpperCase()) {
+      case 'M': case 'L': case 'T': {
+        const [x, y] = n(2);
+        const ax = cmd === cmd.toUpperCase() ? x : cx + x;
+        const ay = cmd === cmd.toUpperCase() ? y : cy + y;
+        out.push(tx(ax, ay) + ' ' + ty(ax, ay));
+        cx = ax; cy = ay;
+        if (cmd === 'M') cmd = 'L';
+        else if (cmd === 'm') cmd = 'l';
+        break;
+      }
+      case 'H': {
+        const [x] = n(1);
+        const ax = cmd === 'H' ? x : cx + x;
+        out.push(tx(ax, cy));
+        cx = ax;
+        break;
+      }
+      case 'V': {
+        const [y] = n(1);
+        const ay = cmd === 'V' ? y : cy + y;
+        out.push(ty(cx, ay));
+        cy = ay;
+        break;
+      }
+      case 'C': {
+        const [x1, y1, x2, y2, x, y] = n(6);
+        const [ax1, ay1, ax2, ay2, ax, ay] = cmd === 'C'
+          ? [x1, y1, x2, y2, x, y]
+          : [cx+x1, cy+y1, cx+x2, cy+y2, cx+x, cy+y];
+        out.push(`${tx(ax1,ay1)} ${ty(ax1,ay1)} ${tx(ax2,ay2)} ${ty(ax2,ay2)} ${tx(ax,ay)} ${ty(ax,ay)}`);
+        cx = ax; cy = ay;
+        break;
+      }
+      case 'S': case 'Q': {
+        const [x1, y1, x, y] = n(4);
+        const [ax1, ay1, ax, ay] = cmd === cmd.toUpperCase()
+          ? [x1, y1, x, y]
+          : [cx+x1, cy+y1, cx+x, cy+y];
+        out.push(`${tx(ax1,ay1)} ${ty(ax1,ay1)} ${tx(ax,ay)} ${ty(ax,ay)}`);
+        cx = ax; cy = ay;
+        break;
+      }
+      case 'A': {
+        const [rx, ry, xRot, largeArc, sweep, x, y] = n(7);
+        const [ax, ay] = cmd === 'A' ? [x, y] : [cx+x, cy+y];
+        out.push(`${Math.round(rx*sx*10)/10} ${Math.round(ry*sy*10)/10} ${xRot} ${largeArc} ${sweep} ${tx(ax,ay)} ${ty(ax,ay)}`);
+        cx = ax; cy = ay;
+        break;
+      }
+      case 'Z':
+        break;
+      default:
+        out.push(tokens[i++]);
+    }
+  }
+
+  return out.join(' ');
+}
+
+function estimatePathBBox(d) {
+  const nums = d.match(/[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?/g);
+  if (!nums || nums.length < 2) return 0;
+  const vals = nums.map(Number);
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  for (let i = 0; i < vals.length - 1; i += 2) {
+    minX = Math.min(minX, vals[i]); maxX = Math.max(maxX, vals[i]);
+    minY = Math.min(minY, vals[i+1]); maxY = Math.max(maxY, vals[i+1]);
+  }
+  return (maxX - minX) * (maxY - minY);
+}
+
+function clusterSvgColors(svgPaths, nClusters) {
+  function hexToRgb(hex) {
+    hex = hex.replace('#', '');
+    if (hex.length === 3) hex = hex.split('').map(c => c+c).join('');
+    return [parseInt(hex.slice(0,2),16), parseInt(hex.slice(2,4),16), parseInt(hex.slice(4,6),16)];
+  }
+
+  const colorMap = {};
+  for (const p of svgPaths) {
+    const fill = p.fill.toLowerCase();
+    if (!fill.startsWith('#')) continue;
+    if (!colorMap[fill]) {
+      const rgb = hexToRgb(fill);
+      colorMap[fill] = { hex: fill, srgb: rgb, lab: srgbToOklab(rgb[0], rgb[1], rgb[2]), paths: [] };
+    }
+    colorMap[fill].paths.push(p);
+  }
+
+  const colors = Object.values(colorMap);
+  if (colors.length === 0) return [];
+
+  const zoneNamesArr = ['body', 'marking', 'accent', 'detail', 'highlight', 'extra'];
+
+  if (colors.length <= nClusters) {
+    colors.sort((a, b) => b.paths.length - a.paths.length);
+    return colors.map((c, i) => ({
+      hex: c.hex, srgb: c.srgb, lab: c.lab, paths: c.paths,
+      zoneId: zoneNamesArr[i] || ('zone' + i),
+    }));
+  }
+
+  // K-means in OKLab space
+  const pixels = colors.map((c, idx) => ({ lab: c.lab, srgb: c.srgb, idx }));
+  const result = kmeansCluster(pixels, nClusters);
+
+  const zones = [];
+  for (let ci = 0; ci < nClusters; ci++) {
+    const members = colors.filter((_, i) => result.assignments[i] === ci);
+    if (members.length === 0) continue;
+    members.sort((a, b) => b.paths.length - a.paths.length);
+    const rep = members[0];
+    zones.push({
+      hex: rep.hex, srgb: rep.srgb, lab: rep.lab,
+      paths: members.flatMap(m => m.paths),
+      zoneId: '',
+    });
+  }
+
+  zones.sort((a, b) => b.paths.length - a.paths.length);
+  zones.forEach((z, i) => { z.zoneId = zoneNamesArr[i] || ('zone' + i); });
+  return zones;
+}
+
+function buildStateFromSvgZones(zones, sourceW, sourceH) {
+  const sx = STATE.viewBoxW / sourceW;
+  const sy = STATE.viewBoxH / sourceH;
+  const TINY_THRESHOLD = STATE.viewBoxW * STATE.viewBoxH * 0.005;
+
+  pushUndo('svgImport');
+  STATE.paths = [[], [], []];
+  STATE.traceMode = 'color';
+
+  const targetCanvasArea = STATE.viewBoxW * STATE.viewBoxH;
+  const allPaths = [];
+  for (const zone of zones) {
+    if (!zone.zoneId) continue;
+    for (const p of zone.paths) {
+      const scaledD = transformPathCoords(p.d, p.matrix, sx, sy);
+      const area = estimatePathBBox(scaledD);
+      if (area > targetCanvasArea * 0.85) continue;
+      allPaths.push({ d: scaledD, area, zone: zone.zoneId });
+    }
+  }
+
+  allPaths.sort((a, b) => b.area - a.area);
+  if (allPaths.length === 0) return;
+
+  // Block: ALL fills with correct zone assignments (ink-receiving surfaces)
+  for (const p of allPaths) {
+    STATE.paths[0].push({ d: p.d, type: 'fill', zone: p.zone });
+  }
+
+  // Shape delta: body outline stroke only
+  const largePaths = allPaths.filter(p => p.area >= TINY_THRESHOLD);
+  if (largePaths.length > 0) {
+    STATE.paths[1].push({ d: largePaths[0].d, type: 'stroke', zone: largePaths[0].zone, strokeWidth: 1.5 });
+  }
+
+  // Detail delta: zone boundary strokes + tiny accent fills
+  largePaths.slice(1, 4).forEach(p => {
+    STATE.paths[2].push({ d: p.d, type: 'stroke', zone: p.zone, strokeWidth: 1 });
+  });
+  for (const p of allPaths) {
+    if (p.area < TINY_THRESHOLD) {
+      STATE.paths[2].push({ d: p.d, type: 'fill', zone: p.zone });
+    }
+  }
+
+  STATE.zones = zones.map((z, i) => ({ id: z.zoneId, defaultPaletteSlot: i }));
+  STATE.activeZoneIndex = 0;
+  STATE.clusters = zones.map(z => ({
+    srgb: z.srgb,
+    zoneId: z.zoneId,
+    count: z.paths.length,
+    centroid: z.lab,
+  }));
+}
+
+function loadSvgFile(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const svgText = e.target.result;
+    const { paths, sourceW, sourceH } = parseSvgPaths(svgText);
+
+    if (paths.length === 0) {
+      alert('No filled paths found in SVG.');
+      return;
+    }
+
+    const totalArea = sourceW * sourceH;
+    const subjectPaths = paths.filter(p => {
+      let area = estimatePathBBox(p.d);
+      if (p.matrix) area *= Math.abs(p.matrix[0]) * Math.abs(p.matrix[3]);
+      return area < totalArea * 0.95;
+    });
+
+    const nClusters = parseInt($('cluster-count').value || '4', 10);
+    const zones = clusterSvgColors(subjectPaths, nClusters);
+
+    if (zones.length === 0) {
+      alert('Could not extract color zones from SVG. Ensure paths have hex fill colors.');
+      return;
+    }
+
+    buildStateFromSvgZones(zones, sourceW, sourceH);
+
+    $('svg-status').textContent = file.name;
+    renderZoneChips();
+    renderClusterSwatches(STATE.clusters);
+    renderCanvas();
+    updateBudget();
+    updatePreviews();
+    showToast('SVG imported — ' + zones.length + ' zones, ' + (STATE.paths[0].length + STATE.paths[1].length) + ' paths');
+  };
+  reader.readAsText(file);
+}
+
 // ── Canvas Rendering ──
 function renderCanvas() {
   const level = STATE.activeLevel;
@@ -3945,6 +4233,13 @@ function attachEvents() {
     $('cluster-count-val').textContent = e.target.value;
     runQuantization();
   });
+
+  // SVG import
+  $('svg-file').addEventListener('change', e => {
+    if (e.target.files[0]) loadSvgFile(e.target.files[0]);
+    e.target.value = '';
+  });
+  $('btn-load-svg').addEventListener('click', () => $('svg-file').click());
 
   // Threshold slider labels + live bitmap preview (mono fallback)
   ['shape', 'detail'].forEach(name => {
