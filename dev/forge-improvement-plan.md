@@ -16,7 +16,7 @@ Three phases, each independently useful. Phase 0 declutters the UI. Phase 1 make
 
 ---
 
-## Phase 0: UI Cleanup — Context-Aware Controls
+## Phase 0: UI Cleanup — Context-Aware Controls ✅
 
 The forge has two workflows: **trace** (PNG → quantize → trace → export) and **manual** (freehand drawing). Most users will use trace. Show only relevant controls for the active workflow.
 
@@ -48,7 +48,7 @@ The Inspector's "Stroke Width" and "Curve Fidelity" are global drawing settings.
 
 ---
 
-## Phase 1: Path Smoothing
+## Phase 1: Path Smoothing ✅
 
 Convert ImageTracer's polygonal output into smooth Bézier curves using the forge's existing curve-fitting infrastructure.
 
@@ -86,7 +86,7 @@ Review ImageTracer's native parameters that affect output quality:
 
 ---
 
-## Phase 2: Artifact Cleanup UX
+## Phase 2: Artifact Cleanup UX ✅
 
 Make it fast and intuitive to identify and remove unwanted paths from any carve level.
 
@@ -125,25 +125,58 @@ A button that removes paths below a configurable area threshold from the active 
 
 ---
 
-## Current State (What Works Today)
+## Phase 3: UX Layout Rework ✅
 
-- **Semantic zone naming**: ImageTracer traces auto-assign body/marking/accent/detail zones by cluster role (pixel count + lightness heuristic)
-- **Zone rename**: Double-click zone chips to override names; known names auto-assign palette slots
-- **Block silhouette**: Potrace produces clean block-level paths
-- **Shape/Detail classification**: Heuristic separation by area, aspect ratio, and zone role
-- **Select + Erase tools**: Click paths in main canvas to select, erase tool deletes on click
-- **Path Inspector**: Edit type, zone, stroke width, raw d string for selected paths
+Reorganized the forge into a left-to-right **Import → Edit → Export** workflow.
 
-## What Doesn't Work Well
+### 3A. Left pane → Import only ✅
+- Stripped to three sections: **ViewBox**, **Import** (SVG + image trace), **Reference Overlay**
+- Element metadata (ID, Name, Category, Layer, Pack, Tags) moved to right pane
 
-- **Outline residue**: PNG outlines trace as darkest-zone paths hugging the silhouette. Dimension-based and erosion-based filtering both failed — the paths wrap around the element giving them large bounding boxes.
+### 3B. Level Preview Bar above canvas ✅
+- Horizontal row of 3 clickable SVG thumbnails (Block / Shape / Detail) above the canvas
+- Replaces the old toolbar level tabs — clicking switches the active carve level
+- Active level highlighted with accent border
+- Preview viewBox syncs dynamically with element dimensions
+
+### 3C. Toolbar cleanup ✅
+- Removed level-tab buttons (replaced by preview bar)
+- Removed old Import/Export buttons from toolbar (Import is in left pane, Export in right)
+- Added compact 📥 Import button for importing existing Mokuri elements
+- Kept tools (Select, Stroke, Fill, Erase) + Undo/Redo + Zoom
+
+### 3D. Right pane → Element ✅
+- Renamed from "Inspector" to "Element"
+- Section order: **Color Zones** → **Stroke Width** → **Curve Fidelity** → **Path Inspector** → **Cleanup** (compact) → **Budget** (compact) → **Element Metadata** (collapsible) → **Export**
+- Cleanup: button + slider on one line each (Remove Small + threshold, Clean Edges + margin)
+- Budget: single-line inline readout (counts + consolidated + KB)
+- Metadata: collapsible section, collapsed by default, contains ID, Name, Category, Layer, Pack, Tags
+- Category, Layer, Pack, and Tags persisted to `localStorage` (`mokuri-forge-meta`) across sessions
+- Export button: full-width primary button at bottom
+
+---
+
+## Completed Work Summary
+
+All phases (0–3) are now implemented. The forge is a functional PNG → trace → cleanup → export pipeline.
+
+### What works
+- **Import**: SVG import, image drag-and-drop, URL paste, auto viewBox detection, chroma key detection
+- **Trace**: ImageTracer (default) and Potrace engines, color segmentation (2–6 clusters), mono fallback, smoothing (exponential curve 0–50), semantic zone naming
+- **Edit**: Select, draw stroke/fill, erase tools; multi-select (Shift+click, Ctrl+A); path hover highlight (blue glow); move paths between levels; zone reassignment; type/d-string editing in Inspector
+- **Cleanup**: Remove Small Paths (area threshold up to 2000), Clean Edges (margin-aware border cleanup), bulk delete
+- **Export**: Delta carve levels, path consolidation, clipboard copy with JS format
+- **Layout**: Left-to-right Import → Edit → Export workflow, level preview bar, collapsible metadata with localStorage persistence
+
+### Known limitations
+- **Outline residue**: PNG outlines trace as darkest-zone paths hugging the silhouette. Dimension-based and erosion-based filtering both failed — the paths wrap around the element giving them large bounding boxes. Manual cleanup still needed.
 - **Color matching edge cases**: ImageTracer sometimes matches feature colors to wrong clusters (e.g., eye outline to fin color instead of detail zone).
-- **Jaggy traced shapes**: No curve fitting applied to ImageTracer output.
+- **fill-rule**: Using `nonzero` everywhere; complex paths with opposite winding still occasionally cause visual artifacts.
 
 ## Notes
 
 - All changes are in `dev/element-forge.html` only — no impact on the main Mokuri app
 - The existing `polylineToQBezier()` is proven (used for manual carve strokes). Reusing it for traced paths is low-risk.
-- Phase 1 is highest impact: smooth paths make elements look like woodblock prints instead of pixel art
-- Phase 2 accepts that no algorithm is perfect and gives users efficient tools for the last 10%
-- Combined workflow: trace → auto-smooth → click away artifacts → export. That's a usable pipeline.
+- Auto-stroke classification was removed (caused unfilled closed loops) — all traced paths are fills by default, user toggles to stroke via Inspector
+- Multi-subpath splitting post-trace prevents winding conflicts under nonzero fill-rule
+- Test Collection pack (`assets/test-elements.js` + `assets/test-pack.js`) provides a sandbox for forge-exported elements
