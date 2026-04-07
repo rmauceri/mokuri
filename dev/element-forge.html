@@ -3398,12 +3398,6 @@ function buildStateFromSvgZones(zones, sourceW, sourceH) {
   const sy = STATE.viewBoxH / sourceH;
   const TINY_THRESHOLD = STATE.viewBoxW * STATE.viewBoxH * 0.005;
 
-  // Read simplify epsilon from the cleanup slider (if available, else use default 0.8)
-  const simplifyEps = (() => {
-    const el = document.getElementById('simplify-epsilon');
-    return el ? parseInt(el.value) * 0.1 : 0.8;
-  })();
-
   pushUndo('svgImport');
   STATE.paths = [[], [], []];
   STATE.traceMode = 'color';
@@ -3413,8 +3407,7 @@ function buildStateFromSvgZones(zones, sourceW, sourceH) {
   for (const zone of zones) {
     if (!zone.zoneId) continue;
     for (const p of zone.paths) {
-      let scaledD = transformPathCoords(p.d, p.matrix, sx, sy);
-      if (simplifyEps > 0) scaledD = simplifySvgPath(scaledD, simplifyEps, 'fill');
+      const scaledD = transformPathCoords(p.d, p.matrix, sx, sy);
       const area = estimatePathBBox(scaledD);
       if (area > targetCanvasArea * 0.85) continue;
       allPaths.push({ d: scaledD, area, zone: zone.zoneId });
