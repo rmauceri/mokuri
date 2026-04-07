@@ -835,16 +835,17 @@ const MokuriAudio = (() => {
   document.addEventListener('touchstart', initOnGesture);
   document.addEventListener('pointerdown', initOnGesture);
 
-  // Mute when backgrounded, resume when foregrounded (iOS-safe — no ctx.suspend)
+  // Resume AudioContext when returning from background (iOS PWA suspends it)
   document.addEventListener('visibilitychange', () => {
-    if (!ctx) return;
-    if (document.hidden) {
-      if (masterGain) masterGain.gain.setValueAtTime(0, ctx.currentTime);
-    } else {
-      if (ctx.state === 'suspended') ctx.resume();
-      if (masterGain) masterGain.gain.setValueAtTime(1, ctx.currentTime);
+    if (!document.hidden && ctx && ctx.state === 'suspended') {
+      ctx.resume();
     }
   });
+
+  // Persistent touch listener for iOS PWA — context may need gesture to resume
+  document.addEventListener('touchstart', function() {
+    if (ctx && ctx.state === 'suspended') ctx.resume();
+  }, { passive: true });
 
   function playFreHint() {
     // Two-note pentatonic chime from the ambient scale — D4 + A4 (perfect fifth)
