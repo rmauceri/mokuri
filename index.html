@@ -1153,8 +1153,10 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
 @media (min-width: 900px) {
   .pgallery-strip-thumb { width: 96px; height: 72px; }
 }
-@media (max-width: 500px) {
+@media (max-width: 820px) {
   .pgallery-topbar { padding: 6px 10px; gap: 6px; flex-wrap: wrap; }
+}
+@media (max-width: 500px) {
   .pgallery-artist-row { display: none; }
   .pgallery-act-btn .pgallery-btn-label { display: none; }
   .pgallery-nav { font-size: 28px; padding: 10px; }
@@ -3131,7 +3133,7 @@ if (typeof MOKURI_KACHOE_PRESETS !== 'undefined' && typeof MOKURI_GALLERY_PRESET
 //  VERSION
 // ============================================================
 // Display version — KEEP IN SYNC with CACHE_NAME in sw.js (mokuri-v77 → 0.77)
-const MOKURI_VERSION = '0.84';
+const MOKURI_VERSION = '0.85';
 
 // ============================================================
 //  FEEDBACK
