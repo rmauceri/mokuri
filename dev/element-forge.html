@@ -884,6 +884,11 @@ button.sm { padding: 3px 8px; font-size: 11px; }
             <span id="clean-margin-val" style="font-size:10px; min-width:20px;">5%</span>
             <span id="clean-edge-count" style="font-size:10px; color:var(--muted);"></span>
           </div>
+          <div style="display:flex; align-items:center; gap:4px; margin-top:4px;">
+            <button class="sm" id="simplify-paths-btn" style="white-space:nowrap;" title="Reduce path segment count using Ramer-Douglas-Peucker. Reduces print noise on SVG-imported elements.">Simplify</button>
+            <input type="range" id="simplify-epsilon" min="0" max="30" step="1" value="8" style="flex:1; min-width:0;">
+            <span id="simplify-epsilon-val" style="font-size:10px; min-width:24px;">0.8</span>
+          </div>
         </div>
 
         <!-- Path budget (compact) -->
@@ -1858,6 +1863,45 @@ function simplifyTracePath(d, epsilon) {
     }
   }
   return parts.join(' ');
+}
+
+// Simplify any SVG path (fill or stroke) using RDP — reduces dense L-segment polylines
+// to smooth Q-curve paths with far fewer control points.
+function simplifySvgPath(d, epsilon, type) {
+  if (!d || epsilon <= 0) return d;
+  var subpaths = parseSvgPathToSubpaths(d);
+  if (subpaths.length === 0) return d;
+  var parts = [];
+  for (var i = 0; i < subpaths.length; i++) {
+    var simplified = rdpSimplify(subpaths[i], epsilon);
+    if (type === 'stroke') {
+      // Open path — use polyline-to-Q-bezier (no closing Z)
+      if (simplified.length >= 2) parts.push(polylineToQBezier(simplified));
+    } else {
+      // Fill path — closed
+      if (simplified.length >= 3) parts.push(pointsToFillPath(simplified));
+    }
+  }
+  return parts.join(' ') || d;
+}
+
+// Apply RDP simplification to all paths across all levels in STATE.paths
+function simplifyAllPaths(epsilon) {
+  if (epsilon <= 0) { showToast('Epsilon is 0 — nothing simplified'); return; }
+  pushUndo('simplify');
+  var count = 0;
+  for (var level = 0; level < STATE.paths.length; level++) {
+    for (var j = 0; j < STATE.paths[level].length; j++) {
+      var p = STATE.paths[level][j];
+      var before = p.d;
+      p.d = simplifySvgPath(p.d, epsilon, p.type);
+      if (p.d !== before) count++;
+    }
+  }
+  renderCanvas();
+  updateBudget();
+  updatePreviews();
+  showToast('Simplified ' + count + ' path' + (count !== 1 ? 's' : '') + ' (\u03b5=' + epsilon.toFixed(1) + ')');
 }
 
 // Scale SVG path coordinates directly without changing curve types
@@ -3354,6 +3398,12 @@ function buildStateFromSvgZones(zones, sourceW, sourceH) {
   const sy = STATE.viewBoxH / sourceH;
   const TINY_THRESHOLD = STATE.viewBoxW * STATE.viewBoxH * 0.005;
 
+  // Read simplify epsilon from the cleanup slider (if available, else use default 0.8)
+  const simplifyEps = (() => {
+    const el = document.getElementById('simplify-epsilon');
+    return el ? parseInt(el.value) * 0.1 : 0.8;
+  })();
+
   pushUndo('svgImport');
   STATE.paths = [[], [], []];
   STATE.traceMode = 'color';
@@ -3363,7 +3413,8 @@ function buildStateFromSvgZones(zones, sourceW, sourceH) {
   for (const zone of zones) {
     if (!zone.zoneId) continue;
     for (const p of zone.paths) {
-      const scaledD = transformPathCoords(p.d, p.matrix, sx, sy);
+      let scaledD = transformPathCoords(p.d, p.matrix, sx, sy);
+      if (simplifyEps > 0) scaledD = simplifySvgPath(scaledD, simplifyEps, 'fill');
       const area = estimatePathBBox(scaledD);
       if (area > targetCanvasArea * 0.85) continue;
       allPaths.push({ d: scaledD, area, zone: zone.zoneId });
@@ -4450,6 +4501,14 @@ function attachEvents() {
   $('clean-paths-btn').addEventListener('click', () => cleanSmallPaths());
   $('clean-margin').addEventListener('input', e => updateEdgeCleanCount());
   $('clean-edges-btn').addEventListener('click', () => cleanEdgePaths());
+  $('simplify-epsilon').addEventListener('input', e => {
+    const eps = parseInt(e.target.value) * 0.1;
+    $('simplify-epsilon-val').textContent = eps === 0 ? 'off' : eps.toFixed(1);
+  });
+  $('simplify-paths-btn').addEventListener('click', () => {
+    const eps = parseInt($('simplify-epsilon').value) * 0.1;
+    simplifyAllPaths(eps);
+  });
 
   // Import
   $('btn-import').addEventListener('click', () => $('import-dialog').showModal());
