@@ -835,13 +835,14 @@ const MokuriAudio = (() => {
   document.addEventListener('touchstart', initOnGesture);
   document.addEventListener('pointerdown', initOnGesture);
 
-  // Suspend AudioContext when app goes to background; resume when returning
+  // Mute when backgrounded, resume when foregrounded (iOS-safe — no ctx.suspend)
   document.addEventListener('visibilitychange', () => {
     if (!ctx) return;
     if (document.hidden) {
-      ctx.suspend();
-    } else if (ctx.state === 'suspended') {
-      ctx.resume();
+      if (masterGain) masterGain.gain.setValueAtTime(0, ctx.currentTime);
+    } else {
+      if (ctx.state === 'suspended') ctx.resume();
+      if (masterGain) masterGain.gain.setValueAtTime(1, ctx.currentTime);
     }
   });
 
