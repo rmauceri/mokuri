@@ -134,6 +134,14 @@ html, body {
   margin-bottom: 6px;
 }
 
+/* ── Canvas Column (preview bar + canvas) ── */
+.canvas-column {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 /* ── Canvas Area ── */
 .canvas-area {
   flex: 1;
@@ -312,30 +320,76 @@ button.sm { padding: 3px 8px; font-size: 11px; }
   border: 1px solid rgba(0,0,0,0.15);
 }
 
-/* ── Level Tabs ── */
-.level-tabs {
+/* ── Level Preview Bar (above canvas) ── */
+.level-preview-bar {
   display: flex;
-  gap: 4px;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
-.level-tab {
+.level-preview-item {
   flex: 1;
   text-align: center;
-  padding: 6px 8px;
-  border-radius: 8px;
-  font-size: 11px;
-  font-weight: 600;
   cursor: pointer;
-  border: 1.5px solid var(--border);
-  background: rgba(255,255,255,0.5);
-  transition: all 0.15s;
+  border-radius: 8px;
+  padding: 4px;
+  border: 2px solid transparent;
+  transition: border-color 0.15s, background 0.15s;
 }
 
-.level-tab:hover { border-color: var(--accent); }
-.level-tab.active {
-  background: rgba(139, 107, 74, 0.15);
+.level-preview-item:hover { border-color: var(--border); }
+.level-preview-item.active {
   border-color: var(--accent);
+  background: rgba(139, 107, 74, 0.08);
+}
+
+.level-preview-thumb {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--paper);
+}
+
+.level-preview-thumb svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+}
+
+.level-preview-label {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.level-preview-item.active .level-preview-label {
   color: var(--accent-strong);
+}
+
+/* ── Collapsible Sections ── */
+.subtle-label.collapsible {
+  cursor: pointer;
+  user-select: none;
+}
+
+.subtle-label.collapsible:hover { color: var(--accent); }
+
+.collapse-arrow {
+  font-size: 9px;
+  transition: transform 0.2s;
+  display: inline-block;
+}
+
+.subtle-label.collapsible:not(.collapsed) .collapse-arrow {
+  transform: rotate(90deg);
 }
 
 /* ── Path Inspector ── */
@@ -415,31 +469,6 @@ button.sm { padding: 3px 8px; font-size: 11px; }
 .drop-zone input[type="file"] { display: none; }
 
 /* ── Budget Bar ── */
-.budget-bar {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-
-.budget-cell {
-  text-align: center;
-  padding: 6px;
-  border-radius: 8px;
-  background: rgba(255,255,255,0.5);
-  border: 1px solid var(--border);
-  font-size: 10px;
-}
-
-.budget-cell .budget-val {
-  font-size: 16px;
-  font-weight: 700;
-  margin-top: 2px;
-}
-
-.budget-cell.green .budget-val { color: var(--good); }
-.budget-cell.yellow .budget-val { color: var(--warn); }
-.budget-cell.red .budget-val { color: var(--bad); }
-
 /* ── Slider row ── */
 .slider-row {
   display: flex;
@@ -608,15 +637,6 @@ button.sm { padding: 3px 8px; font-size: 11px; }
 
     <div class="sep"></div>
 
-    <!-- Level tabs in toolbar -->
-    <div class="level-tabs" id="level-tabs">
-      <div class="level-tab active" data-level="0">Block</div>
-      <div class="level-tab" data-level="1">Shape</div>
-      <div class="level-tab" data-level="2">Detail</div>
-    </div>
-
-    <div class="sep"></div>
-
     <!-- Undo/Redo -->
     <button class="icon-btn" id="btn-undo" title="Undo (Ctrl+Z)">↩</button>
     <button class="icon-btn" id="btn-redo" title="Redo (Ctrl+Y)">↪</button>
@@ -630,70 +650,18 @@ button.sm { padding: 3px 8px; font-size: 11px; }
     <button class="sm" id="btn-zoom-fit" title="Fit to View">Fit</button>
 
     <div class="sep"></div>
-
-    <!-- Import / Export -->
-    <button class="sm" id="btn-import">Import Element</button>
-    <button class="sm primary" id="btn-export">Export JS</button>
+    <button class="sm" id="btn-import" title="Import existing Mokuri element">📥 Import</button>
   </div>
 
   <!-- ── Main Area ── -->
   <div class="main-area">
 
-    <!-- ── Left Panel: Element Setup + Zones ── -->
+    <!-- ── Left Panel: Import ── -->
     <div class="side-panel" id="panel-left">
       <div class="panel-head">
-        <h2>Element</h2>
+        <h2>Import</h2>
       </div>
       <div class="panel-body">
-
-        <!-- Element metadata -->
-        <div class="panel-section">
-          <div class="subtle-label">Element ID</div>
-          <input type="text" id="el-id" placeholder="my-element" style="width:100%; padding:5px 8px; border:1px solid var(--border); border-radius:8px; font-size:12px; background:rgba(255,255,255,0.65);">
-        </div>
-
-        <div class="panel-section">
-          <div class="subtle-label">Name</div>
-          <input type="text" id="el-name" placeholder="My Element" style="width:100%; padding:5px 8px; border:1px solid var(--border); border-radius:8px; font-size:12px; background:rgba(255,255,255,0.65);">
-        </div>
-
-        <div class="panel-section">
-          <div class="subtle-label">Category</div>
-          <select id="el-category" style="width:100%; padding:5px 8px; border:1px solid var(--border); border-radius:8px; font-size:12px; background:rgba(255,255,255,0.65);">
-            <option value="landscape">landscape</option>
-            <option value="flora">flora</option>
-            <option value="fauna">fauna</option>
-            <option value="objects">objects</option>
-            <option value="patterns">patterns</option>
-            <option value="basic forms">basic forms</option>
-            <option value="figures">figures</option>
-            <option value="hanko">hanko</option>
-          </select>
-        </div>
-
-        <div class="panel-section">
-          <div class="subtle-label">Suggested Layer</div>
-          <select id="el-layer" style="width:100%; padding:5px 8px; border:1px solid var(--border); border-radius:8px; font-size:12px; background:rgba(255,255,255,0.65);">
-            <option value="background">background</option>
-            <option value="midground" selected>midground</option>
-            <option value="foreground">foreground</option>
-          </select>
-        </div>
-
-        <div class="panel-section">
-          <div class="subtle-label">Pack</div>
-          <select id="el-pack" style="width:100%; padding:5px 8px; border:1px solid var(--border); border-radius:8px; font-size:12px; background:rgba(255,255,255,0.65);">
-            <option value="core">core</option>
-            <option value="kacho-e">kacho-e</option>
-            <option value="moribana">moribana</option>
-            <option value="tsukiyo">tsukiyo</option>
-          </select>
-        </div>
-
-        <div class="panel-section">
-          <div class="subtle-label">Tags</div>
-          <div id="el-tags-chips" style="display:flex; flex-wrap:wrap; gap:3px;"></div>
-        </div>
 
         <div class="panel-section">
           <div class="subtle-label">ViewBox</div>
@@ -809,15 +777,31 @@ button.sm { padding: 3px 8px; font-size: 11px; }
           </div>
         </div>
 
-        <div class="panel-section">
-          <div class="subtle-label">Color Zones</div>
-          <div class="zone-chips" id="zone-chips"></div>
-          <div style="margin-top:6px; display:flex; gap:4px;">
-            <button class="sm" id="btn-add-zone">+ Zone</button>
-            <button class="sm" id="btn-remove-zone">− Zone</button>
-          </div>
-        </div>
+      </div>
+    </div>
 
+    <!-- ── Canvas Column (preview bar + canvas) ── -->
+    <div class="canvas-column">
+
+    <!-- ── Level Preview Bar ── -->
+    <div class="level-preview-bar" id="level-preview-bar">
+      <div class="level-preview-item active" data-level="0">
+        <div class="level-preview-thumb">
+          <svg id="preview-block" viewBox="0 0 160 160"></svg>
+        </div>
+        <div class="level-preview-label">Block</div>
+      </div>
+      <div class="level-preview-item" data-level="1">
+        <div class="level-preview-thumb">
+          <svg id="preview-shape" viewBox="0 0 160 160"></svg>
+        </div>
+        <div class="level-preview-label">Shape</div>
+      </div>
+      <div class="level-preview-item" data-level="2">
+        <div class="level-preview-thumb">
+          <svg id="preview-detail" viewBox="0 0 160 160"></svg>
+        </div>
+        <div class="level-preview-label">Detail</div>
       </div>
     </div>
 
@@ -842,12 +826,24 @@ button.sm { padding: 3px 8px; font-size: 11px; }
       </svg>
     </div>
 
-    <!-- ── Right Panel: Inspector + Budget ── -->
+    </div><!-- /.canvas-column -->
+
+    <!-- ── Right Panel: Element ── -->
     <div class="side-panel right" id="panel-right">
       <div class="panel-head">
-        <h2>Inspector</h2>
+        <h2>Element</h2>
       </div>
       <div class="panel-body">
+
+        <!-- Color Zones -->
+        <div class="panel-section">
+          <div class="subtle-label">Color Zones</div>
+          <div class="zone-chips" id="zone-chips"></div>
+          <div style="margin-top:6px; display:flex; gap:4px;">
+            <button class="sm" id="btn-add-zone">+ Zone</button>
+            <button class="sm" id="btn-remove-zone">− Zone</button>
+          </div>
+        </div>
 
         <!-- Drawing settings -->
         <div class="panel-section">
@@ -873,75 +869,88 @@ button.sm { padding: 3px 8px; font-size: 11px; }
           <div class="path-inspector" id="path-inspector"></div>
         </div>
 
-        <!-- Cleanup tools -->
+        <!-- Cleanup tools (compact) -->
         <div class="panel-section" id="clean-paths-section">
           <div class="subtle-label">Cleanup</div>
-          <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
-            <label style="font-size:11px; color:var(--fg-dim); white-space:nowrap;">Area &lt;</label>
-            <input type="range" id="clean-threshold" min="1" max="2000" value="100" style="flex:1;">
-            <span id="clean-threshold-val" style="font-size:11px; min-width:30px;">100</span>
-          </div>
-          <div style="display:flex; gap:4px; align-items:center; margin-bottom:6px;">
-            <button class="sm" id="clean-paths-btn">Remove Small</button>
+          <div style="display:flex; align-items:center; gap:4px; margin-bottom:4px;">
+            <button class="sm" id="clean-paths-btn" style="white-space:nowrap;">Remove Small</button>
+            <input type="range" id="clean-threshold" min="1" max="2000" value="100" style="flex:1; min-width:0;">
+            <span id="clean-threshold-val" style="font-size:10px; min-width:24px;">100</span>
             <span id="clean-count" style="font-size:10px; color:var(--muted);"></span>
           </div>
-          <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
-            <label style="font-size:11px; color:var(--fg-dim); white-space:nowrap;">Margin</label>
-            <input type="range" id="clean-margin" min="1" max="20" value="5" style="flex:1;">
-            <span id="clean-margin-val" style="font-size:11px; min-width:25px;">5%</span>
-          </div>
-          <div style="display:flex; gap:4px; align-items:center;">
-            <button class="sm" id="clean-edges-btn">Clean Edges</button>
+          <div style="display:flex; align-items:center; gap:4px;">
+            <button class="sm" id="clean-edges-btn" style="white-space:nowrap;">Clean Edges</button>
+            <input type="range" id="clean-margin" min="1" max="20" value="5" style="flex:1; min-width:0;">
+            <span id="clean-margin-val" style="font-size:10px; min-width:20px;">5%</span>
             <span id="clean-edge-count" style="font-size:10px; color:var(--muted);"></span>
           </div>
         </div>
 
-        <!-- Path budget -->
+        <!-- Path budget (compact) -->
         <div class="panel-section">
           <div class="subtle-label">Path Budget</div>
-          <div class="budget-bar" id="budget-bar">
-            <div class="budget-cell green">
-              <div>Block</div>
-              <div class="budget-val" id="budget-block">0</div>
-            </div>
-            <div class="budget-cell green">
-              <div>Shape</div>
-              <div class="budget-val" id="budget-shape">0</div>
-            </div>
-            <div class="budget-cell green">
-              <div>Detail</div>
-              <div class="budget-val" id="budget-detail">0</div>
-            </div>
-          </div>
-          <div style="margin-top:6px; font-size:10px; color:var(--muted); text-align:center;">
-            <span id="budget-consolidated">0</span> paths after consolidation ·
-            <span id="budget-bytes">0</span> KB
+          <div style="font-size:11px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <span><b id="budget-block">0</b> Block</span>
+            <span><b id="budget-shape">0</b> Shape</span>
+            <span><b id="budget-detail">0</b> Detail</span>
+            <span style="color:var(--muted);">→ <span id="budget-consolidated">0</span> paths · <span id="budget-bytes">0</span> KB</span>
           </div>
         </div>
 
-        <!-- Export preview -->
+        <!-- Element Metadata (collapsible, collapsed by default) -->
         <div class="panel-section">
-          <div class="subtle-label">Level Preview</div>
-          <div style="display:flex; flex-direction:column; gap:6px;">
-            <div>
-              <div style="font-size:9px; color:var(--muted); margin-bottom:2px;">Block</div>
-              <div style="width:100%; border:1px solid var(--border); border-radius:8px; overflow:hidden; background:var(--paper);">
-                <svg id="preview-block" viewBox="0 0 160 160" style="display:block; width:100%;"></svg>
+          <div class="subtle-label collapsible collapsed" id="metadata-toggle">Element Metadata <span class="collapse-arrow">▸</span></div>
+          <div class="collapsible-body" id="metadata-body" style="display:none;">
+            <div style="display:flex; flex-direction:column; gap:6px; margin-top:6px;">
+              <div>
+                <label style="font-size:10px; color:var(--fg-dim);">Element ID</label>
+                <input type="text" id="el-id" placeholder="my-element" style="width:100%; padding:4px 8px; border:1px solid var(--border); border-radius:6px; font-size:12px; background:rgba(255,255,255,0.65);">
               </div>
-            </div>
-            <div>
-              <div style="font-size:9px; color:var(--muted); margin-bottom:2px;">Shape</div>
-              <div style="width:100%; border:1px solid var(--border); border-radius:8px; overflow:hidden; background:var(--paper);">
-                <svg id="preview-shape" viewBox="0 0 160 160" style="display:block; width:100%;"></svg>
+              <div>
+                <label style="font-size:10px; color:var(--fg-dim);">Name</label>
+                <input type="text" id="el-name" placeholder="My Element" style="width:100%; padding:4px 8px; border:1px solid var(--border); border-radius:6px; font-size:12px; background:rgba(255,255,255,0.65);">
               </div>
-            </div>
-            <div>
-              <div style="font-size:9px; color:var(--muted); margin-bottom:2px;">Detail</div>
-              <div style="width:100%; border:1px solid var(--border); border-radius:8px; overflow:hidden; background:var(--paper);">
-                <svg id="preview-detail" viewBox="0 0 160 160" style="display:block; width:100%;"></svg>
+              <div>
+                <label style="font-size:10px; color:var(--fg-dim);">Category</label>
+                <select id="el-category" style="width:100%; padding:4px 8px; border:1px solid var(--border); border-radius:6px; font-size:12px; background:rgba(255,255,255,0.65);">
+                  <option value="landscape">landscape</option>
+                  <option value="flora">flora</option>
+                  <option value="fauna">fauna</option>
+                  <option value="objects">objects</option>
+                  <option value="patterns">patterns</option>
+                  <option value="basic forms">basic forms</option>
+                  <option value="figures">figures</option>
+                  <option value="hanko">hanko</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-size:10px; color:var(--fg-dim);">Suggested Layer</label>
+                <select id="el-layer" style="width:100%; padding:4px 8px; border:1px solid var(--border); border-radius:6px; font-size:12px; background:rgba(255,255,255,0.65);">
+                  <option value="background">background</option>
+                  <option value="midground" selected>midground</option>
+                  <option value="foreground">foreground</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-size:10px; color:var(--fg-dim);">Pack</label>
+                <select id="el-pack" style="width:100%; padding:4px 8px; border:1px solid var(--border); border-radius:6px; font-size:12px; background:rgba(255,255,255,0.65);">
+                  <option value="core">core</option>
+                  <option value="kacho-e">kacho-e</option>
+                  <option value="moribana">moribana</option>
+                  <option value="tsukiyo">tsukiyo</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-size:10px; color:var(--fg-dim);">Tags</label>
+                <div id="el-tags-chips" style="display:flex; flex-wrap:wrap; gap:3px;"></div>
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- Export -->
+        <div class="panel-section">
+          <button class="primary" id="btn-export" style="width:100%;">📋 Export Element</button>
         </div>
 
       </div>
@@ -1292,8 +1301,8 @@ function setLevel(level) {
   STATE.activeLevel = level;
   STATE.selectedPathIndex = -1;
   STATE.selectedPathSet.clear();
-  document.querySelectorAll('.level-tab').forEach(tab => {
-    tab.classList.toggle('active', parseInt(tab.dataset.level) === level);
+  document.querySelectorAll('.level-preview-item').forEach(item => {
+    item.classList.toggle('active', parseInt(item.dataset.level) === level);
   });
   renderCanvas();
   updateStatusBar();
@@ -1309,8 +1318,8 @@ function movePathsToLevel(indices, targetLevel) {
   pathsToMove.forEach(p => STATE.paths[targetLevel].push(p));
   STATE.selectedPathIndex = -1;
   STATE.selectedPathSet.clear();
-  document.querySelectorAll('.level-tab').forEach(tab => {
-    tab.classList.toggle('active', parseInt(tab.dataset.level) === targetLevel);
+  document.querySelectorAll('.level-preview-item').forEach(item => {
+    item.classList.toggle('active', parseInt(item.dataset.level) === targetLevel);
   });
   STATE.activeLevel = targetLevel;
   renderCanvas();
@@ -3623,10 +3632,7 @@ function updateBudget() {
   const totalBytes = Math.round(JSON.stringify(STATE.paths).length / 1024 * 10) / 10;
 
   ['block', 'shape', 'detail'].forEach((name, i) => {
-    const el = $('budget-' + name);
-    el.textContent = counts[i];
-    const cell = el.closest('.budget-cell');
-    cell.className = 'budget-cell ' + budgetColor(counts[i], [30, 60]);
+    $('budget-' + name).textContent = counts[i];
   });
 
   $('budget-consolidated').textContent = consolidated;
@@ -3999,8 +4005,10 @@ function importElement(el) {
 
 // ── Preview thumbnails ──
 function updatePreviews() {
+  var vb = '0 0 ' + STATE.viewBoxW + ' ' + STATE.viewBoxH;
   ['block', 'shape', 'detail'].forEach((name, levelIdx) => {
     const svgEl = $('preview-' + name);
+    svgEl.setAttribute('viewBox', vb);
     svgEl.innerHTML = '';
 
     // Show lower levels dimmed in light gray
@@ -4224,10 +4232,50 @@ function attachEvents() {
   $('tool-fill').addEventListener('click', () => setTool('fill'));
   $('tool-erase').addEventListener('click', () => setTool('erase'));
 
-  // Level tabs
-  document.querySelectorAll('.level-tab').forEach(tab => {
-    tab.addEventListener('click', () => setLevel(parseInt(tab.dataset.level)));
+  // Level preview items (replacing old level tabs)
+  document.querySelectorAll('.level-preview-item').forEach(item => {
+    item.addEventListener('click', () => setLevel(parseInt(item.dataset.level)));
   });
+
+  // Metadata toggle
+  $('metadata-toggle').addEventListener('click', function() {
+    var body = $('metadata-body');
+    var isOpen = body.style.display !== 'none';
+    body.style.display = isOpen ? 'none' : 'block';
+    this.classList.toggle('collapsed', isOpen);
+  });
+
+  // Persist metadata fields to localStorage
+  var META_KEY = 'mokuri-forge-meta';
+  function loadPersistedMeta() {
+    try {
+      var saved = JSON.parse(localStorage.getItem(META_KEY) || '{}');
+      if (saved.category) $('el-category').value = saved.category;
+      if (saved.layer) $('el-layer').value = saved.layer;
+      if (saved.pack) $('el-pack').value = saved.pack;
+      if (saved.tags && Array.isArray(saved.tags)) {
+        STATE.selectedTags = new Set(saved.tags);
+        renderTagChips();
+      }
+    } catch(e) {}
+  }
+  function savePersistedMeta() {
+    try {
+      localStorage.setItem(META_KEY, JSON.stringify({
+        category: $('el-category').value,
+        layer: $('el-layer').value,
+        pack: $('el-pack').value,
+        tags: Array.from(STATE.selectedTags)
+      }));
+    } catch(e) {}
+  }
+  // Save on tag chip clicks too
+  var origRenderTagChips = renderTagChips;
+  renderTagChips = function() { origRenderTagChips(); savePersistedMeta(); };
+  $('el-category').addEventListener('change', savePersistedMeta);
+  $('el-layer').addEventListener('change', savePersistedMeta);
+  $('el-pack').addEventListener('change', savePersistedMeta);
+  loadPersistedMeta();
 
   // Undo/redo
   $('btn-undo').addEventListener('click', undo);
