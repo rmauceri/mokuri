@@ -12,6 +12,11 @@
         img, svg { max-width: 100%; height: auto; background: #00FF00; border: 1px solid #444; }
         pre { background: #000; padding: 10px; overflow-x: auto; font-size: 12px; color: #0f0; }
         button { padding: 10px 20px; cursor: pointer; background: #d4622b; border: none; color: white; font-weight: bold; }
+        .controls { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; align-items: center; background: #2a2a2a; padding: 12px 16px; border-radius: 8px; }
+        .ctrl { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+        .ctrl label { min-width: 60px; color: #aaa; }
+        .ctrl input[type=range] { width: 120px; }
+        .ctrl span { min-width: 32px; font-weight: bold; color: #e0e0e0; }
     </style>
 </head>
 <body>
@@ -19,8 +24,29 @@
     <h1>Mokuri Element Forge: PNG → SVG</h1>
     <p>Upload a 4-zone PNG with #00FF00 background to test the vectorization quality.</p>
 
-    <input type="file" id="upload" accept="image/png" style="margin-bottom: 20px;">
-    
+    <input type="file" id="upload" accept="image/png" style="margin-bottom: 16px; display:block;">
+
+    <div class="controls">
+        <div class="ctrl">
+            <label title="Line simplification threshold. Higher = fewer segments on straight edges.">Line (ltres)</label>
+            <input type="range" id="ctrl-ltres" min="0" max="50" step="1" value="10">
+            <span id="val-ltres">1.0</span>
+        </div>
+        <div class="ctrl">
+            <label title="Curve simplification threshold. Higher = fewer segments on curves.">Curve (qtres)</label>
+            <input type="range" id="ctrl-qtres" min="0" max="50" step="1" value="10">
+            <span id="val-qtres">1.0</span>
+        </div>
+        <div class="ctrl">
+            <label title="Ignore paths smaller than this many pixels.">Path min</label>
+            <input type="range" id="ctrl-pathomit" min="0" max="20" step="1" value="0">
+            <span id="val-pathomit">0</span>
+        </div>
+        <div class="ctrl" style="margin-left:auto;">
+            <span id="path-count" style="color:#888; font-size:12px;"></span>
+        </div>
+    </div>
+
     <div class="container">
         <div class="box">
             <h3>1. Source PNG</h3>
@@ -45,16 +71,27 @@
         const svgContainer = document.getElementById('svg-container');
         const pathOutput = document.getElementById('path-output');
         let _lastSvgStr = null;
+        let _lastImgEl = null;
+
+        // Slider display + re-trace on change
+        function sliderVal(id, valId, scale) {
+            const el = document.getElementById(id);
+            const disp = document.getElementById(valId);
+            function update() { disp.textContent = (parseInt(el.value) * scale).toFixed(scale < 1 ? 1 : 0); }
+            el.addEventListener('input', () => { update(); if (_lastImgEl) processImage(_lastImgEl); });
+            update();
+        }
+        sliderVal('ctrl-ltres', 'val-ltres', 0.1);
+        sliderVal('ctrl-qtres', 'val-qtres', 0.1);
+        sliderVal('ctrl-pathomit', 'val-pathomit', 1);
 
         upload.addEventListener('change', function(e) {
             const file = e.target.files[0];
             const reader = new FileReader();
-
             reader.onload = function(event) {
                 sourceImg.src = event.target.result;
-                
-                // Wait for image to load before tracing
                 sourceImg.onload = function() {
+                    _lastImgEl = sourceImg;
                     processImage(sourceImg);
                 };
             };
@@ -62,58 +99,51 @@
         });
 
         function processImage(imgElement) {
-            // Options tuned for Mokuri Spec:
-            // - pal: manually defined to match your hex codes
-            // - layers: true to ensure color zones are separate paths
+            const ltres   = parseInt(document.getElementById('ctrl-ltres').value) * 0.1;
+            const qtres   = parseInt(document.getElementById('ctrl-qtres').value) * 0.1;
+            const pathomit = parseInt(document.getElementById('ctrl-pathomit').value);
+
             const options = {
-                // 1. DISABLE SMOOTHING
-                // This stops the tracer from trying to "blend" the eye into the background.
-                ltres: 0.01, 
-                qtres: 0.01,
-                pathomit: 0,
-
-                // 2. STRENGTHEN THE PALETTE
+                ltres,
+                qtres,
+                pathomit,
                 colorsampling: 0,
-                numberofcolors: 5, // Force exactly 5 buckets
-                mincolorratio: 0,  // CRITICAL: Don't ignore colors even if they represent 0.01% of the image
-                
+                numberofcolors: 5,
+                mincolorratio: 0,
                 pal: [
-                    {r:240, g:232, b:208, a:255}, // Body
-                    {r:212, g:98, b:43, a:255},   // Marking
-                    {r:138, g:138, b:138, a:255}, // Fin
-                    {r:58, g:42, b:26, a:255},    // Accent (Black)
-                    {r:0, g:255, b:0, a:255}      // CHANGE: Set Alpha to 255 for the trace!
+                    {r:240, g:232, b:208, a:255},
+                    {r:212, g:98, b:43, a:255},
+                    {r:138, g:138, b:138, a:255},
+                    {r:58, g:42, b:26, a:255},
+                    {r:0, g:255, b:0, a:255}
                 ],
-
-                // 3. POST-TRACE TRANSPARENCY
-                // If you set Alpha to 0 in the palette, the tracer often treats those pixels 
-                // as "null space." It's better to trace the green as a solid shape, 
-                // and then simply hide that path in your CSS/SVG later.
                 viewbox: true,
                 linefilter: false
             };
 
-            // Run the trace
             ImageTracer.imageToSVG(imgElement.src, function(svgstr) {
                 _lastSvgStr = svgstr;
                 svgContainer.innerHTML = svgstr;
                 pathOutput.textContent = svgstr;
                 document.getElementById('download-btn').style.display = 'block';
+                // Count total path commands as a complexity indicator
+                const cmds = (svgstr.match(/[MLCQZmlcqz]/g) || []).length;
+                document.getElementById('path-count').textContent = cmds + ' path commands';
             }, options);
         }
 
-    document.getElementById('download-btn').addEventListener('click', function() {
-        if (!_lastSvgStr) return;
-        const blob = new Blob([_lastSvgStr], { type: 'image/svg+xml' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'traced.svg';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    });
+        document.getElementById('download-btn').addEventListener('click', function() {
+            if (!_lastSvgStr) return;
+            const blob = new Blob([_lastSvgStr], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'traced.svg';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
     </script>
 </body>
 </html>
