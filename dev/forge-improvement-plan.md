@@ -156,9 +156,48 @@ Reorganized the forge into a left-to-right **Import → Edit → Export** workfl
 
 ---
 
+## Phase 4: Zone-Level Assignment & Silhouette ✅
+
+Zone-level assignment system for the SVG import workflow. Assign entire color zones to carve levels (Block/Shape/Detail) instead of manually dragging individual paths.
+
+### 4A. Zone-level UI ✅
+- Each zone gets a `level` property (0=Block, 1=Shape, 2=Detail), default 0
+- Zone chips display a **B/S/D badge** — click the badge to cycle assignment
+- Badge styling: color-coded pills (warm=Block, cool=Shape, violet=Detail)
+- Canvas and previews update when zone levels change
+
+### 4B. Silhouette auto-generation on SVG import ✅
+- On SVG import, the largest fill path is detected **before** subpath splitting
+- Preserved as a single path with multi-subpath d string intact (handles intentional holes like crane legs)
+- Tagged with `fillRule: 'evenodd'` so holes render correctly regardless of winding direction
+- Assigned to body zone, inserted first in Block level (renders behind everything)
+- Visible in forge canvas with **dashed outline** for easy identification
+- Selectable and deletable like any other path
+
+### 4C. Zone-aware export ✅
+- `consolidatePaths()` rewritten to be zone-level-aware when any zone has non-block level
+- **Block**: silhouette (body zone, evenodd) + block-zone fills/strokes + body-rezoned fills from higher-level zones (ensures full coverage)
+- **Shape**: fills + strokes from shape-assigned zones (real zone IDs)
+- **Detail**: fills + strokes from detail-assigned zones (real zone IDs)
+- Falls back to original behavior when no zones are assigned above block
+- `formatElementJS()` emits `fillRule` property when present
+
+### 4D. Renderer fillRule support ✅
+- `renderElementSvg()` in index.html: respects `fillRule` on path data for both block and overlay fills
+- `renderFills()` in print-engine.js: same, in SVG string templates
+- Total: 4 lines of renderer changes — fully backward-compatible (existing elements have no fillRule)
+
+### 4E. Multi-subpath splitting at import ✅
+- `splitImportSubpaths()` splits multi-subpath d strings on SVG import
+- Each subpath becomes independently editable/deletable in the forge
+- Fixes transparent fill bug from png2svg (opposite winding + nonzero fill-rule)
+- Silhouette path exempted from splitting to preserve intentional holes
+
+---
+
 ## Completed Work Summary
 
-All phases (0–3) are now implemented. The forge is a functional PNG → trace → cleanup → export pipeline.
+All phases (0–4) are now implemented. The forge is a functional PNG → trace → cleanup → export pipeline with zone-level carve assignment.
 
 ### What works
 - **Import**: SVG import, image drag-and-drop, URL paste, auto viewBox detection, chroma key detection
@@ -171,7 +210,7 @@ All phases (0–3) are now implemented. The forge is a functional PNG → trace 
 ### Known limitations
 - **Outline residue**: PNG outlines trace as darkest-zone paths hugging the silhouette. Dimension-based and erosion-based filtering both failed — the paths wrap around the element giving them large bounding boxes. Manual cleanup still needed.
 - **Color matching edge cases**: ImageTracer sometimes matches feature colors to wrong clusters (e.g., eye outline to fin color instead of detail zone).
-- **fill-rule**: Using `nonzero` everywhere; complex paths with opposite winding still occasionally cause visual artifacts.
+- **Silhouette detection heuristic**: Uses largest fill by bounding-box area — works well for png2svg output but may need manual adjustment for non-standard SVG sources.
 
 ## Notes
 
