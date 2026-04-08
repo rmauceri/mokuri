@@ -1374,10 +1374,7 @@ function movePathsToLevel(indices, targetLevel) {
 
   STATE.selectedPathIndex = -1;
   STATE.selectedPathSet.clear();
-  document.querySelectorAll('.level-preview-item').forEach(item => {
-    item.classList.toggle('active', parseInt(item.dataset.level) === targetLevel);
-  });
-  STATE.activeLevel = targetLevel;
+  // Stay on current level — don't follow moved paths to their destination.
   renderCanvas();
   updateBudget();
   updatePreviews();
@@ -4459,10 +4456,7 @@ function updatePathInspector() {
       STATE.paths[targetLevel].push(srcPath);
       STATE.selectedPathIndex = -1;
       STATE.selectedPathSet.clear();
-      document.querySelectorAll('.level-preview-item').forEach(item => {
-        item.classList.toggle('active', parseInt(item.dataset.level) === targetLevel);
-      });
-      STATE.activeLevel = targetLevel;
+      // Stay on current level — don't follow the moved path to its destination.
     }
     renderCanvas();
     updateBudget();
