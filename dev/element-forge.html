@@ -1345,6 +1345,8 @@ function _makeLibraryEntry(id) {
       name: STATE.elementName || '',
       category: STATE.category || 'flora',
       suggestedLayer: STATE.suggestedLayer || 'midground',
+      pack: $('el-pack') ? $('el-pack').value : 'core',
+      tags: Array.from(STATE.selectedTags),
     },
     zones: JSON.parse(JSON.stringify(STATE.zones)),
     paths: JSON.parse(JSON.stringify(STATE.paths)),
@@ -1412,6 +1414,7 @@ function _applyLibraryEntry(entry) {
   STATE.elementName = entry.meta.name || '';
   STATE.category = entry.meta.category || 'flora';
   STATE.suggestedLayer = entry.meta.suggestedLayer || 'midground';
+  STATE.selectedTags = new Set(Array.isArray(entry.meta.tags) ? entry.meta.tags : []);
   STATE.viewBoxX = entry.viewBoxX || 0;
   STATE.viewBoxY = entry.viewBoxY || 0;
   STATE.viewBoxW = entry.viewBoxW || 160;
@@ -1487,11 +1490,17 @@ function deleteLibraryElement(id) {
 }
 
 function syncMetadataFields() {
-  const idEl = $('el-id'), nameEl = $('el-name'), catEl = $('el-category'), layerEl = $('el-layer');
+  const idEl = $('el-id'), nameEl = $('el-name'), catEl = $('el-category'), layerEl = $('el-layer'), packEl = $('el-pack');
   if (idEl) idEl.value = STATE.elementId || '';
   if (nameEl) nameEl.value = STATE.elementName || '';
   if (catEl) catEl.value = STATE.category || 'flora';
   if (layerEl) layerEl.value = STATE.suggestedLayer || 'midground';
+  if (packEl) {
+    const active = _library.elements.find(e => e._id === _library.activeId);
+    const pack = (active && active.meta.pack) ? active.meta.pack : 'core';
+    packEl.value = pack;
+  }
+  renderTagChips();
   const packInput = $('lib-pack-name');
   if (packInput) packInput.value = _library.packName || 'MyCustomElements';
 }
@@ -1504,6 +1513,7 @@ function scheduleMetaSave() {
     STATE.elementName = $('el-name').value.trim();
     STATE.category = $('el-category').value;
     STATE.suggestedLayer = $('el-layer').value;
+    // Pack and tags are already live (pack via el-pack.value, tags via STATE.selectedTags)
     saveActiveToLibrary();
   }, 400);
 }
@@ -5047,20 +5057,8 @@ function attachEvents() {
     this.classList.toggle('collapsed', isOpen);
   });
 
-  // Persist metadata fields to localStorage
+  // Persist metadata fields to localStorage (legacy — library now handles per-element storage)
   var META_KEY = 'mokuri-forge-meta';
-  function loadPersistedMeta() {
-    try {
-      var saved = JSON.parse(localStorage.getItem(META_KEY) || '{}');
-      if (saved.category) $('el-category').value = saved.category;
-      if (saved.layer) $('el-layer').value = saved.layer;
-      if (saved.pack) $('el-pack').value = saved.pack;
-      if (saved.tags && Array.isArray(saved.tags)) {
-        STATE.selectedTags = new Set(saved.tags);
-        renderTagChips();
-      }
-    } catch(e) {}
-  }
   function savePersistedMeta() {
     try {
       localStorage.setItem(META_KEY, JSON.stringify({
@@ -5071,13 +5069,12 @@ function attachEvents() {
       }));
     } catch(e) {}
   }
-  // Save on tag chip clicks too
+  // Wrap renderTagChips to keep legacy meta in sync and trigger library save
   var origRenderTagChips = renderTagChips;
-  renderTagChips = function() { origRenderTagChips(); savePersistedMeta(); };
+  renderTagChips = function() { origRenderTagChips(); savePersistedMeta(); scheduleMetaSave(); };
   $('el-category').addEventListener('change', savePersistedMeta);
   $('el-layer').addEventListener('change', savePersistedMeta);
-  $('el-pack').addEventListener('change', savePersistedMeta);
-  loadPersistedMeta();
+  $('el-pack').addEventListener('change', () => { savePersistedMeta(); scheduleMetaSave(); });
 
   // Undo/redo
   $('btn-undo').addEventListener('click', undo);
