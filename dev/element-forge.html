@@ -3423,6 +3423,27 @@ function clusterSvgColors(svgPaths, nClusters) {
   return zones;
 }
 
+// Split a d string with multiple M...Z subpaths into separate d strings.
+// SVG converters (png2svg) often produce single <path> elements with multiple
+// subpaths that have inconsistent winding, causing transparent fills in Mokuri.
+// Splitting at import makes each subpath independently editable/deletable.
+function splitImportSubpaths(d) {
+  if (!d) return [d];
+  var subs = [];
+  var cur = '';
+  for (var i = 0; i < d.length; i++) {
+    var ch = d[i];
+    if ((ch === 'M' || ch === 'm') && cur.trim()) {
+      subs.push(cur.trim());
+      cur = ch;
+    } else {
+      cur += ch;
+    }
+  }
+  if (cur.trim()) subs.push(cur.trim());
+  return subs.length ? subs : [d];
+}
+
 function buildStateFromSvgZones(zones, sourceW, sourceH) {
   const sx = STATE.viewBoxW / sourceW;
   const sy = STATE.viewBoxH / sourceH;
@@ -3437,8 +3458,12 @@ function buildStateFromSvgZones(zones, sourceW, sourceH) {
     if (!zone.zoneId) continue;
     for (const p of zone.paths) {
       const scaledD = transformPathCoords(p.d, p.matrix, sx, sy);
-      const area = estimatePathBBox(scaledD);
-      allPaths.push({ d: scaledD, area, zone: zone.zoneId });
+      // Split multi-subpath d strings so each subpath is independently editable
+      var subs = splitImportSubpaths(scaledD);
+      for (var si = 0; si < subs.length; si++) {
+        var area = estimatePathBBox(subs[si]);
+        allPaths.push({ d: subs[si], area: area, zone: zone.zoneId });
+      }
     }
   }
 

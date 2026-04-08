@@ -3134,7 +3134,7 @@ if (typeof MOKURI_KACHOE_PRESETS !== 'undefined' && typeof MOKURI_GALLERY_PRESET
 //  VERSION
 // ============================================================
 // Display version — KEEP IN SYNC with CACHE_NAME in sw.js (mokuri-v77 → 0.77)
-const MOKURI_VERSION = '0.87';
+const MOKURI_VERSION = '0.88';
 
 // ============================================================
 //  FEEDBACK
@@ -4250,39 +4250,6 @@ function getElementCarvePathKey(path) {
   ].join('|');
 }
 
-// Split fill paths with multiple M...Z subpaths into separate path objects.
-// Multi-subpath fills with opposite winding render as transparent under nonzero fill-rule.
-function expandMultiSubpathFills(paths) {
-  var out = [];
-  for (var i = 0; i < paths.length; i++) {
-    var p = paths[i];
-    if (p.type !== 'fill') { out.push(p); continue; }
-    var parts = splitDSubpaths(p.d);
-    if (parts.length <= 1) { out.push(p); continue; }
-    for (var j = 0; j < parts.length; j++) {
-      out.push({ d: parts[j], type: p.type, zone: p.zone });
-    }
-  }
-  return out;
-}
-
-function splitDSubpaths(d) {
-  if (!d) return [d];
-  var subs = [];
-  var cur = '';
-  for (var i = 0; i < d.length; i++) {
-    var ch = d[i];
-    if ((ch === 'M' || ch === 'm') && cur.trim()) {
-      subs.push(cur.trim());
-      cur = ch;
-    } else {
-      cur += ch;
-    }
-  }
-  if (cur.trim()) subs.push(cur.trim());
-  return subs.length ? subs : [d];
-}
-
 function elementHasDeltaCarveLevels(def) {
   if (!def || !Array.isArray(def.carveLevels)) return false;
   if (def.carveLevelMode === 'delta') return true;
@@ -4301,10 +4268,9 @@ function elementHasDeltaCarveLevels(def) {
 }
 
 function getElementBlockPaths(def) {
-  var raw = def && def.carveLevels && def.carveLevels[0] && Array.isArray(def.carveLevels[0].paths)
+  return def && def.carveLevels && def.carveLevels[0] && Array.isArray(def.carveLevels[0].paths)
     ? def.carveLevels[0].paths
     : [];
-  return expandMultiSubpathFills(raw);
 }
 
 function getElementOverlayPaths(def, carveLevel) {
@@ -4317,14 +4283,12 @@ function getElementOverlayPaths(def, carveLevel) {
       const level = def.carveLevels[i];
       if (level && Array.isArray(level.paths)) paths.push(...level.paths);
     }
-    return expandMultiSubpathFills(paths);
+    return paths;
   }
   const blockKeys = new Set(getElementBlockPaths(def).map(getElementCarvePathKey));
   const level = def.carveLevels[levelIndex];
-  return expandMultiSubpathFills(
-    (level && Array.isArray(level.paths) ? level.paths : [])
-      .filter(path => !blockKeys.has(getElementCarvePathKey(path)))
-  );
+  return (level && Array.isArray(level.paths) ? level.paths : [])
+    .filter(path => !blockKeys.has(getElementCarvePathKey(path)));
 }
 
 function getElementVisiblePaths(def, carveLevel) {
