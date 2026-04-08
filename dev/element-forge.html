@@ -3622,8 +3622,9 @@ function renderCanvas() {
   $('layer-shape').innerHTML = '';
   $('layer-detail').innerHTML = '';
 
-  // Render accumulated lower levels (dimmed)
-  for (let l = 0; l < level; l++) {
+  // Render all levels as ghosts (full composition context), skip active level
+  for (let l = 0; l < 3; l++) {
+    if (l === level) continue;
     getDisplayPathsForLevel(l).forEach(p => {
       const el = createPathElement(p, true);
       $('layer-accumulated').appendChild(el);
