@@ -1356,20 +1356,21 @@ function movePathsToLevel(indices, targetLevel) {
   const displayPaths = STATE._displayPaths || getDisplayPathsForLevel(STATE.activeLevel);
   const toMove = indices.map(i => displayPaths[i]).filter(Boolean);
 
+  // Collect CURRENT live path objects before splicing (display copies may be stale)
+  const livePaths = toMove.map(dp => STATE.paths[dp._srcLevel][dp._srcIndex]);
+
   // Remove from source arrays in reverse-index order per level
   const byLevel = {};
-  toMove.forEach(p => {
-    if (!byLevel[p._srcLevel]) byLevel[p._srcLevel] = [];
-    byLevel[p._srcLevel].push(p._srcIndex);
+  toMove.forEach(dp => {
+    if (!byLevel[dp._srcLevel]) byLevel[dp._srcLevel] = [];
+    byLevel[dp._srcLevel].push(dp._srcIndex);
   });
   Object.entries(byLevel).forEach(([lvl, idxs]) => {
     idxs.sort((a, b) => b - a).forEach(idx => STATE.paths[parseInt(lvl)].splice(idx, 1));
   });
 
-  // Add clean copies (no _src props) to target level
-  toMove.forEach(({ _srcLevel, _srcIndex, ...cleanPath }) => {
-    STATE.paths[targetLevel].push(cleanPath);
-  });
+  // Add live path objects (with any pending edits) to target level
+  livePaths.forEach(p => STATE.paths[targetLevel].push(p));
 
   STATE.selectedPathIndex = -1;
   STATE.selectedPathSet.clear();
@@ -4444,12 +4445,25 @@ function updatePathInspector() {
     }
     const targetLevel = parseInt($('inspect-level').value);
     if (targetLevel !== STATE.activeLevel) {
-      movePathsToLevel([STATE.selectedPathIndex], targetLevel);
-      return; // movePathsToLevel re-renders everything
+      // Apply edits then move — suppress movePathsToLevel's own pushUndo since we already pushed
+      const displayPaths = STATE._displayPaths || getDisplayPathsForLevel(STATE.activeLevel);
+      const dp2 = displayPaths[STATE.selectedPathIndex];
+      if (dp2) {
+        STATE.paths[dp2._srcLevel].splice(dp2._srcIndex, 1);
+        STATE.paths[targetLevel].push(srcPath);
+      }
+      STATE.selectedPathIndex = -1;
+      STATE.selectedPathSet.clear();
+      document.querySelectorAll('.level-preview-item').forEach(item => {
+        item.classList.toggle('active', parseInt(item.dataset.level) === targetLevel);
+      });
+      STATE.activeLevel = targetLevel;
     }
     renderCanvas();
     updateBudget();
     updatePreviews();
+    updateStatusBar();
+    updatePathInspector();
   });
 
   $('inspect-delete').addEventListener('click', () => {
