@@ -4030,8 +4030,11 @@ function consolidatePaths(upToLevel) {
           allPaths.push({ d: d, type: 'fill', zone: p.zone });
         } else if (pZoneLevel === 0 && p.type === 'stroke') {
           allPaths.push({ d: p.d, type: 'stroke', zone: p.zone, strokeWidth: p.strokeWidth || 2 });
-        } else if (pZoneLevel > 0 && p.type === 'fill') {
-          // Higher-level zone fills → add as body-rezoned fill for silhouette coverage
+        } else if (lvl === 0 && pZoneLevel > 0 && p.type === 'fill') {
+          // Zone-badge fills at higher levels → body-rezoned for silhouette coverage in Block.
+          // Only applies to paths still in STATE.paths[0] (zone-badge-controlled).
+          // Paths physically moved to STATE.paths[1/2] via the inspector are NOT body-rezoned —
+          // they are explicit overrides that should stay at their assigned level.
           let d = p.d.trim();
           if (!d.endsWith('Z') && !d.endsWith('z')) d += ' Z';
           allPaths.push({ d: d, type: 'fill', zone: bodyZoneId });
