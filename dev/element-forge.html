@@ -336,6 +336,87 @@ button.sm { padding: 3px 8px; font-size: 11px; }
 .zone-level-badge[data-level="2"] { background: #c8b8d8; color: #4a3a5a; }
 .zone-level-badge:hover { opacity: 0.8; }
 
+/* ── Zone palette slot input ── */
+.zone-slot {
+  width: 26px;
+  padding: 1px 3px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 10px;
+  background: rgba(255,255,255,0.75);
+  text-align: center;
+  margin-left: 3px;
+  cursor: text;
+}
+
+/* ── Library Panel ── */
+.library-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 60px;
+}
+
+.library-thumb {
+  position: relative;
+  width: 64px;
+  cursor: pointer;
+  border-radius: 6px;
+  border: 2px solid var(--border);
+  background: rgba(255,255,255,0.5);
+  padding: 3px;
+  transition: border-color 0.15s;
+  flex-shrink: 0;
+}
+.library-thumb:hover { border-color: var(--accent); }
+.library-thumb.active { border-color: var(--accent); background: rgba(139,107,74,0.12); }
+
+.library-thumb img {
+  width: 100%;
+  aspect-ratio: 1;
+  display: block;
+  object-fit: contain;
+  border-radius: 3px;
+  background: #f5f0e8;
+}
+
+.library-thumb-name {
+  font-size: 9px;
+  text-align: center;
+  color: var(--fg-dim);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.library-thumb-del {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 14px;
+  height: 14px;
+  line-height: 14px;
+  font-size: 11px;
+  text-align: center;
+  padding: 0;
+  border: none;
+  background: rgba(180,60,40,0.7);
+  color: white;
+  border-radius: 3px;
+  cursor: pointer;
+  display: none;
+}
+.library-thumb:hover .library-thumb-del { display: block; }
+
+.lib-empty {
+  font-size: 11px;
+  color: var(--muted);
+  padding: 8px 0;
+  text-align: center;
+  width: 100%;
+}
+
 /* ── Level Preview Bar (above canvas) ── */
 .level-preview-bar {
   display: flex;
@@ -673,12 +754,32 @@ button.sm { padding: 3px 8px; font-size: 11px; }
   <!-- ── Main Area ── -->
   <div class="main-area">
 
-    <!-- ── Left Panel: Import ── -->
+    <!-- ── Left Panel: Forge ── -->
     <div class="side-panel" id="panel-left">
       <div class="panel-head">
-        <h2>Import</h2>
+        <h2>Forge</h2>
       </div>
       <div class="panel-body">
+
+        <!-- ── Library ── -->
+        <div class="panel-section" id="library-section">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+            <div class="subtle-label" style="margin-bottom:0;">Library</div>
+            <div style="display:flex; gap:4px; align-items:center;">
+              <span id="lib-element-count" style="font-size:10px; color:var(--muted);"></span>
+              <button class="sm" id="btn-lib-new" title="Save current and start new element">＋ New</button>
+            </div>
+          </div>
+          <div class="library-grid" id="library-grid">
+            <div class="lib-empty">No elements yet</div>
+          </div>
+          <div style="margin-top:8px; display:flex; gap:4px; align-items:center;">
+            <input type="text" id="lib-pack-name" placeholder="Pack name" value="MyCustomElements"
+              style="flex:1; padding:4px 6px; border:1px solid var(--border); border-radius:6px; font-size:11px; background:rgba(255,255,255,0.65);">
+            <button class="sm" id="btn-export-pack" title="Export all elements as a .js style pack">⬇ Export</button>
+          </div>
+          <div id="lib-size-indicator" style="font-size:9px; color:var(--muted); text-align:right; margin-top:2px;"></div>
+        </div>
 
         <div class="panel-section">
           <div class="subtle-label">ViewBox</div>
@@ -919,10 +1020,10 @@ button.sm { padding: 3px 8px; font-size: 11px; }
           </div>
         </div>
 
-        <!-- Element Metadata (collapsible, collapsed by default) -->
+        <!-- Element Metadata (visible by default) -->
         <div class="panel-section">
-          <div class="subtle-label collapsible collapsed" id="metadata-toggle">Element Metadata <span class="collapse-arrow">▸</span></div>
-          <div class="collapsible-body" id="metadata-body" style="display:none;">
+          <div class="subtle-label collapsible" id="metadata-toggle">Element Metadata <span class="collapse-arrow">▾</span></div>
+          <div class="collapsible-body" id="metadata-body">
             <div style="display:flex; flex-direction:column; gap:6px; margin-top:6px;">
               <div>
                 <label style="font-size:10px; color:var(--fg-dim);">Element ID</label>
@@ -1175,8 +1276,354 @@ const $ = id => document.getElementById(id);
 const svg = $('forge-svg');
 const canvasArea = $('canvas-area');
 
+// ── Library ──
+const LIBRARY_KEY = 'mokuri-forge-library';
+var _library = { packName: 'MyCustomElements', activeId: null, elements: [] };
+
+function loadLibrary() {
+  try {
+    const raw = localStorage.getItem(LIBRARY_KEY);
+    if (raw) _library = JSON.parse(raw);
+  } catch(e) {}
+  if (!Array.isArray(_library.elements)) _library.elements = [];
+  if (!_library.packName) _library.packName = 'MyCustomElements';
+
+  if (_library.elements.length === 0) {
+    // Empty library — create a default blank element (do not save current, nothing to save)
+    _createAndActivateBlankEntry();
+  } else {
+    const active = _library.elements.find(e => e._id === _library.activeId) || _library.elements[0];
+    _library.activeId = active._id;
+    _applyLibraryEntry(active);
+  }
+}
+
+function saveLibrary() {
+  try {
+    localStorage.setItem(LIBRARY_KEY, JSON.stringify(_library));
+  } catch(e) {
+    showToast('Library save failed: ' + e.message, 3000);
+  }
+  updateLibrarySizeIndicator();
+}
+
+function updateLibrarySizeIndicator() {
+  try {
+    const raw = localStorage.getItem(LIBRARY_KEY) || '';
+    const kb = Math.round(raw.length / 1024);
+    const pct = Math.round(kb / (5 * 1024) * 100);
+    const el = $('lib-size-indicator');
+    if (el) {
+      el.textContent = kb + ' KB / 5 MB';
+      el.style.color = pct > 80 ? '#c23b22' : 'var(--muted)';
+    }
+  } catch(e) {}
+}
+
+function _generateThumbnail() {
+  const paths = STATE.paths[0] || [];
+  const vbx = STATE.viewBoxX || 0, vby = STATE.viewBoxY || 0;
+  const vbw = STATE.viewBoxW || 160, vbh = STATE.viewBoxH || 160;
+  const colors = ['#7a6a5a', '#9a8070', '#b8a090', '#5a4a3a', '#6a5a4a'];
+  let inner = '';
+  paths.forEach((p, i) => {
+    const fill = p.type === 'fill' ? colors[i % colors.length] : 'none';
+    const stroke = p.type === 'stroke' ? colors[0] : 'none';
+    const sw = p.type === 'stroke' ? (p.strokeWidth || 2) : 0;
+    inner += `<path d="${p.d.replace(/"/g, '&quot;')}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" fill-rule="${p.fillRule || 'nonzero'}"/>`;
+  });
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vbx} ${vby} ${vbw} ${vbh}">${inner}</svg>`
+  );
+}
+
+function _makeLibraryEntry(id) {
+  return {
+    _id: id,
+    meta: {
+      elementId: STATE.elementId || '',
+      name: STATE.elementName || '',
+      category: STATE.category || 'flora',
+      suggestedLayer: STATE.suggestedLayer || 'midground',
+    },
+    zones: JSON.parse(JSON.stringify(STATE.zones)),
+    paths: JSON.parse(JSON.stringify(STATE.paths)),
+    viewBoxX: STATE.viewBoxX || 0,
+    viewBoxY: STATE.viewBoxY || 0,
+    viewBoxW: STATE.viewBoxW || 160,
+    viewBoxH: STATE.viewBoxH || 160,
+    thumbnail: _generateThumbnail(),
+    savedAt: Date.now(),
+  };
+}
+
+function _createAndActivateBlankEntry() {
+  const id = 'el-' + Date.now();
+  STATE.paths = [[], [], []];
+  STATE.zones = [
+    { id: 'body', defaultPaletteSlot: 0, level: 0 },
+    { id: 'detail', defaultPaletteSlot: 1, level: 0 },
+  ];
+  STATE.activeZoneIndex = 0;
+  STATE.elementId = '';
+  STATE.elementName = '';
+  STATE.category = 'flora';
+  STATE.suggestedLayer = 'midground';
+  STATE.selectedTags = new Set();
+  STATE.undoStack = [];
+  STATE.redoStack = [];
+  STATE.selectedPathIndex = -1;
+  STATE.selectedPathSet = new Set();
+  const entry = _makeLibraryEntry(id);
+  _library.elements.push(entry);
+  _library.activeId = id;
+  return id;
+}
+
+function saveActiveToLibrary() {
+  if (!_library.activeId) return;
+  const idx = _library.elements.findIndex(e => e._id === _library.activeId);
+  const entry = _makeLibraryEntry(_library.activeId);
+  if (idx >= 0) {
+    _library.elements[idx] = entry;
+  } else {
+    _library.elements.push(entry);
+  }
+  saveLibrary();
+  // Refresh just this thumbnail in the panel (avoids full DOM rebuild)
+  const tile = document.querySelector(`.library-thumb[data-id="${_library.activeId}"]`);
+  if (tile) {
+    const img = tile.querySelector('img');
+    if (img) img.src = entry.thumbnail;
+    const nm = tile.querySelector('.library-thumb-name');
+    if (nm) nm.textContent = entry.meta.name || '(unnamed)';
+  }
+  // If grid was showing empty state, rebuild now
+  const grid = $('library-grid');
+  if (grid && grid.querySelector('.lib-empty')) renderLibraryPanel();
+}
+
+function _applyLibraryEntry(entry) {
+  if (!entry) return;
+  STATE.paths = JSON.parse(JSON.stringify(entry.paths || [[], [], []]));
+  STATE.zones = JSON.parse(JSON.stringify(entry.zones || [{ id: 'body', defaultPaletteSlot: 0, level: 0 }]));
+  STATE.activeZoneIndex = 0;
+  STATE.elementId = entry.meta.elementId || '';
+  STATE.elementName = entry.meta.name || '';
+  STATE.category = entry.meta.category || 'flora';
+  STATE.suggestedLayer = entry.meta.suggestedLayer || 'midground';
+  STATE.viewBoxX = entry.viewBoxX || 0;
+  STATE.viewBoxY = entry.viewBoxY || 0;
+  STATE.viewBoxW = entry.viewBoxW || 160;
+  STATE.viewBoxH = entry.viewBoxH || 160;
+  STATE.undoStack = [];
+  STATE.redoStack = [];
+  STATE.selectedPathIndex = -1;
+  STATE.selectedPathSet = new Set();
+}
+
+function createLibraryElement() {
+  saveActiveToLibrary();
+  const id = _createAndActivateBlankEntry();
+  saveLibrary();
+  syncMetadataFields();
+  setupViewBox();
+  renderZoneChips();
+  renderCanvas();
+  updateBudget();
+  updatePreviews();
+  renderLibraryPanel();
+  return id;
+}
+
+function loadLibraryElement(id) {
+  if (id === _library.activeId) return;
+  saveActiveToLibrary();
+  const entry = _library.elements.find(e => e._id === id);
+  if (!entry) return;
+  _library.activeId = id;
+  _applyLibraryEntry(entry);
+  _library.elements.forEach((e, i) => {
+    if (e._id === id) _library.elements.splice(i, 1, e); // no-op, triggers no change
+  });
+  saveLibrary();
+  syncMetadataFields();
+  setupViewBox();
+  renderZoneChips();
+  renderCanvas();
+  updateBudget();
+  updatePreviews();
+  updatePathInspector();
+  renderLibraryPanel();
+}
+
+function deleteLibraryElement(id) {
+  const entry = _library.elements.find(e => e._id === id);
+  const name = (entry && entry.meta.name) ? entry.meta.name : 'this element';
+  if (!confirm(`Delete "${name}" from the library?\nThis cannot be undone.`)) return;
+  _library.elements = _library.elements.filter(e => e._id !== id);
+  if (_library.activeId === id) {
+    if (_library.elements.length > 0) {
+      _library.activeId = _library.elements[0]._id;
+      _applyLibraryEntry(_library.elements[0]);
+      syncMetadataFields();
+      setupViewBox();
+      renderZoneChips();
+      renderCanvas();
+      updateBudget();
+      updatePreviews();
+    } else {
+      _createAndActivateBlankEntry();
+      syncMetadataFields();
+      setupViewBox();
+      renderZoneChips();
+      renderCanvas();
+      updateBudget();
+      updatePreviews();
+    }
+  }
+  saveLibrary();
+  renderLibraryPanel();
+}
+
+function syncMetadataFields() {
+  const idEl = $('el-id'), nameEl = $('el-name'), catEl = $('el-category'), layerEl = $('el-layer');
+  if (idEl) idEl.value = STATE.elementId || '';
+  if (nameEl) nameEl.value = STATE.elementName || '';
+  if (catEl) catEl.value = STATE.category || 'flora';
+  if (layerEl) layerEl.value = STATE.suggestedLayer || 'midground';
+  const packInput = $('lib-pack-name');
+  if (packInput) packInput.value = _library.packName || 'MyCustomElements';
+}
+
+var _metaSaveTimer = null;
+function scheduleMetaSave() {
+  clearTimeout(_metaSaveTimer);
+  _metaSaveTimer = setTimeout(() => {
+    STATE.elementId = $('el-id').value.trim();
+    STATE.elementName = $('el-name').value.trim();
+    STATE.category = $('el-category').value;
+    STATE.suggestedLayer = $('el-layer').value;
+    saveActiveToLibrary();
+  }, 400);
+}
+
+function renderLibraryPanel() {
+  const grid = $('library-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  if (_library.elements.length === 0) {
+    grid.innerHTML = '<div class="lib-empty">No elements yet</div>';
+    const countEl = $('lib-element-count');
+    if (countEl) countEl.textContent = '';
+    updateLibrarySizeIndicator();
+    return;
+  }
+  _library.elements.forEach(entry => {
+    const tile = document.createElement('div');
+    tile.className = 'library-thumb' + (entry._id === _library.activeId ? ' active' : '');
+    tile.setAttribute('data-id', entry._id);
+
+    const img = document.createElement('img');
+    img.src = entry.thumbnail || '';
+    img.alt = entry.meta.name || 'element';
+
+    const nm = document.createElement('div');
+    nm.className = 'library-thumb-name';
+    nm.textContent = entry.meta.name || '(unnamed)';
+
+    const del = document.createElement('button');
+    del.className = 'library-thumb-del';
+    del.textContent = '×';
+    del.title = 'Delete from library';
+    del.addEventListener('click', (e) => { e.stopPropagation(); deleteLibraryElement(entry._id); });
+
+    tile.appendChild(img);
+    tile.appendChild(nm);
+    tile.appendChild(del);
+    tile.addEventListener('click', () => loadLibraryElement(entry._id));
+    grid.appendChild(tile);
+  });
+
+  const countEl = $('lib-element-count');
+  if (countEl) countEl.textContent = _library.elements.length + ' element' + (_library.elements.length !== 1 ? 's' : '');
+  const packInput = $('lib-pack-name');
+  if (packInput && packInput.value !== (_library.packName || '')) packInput.value = _library.packName || '';
+  updateLibrarySizeIndicator();
+}
+
+function exportPack() {
+  if (_library.elements.length === 0) { showToast('No elements in library'); return; }
+  saveActiveToLibrary();
+
+  const rawPackName = ($('lib-pack-name').value || 'CUSTOM').toUpperCase().replace(/[^A-Z0-9_]/g, '_');
+  const varName = 'MOKURI_' + rawPackName + '_ELEMENTS';
+
+  // Snapshot active entry id to restore later
+  const savedActiveId = _library.activeId;
+
+  const results = [];
+  for (const entry of _library.elements) {
+    const total = (entry.paths[0] || []).length + (entry.paths[1] || []).length + (entry.paths[2] || []).length;
+    if (total === 0) continue;
+
+    // Temporarily apply entry to STATE so buildElementDefinition() works
+    _applyLibraryEntry(entry);
+    // Sync form fields for buildElementDefinition
+    $('el-id').value = entry.meta.elementId || 'unnamed';
+    $('el-name').value = entry.meta.name || 'Unnamed';
+    $('el-category').value = entry.meta.category || 'flora';
+    $('el-layer').value = entry.meta.suggestedLayer || 'midground';
+    // Pack field: use the library pack name
+    const packSel = $('el-pack');
+    if (packSel) {
+      // Add option if it doesn't exist
+      let opt = Array.from(packSel.options).find(o => o.value === rawPackName.toLowerCase());
+      if (!opt) {
+        opt = document.createElement('option');
+        opt.value = rawPackName.toLowerCase();
+        opt.textContent = rawPackName.toLowerCase();
+        packSel.appendChild(opt);
+      }
+      packSel.value = rawPackName.toLowerCase();
+    }
+    results.push(buildElementDefinition());
+  }
+
+  // Restore active element
+  const activeEntry = _library.elements.find(e => e._id === savedActiveId);
+  if (activeEntry) {
+    _library.activeId = savedActiveId;
+    _applyLibraryEntry(activeEntry);
+    syncMetadataFields();
+    setupViewBox();
+    renderZoneChips();
+    renderCanvas();
+    updateBudget();
+    updatePreviews();
+  }
+
+  if (results.length === 0) { showToast('No elements with paths to export'); return; }
+
+  const fileName = rawPackName.toLowerCase() + '-elements.js';
+  const js = `var ${varName} = [\n${results.map(el => formatElementJS(el)).join(',\n')}\n];\n\nif (typeof window !== 'undefined') {\n  window.${varName} = ${varName};\n  if (!window.MOKURI_ELEMENTS) window.MOKURI_ELEMENTS = [];\n  window.MOKURI_ELEMENTS = window.MOKURI_ELEMENTS.concat(${varName});\n}\n`;
+
+  const blob = new Blob([js], { type: 'application/javascript' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Exported ' + results.length + ' element' + (results.length !== 1 ? 's' : '') + ' → ' + fileName);
+}
+
 // ── Initialize ──
 function init() {
+  loadLibrary();
+  syncMetadataFields();
   setupViewBox();
   renderZoneChips();
   renderTagChips();
@@ -1185,6 +1632,7 @@ function init() {
   updateStatusBar();
   attachEvents();
   populateImportDialog();
+  renderLibraryPanel();
 }
 
 // ── ViewBox / Canvas ──
@@ -1236,8 +1684,25 @@ function renderZoneChips() {
       renderZoneChips();
       renderCanvas();
       updatePreviews();
+      saveActiveToLibrary();
     });
     chip.appendChild(badge);
+
+    // Palette slot picker
+    const slotInput = document.createElement('input');
+    slotInput.type = 'number';
+    slotInput.min = 0;
+    slotInput.max = 4;
+    slotInput.value = (z.defaultPaletteSlot !== undefined) ? z.defaultPaletteSlot : i;
+    slotInput.className = 'zone-slot';
+    slotInput.title = 'Palette slot (0–4)';
+    slotInput.addEventListener('click', e => e.stopPropagation());
+    slotInput.addEventListener('change', (e) => {
+      e.stopPropagation();
+      z.defaultPaletteSlot = Math.max(0, Math.min(4, parseInt(slotInput.value) || 0));
+      saveActiveToLibrary();
+    });
+    chip.appendChild(slotInput);
 
     var clickTimer = null;
     chip.addEventListener('click', (e) => {
@@ -1561,6 +2026,7 @@ function endStroke(e) {
   renderCanvas();
   updateBudget();
   updatePreviews();
+  saveActiveToLibrary();
 }
 
 function clearActiveStroke() {
@@ -1951,6 +2417,7 @@ function simplifyAllPaths(epsilon) {
   updateBudget();
   updatePreviews();
   showToast('Simplified ' + count + ' path' + (count !== 1 ? 's' : '') + ' (\u03b5=' + epsilon.toFixed(1) + ')');
+  if (count > 0) saveActiveToLibrary();
 }
 
 // Scale SVG path coordinates directly without changing curve types
@@ -2536,6 +3003,8 @@ function traceColorSegmentation() {
 
     var totalPaths = STATE.paths[0].length + STATE.paths[1].length + STATE.paths[2].length;
     $('trace-status').textContent = totalPaths + ' paths (' + mode + ', ' + clusters.length + ' zones)';
+    saveActiveToLibrary();
+    renderLibraryPanel();
     showToast('Trace complete');
   }
 }
@@ -2600,6 +3069,8 @@ function traceMonoThresholds() {
         updatePreviews();
         var totalPaths = STATE.paths[0].length + STATE.paths[1].length + STATE.paths[2].length;
         $('trace-status').textContent = totalPaths + ' paths (mono)';
+        saveActiveToLibrary();
+        renderLibraryPanel();
         showToast('Trace complete');
         return;
       }
@@ -3573,6 +4044,10 @@ function loadSvgFile(file) {
       return;
     }
 
+    // Save current element and start a fresh library entry for this import
+    saveActiveToLibrary();
+    _createAndActivateBlankEntry();
+
     // Set canvas coordinate space to match source SVG dimensions (sx=sy=1 in buildStateFromSvgZones)
     STATE.viewBoxX = 0;
     STATE.viewBoxY = 0;
@@ -3604,6 +4079,13 @@ function loadSvgFile(file) {
     autoViewBoxFromImage();  // auto-fit viewBox to content on every import
     updateBudget();
     updatePreviews();
+    // Auto-fill name from filename if blank
+    if (!STATE.elementName) {
+      STATE.elementName = file.name.replace(/\.svg$/i, '').replace(/[-_]/g, ' ');
+      syncMetadataFields();
+    }
+    saveActiveToLibrary();
+    renderLibraryPanel();
     showToast('SVG imported — ' + zones.length + ' zones, ' + (STATE.paths[0].length + STATE.paths[1].length) + ' paths');
   };
   reader.readAsText(file);
@@ -3771,6 +4253,7 @@ function undo() {
   updateBudget();
   updatePreviews();
   updatePathInspector();
+  saveActiveToLibrary();
 }
 
 function redo() {
@@ -3792,6 +4275,7 @@ function redo() {
   updateBudget();
   updatePreviews();
   updatePathInspector();
+  saveActiveToLibrary();
 }
 
 // ── Path Budget ──
@@ -3895,6 +4379,7 @@ function cleanSmallPaths() {
   updatePreviews();
   updatePathInspector();
   if (removed > 0) showToast('Removed ' + removed + ' small path' + (removed > 1 ? 's' : ''));
+  if (removed > 0) saveActiveToLibrary();
 }
 
 function cleanEdgePaths() {
@@ -3917,6 +4402,7 @@ function cleanEdgePaths() {
   updatePreviews();
   updatePathInspector();
   if (removed > 0) showToast('Removed ' + removed + ' edge artifact' + (removed > 1 ? 's' : ''));
+  if (removed > 0) saveActiveToLibrary();
 }
 
 // ── Export ──
@@ -4237,6 +4723,8 @@ function importElement(el) {
   updateBudget();
   updatePreviews();
   updateStatusBar();
+  saveActiveToLibrary();
+  renderLibraryPanel();
   showToast(`Imported: ${el.name || el.id}`);
 }
 
@@ -4380,10 +4868,12 @@ function updatePathInspector() {
       });
       renderCanvas();
       updatePreviews();
+      saveActiveToLibrary();
     });
     $('inspect-move-multi').addEventListener('click', () => {
       const target = parseInt($('inspect-level-multi').value);
       movePathsToLevel(Array.from(STATE.selectedPathSet), target);
+      saveActiveToLibrary();
     });
     $('inspect-delete-multi').addEventListener('click', () => {
       pushUndo('deletePath');
@@ -4395,6 +4885,7 @@ function updatePathInspector() {
       updateBudget();
       updatePreviews();
       updatePathInspector();
+      saveActiveToLibrary();
     });
     return;
   }
@@ -4476,6 +4967,7 @@ function updatePathInspector() {
     updatePreviews();
     updateStatusBar();
     updatePathInspector();
+    saveActiveToLibrary();
   });
 
   $('inspect-delete').addEventListener('click', () => {
@@ -4487,6 +4979,7 @@ function updatePathInspector() {
     updateBudget();
     updatePreviews();
     updatePathInspector();
+    saveActiveToLibrary();
   });
 }
 
@@ -4696,7 +5189,12 @@ function attachEvents() {
   });
 
   // Trace controls
-  $('btn-trace').addEventListener('click', traceAllLevels);
+  $('btn-trace').addEventListener('click', () => {
+    saveActiveToLibrary();
+    _createAndActivateBlankEntry();
+    renderLibraryPanel();
+    traceAllLevels();
+  });
   $('btn-auto-vb').addEventListener('click', autoViewBoxFromImage);
 
   // Engine toggle
@@ -4793,6 +5291,22 @@ function attachEvents() {
 
   // Export
   $('btn-export').addEventListener('click', exportElement);
+
+  // Library controls
+  $('btn-lib-new').addEventListener('click', () => createLibraryElement());
+  $('btn-export-pack').addEventListener('click', exportPack);
+  $('lib-pack-name').addEventListener('change', (e) => {
+    _library.packName = e.target.value.trim() || 'MyCustomElements';
+    saveLibrary();
+  });
+
+  // Metadata auto-save (use 'input' for immediate feedback on name/id, 'change' for selects)
+  ['el-name', 'el-id'].forEach(id => {
+    $(id).addEventListener('input', () => scheduleMetaSave());
+  });
+  ['el-category', 'el-layer'].forEach(id => {
+    $(id).addEventListener('change', () => scheduleMetaSave());
+  });
 
   // Drawing events on canvas
   canvasArea.addEventListener('pointerdown', e => {
