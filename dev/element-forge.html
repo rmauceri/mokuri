@@ -1353,9 +1353,24 @@ function setLevel(level) {
 function movePathsToLevel(indices, targetLevel) {
   if (targetLevel === STATE.activeLevel) return;
   pushUndo('moveLevel');
-  const pathsToMove = indices.map(i => STATE.paths[STATE.activeLevel][i]);
-  [...indices].sort((a, b) => b - a).forEach(i => STATE.paths[STATE.activeLevel].splice(i, 1));
-  pathsToMove.forEach(p => STATE.paths[targetLevel].push(p));
+  const displayPaths = STATE._displayPaths || getDisplayPathsForLevel(STATE.activeLevel);
+  const toMove = indices.map(i => displayPaths[i]).filter(Boolean);
+
+  // Remove from source arrays in reverse-index order per level
+  const byLevel = {};
+  toMove.forEach(p => {
+    if (!byLevel[p._srcLevel]) byLevel[p._srcLevel] = [];
+    byLevel[p._srcLevel].push(p._srcIndex);
+  });
+  Object.entries(byLevel).forEach(([lvl, idxs]) => {
+    idxs.sort((a, b) => b - a).forEach(idx => STATE.paths[parseInt(lvl)].splice(idx, 1));
+  });
+
+  // Add clean copies (no _src props) to target level
+  toMove.forEach(({ _srcLevel, _srcIndex, ...cleanPath }) => {
+    STATE.paths[targetLevel].push(cleanPath);
+  });
+
   STATE.selectedPathIndex = -1;
   STATE.selectedPathSet.clear();
   document.querySelectorAll('.level-preview-item').forEach(item => {
@@ -3598,6 +3613,7 @@ function loadSvgFile(file) {
 // ── Canvas Rendering ──
 function renderCanvas() {
   const level = STATE.activeLevel;
+  STATE._displayPaths = getDisplayPathsForLevel(level);
 
   // Clear all layers
   $('layer-accumulated').innerHTML = '';
@@ -3607,7 +3623,7 @@ function renderCanvas() {
 
   // Render accumulated lower levels (dimmed)
   for (let l = 0; l < level; l++) {
-    STATE.paths[l].forEach(p => {
+    getDisplayPathsForLevel(l).forEach(p => {
       const el = createPathElement(p, true);
       $('layer-accumulated').appendChild(el);
     });
@@ -3615,7 +3631,7 @@ function renderCanvas() {
 
   // Render current level paths
   const layerId = ['layer-block', 'layer-shape', 'layer-detail'][level];
-  STATE.paths[level].forEach((p, i) => {
+  STATE._displayPaths.forEach((p, i) => {
     const el = createPathElement(p, false);
     if (STATE.selectedPathSet.has(i) || i === STATE.selectedPathIndex) {
       el.classList.add('path-selected');
@@ -3653,7 +3669,7 @@ function renderCanvas() {
       } else if (STATE.tool === 'erase') {
         e.stopPropagation();
         pushUndo('deletePath');
-        STATE.paths[level].splice(i, 1);
+        STATE.paths[p._srcLevel].splice(p._srcIndex, 1);
         STATE.selectedPathIndex = -1;
         STATE.selectedPathSet.clear();
         renderCanvas();
@@ -3846,10 +3862,8 @@ function isEdgePath(bb, margin) {
 function updateCleanCount() {
   var threshold = parseInt($('clean-threshold').value) || 100;
   $('clean-threshold-val').textContent = threshold;
-  var count = 0;
-  STATE.paths[STATE.activeLevel].forEach(function(p) {
-    if (estimatePathArea(p.d) < threshold) count++;
-  });
+  const displayPaths = getDisplayPathsForLevel(STATE.activeLevel);
+  var count = displayPaths.filter(function(p) { return estimatePathArea(p.d) < threshold; }).length;
   $('clean-count').textContent = count > 0 ? count + ' match' + (count > 1 ? 'es' : '') : '';
 }
 
@@ -3858,22 +3872,22 @@ function updateEdgeCleanCount() {
   $('clean-margin-val').textContent = marginPct + '%';
   var margin = marginPct / 100;
   var threshold = parseInt($('clean-threshold').value) || 100;
-  var count = 0;
-  STATE.paths[STATE.activeLevel].forEach(function(p) {
+  const displayPaths = getDisplayPathsForLevel(STATE.activeLevel);
+  var count = displayPaths.filter(function(p) {
     var bb = getPathBBox(p.d);
-    if (bb.area < threshold && isEdgePath(bb, margin)) count++;
-  });
+    return bb.area < threshold && isEdgePath(bb, margin);
+  }).length;
   $('clean-edge-count').textContent = count > 0 ? count + ' match' + (count > 1 ? 'es' : '') : '';
 }
 
 function cleanSmallPaths() {
   var threshold = parseInt($('clean-threshold').value) || 100;
-  var before = STATE.paths[STATE.activeLevel].length;
+  const displayPaths = getDisplayPathsForLevel(STATE.activeLevel);
+  const toDelete = displayPaths.map((p, i) => i).filter(i => estimatePathArea(displayPaths[i].d) < threshold);
+  if (toDelete.length === 0) return;
   pushUndo('deletePath');
-  STATE.paths[STATE.activeLevel] = STATE.paths[STATE.activeLevel].filter(function(p) {
-    return estimatePathArea(p.d) >= threshold;
-  });
-  var removed = before - STATE.paths[STATE.activeLevel].length;
+  deleteDisplayPaths(toDelete, displayPaths);
+  var removed = toDelete.length;
   STATE.selectedPathIndex = -1;
   STATE.selectedPathSet.clear();
   renderCanvas();
@@ -3887,14 +3901,15 @@ function cleanEdgePaths() {
   var marginPct = parseInt($('clean-margin').value) || 5;
   var margin = marginPct / 100;
   var threshold = parseInt($('clean-threshold').value) || 100;
-  var before = STATE.paths[STATE.activeLevel].length;
-  pushUndo('deletePath');
-  STATE.paths[STATE.activeLevel] = STATE.paths[STATE.activeLevel].filter(function(p) {
-    var bb = getPathBBox(p.d);
-    // Only remove if small AND at edge — preserves interior details
-    return !(bb.area < threshold && isEdgePath(bb, margin));
+  const displayPaths = getDisplayPathsForLevel(STATE.activeLevel);
+  const toDelete = displayPaths.map((p, i) => i).filter(i => {
+    var bb = getPathBBox(displayPaths[i].d);
+    return bb.area < threshold && isEdgePath(bb, margin);
   });
-  var removed = before - STATE.paths[STATE.activeLevel].length;
+  if (toDelete.length === 0) return;
+  pushUndo('deletePath');
+  deleteDisplayPaths(toDelete, displayPaths);
+  var removed = toDelete.length;
   STATE.selectedPathIndex = -1;
   STATE.selectedPathSet.clear();
   renderCanvas();
@@ -4225,25 +4240,42 @@ function importElement(el) {
 // Returns paths to display for a given preview level, respecting zone-level badges.
 // When any zone has z.level > 0, paths are grouped by zone level rather than
 // by their position in STATE.paths[]. This lets B/S/D badge changes update previews live.
+// Returns display paths for a level, annotated with _srcLevel/_srcIndex so operations
+// can find and modify the original path in STATE.paths[_srcLevel][_srcIndex].
 function getDisplayPathsForLevel(levelIdx) {
+  const ann = (p, srcLevel, srcIndex) => ({ ...p, _srcLevel: srcLevel, _srcIndex: srcIndex });
   const hasZoneLevels = STATE.zones.some(z => (z.level || 0) > 0);
-  if (!hasZoneLevels) return STATE.paths[levelIdx];
+  if (!hasZoneLevels) return STATE.paths[levelIdx].map((p, i) => ann(p, levelIdx, i));
 
   const zoneLevels = {};
   STATE.zones.forEach(z => { zoneLevels[z.id] = z.level || 0; });
 
   const result = [];
   for (let lvl = 0; lvl < 3; lvl++) {
-    for (const p of STATE.paths[lvl]) {
+    STATE.paths[lvl].forEach((p, i) => {
       if (p.silhouette) {
-        if (levelIdx === 0) result.push(p);
-        continue;
+        if (levelIdx === 0) result.push(ann(p, lvl, i));
+        return;
       }
       const pZoneLevel = zoneLevels[p.zone] !== undefined ? zoneLevels[p.zone] : 0;
-      if (pZoneLevel === levelIdx) result.push(p);
-    }
+      if (pZoneLevel === levelIdx) result.push(ann(p, lvl, i));
+    });
   }
   return result;
+}
+
+// Delete display-indexed paths safely across multiple source arrays.
+function deleteDisplayPaths(displayIndices, displayPaths) {
+  const byLevel = {};
+  displayIndices.forEach(di => {
+    const dp = displayPaths[di];
+    if (!dp) return;
+    if (!byLevel[dp._srcLevel]) byLevel[dp._srcLevel] = [];
+    byLevel[dp._srcLevel].push(dp._srcIndex);
+  });
+  Object.entries(byLevel).forEach(([lvl, idxs]) => {
+    idxs.sort((a, b) => b - a).forEach(idx => STATE.paths[parseInt(lvl)].splice(idx, 1));
+  });
 }
 
 function updatePreviews() {
@@ -4322,8 +4354,10 @@ function updatePathInspector() {
       const zone = $('inspect-zone-multi').value;
       if (!zone) return;
       pushUndo('editPath');
+      const displayPaths = STATE._displayPaths || getDisplayPathsForLevel(STATE.activeLevel);
       STATE.selectedPathSet.forEach(idx => {
-        STATE.paths[STATE.activeLevel][idx].zone = zone;
+        const dp = displayPaths[idx];
+        if (dp) STATE.paths[dp._srcLevel][dp._srcIndex].zone = zone;
       });
       renderCanvas();
       updatePreviews();
@@ -4334,10 +4368,8 @@ function updatePathInspector() {
     });
     $('inspect-delete-multi').addEventListener('click', () => {
       pushUndo('deletePath');
-      var toDelete = Array.from(STATE.selectedPathSet).sort(function(a, b) { return b - a; });
-      toDelete.forEach(function(idx) {
-        STATE.paths[STATE.activeLevel].splice(idx, 1);
-      });
+      const displayPaths = STATE._displayPaths || getDisplayPathsForLevel(STATE.activeLevel);
+      deleteDisplayPaths(Array.from(STATE.selectedPathSet), displayPaths);
       STATE.selectedPathIndex = -1;
       STATE.selectedPathSet.clear();
       renderCanvas();
@@ -4348,13 +4380,22 @@ function updatePathInspector() {
     return;
   }
 
-  if (STATE.selectedPathIndex < 0 || !STATE.paths[STATE.activeLevel][STATE.selectedPathIndex]) {
+  if (STATE.selectedPathIndex < 0) {
     section.style.display = 'none';
     return;
   }
+  const dp = STATE._displayPaths && STATE._displayPaths[STATE.selectedPathIndex];
+  if (!dp) {
+    section.style.display = 'none';
+    return;
+  }
+  const p = dp;
+  // Show the level this path currently displays at (zone badge level in zone-level mode)
+  const displayLevel = STATE.zones.some(z => (z.level || 0) > 0)
+    ? (STATE.zones.find(z => z.id === p.zone)?.level ?? dp._srcLevel)
+    : dp._srcLevel;
 
   section.style.display = '';
-  const p = STATE.paths[STATE.activeLevel][STATE.selectedPathIndex];
 
   container.innerHTML = `
     <div class="field">
@@ -4373,7 +4414,7 @@ function updatePathInspector() {
     <div class="field">
       <div class="field-label">Level</div>
       <select id="inspect-level" style="width:100%; padding:4px 6px; border:1px solid var(--border); border-radius:6px; font-size:11px;">
-        ${LEVEL_NAMES.map((n, i) => `<option value="${i}" ${i === STATE.activeLevel ? 'selected' : ''}>${n.charAt(0).toUpperCase() + n.slice(1)}</option>`).join('')}
+        ${LEVEL_NAMES.map((n, i) => `<option value="${i}" ${i === displayLevel ? 'selected' : ''}>${n.charAt(0).toUpperCase() + n.slice(1)}</option>`).join('')}
       </select>
     </div>
     ${p.type === 'stroke' ? `
@@ -4393,13 +4434,13 @@ function updatePathInspector() {
 
   $('inspect-apply').addEventListener('click', () => {
     pushUndo('editPath');
-    const path = STATE.paths[STATE.activeLevel][STATE.selectedPathIndex];
-    path.type = $('inspect-type').value;
-    path.zone = $('inspect-zone').value;
-    path.d = $('inspect-d').value;
-    if (path.type === 'stroke') {
+    const srcPath = STATE.paths[dp._srcLevel][dp._srcIndex];
+    srcPath.type = $('inspect-type').value;
+    srcPath.zone = $('inspect-zone').value;
+    srcPath.d = $('inspect-d').value;
+    if (srcPath.type === 'stroke') {
       const sw = $('inspect-sw');
-      path.strokeWidth = sw ? parseFloat(sw.value) : 2;
+      srcPath.strokeWidth = sw ? parseFloat(sw.value) : 2;
     }
     const targetLevel = parseInt($('inspect-level').value);
     if (targetLevel !== STATE.activeLevel) {
@@ -4413,7 +4454,7 @@ function updatePathInspector() {
 
   $('inspect-delete').addEventListener('click', () => {
     pushUndo('deletePath');
-    STATE.paths[STATE.activeLevel].splice(STATE.selectedPathIndex, 1);
+    STATE.paths[dp._srcLevel].splice(dp._srcIndex, 1);
     STATE.selectedPathIndex = -1;
     STATE.selectedPathSet.clear();
     renderCanvas();
@@ -4765,13 +4806,17 @@ function attachEvents() {
       const target = e.target.closest('[data-path-index]');
       if (target) {
         const idx = parseInt(target.dataset.pathIndex);
-        pushUndo('deletePath');
-        STATE.paths[STATE.activeLevel].splice(idx, 1);
-        STATE.selectedPathIndex = -1;
-        STATE.selectedPathSet.clear();
-        renderCanvas();
-        updateBudget();
-        updatePreviews();
+        const displayPaths = STATE._displayPaths || getDisplayPathsForLevel(STATE.activeLevel);
+        const dp = displayPaths[idx];
+        if (dp) {
+          pushUndo('deletePath');
+          STATE.paths[dp._srcLevel].splice(dp._srcIndex, 1);
+          STATE.selectedPathIndex = -1;
+          STATE.selectedPathSet.clear();
+          renderCanvas();
+          updateBudget();
+          updatePreviews();
+        }
       }
     }
   });
@@ -4833,11 +4878,8 @@ function attachEvents() {
       }
       if (toDelete.length > 0) {
         pushUndo('deletePath');
-        // Delete in reverse order to preserve indices
-        toDelete.sort(function(a, b) { return b - a; });
-        toDelete.forEach(function(idx) {
-          STATE.paths[STATE.activeLevel].splice(idx, 1);
-        });
+        const displayPaths = STATE._displayPaths || getDisplayPathsForLevel(STATE.activeLevel);
+        deleteDisplayPaths(toDelete, displayPaths);
         STATE.selectedPathIndex = -1;
         STATE.selectedPathSet.clear();
         renderCanvas();
@@ -4849,8 +4891,9 @@ function attachEvents() {
     else if (e.ctrlKey && e.key === 'a') {
       e.preventDefault();
       STATE.selectedPathSet.clear();
-      STATE.paths[STATE.activeLevel].forEach(function(_, i) { STATE.selectedPathSet.add(i); });
-      STATE.selectedPathIndex = STATE.selectedPathSet.size > 0 ? 0 : -1;
+      const displayPaths = getDisplayPathsForLevel(STATE.activeLevel);
+      displayPaths.forEach(function(_, i) { STATE.selectedPathSet.add(i); });
+      STATE.selectedPathIndex = displayPaths.length > 0 ? 0 : -1;
       renderCanvas();
       updatePathInspector();
     }
