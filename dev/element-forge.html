@@ -320,6 +320,22 @@ button.sm { padding: 3px 8px; font-size: 11px; }
   border: 1px solid rgba(0,0,0,0.15);
 }
 
+.zone-level-badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 3px;
+  cursor: pointer;
+  line-height: 1.2;
+  letter-spacing: 0.5px;
+  border: 1px solid rgba(0,0,0,0.12);
+  margin-left: 2px;
+}
+.zone-level-badge[data-level="0"] { background: #e8d8b0; color: #6a5a3a; }
+.zone-level-badge[data-level="1"] { background: #b8c8d8; color: #3a4a5a; }
+.zone-level-badge[data-level="2"] { background: #c8b8d8; color: #4a3a5a; }
+.zone-level-badge:hover { opacity: 0.8; }
+
 /* ── Level Preview Bar (above canvas) ── */
 .level-preview-bar {
   display: flex;
@@ -1096,8 +1112,8 @@ const STATE = {
 
   // Zones
   zones: [
-    { id: 'body', defaultPaletteSlot: 0 },
-    { id: 'detail', defaultPaletteSlot: 1 },
+    { id: 'body', defaultPaletteSlot: 0, level: 0 },
+    { id: 'detail', defaultPaletteSlot: 1, level: 0 },
   ],
   activeZoneIndex: 0,
 
@@ -1200,12 +1216,31 @@ function applyViewBox() {
 function renderZoneChips() {
   const container = $('zone-chips');
   container.innerHTML = '';
+  var LEVEL_LABELS = ['B', 'S', 'D'];
   STATE.zones.forEach((z, i) => {
     const chip = document.createElement('div');
     chip.className = 'zone-chip' + (i === STATE.activeZoneIndex ? ' active' : '');
     chip.innerHTML = `<span class="zone-swatch" style="background:${ZONE_COLORS[i % ZONE_COLORS.length]}"></span>${z.id}`;
+
+    // Level badge
+    var lvl = z.level || 0;
+    var badge = document.createElement('span');
+    badge.className = 'zone-level-badge';
+    badge.setAttribute('data-level', lvl);
+    badge.textContent = LEVEL_LABELS[lvl];
+    badge.title = 'Click to cycle: Block → Shape → Detail';
+    badge.addEventListener('click', (e) => {
+      e.stopPropagation();
+      z.level = ((z.level || 0) + 1) % 3;
+      renderZoneChips();
+      renderCanvas();
+      updatePreviews();
+    });
+    chip.appendChild(badge);
+
     var clickTimer = null;
     chip.addEventListener('click', (e) => {
+      if (e.target.classList.contains('zone-level-badge')) return;
       if (clickTimer) {
         clearTimeout(clickTimer);
         clickTimer = null;
@@ -1232,7 +1267,7 @@ function addZone() {
   const id = prompt('Zone name:', `zone${n}`);
   if (!id || !id.trim()) return;
   pushUndo('addZone');
-  STATE.zones.push({ id: id.trim(), defaultPaletteSlot: n });
+  STATE.zones.push({ id: id.trim(), defaultPaletteSlot: n, level: 0 });
   STATE.activeZoneIndex = STATE.zones.length - 1;
   renderZoneChips();
   updateStatusBar();
@@ -3453,12 +3488,32 @@ function buildStateFromSvgZones(zones, sourceW, sourceH) {
   STATE.paths = [[], [], []];
   STATE.traceMode = 'color';
 
+  // First pass: find the largest fill path BEFORE subpath splitting for silhouette.
+  // Multi-subpath d strings preserve intentional holes (e.g., crane legs).
+  var silhouetteD = null;
+  var silhouetteZone = null;
+  var silhouetteArea = 0;
+  for (const zone of zones) {
+    if (!zone.zoneId) continue;
+    for (const p of zone.paths) {
+      var scaledD = transformPathCoords(p.d, p.matrix, sx, sy);
+      var area = estimatePathBBox(scaledD);
+      if (area > silhouetteArea) {
+        silhouetteArea = area;
+        silhouetteD = scaledD;
+        silhouetteZone = zone.zoneId;
+      }
+    }
+  }
+
+  // Second pass: collect all paths with subpath splitting (skip silhouette source)
   const allPaths = [];
   for (const zone of zones) {
     if (!zone.zoneId) continue;
     for (const p of zone.paths) {
       const scaledD = transformPathCoords(p.d, p.matrix, sx, sy);
-      // Split multi-subpath d strings so each subpath is independently editable
+      // Skip the silhouette source path — it's handled separately
+      if (scaledD === silhouetteD) continue;
       var subs = splitImportSubpaths(scaledD);
       for (var si = 0; si < subs.length; si++) {
         var area = estimatePathBBox(subs[si]);
@@ -3468,9 +3523,17 @@ function buildStateFromSvgZones(zones, sourceW, sourceH) {
   }
 
   allPaths.sort((a, b) => b.area - a.area);
-  if (allPaths.length === 0) return;
 
-  // Block: ALL fills with correct zone assignments (ink-receiving surfaces)
+  // Insert silhouette as first Block path (renders behind everything)
+  var bodyZoneId = zones.length > 0 ? zones[0].zoneId : 'body';
+  if (silhouetteD) {
+    STATE.paths[0].push({
+      d: silhouetteD, type: 'fill', zone: bodyZoneId,
+      silhouette: true, fillRule: 'evenodd'
+    });
+  }
+
+  // Block: all remaining fills
   for (const p of allPaths) {
     STATE.paths[0].push({ d: p.d, type: 'fill', zone: p.zone });
   }
@@ -3491,7 +3554,7 @@ function buildStateFromSvgZones(zones, sourceW, sourceH) {
     }
   }
 
-  STATE.zones = zones.map((z, i) => ({ id: z.zoneId, defaultPaletteSlot: i }));
+  STATE.zones = zones.map((z, i) => ({ id: z.zoneId, defaultPaletteSlot: i, level: 0 }));
   STATE.activeZoneIndex = 0;
   STATE.clusters = zones.map(z => ({
     srgb: z.srgb,
@@ -3637,7 +3700,14 @@ function createPathElement(pathObj, dimmed) {
   } else if (pathObj.type === 'fill') {
     el.setAttribute('fill', color);
     el.setAttribute('stroke', 'none');
-    el.setAttribute('fill-rule', 'nonzero');
+    el.setAttribute('fill-rule', pathObj.fillRule || 'nonzero');
+    // Silhouette gets a dashed outline to distinguish it
+    if (pathObj.silhouette) {
+      el.setAttribute('stroke', '#8b6b4a');
+      el.setAttribute('stroke-width', 1);
+      el.setAttribute('stroke-dasharray', '4 3');
+      el.setAttribute('opacity', '0.7');
+    }
   } else {
     el.setAttribute('fill', 'none');
     el.setAttribute('stroke', color);
@@ -3901,31 +3971,90 @@ function buildElementDefinition() {
 }
 
 function consolidatePaths(upToLevel) {
-  // Export delta carve levels: each level stores only its new paths.
-  // Mokuri accumulates lower levels at render time.
+  // Zone-level-aware export: each zone has a level assignment (B/S/D).
+  // Block always gets full coverage (silhouette + block-zone paths + body-rezoned higher-zone fills).
+  // Shape/Detail get paths from their assigned zones.
   const allPaths = [];
   const isColorMode = STATE.traceMode === 'color';
+  var bodyZoneId = STATE.zones.length > 0 ? STATE.zones[0].id : 'body';
 
+  // Build zone-to-level lookup
+  var zoneLevels = {};
+  STATE.zones.forEach(z => { zoneLevels[z.id] = z.level || 0; });
+
+  // Check if any zones are assigned to non-block levels
+  var hasZoneLevels = STATE.zones.some(z => (z.level || 0) > 0);
+
+  if (!hasZoneLevels) {
+    // No zone-level assignments — use original behavior
+    if (upToLevel === 0) {
+      for (const p of STATE.paths[0]) {
+        if (p.type === 'fill') {
+          let d = p.d.trim();
+          if (!d.endsWith('Z') && !d.endsWith('z')) d += ' Z';
+          var obj = { d: d, type: 'fill', zone: p.zone };
+          if (p.fillRule) obj.fillRule = p.fillRule;
+          allPaths.push(obj);
+        } else {
+          allPaths.push({ d: p.d, type: p.type, zone: p.zone, strokeWidth: p.strokeWidth || 2 });
+        }
+      }
+    } else {
+      for (const p of STATE.paths[upToLevel]) {
+        if (p.type === 'fill') {
+          const zone = isColorMode ? p.zone : getFallbackDetailZone();
+          allPaths.push({ d: p.d, type: 'fill', zone: zone });
+        } else {
+          const obj = { d: p.d, type: p.type, zone: p.zone };
+          if (p.type === 'stroke') obj.strokeWidth = p.strokeWidth || 2;
+          allPaths.push(obj);
+        }
+      }
+    }
+    return allPaths;
+  }
+
+  // Zone-level mode: distribute paths based on zone assignments
   if (upToLevel === 0) {
-    // Block level: silhouette fills, closed with Z
-    for (const p of STATE.paths[0]) {
-      if (p.type === 'fill') {
-        let d = p.d.trim();
-        if (!d.endsWith('Z') && !d.endsWith('z')) d += ' Z';
-        allPaths.push({ d, type: 'fill', zone: p.zone });
-      } else {
-        allPaths.push({ d: p.d, type: p.type, zone: p.zone, strokeWidth: p.strokeWidth || 2 });
+    // Block: silhouette + block-zone fills + body-rezoned fills for higher-level zones
+    for (var lvl = 0; lvl < 3; lvl++) {
+      for (const p of STATE.paths[lvl]) {
+        var pZoneLevel = zoneLevels[p.zone] !== undefined ? zoneLevels[p.zone] : 0;
+        if (p.silhouette) {
+          // Silhouette always in block
+          var obj = { d: p.d, type: 'fill', zone: bodyZoneId };
+          if (p.fillRule) obj.fillRule = p.fillRule;
+          allPaths.push(obj);
+        } else if (pZoneLevel === 0 && p.type === 'fill') {
+          let d = p.d.trim();
+          if (!d.endsWith('Z') && !d.endsWith('z')) d += ' Z';
+          allPaths.push({ d: d, type: 'fill', zone: p.zone });
+        } else if (pZoneLevel === 0 && p.type === 'stroke') {
+          allPaths.push({ d: p.d, type: 'stroke', zone: p.zone, strokeWidth: p.strokeWidth || 2 });
+        } else if (pZoneLevel > 0 && p.type === 'fill') {
+          // Higher-level zone fills → add as body-rezoned fill for silhouette coverage
+          let d = p.d.trim();
+          if (!d.endsWith('Z') && !d.endsWith('z')) d += ' Z';
+          allPaths.push({ d: d, type: 'fill', zone: bodyZoneId });
+        }
+        // Higher-level strokes are NOT included in block
       }
     }
   } else {
-    for (const p of STATE.paths[upToLevel]) {
-      if (p.type === 'fill') {
-        const zone = isColorMode ? p.zone : getFallbackDetailZone();
-        allPaths.push({ d: p.d, type: 'fill', zone: zone });
-      } else {
-        const obj = { d: p.d, type: p.type, zone: p.zone };
-        if (p.type === 'stroke') obj.strokeWidth = p.strokeWidth || 2;
-        allPaths.push(obj);
+    // Shape (1) or Detail (2): paths from zones at this level
+    for (var lvl = 0; lvl < 3; lvl++) {
+      for (const p of STATE.paths[lvl]) {
+        if (p.silhouette) continue;
+        var pZoneLevel = zoneLevels[p.zone] !== undefined ? zoneLevels[p.zone] : 0;
+        if (pZoneLevel !== upToLevel) continue;
+        if (p.type === 'fill') {
+          const zone = isColorMode ? p.zone : getFallbackDetailZone();
+          allPaths.push({ d: p.d, type: 'fill', zone: zone });
+        } else {
+          var obj = { d: p.d, type: p.type, zone: p.zone };
+          if (p.type === 'stroke') obj.strokeWidth = p.strokeWidth || 2;
+          allPaths.push(obj);
+        }
       }
     }
   }
@@ -3972,6 +4101,9 @@ function formatElementJS(el) {
       js += `${indent}${indent}${indent}{ d: '${p.d}', type: '${p.type}', zone: '${p.zone}'`;
       if (p.type === 'stroke' && p.strokeWidth) {
         js += `, strokeWidth: ${p.strokeWidth}`;
+      }
+      if (p.fillRule) {
+        js += `, fillRule: '${p.fillRule}'`;
       }
       js += ` },\n`;
     });
@@ -4065,12 +4197,15 @@ function importElement(el) {
       if (li >= 3) return;
       const levelPaths = level && Array.isArray(level.paths) ? level.paths : [];
       levelPaths.forEach(p => {
-        STATE.paths[li].push({
+        var pathObj = {
           d: p.d,
           type: p.type || 'fill',
           zone: p.zone || 'body',
           strokeWidth: p.strokeWidth,
-        });
+        };
+        if (p.fillRule) pathObj.fillRule = p.fillRule;
+        if (p.silhouette) pathObj.silhouette = true;
+        STATE.paths[li].push(pathObj);
       });
     });
   } else {
@@ -4131,7 +4266,7 @@ function updatePreviews() {
       if (p.type === 'fill') {
         pathEl.setAttribute('fill', color);
         pathEl.setAttribute('stroke', 'none');
-        pathEl.setAttribute('fill-rule', 'nonzero');
+        pathEl.setAttribute('fill-rule', p.fillRule || 'nonzero');
       } else {
         pathEl.setAttribute('fill', 'none');
         pathEl.setAttribute('stroke', color);
