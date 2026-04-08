@@ -3221,6 +3221,26 @@ function parseSvgPaths(svgText) {
     return null;
   }
 
+  // Parse any SVG transform string to a [a,b,c,d,e,f] matrix
+  function parseTransformToMatrix(t) {
+    if (!t) return [1,0,0,1,0,0];
+    const re = /(\w+)\(([^)]+)\)/g;
+    let r = [1,0,0,1,0,0], m;
+    while ((m = re.exec(t)) !== null) {
+      const fn = m[1], args = m[2].trim().split(/[\s,]+/).map(Number);
+      let mx;
+      if (fn === 'matrix') mx = args;
+      else if (fn === 'translate') mx = [1,0,0,1,args[0]||0,args[1]||0];
+      else if (fn === 'scale') mx = [args[0],0,0,args[1]!==undefined?args[1]:args[0],0,0];
+      else continue;
+      // r = r × mx
+      r = [r[0]*mx[0]+r[2]*mx[1], r[1]*mx[0]+r[3]*mx[1],
+           r[0]*mx[2]+r[2]*mx[3], r[1]*mx[2]+r[3]*mx[3],
+           r[0]*mx[4]+r[2]*mx[5]+r[4], r[1]*mx[4]+r[3]*mx[5]+r[5]];
+    }
+    return r;
+  }
+
   const paths = [];
   svgEl.querySelectorAll('path').forEach(p => {
     const fill = getEffectiveFill(p);
@@ -3228,14 +3248,24 @@ function parseSvgPaths(svgText) {
     const d = p.getAttribute('d');
     if (!d) return;
 
-    let matrix = null;
-    const transform = p.getAttribute('transform');
-    if (transform) {
-      const m = transform.match(/matrix\(([^)]+)\)/);
-      if (m) matrix = m[1].trim().split(/[\s,]+/).map(Number);
+    // Compose transforms from outermost ancestor down to path element
+    const chain = [];
+    let node = p;
+    while (node && node.tagName.toLowerCase() !== 'svg') {
+      chain.unshift(node.getAttribute('transform'));
+      node = node.parentElement;
     }
+    let matrix = [1,0,0,1,0,0];
+    chain.forEach(t => {
+      if (!t) return;
+      const mx = parseTransformToMatrix(t);
+      matrix = [matrix[0]*mx[0]+matrix[2]*mx[1], matrix[1]*mx[0]+matrix[3]*mx[1],
+                matrix[0]*mx[2]+matrix[2]*mx[3], matrix[1]*mx[2]+matrix[3]*mx[3],
+                matrix[0]*mx[4]+matrix[2]*mx[5]+matrix[4], matrix[1]*mx[4]+matrix[3]*mx[5]+matrix[5]];
+    });
+    const isIdentity = matrix[0]===1&&matrix[1]===0&&matrix[2]===0&&matrix[3]===1&&matrix[4]===0&&matrix[5]===0;
 
-    paths.push({ d, fill, matrix });
+    paths.push({ d, fill, matrix: isIdentity ? null : matrix });
   });
 
   return { paths, sourceW, sourceH };
@@ -3263,7 +3293,7 @@ function transformPathCoords(d, matrix, sx, sy) {
     const t = tokens[i];
     if (/[MLHVCSQTAZmlhvcsqtaz]/.test(t)) {
       cmd = t;
-      out.push(t);
+      out.push(t.toUpperCase());
       i++;
       continue;
     }
@@ -3402,14 +3432,12 @@ function buildStateFromSvgZones(zones, sourceW, sourceH) {
   STATE.paths = [[], [], []];
   STATE.traceMode = 'color';
 
-  const targetCanvasArea = STATE.viewBoxW * STATE.viewBoxH;
   const allPaths = [];
   for (const zone of zones) {
     if (!zone.zoneId) continue;
     for (const p of zone.paths) {
       const scaledD = transformPathCoords(p.d, p.matrix, sx, sy);
       const area = estimatePathBBox(scaledD);
-      if (area > targetCanvasArea * 0.85) continue;
       allPaths.push({ d: scaledD, area, zone: zone.zoneId });
     }
   }
@@ -3459,15 +3487,17 @@ function loadSvgFile(file) {
       return;
     }
 
-    const totalArea = sourceW * sourceH;
-    const subjectPaths = paths.filter(p => {
-      let area = estimatePathBBox(p.d);
-      if (p.matrix) area *= Math.abs(p.matrix[0]) * Math.abs(p.matrix[3]);
-      return area < totalArea * 0.95;
-    });
+    // Set canvas coordinate space to match source SVG dimensions (sx=sy=1 in buildStateFromSvgZones)
+    STATE.viewBoxX = 0;
+    STATE.viewBoxY = 0;
+    STATE.viewBoxW = sourceW;
+    STATE.viewBoxH = sourceH;
+    $('vb-w').value = sourceW;
+    $('vb-h').value = sourceH;
+    setupViewBox();
 
     const nClusters = parseInt($('cluster-count').value || '4', 10);
-    const zones = clusterSvgColors(subjectPaths, nClusters);
+    const zones = clusterSvgColors(paths, nClusters);
 
     if (zones.length === 0) {
       alert('Could not extract color zones from SVG. Ensure paths have hex fill colors.');

@@ -3,147 +3,227 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mokuri Element Forge - Test Bench</title>
-    <script src="https://cdn.jsdelivr.net/npm/imagetracerjs@1.2.6/imagetracer_v1.2.6.js"></script>
+    <title>Mokuri PNG → SVG</title>
     <style>
         body { font-family: sans-serif; background: #1a1a1a; color: #e0e0e0; padding: 2rem; }
         .container { display: flex; gap: 20px; flex-wrap: wrap; }
         .box { flex: 1; min-width: 300px; background: #2a2a2a; padding: 15px; border-radius: 8px; }
-        img, svg { max-width: 100%; height: auto; background: #00FF00; border: 1px solid #444; }
-        pre { background: #000; padding: 10px; overflow-x: auto; font-size: 12px; color: #0f0; }
-        button { padding: 10px 20px; cursor: pointer; background: #d4622b; border: none; color: white; font-weight: bold; }
+        img, svg { max-width: 100%; height: auto; background: #eee; border: 1px solid #444; display: block; }
+        pre { background: #000; padding: 10px; overflow-x: auto; font-size: 12px; color: #0f0; max-height: 300px; }
+        button { padding: 8px 16px; cursor: pointer; background: #d4622b; border: none; color: white; font-weight: bold; border-radius: 4px; }
+        button:disabled { background: #555; cursor: not-allowed; }
         .controls { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; align-items: center; background: #2a2a2a; padding: 12px 16px; border-radius: 8px; }
         .ctrl { display: flex; align-items: center; gap: 8px; font-size: 13px; }
-        .ctrl label { min-width: 60px; color: #aaa; }
+        .ctrl label { min-width: 70px; color: #aaa; }
         .ctrl input[type=range] { width: 120px; }
         .ctrl span { min-width: 32px; font-weight: bold; color: #e0e0e0; }
+        #status { color: #aaa; font-size: 13px; margin-left: auto; }
+        .zone-swatches { display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap; }
+        .swatch { width: 24px; height: 24px; border-radius: 3px; border: 1px solid #666; cursor: default; }
     </style>
 </head>
 <body>
+    <h1>Mokuri PNG → SVG</h1>
+    <p>Upload a PNG. Each color zone is traced separately with Potrace for clean Bezier curves. Pixels matching BG Color are excluded.</p>
 
-    <h1>Mokuri Element Forge: PNG → SVG</h1>
-    <p>Upload a 4-zone PNG with #00FF00 background to test the vectorization quality.</p>
-
-    <input type="file" id="upload" accept="image/png" style="margin-bottom: 16px; display:block;">
+    <input type="file" id="upload" accept="image/png,image/jpeg" style="margin-bottom: 16px; display:block;">
 
     <div class="controls">
         <div class="ctrl">
-            <label title="Line simplification threshold. Higher = fewer segments on straight edges.">Line (ltres)</label>
-            <input type="range" id="ctrl-ltres" min="0" max="50" step="1" value="10">
-            <span id="val-ltres">1.0</span>
+            <label title="Number of color zones (k-means clusters)">Colors</label>
+            <input type="range" id="ctrl-colors" min="2" max="8" step="1" value="4">
+            <span id="val-colors">4</span>
         </div>
         <div class="ctrl">
-            <label title="Curve simplification threshold. Higher = fewer segments on curves.">Curve (qtres)</label>
-            <input type="range" id="ctrl-qtres" min="0" max="50" step="1" value="10">
-            <span id="val-qtres">1.0</span>
+            <label title="Ignore areas smaller than this many pixels">Noise</label>
+            <input type="range" id="ctrl-turdsize" min="0" max="50" step="1" value="4">
+            <span id="val-turdsize">4</span>
         </div>
         <div class="ctrl">
-            <label title="Ignore paths smaller than this many pixels.">Path min</label>
-            <input type="range" id="ctrl-pathomit" min="0" max="20" step="1" value="0">
-            <span id="val-pathomit">0</span>
+            <label title="Curve smoothness (higher = smoother)">Smooth</label>
+            <input type="range" id="ctrl-smooth" min="1" max="20" step="1" value="4">
+            <span id="val-smooth">0.4</span>
         </div>
-        <div class="ctrl" style="margin-left:auto;">
-            <span id="path-count" style="color:#888; font-size:12px;"></span>
+        <div class="ctrl">
+            <label title="Background color to exclude">BG Color</label>
+            <input type="color" id="ctrl-bg" value="#00ff00" style="width:50px;height:28px;cursor:pointer;border:none;background:none;padding:0;">
         </div>
+        <span id="status"></span>
     </div>
 
     <div class="container">
         <div class="box">
             <h3>1. Source PNG</h3>
-            <img id="source-img" src="" alt="Waiting for upload...">
+            <img id="source-img" src="" alt="Upload a PNG to begin">
+            <div class="zone-swatches" id="zone-swatches"></div>
         </div>
-
         <div class="box">
-            <h3>2. Processed SVG (Shape Level)</h3>
-            <div id="svg-container"></div>
-            <button id="download-btn" style="display:none; margin-top:10px;">Download SVG</button>
+            <h3>2. Vectorized SVG</h3>
+            <div id="svg-container"><p style="color:#666">Waiting for upload…</p></div>
+            <div style="margin-top:10px; display:flex; gap:8px;">
+                <button id="retrace-btn" disabled>Re-trace</button>
+                <button id="download-btn" style="display:none;">Download SVG</button>
+            </div>
         </div>
     </div>
 
     <div class="box" style="margin-top: 20px;">
-        <h3>3. Path Data (for JS Element Definition)</h3>
-        <pre id="path-output">Path data will appear here...</pre>
+        <h3>3. SVG Source</h3>
+        <pre id="path-output">SVG output will appear here…</pre>
     </div>
 
-    <script>
-        const upload = document.getElementById('upload');
-        const sourceImg = document.getElementById('source-img');
-        const svgContainer = document.getElementById('svg-container');
-        const pathOutput = document.getElementById('path-output');
-        let _lastSvgStr = null;
-        let _lastImgEl = null;
+    <script type="module">
+        import { init, potrace } from 'https://cdn.jsdelivr.net/npm/esm-potrace-wasm@0.4.1/dist/index.js';
 
-        // Slider display + re-trace on change
-        function sliderVal(id, valId, scale) {
-            const el = document.getElementById(id);
-            const disp = document.getElementById(valId);
-            function update() { disp.textContent = (parseInt(el.value) * scale).toFixed(scale < 1 ? 1 : 0); }
-            el.addEventListener('input', () => { update(); if (_lastImgEl) processImage(_lastImgEl); });
+        let potraceReady = false;
+        init().then(() => { potraceReady = true; if (_lastImgEl) document.getElementById('retrace-btn').disabled = false; });
+
+        let _lastImgEl = null, _lastSvgStr = null, _processing = false;
+
+        function initSlider(id, valId, scale) {
+            const el = document.getElementById(id), disp = document.getElementById(valId);
+            const update = () => { const v = parseInt(el.value)*scale; disp.textContent = Number.isInteger(v) ? v : v.toFixed(1); };
+            el.addEventListener('change', () => { update(); if (_lastImgEl && potraceReady && !_processing) processImage(_lastImgEl); });
             update();
         }
-        sliderVal('ctrl-ltres', 'val-ltres', 0.1);
-        sliderVal('ctrl-qtres', 'val-qtres', 0.1);
-        sliderVal('ctrl-pathomit', 'val-pathomit', 1);
+        initSlider('ctrl-colors', 'val-colors', 1);
+        initSlider('ctrl-turdsize', 'val-turdsize', 1);
+        initSlider('ctrl-smooth', 'val-smooth', 0.1);
+        document.getElementById('ctrl-bg').addEventListener('change', () => { if (_lastImgEl && potraceReady && !_processing) processImage(_lastImgEl); });
 
-        upload.addEventListener('change', function(e) {
-            const file = e.target.files[0];
+        document.getElementById('upload').addEventListener('change', e => {
+            const file = e.target.files[0]; if (!file) return;
             const reader = new FileReader();
-            reader.onload = function(event) {
-                sourceImg.src = event.target.result;
-                sourceImg.onload = function() {
-                    _lastImgEl = sourceImg;
-                    processImage(sourceImg);
-                };
+            reader.onload = ev => {
+                const img = new Image();
+                img.onload = () => { document.getElementById('source-img').src = img.src; _lastImgEl = img; document.getElementById('retrace-btn').disabled = !potraceReady; if (potraceReady) processImage(img); };
+                img.src = ev.target.result;
             };
             reader.readAsDataURL(file);
         });
+        document.getElementById('retrace-btn').addEventListener('click', () => { if (_lastImgEl && potraceReady && !_processing) processImage(_lastImgEl); });
+        document.getElementById('download-btn').addEventListener('click', () => {
+            if (!_lastSvgStr) return;
+            const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([_lastSvgStr], {type:'image/svg+xml'})), download: 'traced.svg' });
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        });
 
-        function processImage(imgElement) {
-            const ltres   = parseInt(document.getElementById('ctrl-ltres').value) * 0.1;
-            const qtres   = parseInt(document.getElementById('ctrl-qtres').value) * 0.1;
-            const pathomit = parseInt(document.getElementById('ctrl-pathomit').value);
+        // ── Core pipeline: quantize → mask per zone → Potrace binary trace ──
 
-            const options = {
-                ltres,
-                qtres,
-                pathomit,
-                colorsampling: 0,
-                numberofcolors: 5,
-                mincolorratio: 0,
-                pal: [
-                    {r:240, g:232, b:208, a:255},
-                    {r:212, g:98, b:43, a:255},
-                    {r:138, g:138, b:138, a:255},
-                    {r:58, g:42, b:26, a:255},
-                    {r:0, g:255, b:0, a:255}
-                ],
-                viewbox: true,
-                linefilter: false
-            };
+        const colorDist = (r1,g1,b1,r2,g2,b2) => (r1-r2)**2+(g1-g2)**2+(b1-b2)**2;
+        const toHex = rgb => '#'+rgb.map(v=>v.toString(16).padStart(2,'0')).join('');
+        const isBg = (r,g,b,a,bg) => a<128 || (bg && colorDist(r,g,b,bg[0],bg[1],bg[2])<3000);
+        const yieldUI = () => new Promise(r => setTimeout(r, 0));
 
-            ImageTracer.imageToSVG(imgElement.src, function(svgstr) {
-                _lastSvgStr = svgstr;
-                svgContainer.innerHTML = svgstr;
-                pathOutput.textContent = svgstr;
-                document.getElementById('download-btn').style.display = 'block';
-                // Count total path commands as a complexity indicator
-                const cmds = (svgstr.match(/[MLCQZmlcqz]/g) || []).length;
-                document.getElementById('path-count').textContent = cmds + ' path commands';
-            }, options);
+        function quantize(imageData, k, bg) {
+            const {data} = imageData, samples = [];
+            for (let i=0; i<data.length; i+=16) { const r=data[i],g=data[i+1],b=data[i+2],a=data[i+3]; if (!isBg(r,g,b,a,bg)) samples.push([r,g,b]); }
+            if (!samples.length) return [[128,128,128]];
+            k = Math.min(k, samples.length);
+            // K-means++ init
+            const C = [samples[Math.floor(Math.random()*samples.length)]];
+            while (C.length < k) {
+                const dists = samples.map(s => Math.min(...C.map(c => colorDist(s[0],s[1],s[2],c[0],c[1],c[2]))));
+                const total = dists.reduce((a,b)=>a+b,0);
+                let r = Math.random()*total, chosen = samples[samples.length-1];
+                if (total > 0) for (let i=0; i<samples.length; i++) { r-=dists[i]; if (r<=0){chosen=samples[i];break;} }
+                C.push([...chosen]);
+            }
+            // 15 iterations
+            for (let iter=0; iter<15; iter++) {
+                const sums = Array.from({length:k}, ()=>[0,0,0,0]);
+                for (const [r,g,b] of samples) { let best=0,bd=Infinity; for (let c=0;c<k;c++){const d=colorDist(r,g,b,C[c][0],C[c][1],C[c][2]);if(d<bd){bd=d;best=c;}} sums[best][0]+=r;sums[best][1]+=g;sums[best][2]+=b;sums[best][3]++; }
+                for (let c=0;c<k;c++) { const n=sums[c][3]; if(n>0) C[c]=[Math.round(sums[c][0]/n),Math.round(sums[c][1]/n),Math.round(sums[c][2]/n)]; }
+            }
+            return C;
         }
 
-        document.getElementById('download-btn').addEventListener('click', function() {
-            if (!_lastSvgStr) return;
-            const blob = new Blob([_lastSvgStr], { type: 'image/svg+xml' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'traced.svg';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        });
+        function assignPixels(imageData, centroids, bg) {
+            const {data} = imageData, k=centroids.length, n=data.length>>2, A=new Int8Array(n).fill(-1);
+            for (let pi=0;pi<n;pi++) { const i=pi<<2,r=data[i],g=data[i+1],b=data[i+2],a=data[i+3]; if(isBg(r,g,b,a,bg))continue; let best=0,bd=Infinity; for(let c=0;c<k;c++){const d=colorDist(r,g,b,centroids[c][0],centroids[c][1],centroids[c][2]);if(d<bd){bd=d;best=c;}} A[pi]=best; }
+            return A;
+        }
+
+        function createMask(imageData, A, zi) {
+            const {width,height} = imageData, mc=document.createElement('canvas');
+            mc.width=width; mc.height=height;
+            const ctx=mc.getContext('2d'), md=ctx.createImageData(width,height), d=md.data;
+            for (let pi=0;pi<width*height;pi++) { const i=pi<<2,v=A[pi]===zi?0:255; d[i]=d[i+1]=d[i+2]=v; d[i+3]=255; }
+            ctx.putImageData(md,0,0); return mc;
+        }
+
+        const canvasToImg = canvas => new Promise(resolve => canvas.toBlob(blob => { const u=URL.createObjectURL(blob),img=new Image(); img.onload=()=>{URL.revokeObjectURL(u);resolve(img);}; img.src=u; }));
+
+        function parsePotraceSvg(svgStr) {
+            const doc=new DOMParser().parseFromString(svgStr,'image/svg+xml'), svgEl=doc.querySelector('svg');
+            const W=parseFloat(svgEl?.getAttribute('width')||0), H=parseFloat(svgEl?.getAttribute('height')||0);
+            const groups=[];
+            for (const g of doc.querySelectorAll('g')) {
+                const fill=(g.getAttribute('fill')||'').toLowerCase();
+                if (fill==='#ffffff'||fill==='white'||fill==='#fff') continue;
+                const transform=g.getAttribute('transform')||'';
+                const paths=[...g.querySelectorAll('path')].map(p=>p.getAttribute('d')).filter(Boolean);
+                if (paths.length) groups.push({transform, paths});
+            }
+            return {W, H, groups};
+        }
+
+        async function processImage(imgEl) {
+            if (_processing) return;
+            _processing = true;
+            document.getElementById('retrace-btn').disabled = true;
+            const status = document.getElementById('status');
+            try {
+                const k        = parseInt(document.getElementById('ctrl-colors').value);
+                const turdsize = parseInt(document.getElementById('ctrl-turdsize').value);
+                const opttol   = parseInt(document.getElementById('ctrl-smooth').value) * 0.1;
+                const bgHex    = document.getElementById('ctrl-bg').value;
+                const bg       = [parseInt(bgHex.slice(1,3),16), parseInt(bgHex.slice(3,5),16), parseInt(bgHex.slice(5,7),16)];
+
+                const canvas = Object.assign(document.createElement('canvas'), {width:imgEl.naturalWidth, height:imgEl.naturalHeight});
+                canvas.getContext('2d').drawImage(imgEl, 0, 0);
+                const imageData = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
+
+                status.textContent = 'Quantizing…'; await yieldUI();
+                const centroids = quantize(imageData, k, bg);
+
+                status.textContent = 'Assigning pixels…'; await yieldUI();
+                const A = assignPixels(imageData, centroids, bg);
+
+                const counts = new Int32Array(k);
+                for (let i=0;i<A.length;i++) if (A[i]>=0) counts[A[i]]++;
+
+                let svgW=imgEl.naturalWidth, svgH=imgEl.naturalHeight;
+                const zoneGroups = [];
+
+                for (let ci=0; ci<k; ci++) {
+                    if (!counts[ci]) continue;
+                    status.textContent = `Tracing zone ${ci+1}/${k}…`; await yieldUI();
+                    const svgStr = await potrace(await canvasToImg(createMask(imageData, A, ci)), {turdsize, opttolerance: opttol});
+                    const {W, H, groups} = parsePotraceSvg(svgStr);
+                    if (W>0) svgW=W; if (H>0) svgH=H;
+                    zoneGroups.push({fill: toHex(centroids[ci]), groups});
+                }
+
+                let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}">`;
+                for (const {fill, groups} of zoneGroups)
+                    for (const g of groups) {
+                        const t = g.transform ? ` transform="${g.transform}"` : '';
+                        svg += `<g fill="${fill}" stroke="none"${t}>${g.paths.map(d=>`<path d="${d}"/>`).join('')}</g>`;
+                    }
+                svg += `</svg>`;
+
+                _lastSvgStr = svg;
+                document.getElementById('svg-container').innerHTML = svg;
+                document.getElementById('path-output').textContent = svg;
+                document.getElementById('download-btn').style.display = 'block';
+                document.getElementById('zone-swatches').innerHTML = centroids.map(c=>`<div class="swatch" style="background:${toHex(c)}" title="${toHex(c)}"></div>`).join('');
+                const totalPaths = zoneGroups.reduce((s,z)=>s+z.groups.reduce((a,g)=>a+g.paths.length,0),0);
+                status.textContent = `${totalPaths} paths · ${(svg.match(/C/g)||[]).length} C-commands`;
+
+            } catch(err) { status.textContent = 'Error: '+err.message; console.error(err); }
+            finally { _processing=false; document.getElementById('retrace-btn').disabled=false; }
+        }
     </script>
 </body>
 </html>

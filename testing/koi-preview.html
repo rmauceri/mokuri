@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Koi Hand-Crafted Element Preview</title>
+<style>
+  body { background: #1a1a1a; font-family: monospace; color: #ccc; padding: 20px; }
+  h2 { color: #e8c87a; margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; }
+  .row { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .cell { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+  svg { border: 1px solid #333; }
+</style>
+</head>
+<body>
+
+<h2>Koi — Hand-Crafted Element · Ink Mode</h2>
+<div class="row" id="ink-row"></div>
+
+<h2>Koi — Hand-Crafted Element · Carve Mode</h2>
+<div class="row" id="carve-row"></div>
+
+<script>
+// ── Element definition ────────────────────────────────────────────────────────
+const KOI = {
+  viewBox: '0 0 180 162',
+  colorZones: [
+    { id: 'body',    defaultPaletteSlot: 0 },
+    { id: 'marking', defaultPaletteSlot: 1 },
+    { id: 'fin',     defaultPaletteSlot: 4 },
+    { id: 'detail',  defaultPaletteSlot: 3 },
+  ],
+  carveLevels: [
+    {
+      name: 'block',
+      paths: [
+        // ── Body silhouette: C-curve, head lower-right, tail upper-left ──────
+        { d: 'M155 114 C140 85 110 55 83 37 C62 23 42 16 32 16 C20 16 14 25 15 37 C18 51 32 65 56 85 C80 105 110 130 138 140 C150 146 156 138 155 126 Z', type: 'fill', zone: 'body' },
+        // ── Head marking: large orange patch ─────────────────────────────────
+        { d: 'M155 114 C148 102 138 94 126 94 C114 94 106 102 106 114 C106 126 116 140 130 144 C142 148 152 140 155 128 Z', type: 'fill', zone: 'marking' },
+        // ── Dorsal fin ───────────────────────────────────────────────────────
+        { d: 'M42 18 Q55 4 70 5 Q78 12 74 20 Q62 21 42 20 Z', type: 'fill', zone: 'fin' },
+        // ── Tail upper lobe ──────────────────────────────────────────────────
+        { d: 'M32 16 Q18 5 8 8 Q4 20 12 32 Q24 36 33 26 Z', type: 'fill', zone: 'fin' },
+        // ── Tail lower lobe ──────────────────────────────────────────────────
+        { d: 'M15 37 Q8 50 10 62 Q18 68 28 62 Q32 52 24 42 Z', type: 'fill', zone: 'fin' },
+        // ── Pectoral fin ─────────────────────────────────────────────────────
+        { d: 'M128 116 Q142 138 144 150 Q130 154 120 144 Q115 132 120 120 Z', type: 'fill', zone: 'fin' },
+        // ── Ventral fin ──────────────────────────────────────────────────────
+        { d: 'M86 138 Q78 154 72 157 Q68 148 74 143 Q80 139 86 138 Z', type: 'fill', zone: 'fin' },
+      ],
+    },
+    {
+      name: 'shape',
+      paths: [
+        { d: 'M155 114 C140 85 110 55 83 37 C62 23 42 16 32 16 C20 16 14 25 15 37 C18 51 32 65 56 85 C80 105 110 130 138 140 C150 146 156 138 155 126 Z', type: 'fill', zone: 'body' },
+        { d: 'M155 114 C148 102 138 94 126 94 C114 94 106 102 106 114 C106 126 116 140 130 144 C142 148 152 140 155 128 Z', type: 'fill', zone: 'marking' },
+        { d: 'M42 18 Q55 4 70 5 Q78 12 74 20 Q62 21 42 20 Z', type: 'fill', zone: 'fin' },
+        { d: 'M32 16 Q18 5 8 8 Q4 20 12 32 Q24 36 33 26 Z', type: 'fill', zone: 'fin' },
+        { d: 'M15 37 Q8 50 10 62 Q18 68 28 62 Q32 52 24 42 Z', type: 'fill', zone: 'fin' },
+        { d: 'M128 116 Q142 138 144 150 Q130 154 120 144 Q115 132 120 120 Z', type: 'fill', zone: 'fin' },
+        { d: 'M86 138 Q78 154 72 157 Q68 148 74 143 Q80 139 86 138 Z', type: 'fill', zone: 'fin' },
+        // Mid-body orange marking patch
+        { d: 'M60 49 Q70 39 82 41 Q88 53 82 63 Q70 65 60 57 Z', type: 'fill', zone: 'marking' },
+        // Body outline stroke
+        { d: 'M155 114 C140 85 110 55 83 37 C62 23 42 16 32 16 C20 16 14 25 15 37 C18 51 32 65 56 85 C80 105 110 130 138 140 C150 146 156 138 155 126 Z', type: 'stroke', zone: 'detail', strokeWidth: 2 },
+        // Eye
+        { d: 'M144 102 A4 4 0 1 1 143.99 102 Z', type: 'fill', zone: 'detail' },
+        // Gill arc
+        { d: 'M130 92 Q128 104 130 116', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
+      ],
+    },
+    {
+      name: 'detail',
+      paths: [
+        { d: 'M155 114 C140 85 110 55 83 37 C62 23 42 16 32 16 C20 16 14 25 15 37 C18 51 32 65 56 85 C80 105 110 130 138 140 C150 146 156 138 155 126 Z', type: 'fill', zone: 'body' },
+        { d: 'M155 114 C148 102 138 94 126 94 C114 94 106 102 106 114 C106 126 116 140 130 144 C142 148 152 140 155 128 Z', type: 'fill', zone: 'marking' },
+        { d: 'M42 18 Q55 4 70 5 Q78 12 74 20 Q62 21 42 20 Z', type: 'fill', zone: 'fin' },
+        { d: 'M32 16 Q18 5 8 8 Q4 20 12 32 Q24 36 33 26 Z', type: 'fill', zone: 'fin' },
+        { d: 'M15 37 Q8 50 10 62 Q18 68 28 62 Q32 52 24 42 Z', type: 'fill', zone: 'fin' },
+        { d: 'M128 116 Q142 138 144 150 Q130 154 120 144 Q115 132 120 120 Z', type: 'fill', zone: 'fin' },
+        { d: 'M86 138 Q78 154 72 157 Q68 148 74 143 Q80 139 86 138 Z', type: 'fill', zone: 'fin' },
+        { d: 'M60 49 Q70 39 82 41 Q88 53 82 63 Q70 65 60 57 Z', type: 'fill', zone: 'marking' },
+        { d: 'M155 114 C140 85 110 55 83 37 C62 23 42 16 32 16 C20 16 14 25 15 37 C18 51 32 65 56 85 C80 105 110 130 138 140 C150 146 156 138 155 126 Z', type: 'stroke', zone: 'detail', strokeWidth: 2 },
+        { d: 'M144 102 A4 4 0 1 1 143.99 102 Z', type: 'fill', zone: 'detail' },
+        { d: 'M130 92 Q128 104 130 116', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
+        // Scale rows — arcs following body curvature upper to lower
+        { d: 'M55 50 Q58 46 63 50 M63 50 Q67 46 72 50 M72 50 Q76 46 82 50 M82 50 Q86 47 92 51 M58 62 Q62 58 67 62 M67 62 Q71 58 77 62 M77 62 Q81 59 87 63 M87 63 Q92 59 98 63 M68 74 Q72 70 78 74 M78 74 Q83 70 89 74 M89 74 Q94 71 100 75 M100 75 Q105 72 112 76 M78 86 Q83 82 89 86 M89 86 Q95 82 101 86 M101 87 Q107 83 114 87', type: 'stroke', zone: 'detail', strokeWidth: 0.8 },
+        // Fin rays — dorsal
+        { d: 'M44 19 L53 5 M52 19 L61 5 M60 19 L68 6 M68 19 L73 9', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
+        // Fin rays — tail fan
+        { d: 'M32 17 L9 9 M33 22 L10 22 M33 28 L12 34 M26 36 L10 45 M18 44 L10 56', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
+        // Fin rays — pectoral
+        { d: 'M128 118 L143 146 M124 124 L138 150 M120 128 L130 152', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
+        // Barbels at snout
+        { d: 'M155 122 Q163 128 168 134 M155 124 Q160 132 158 138', type: 'stroke', zone: 'detail', strokeWidth: 0.9 },
+      ],
+    },
+  ],
+};
+
+// ── Palette colors ────────────────────────────────────────────────────────────
+const INK_COLORS = {
+  body:    { fill: '#e8d9b0', stroke: '#e8d9b0' },
+  marking: { fill: '#c84010', stroke: '#c84010' },
+  fin:     { fill: '#d8c898', stroke: '#d8c898' },
+  detail:  { fill: '#18120a', stroke: '#18120a' },
+};
+
+const PAPER  = '#f0e6c8';
+const WOOD   = '#9c6830';
+const CARVED = '#f0e6c8';
+
+// ── Render helpers ────────────────────────────────────────────────────────────
+function pathsUpTo(level) {
+  // cumulative: all paths from levels 0..level
+  const paths = [];
+  for (let l = 0; l <= level; l++) paths.push(...KOI.carveLevels[l].paths);
+  return paths;
+}
+
+function renderSVG(paths, mode) {
+  const bg = mode === 'ink' ? '#20a0a0' : PAPER;
+  let inner = '';
+  for (const p of paths) {
+    if (p.type === 'fill') {
+      const color = mode === 'ink' ? INK_COLORS[p.zone].fill : WOOD;
+      inner += `<path d="${p.d}" fill="${color}" stroke="none"/>`;
+    } else {
+      const sw = p.strokeWidth || 1;
+      let color;
+      if (mode === 'ink') {
+        color = INK_COLORS[p.zone].stroke;
+      } else {
+        // In carve mode, strokes represent carved channels (reveal paper)
+        color = CARVED;
+      }
+      inner += `<path d="${p.d}" fill="none" stroke="${color}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"/>`;
+    }
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${KOI.viewBox}" width="270" height="243" style="background:${bg}">
+  <rect width="180" height="162" fill="${bg}"/>
+  ${inner}
+</svg>`;
+}
+
+// ── Build rows ────────────────────────────────────────────────────────────────
+const levelNames = ['Block', 'Shape', 'Detail'];
+const inkRow = document.getElementById('ink-row');
+const carveRow = document.getElementById('carve-row');
+
+for (let l = 0; l < 3; l++) {
+  const paths = pathsUpTo(l);
+
+  const inkCell = document.createElement('div');
+  inkCell.className = 'cell';
+  inkCell.innerHTML = `<span class="label">${levelNames[l]}</span>${renderSVG(paths, 'ink')}`;
+  inkRow.appendChild(inkCell);
+
+  const carveCell = document.createElement('div');
+  carveCell.className = 'cell';
+  carveCell.innerHTML = `<span class="label">${levelNames[l]}</span>${renderSVG(paths, 'carve')}`;
+  carveRow.appendChild(carveCell);
+}
+</script>
+</body>
+</html>
