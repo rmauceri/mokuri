@@ -348,6 +348,7 @@ button.sm { padding: 3px 8px; font-size: 11px; }
 
 .level-preview-item {
   flex: 1;
+  max-width: 130px;
   text-align: center;
   cursor: pointer;
   border-radius: 8px;
@@ -3600,7 +3601,7 @@ function loadSvgFile(file) {
     $('svg-status').textContent = file.name;
     renderZoneChips();
     renderClusterSwatches(STATE.clusters);
-    renderCanvas();
+    autoViewBoxFromImage();  // auto-fit viewBox to content on every import
     updateBudget();
     updatePreviews();
     showToast('SVG imported — ' + zones.length + ' zones, ' + (STATE.paths[0].length + STATE.paths[1].length) + ' paths');
@@ -4818,13 +4819,14 @@ function attachEvents() {
       canvasArea.classList.add('drawing');
       beginStroke(e);
     } else if (STATE.tool === 'select') {
-      // Deselect if clicking empty space
+      // Clicking empty space: start potential pan (drag = pan, no drag = deselect)
       const target = e.target;
       if (target === svg || target.classList.contains('paper-bg')) {
-        STATE.selectedPathIndex = -1;
-        STATE.selectedPathSet.clear();
-        renderCanvas();
-        updatePathInspector();
+        STATE.panning = true;
+        STATE.panIsClick = true;  // will be cleared if drag exceeds threshold
+        STATE.panStart = { x: e.clientX, y: e.clientY, vb: { ...STATE.viewBox } };
+        canvasArea.style.cursor = 'grabbing';
+        canvasArea.setPointerCapture(e.pointerId);
       }
     } else if (STATE.tool === 'erase') {
       // Check if clicking a path
@@ -4855,10 +4857,16 @@ function attachEvents() {
     if (STATE.panning) {
       const dx = e.clientX - STATE.panStart.x;
       const dy = e.clientY - STATE.panStart.y;
-      const rect = canvasArea.getBoundingClientRect();
-      STATE.viewBox.x = STATE.panStart.vb.x - dx / rect.width * STATE.panStart.vb.w;
-      STATE.viewBox.y = STATE.panStart.vb.y - dy / rect.height * STATE.panStart.vb.h;
-      applyViewBox();
+      // Clear click flag once drag threshold is exceeded
+      if (STATE.panIsClick && Math.hypot(dx, dy) > 4) {
+        STATE.panIsClick = false;
+      }
+      if (!STATE.panIsClick) {
+        const rect = canvasArea.getBoundingClientRect();
+        STATE.viewBox.x = STATE.panStart.vb.x - dx / rect.width * STATE.panStart.vb.w;
+        STATE.viewBox.y = STATE.panStart.vb.y - dy / rect.height * STATE.panStart.vb.h;
+        applyViewBox();
+      }
       return;
     }
 
@@ -4872,8 +4880,18 @@ function attachEvents() {
     canvasArea.classList.remove('drawing');
 
     if (STATE.panning) {
+      const wasClick = STATE.panIsClick;
       STATE.panning = false;
+      STATE.panIsClick = false;
       STATE.panStart = null;
+      if (STATE.tool === 'select') canvasArea.style.cursor = 'default';
+      if (wasClick) {
+        // Simple click on empty space — deselect
+        STATE.selectedPathIndex = -1;
+        STATE.selectedPathSet.clear();
+        renderCanvas();
+        updatePathInspector();
+      }
       return;
     }
     endStroke(e);
