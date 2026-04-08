@@ -3538,22 +3538,6 @@ function buildStateFromSvgZones(zones, sourceW, sourceH) {
     STATE.paths[0].push({ d: p.d, type: 'fill', zone: p.zone });
   }
 
-  // Shape delta: body outline stroke only
-  const largePaths = allPaths.filter(p => p.area >= TINY_THRESHOLD);
-  if (largePaths.length > 0) {
-    STATE.paths[1].push({ d: largePaths[0].d, type: 'stroke', zone: largePaths[0].zone, strokeWidth: 1.5 });
-  }
-
-  // Detail delta: zone boundary strokes + tiny accent fills
-  largePaths.slice(1, 4).forEach(p => {
-    STATE.paths[2].push({ d: p.d, type: 'stroke', zone: p.zone, strokeWidth: 1 });
-  });
-  for (const p of allPaths) {
-    if (p.area < TINY_THRESHOLD) {
-      STATE.paths[2].push({ d: p.d, type: 'fill', zone: p.zone });
-    }
-  }
-
   STATE.zones = zones.map((z, i) => ({ id: z.zoneId, defaultPaletteSlot: i, level: 0 }));
   STATE.activeZoneIndex = 0;
   STATE.clusters = zones.map(z => ({
@@ -4238,6 +4222,30 @@ function importElement(el) {
 }
 
 // ── Preview thumbnails ──
+// Returns paths to display for a given preview level, respecting zone-level badges.
+// When any zone has z.level > 0, paths are grouped by zone level rather than
+// by their position in STATE.paths[]. This lets B/S/D badge changes update previews live.
+function getDisplayPathsForLevel(levelIdx) {
+  const hasZoneLevels = STATE.zones.some(z => (z.level || 0) > 0);
+  if (!hasZoneLevels) return STATE.paths[levelIdx];
+
+  const zoneLevels = {};
+  STATE.zones.forEach(z => { zoneLevels[z.id] = z.level || 0; });
+
+  const result = [];
+  for (let lvl = 0; lvl < 3; lvl++) {
+    for (const p of STATE.paths[lvl]) {
+      if (p.silhouette) {
+        if (levelIdx === 0) result.push(p);
+        continue;
+      }
+      const pZoneLevel = zoneLevels[p.zone] !== undefined ? zoneLevels[p.zone] : 0;
+      if (pZoneLevel === levelIdx) result.push(p);
+    }
+  }
+  return result;
+}
+
 function updatePreviews() {
   var vb = '0 0 ' + STATE.viewBoxW + ' ' + STATE.viewBoxH;
   ['block', 'shape', 'detail'].forEach((name, levelIdx) => {
@@ -4247,7 +4255,7 @@ function updatePreviews() {
 
     // Show lower levels dimmed in light gray
     for (let l = 0; l < levelIdx; l++) {
-      STATE.paths[l].forEach(p => {
+      getDisplayPathsForLevel(l).forEach(p => {
         const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         pathEl.setAttribute('d', p.d);
         pathEl.setAttribute('fill', p.type === 'fill' ? '#d5cfc5' : 'none');
@@ -4258,7 +4266,7 @@ function updatePreviews() {
     }
 
     // Show THIS level's paths in zone color (the new content)
-    STATE.paths[levelIdx].forEach(p => {
+    getDisplayPathsForLevel(levelIdx).forEach(p => {
       const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       pathEl.setAttribute('d', p.d);
       const zoneIdx = STATE.zones.findIndex(z => z.id === p.zone);
