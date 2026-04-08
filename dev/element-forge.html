@@ -4259,7 +4259,10 @@ function getDisplayPathsForLevel(levelIdx) {
   for (let lvl = 0; lvl < 3; lvl++) {
     STATE.paths[lvl].forEach((p, i) => {
       if (p.silhouette) {
-        if (levelIdx === 0) result.push(ann(p, lvl, i));
+        // Silhouette is Block-anchored when zone-badge-controlled (lvl === 0).
+        // If physically moved via the inspector (lvl > 0), respect that placement.
+        const silhLevel = lvl > 0 ? lvl : 0;
+        if (silhLevel === levelIdx) result.push(ann(p, lvl, i));
         return;
       }
       // Physical placement in lvl > 0 overrides zone badge (per-path inspector override)
@@ -4452,9 +4455,6 @@ function updatePathInspector() {
     }
     const targetLevel = parseInt($('inspect-level').value);
     if (targetLevel !== displayLevel) {
-      // Use dp directly — _srcLevel/_srcIndex are physical positions unaffected by zone badge changes.
-      // Avoids stale STATE._displayPaths[selectedPathIndex] lookup (badge clicks regenerate _displayPaths
-      // without clearing selectedPathIndex, so the index would point to the wrong path).
       STATE.paths[dp._srcLevel].splice(dp._srcIndex, 1);
       STATE.paths[targetLevel].push(srcPath);
       STATE.selectedPathIndex = -1;
