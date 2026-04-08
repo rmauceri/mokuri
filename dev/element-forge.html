@@ -4313,9 +4313,18 @@ function updatePreviews() {
       const zoneIdx = STATE.zones.findIndex(z => z.id === p.zone);
       const color = ZONE_COLORS[(zoneIdx >= 0 ? zoneIdx : 0) % ZONE_COLORS.length];
       if (p.type === 'fill') {
-        pathEl.setAttribute('fill', color);
-        pathEl.setAttribute('stroke', 'none');
         pathEl.setAttribute('fill-rule', p.fillRule || 'nonzero');
+        if (p.silhouette) {
+          // Render silhouette distinctively so it doesn't mask moved fills
+          pathEl.setAttribute('fill', color);
+          pathEl.setAttribute('fill-opacity', '0.25');
+          pathEl.setAttribute('stroke', color);
+          pathEl.setAttribute('stroke-width', '1');
+          pathEl.setAttribute('stroke-dasharray', '4 3');
+        } else {
+          pathEl.setAttribute('fill', color);
+          pathEl.setAttribute('stroke', 'none');
+        }
       } else {
         pathEl.setAttribute('fill', 'none');
         pathEl.setAttribute('stroke', color);
