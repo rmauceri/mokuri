@@ -4014,12 +4014,13 @@ function consolidatePaths(upToLevel) {
     return allPaths;
   }
 
-  // Zone-level mode: distribute paths based on zone assignments
+  // Zone-level mode: distribute paths based on zone assignments + physical overrides
+  // Physical placement in STATE.paths[1/2] overrides zone badge (same as getDisplayPathsForLevel)
   if (upToLevel === 0) {
-    // Block: silhouette + block-zone fills + body-rezoned fills for higher-level zones
+    // Block: silhouette + block-level fills + body-rezoned fills for higher-level zones
     for (var lvl = 0; lvl < 3; lvl++) {
       for (const p of STATE.paths[lvl]) {
-        var pZoneLevel = zoneLevels[p.zone] !== undefined ? zoneLevels[p.zone] : 0;
+        var pZoneLevel = lvl > 0 ? lvl : (zoneLevels[p.zone] !== undefined ? zoneLevels[p.zone] : 0);
         if (p.silhouette) {
           // Silhouette always in block
           var obj = { d: p.d, type: 'fill', zone: bodyZoneId };
@@ -4045,7 +4046,7 @@ function consolidatePaths(upToLevel) {
     for (var lvl = 0; lvl < 3; lvl++) {
       for (const p of STATE.paths[lvl]) {
         if (p.silhouette) continue;
-        var pZoneLevel = zoneLevels[p.zone] !== undefined ? zoneLevels[p.zone] : 0;
+        var pZoneLevel = lvl > 0 ? lvl : (zoneLevels[p.zone] !== undefined ? zoneLevels[p.zone] : 0);
         if (pZoneLevel !== upToLevel) continue;
         if (p.type === 'fill') {
           const zone = isColorMode ? p.zone : getFallbackDetailZone();
@@ -4243,6 +4244,8 @@ function importElement(el) {
 // by their position in STATE.paths[]. This lets B/S/D badge changes update previews live.
 // Returns display paths for a level, annotated with _srcLevel/_srcIndex so operations
 // can find and modify the original path in STATE.paths[_srcLevel][_srcIndex].
+// Physical placement in STATE.paths[1/2] overrides zone badge (inspector-level override).
+// Only paths physically in STATE.paths[0] use zone badges for level grouping.
 function getDisplayPathsForLevel(levelIdx) {
   const ann = (p, srcLevel, srcIndex) => ({ ...p, _srcLevel: srcLevel, _srcIndex: srcIndex });
   const hasZoneLevels = STATE.zones.some(z => (z.level || 0) > 0);
@@ -4258,8 +4261,9 @@ function getDisplayPathsForLevel(levelIdx) {
         if (levelIdx === 0) result.push(ann(p, lvl, i));
         return;
       }
-      const pZoneLevel = zoneLevels[p.zone] !== undefined ? zoneLevels[p.zone] : 0;
-      if (pZoneLevel === levelIdx) result.push(ann(p, lvl, i));
+      // Physical placement in lvl > 0 overrides zone badge (per-path inspector override)
+      const effectiveLevel = lvl > 0 ? lvl : (zoneLevels[p.zone] !== undefined ? zoneLevels[p.zone] : 0);
+      if (effectiveLevel === levelIdx) result.push(ann(p, lvl, i));
     });
   }
   return result;
@@ -4444,7 +4448,7 @@ function updatePathInspector() {
       srcPath.strokeWidth = sw ? parseFloat(sw.value) : 2;
     }
     const targetLevel = parseInt($('inspect-level').value);
-    if (targetLevel !== STATE.activeLevel) {
+    if (targetLevel !== displayLevel) {
       // Apply edits then move — suppress movePathsToLevel's own pushUndo since we already pushed
       const displayPaths = STATE._displayPaths || getDisplayPathsForLevel(STATE.activeLevel);
       const dp2 = displayPaths[STATE.selectedPathIndex];
