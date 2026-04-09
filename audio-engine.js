@@ -835,16 +835,21 @@ const MokuriAudio = (() => {
   document.addEventListener('touchstart', initOnGesture);
   document.addEventListener('pointerdown', initOnGesture);
 
-  // Resume AudioContext when returning from background (iOS PWA suspends it)
+  // Suspend AudioContext when backgrounded, resume when foregrounded.
+  // Android does not auto-suspend — explicit suspend() is required to stop audio.
+  // iOS auto-suspends, so suspend() is a safe no-op there; resume() still needed on return.
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && ctx && ctx.state === 'suspended') {
+    if (!ctx) return;
+    if (document.hidden) {
+      ctx.suspend();
+    } else if (ctx.state === 'suspended') {
       ctx.resume();
     }
   });
 
   // Persistent touch listener for iOS PWA — context may need gesture to resume
   document.addEventListener('touchstart', function() {
-    if (ctx && ctx.state === 'suspended') ctx.resume();
+    if (ctx && ctx.state === 'suspended' && !document.hidden) ctx.resume();
   }, { passive: true });
 
   function playFreHint() {
