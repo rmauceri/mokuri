@@ -212,10 +212,64 @@ All phases (0–4) are now implemented. The forge is a functional PNG → trace 
 - **Color matching edge cases**: ImageTracer sometimes matches feature colors to wrong clusters (e.g., eye outline to fin color instead of detail zone).
 - **Silhouette detection heuristic**: Uses largest fill by bounding-box area — works well for png2svg output but may need manual adjustment for non-standard SVG sources.
 
-## Notes
+---
 
-- All changes are in `dev/element-forge.html` only — no impact on the main Mokuri app
-- The existing `polylineToQBezier()` is proven (used for manual carve strokes). Reusing it for traced paths is low-risk.
-- Auto-stroke classification was removed (caused unfilled closed loops) — all traced paths are fills by default, user toggles to stroke via Inspector
-- Multi-subpath splitting post-trace prevents winding conflicts under nonzero fill-rule
-- Test Collection pack (`assets/test-elements.js` + `assets/test-pack.js`) provides a sandbox for forge-exported elements
+## Phase 5: Multi-Element Library ✅
+
+The Forge is now a full style-pack authoring environment. Multiple elements can be built, stored, and exported as a set.
+
+### 5A. Storage Layer ✅
+- `mokuri-forge-library` localStorage key holds the full library object: `{ packName, activeId, elements[] }`
+- Each element entry stores: `_id`, `meta` (elementId, name, category, suggestedLayer, pack, tags), `zones`, `paths`, viewBox dimensions, SVG thumbnail, `savedAt`
+- Auto-save on every mutation: strokes, undo/redo, zone badge clicks, palette slot changes, inspector Apply/Delete/Move, cleanup, simplify, trace completion, SVG import, element import
+- ~22 KB per typical element; 20-element pack ≈ 430 KB — well within 5 MB localStorage
+
+### 5B. Library UI Panel ✅
+- Left panel renamed from "Import" to "Forge"
+- Library section at top of left panel: thumbnail grid, element count, "＋ New" button
+- Thumbnails show Block-level paths, active element highlighted with accent border
+- Click thumbnail to switch to that element; × button to delete (with confirmation)
+- Pack name input + "⬇ Export" button below the grid
+- Storage size indicator (KB / 5 MB)
+
+### 5C. Metadata Persistence Per Element ✅
+- Metadata section (name, ID, category, layer, pack, tags) visible by default (not collapsed)
+- All fields auto-saved to library entry with 400ms debounce
+- Tags and pack now correctly round-trip — were missing from earlier implementation
+- `syncMetadataFields()` restores all 6 metadata fields when switching elements
+
+### 5D. Palette Slot on Zone Chips ✅
+- Small 0–4 number input on each zone chip
+- Changes auto-saved to active library entry immediately
+
+### 5E. Export Pack ✅
+- "⬇ Export" button assembles all library elements into a `.js` style pack file
+- Variable name: `MOKURI_<PACKNAME>_ELEMENTS`
+- Skips elements with no paths; handles temporary STATE swap per element
+- Output file auto-registers with `MOKURI_ELEMENTS` at load time (same pattern as existing packs)
+- Downloads as `packname-elements.js`
+
+### 5F. SVG Import Creates New Element ✅
+- Every SVG import saves the current element first, then creates a fresh library entry
+- Name auto-populated from filename
+- PNG trace button does the same (save current → new entry → trace)
+- Library panel refreshes after each import
+
+---
+
+## Completed Work Summary
+
+All phases (0–5) are now implemented. The forge is a complete element authoring environment: import → trace → clean → assign → export individual elements or full style packs.
+
+### What works
+- **Import**: SVG import (creates new library element), image drag-and-drop, URL paste, auto viewBox detection, chroma key detection
+- **Trace**: ImageTracer (default) and Potrace engines, color segmentation (2–6 clusters), mono fallback, smoothing, semantic zone naming
+- **Edit**: Select, draw stroke/fill, erase tools; multi-select (Shift+click); path hover highlight; move paths between levels; zone reassignment; palette slot picker; type/d-string editing in Inspector
+- **Cleanup**: Remove Small Paths, Clean Edges, Simplify, bulk delete
+- **Library**: Thumbnail grid, switch/delete elements, auto-save, per-element metadata (name, ID, category, layer, pack, tags)
+- **Export**: Single element (clipboard) or full pack (.js file download)
+
+### Known limitations
+- Outline residue from PNG traces still requires manual cleanup
+- Color matching edge cases with ImageTracer cluster assignment
+- Silhouette detection uses largest-fill heuristic (may need manual adjustment for non-standard SVGs)
