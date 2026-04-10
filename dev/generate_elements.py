@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Mokuri Element Image Generator
-Generates source PNGs for the Element Forge using fal.ai Ideogram v2.
+Generates source PNGs for the Element Forge using fal.ai Flux.
 
 Usage:
     python dev/generate_elements.py --element heron
@@ -42,9 +42,11 @@ import requests
 PROMPTS_FILE = Path(__file__).parent / "element-prompts-kacho-moribana.md"
 DEFAULT_OUT_BASE = Path(__file__).parent / "generated"
 
-# Nano Banana (Gemini 2.5 Flash Image) — Google's model, known for prompt adherence
-# including chroma-key backgrounds and flat illustration requirements
-MODEL = "fal-ai/nano-banana"
+# Recraft v3 — purpose-built for illustration/vector styles
+MODEL = "fal-ai/recraft-v3"
+
+# colored_stencil = flat color regions, hard edges, no gradients — perfect for mokuhanga
+RECRAFT_STYLE = "vector_illustration/colored_stencil"
 
 # Background chroma-key green — exclude from the colors hint we pass to the model
 CHROMA_GREEN = "#00FF00"
@@ -54,35 +56,6 @@ PACK_SECTIONS = {
     "kacho":    "## Kacho-e Pack",
     "moribana": "## Moribana Pack",
 }
-
-# Grounding preamble prepended to every element prompt.
-# Distilled from Vector-Friendly Woodblock Illustration.md — critical rules only.
-GROUNDING_PREAMBLE = """\
-You are generating color-separation artwork for Japanese woodblock (mokuhanga) printmaking. \
-The image will be processed by a tracing pipeline that extracts each flat color region as a \
-separate SVG path. The pipeline REQUIRES:
-
-1. BACKGROUND: Solid #00FF00 (pure chroma-key green) filling the entire canvas. \
-   No green anywhere in the subject. No shadows, halos, or gradients at the edges.
-2. FLAT COLORS: Each region of the subject must be a single perfectly uniform flat color — \
-   zero gradients, zero shading, zero highlights, zero texture within any region. \
-   Paint-bucket-fill flat.
-3. EXACTLY 4 COLORS in the subject (excluding background). The darkest color must be used \
-   ONLY for small features (eye, beak tip, fine lines) — under 8% of subject pixels.
-4. NO OUTLINES: Color regions meet edge-to-edge. No dark border around the subject or \
-   between regions. The carved groove is implied by where colors meet, not drawn.
-5. HARD EDGES: Stencil-sharp transitions between colors. Minimal anti-aliasing (1–2px OK). \
-   No feathered or blended edges.
-6. SINGLE SUBJECT: One isolated subject on the green background. No environment, no ground, \
-   no water, no other elements. Subject fills ~60% of the canvas.
-7. STYLE: Traditional mokuhanga / shin-hanga aesthetic. Elegant simplified forms like \
-   Hokusai or Hiroshige kacho-e. NOT logo art, NOT anime, NOT sticker illustration.
-
-Mental model: "Paint this as color separations for a woodblock print. Each color is a \
-separate carved block that prints edge-to-edge with no outlines."
-
-Element prompt follows:
-"""
 
 # ---------------------------------------------------------------------------
 # Color utilities
@@ -105,58 +78,6 @@ def extract_colors(prompt: str) -> list[dict]:
             seen.add(full)
             result.append(hex_to_rgb(full))
     return result
-
-
-def extract_hex_colors(prompt: str) -> list[str]:
-    """Extract hex color codes from prompt as '#RRGGBB' strings, excluding chroma green."""
-    hexes = re.findall(r'#([0-9A-Fa-f]{6})', prompt)
-    seen = set()
-    result = []
-    for h in hexes:
-        full = f"#{h.upper()}"
-        if full not in seen and full != CHROMA_GREEN:
-            seen.add(full)
-            result.append(full)
-    return result
-
-
-def quantize_to_palette(image_bytes: bytes, zone_hex_colors: list[str]) -> bytes:
-    """
-    Snap every pixel to the nearest color in the target palette.
-    Palette = zone colors + chroma-key green background.
-    Returns PNG bytes with perfectly flat, exact-hex color zones.
-
-    The nearest-color assignment (Euclidean distance in RGB) is heuristic at
-    zone boundaries — ambiguous edge pixels will land on whichever target color
-    they are geometrically closest to. For well-generated images this produces
-    clean hard boundaries; for images with heavy gradients the borders may be
-    slightly ragged. The Forge handles hard-edge flat zones best.
-    """
-    import io
-    import numpy as np
-    from PIL import Image
-
-    palette_hex = [CHROMA_GREEN] + zone_hex_colors  # green always first
-
-    def hex_to_arr(h: str):
-        h = h.lstrip('#')
-        return [int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)]
-
-    palette = np.array([hex_to_arr(h) for h in palette_hex], dtype=np.int32)  # N×3
-
-    img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-    arr = np.array(img, dtype=np.int32)  # H×W×3
-
-    # Squared Euclidean distance to each palette entry — H×W×N
-    diff = arr[:, :, np.newaxis, :] - palette[np.newaxis, np.newaxis, :, :]
-    dist_sq = (diff ** 2).sum(axis=3)
-    nearest = dist_sq.argmin(axis=2)   # H×W  index into palette
-
-    result = palette[nearest].astype(np.uint8)
-
-    buf = io.BytesIO()
-    Image.fromarray(result, 'RGB').save(buf, format='PNG')
-    return buf.getvalue()
 
 # ---------------------------------------------------------------------------
 # Prompt parsing
@@ -230,34 +151,34 @@ def parse_prompts(md_path: Path) -> list[dict]:
 # ---------------------------------------------------------------------------
 
 def generate_image(prompt: str, width: int, height: int) -> tuple[bytes, str]:
-    """Call Nano Banana (Gemini 2.5 Flash Image) via fal.ai, then quantize to exact target colors."""
-    ratio = width / height
-    if ratio >= 1.6:
-        aspect_ratio = "4:3" if ratio < 1.8 else "16:9"
-    elif ratio >= 1.2:
-        aspect_ratio = "4:3"
-    elif ratio >= 0.9:
-        aspect_ratio = "1:1"
-    else:
-        aspect_ratio = "3:4"
-
+    """Call Recraft v3 via fal.ai. Returns (content_bytes, extension)."""
+    colors = extract_colors(prompt)
     result = fal_client.subscribe(
         MODEL,
         arguments={
-            "prompt": GROUNDING_PREAMBLE + prompt,
-            "aspect_ratio": aspect_ratio,
-            "output_format": "png",
-            "num_images": 1,
+            "prompt": prompt,
+            "image_size": {"width": width, "height": height},
+            "style": RECRAFT_STYLE,
+            "colors": colors,
         },
     )
     image_url = result["images"][0]["url"]
+    content_type = result["images"][0].get("content_type", "")
+
     response = requests.get(image_url, timeout=60)
     response.raise_for_status()
 
-    # Snap all pixels to exact target colors + chroma-key green
-    zone_colors = extract_hex_colors(prompt)
-    quantized = quantize_to_palette(response.content, zone_colors)
-    return quantized, "png"
+    # vector_illustration styles return SVG — save directly
+    if "svg" in content_type or image_url.endswith(".svg"):
+        return response.content, "svg"
+
+    # Raster styles (webp/jpeg) — convert to PNG via Pillow
+    from PIL import Image
+    import io
+    img = Image.open(io.BytesIO(response.content)).convert("RGBA")
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return buf.getvalue(), "png"
 
 
 def output_path(out_dir: Path, entry: dict, ext: str = "png") -> Path:
@@ -401,7 +322,7 @@ def main():
         out_dir = DEFAULT_OUT_BASE
 
     print(f"\nMokuri Element Generator")
-    print(f"  Model:  {MODEL}")
+    print(f"  Model:  {MODEL}  [{RECRAFT_STYLE}]")
     print(f"  Output: {out_dir}")
     print(f"  Tasks:  {len(entries)} image(s)")
     if args.dry_run:
