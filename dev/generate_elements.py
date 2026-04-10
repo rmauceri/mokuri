@@ -42,31 +42,42 @@ import requests
 PROMPTS_FILE = Path(__file__).parent / "element-prompts-kacho-moribana.md"
 DEFAULT_OUT_BASE = Path(__file__).parent / "generated"
 
-MODEL = "fal-ai/flux/dev"
+# Recraft v3 — purpose-built for illustration/vector styles
+MODEL = "fal-ai/recraft-v3"
 
-# Flux dev settings tuned for flat-color stencil output
-FLUX_PARAMS = {
-    "num_inference_steps": 28,
-    "guidance_scale": 4.5,   # slightly higher than default to adhere to flat-color constraints
-    "output_format": "png",
-    "enable_safety_checker": False,
-}
+# colored_stencil = flat color regions, hard edges, no gradients — perfect for mokuhanga
+RECRAFT_STYLE = "vector_illustration/colored_stencil"
 
-# Map canvas size hints in prompts to fal image_size values
-SIZE_MAP = {
-    "1024x768":  {"width": 1024, "height": 768},
-    "1200x768":  {"width": 1200, "height": 768},
-    "768x1024":  {"width": 768,  "height": 1024},
-    "1024x1024": {"width": 1024, "height": 1024},
-    "1200x600":  {"width": 1200, "height": 600},
-    "1024x600":  {"width": 1024, "height": 600},
-}
+# Background chroma-key green — exclude from the colors hint we pass to the model
+CHROMA_GREEN = "#00FF00"
 
 # Pack name → section header prefix in the prompts file
 PACK_SECTIONS = {
     "kacho":    "## Kacho-e Pack",
     "moribana": "## Moribana Pack",
 }
+
+# ---------------------------------------------------------------------------
+# Color utilities
+# ---------------------------------------------------------------------------
+
+def hex_to_rgb(hex_color: str) -> dict:
+    """Convert '#RRGGBB' to {'r': R, 'g': G, 'b': B}."""
+    h = hex_color.lstrip('#')
+    return {"r": int(h[0:2], 16), "g": int(h[2:4], 16), "b": int(h[4:6], 16)}
+
+
+def extract_colors(prompt: str) -> list[dict]:
+    """Extract hex color codes from prompt text, excluding chroma-key green."""
+    hexes = re.findall(r'#([0-9A-Fa-f]{6})', prompt)
+    seen = set()
+    result = []
+    for h in hexes:
+        full = f"#{h.upper()}"
+        if full not in seen and full != CHROMA_GREEN:
+            seen.add(full)
+            result.append(hex_to_rgb(full))
+    return result
 
 # ---------------------------------------------------------------------------
 # Prompt parsing
@@ -139,24 +150,39 @@ def parse_prompts(md_path: Path) -> list[dict]:
 # Generation
 # ---------------------------------------------------------------------------
 
-def generate_image(prompt: str, width: int, height: int) -> bytes:
-    """Call fal.ai Flux and return PNG bytes."""
+def generate_image(prompt: str, width: int, height: int) -> tuple[bytes, str]:
+    """Call Recraft v3 via fal.ai. Returns (content_bytes, extension)."""
+    colors = extract_colors(prompt)
     result = fal_client.subscribe(
         MODEL,
         arguments={
             "prompt": prompt,
             "image_size": {"width": width, "height": height},
-            **FLUX_PARAMS,
+            "style": RECRAFT_STYLE,
+            "colors": colors,
         },
     )
     image_url = result["images"][0]["url"]
+    content_type = result["images"][0].get("content_type", "")
+
     response = requests.get(image_url, timeout=60)
     response.raise_for_status()
-    return response.content
+
+    # vector_illustration styles return SVG — save directly
+    if "svg" in content_type or image_url.endswith(".svg"):
+        return response.content, "svg"
+
+    # Raster styles (webp/jpeg) — convert to PNG via Pillow
+    from PIL import Image
+    import io
+    img = Image.open(io.BytesIO(response.content)).convert("RGBA")
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return buf.getvalue(), "png"
 
 
-def output_path(out_dir: Path, entry: dict) -> Path:
-    filename = f"{entry['pack']}-{entry['element_id']}-{entry['variation']}.png"
+def output_path(out_dir: Path, entry: dict, ext: str = "png") -> Path:
+    filename = f"{entry['pack']}-{entry['element_id']}-{entry['variation']}.{ext}"
     return out_dir / filename
 
 
@@ -186,27 +212,32 @@ def run_generation(entries: list[dict], out_dir: Path, dry_run: bool, force: boo
     errors = 0
 
     for i, entry in enumerate(entries, 1):
-        dest = output_path(out_dir, entry)
         label = f"[{i}/{total}] {entry['element_name']} — Variation {entry['variation'].upper()}"
 
-        if dest.exists() and not force:
-            print(f"  SKIP  {label}  →  {dest.name} (already exists, use --force to overwrite)")
+        # Check if any output format already exists
+        existing = next((output_path(out_dir, entry, x) for x in ("svg", "png") if output_path(out_dir, entry, x).exists()), None)
+        if existing and not force:
+            print(f"  SKIP  {label}  →  {existing.name} (already exists, use --force to overwrite)")
             skipped += 1
             continue
 
         if dry_run:
+            colors = extract_colors(entry["prompt"])
+            color_hexes = ['#{:02X}{:02X}{:02X}'.format(c['r'], c['g'], c['b']) for c in colors]
             print(f"  DRY   {label}")
-            print(f"        {entry['width']}×{entry['height']}  →  {dest.name}")
+            print(f"        {entry['width']}×{entry['height']}  style={RECRAFT_STYLE}")
+            print(f"        colors={color_hexes}")
             print(f"        {entry['prompt'][:120]}...")
             continue
 
-        print(f"  GEN   {label}  ({entry['width']}×{entry['height']})  →  {dest.name}")
+        print(f"  GEN   {label}  ({entry['width']}×{entry['height']})")
         t0 = time.time()
         try:
-            png_bytes = generate_image(entry["prompt"], entry["width"], entry["height"])
-            dest.write_bytes(png_bytes)
+            img_bytes, ext = generate_image(entry["prompt"], entry["width"], entry["height"])
+            dest = output_path(out_dir, entry, ext)
+            dest.write_bytes(img_bytes)
             elapsed = time.time() - t0
-            print(f"        ✓ saved {len(png_bytes)//1024}KB in {elapsed:.1f}s")
+            print(f"        ✓ saved {len(img_bytes)//1024}KB in {elapsed:.1f}s  [{ext}]")
             generated += 1
         except Exception as e:
             print(f"        ✗ ERROR: {e}")
@@ -291,7 +322,7 @@ def main():
         out_dir = DEFAULT_OUT_BASE
 
     print(f"\nMokuri Element Generator")
-    print(f"  Model:  {MODEL}")
+    print(f"  Model:  {MODEL}  [{RECRAFT_STYLE}]")
     print(f"  Output: {out_dir}")
     print(f"  Tasks:  {len(entries)} image(s)")
     if args.dry_run:
