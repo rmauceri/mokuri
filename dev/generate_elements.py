@@ -42,13 +42,10 @@ import requests
 PROMPTS_FILE = Path(__file__).parent / "element-prompts-kacho-moribana.md"
 DEFAULT_OUT_BASE = Path(__file__).parent / "generated"
 
-# Recraft v3 — purpose-built for illustration/vector styles
-MODEL = "fal-ai/recraft-v3"
+# Nano Banana (Gemini 2.5 Flash Image) — follows chroma-key and flat color instructions
+MODEL = "fal-ai/nano-banana"
 
-# colored_stencil = flat color regions, hard edges, no gradients — perfect for mokuhanga
-RECRAFT_STYLE = "vector_illustration/colored_stencil"
-
-# Background chroma-key green — exclude from the colors hint we pass to the model
+# Background chroma-key green
 CHROMA_GREEN = "#00FF00"
 
 # Pack name → section header prefix in the prompts file
@@ -56,6 +53,35 @@ PACK_SECTIONS = {
     "kacho":    "## Kacho-e Pack",
     "moribana": "## Moribana Pack",
 }
+
+# Grounding preamble prepended to every element prompt.
+# Distilled from Vector-Friendly Woodblock Illustration.md — critical rules only.
+GROUNDING_PREAMBLE = """\
+You are generating color-separation artwork for Japanese woodblock (mokuhanga) printmaking. \
+The image will be processed by a tracing pipeline that extracts each flat color region as a \
+separate SVG path. The pipeline REQUIRES:
+
+1. BACKGROUND: Solid #00FF00 (pure chroma-key green) filling the entire canvas. \
+   No green anywhere in the subject. No shadows, halos, or gradients at the edges.
+2. FLAT COLORS: Each region of the subject must be a single perfectly uniform flat color — \
+   zero gradients, zero shading, zero highlights, zero texture within any region. \
+   Paint-bucket-fill flat.
+3. EXACTLY 4 COLORS in the subject (excluding background). The darkest color must be used \
+   ONLY for small features (eye, beak tip, fine lines) — under 8% of subject pixels.
+4. NO OUTLINES: Color regions meet edge-to-edge. No dark border around the subject or \
+   between regions. The carved groove is implied by where colors meet, not drawn.
+5. HARD EDGES: Stencil-sharp transitions between colors. Minimal anti-aliasing (1–2px OK). \
+   No feathered or blended edges.
+6. SINGLE SUBJECT: One isolated subject on the green background. No environment, no ground, \
+   no water, no other elements. Subject fills ~60% of the canvas.
+7. STYLE: Traditional mokuhanga / shin-hanga aesthetic. Elegant simplified forms like \
+   Hokusai or Hiroshige kacho-e. NOT logo art, NOT anime, NOT sticker illustration.
+
+Mental model: "Paint this as color separations for a woodblock print. Each color is a \
+separate carved block that prints edge-to-edge with no outlines."
+
+Element prompt follows:
+"""
 
 # ---------------------------------------------------------------------------
 # Color utilities
@@ -151,34 +177,30 @@ def parse_prompts(md_path: Path) -> list[dict]:
 # ---------------------------------------------------------------------------
 
 def generate_image(prompt: str, width: int, height: int) -> tuple[bytes, str]:
-    """Call Recraft v3 via fal.ai. Returns (content_bytes, extension)."""
-    colors = extract_colors(prompt)
+    """Call Nano Banana (Gemini 2.5 Flash Image) via fal.ai. Returns (png_bytes, 'png')."""
+    ratio = width / height
+    if ratio >= 1.6:
+        aspect_ratio = "4:3" if ratio < 1.8 else "16:9"
+    elif ratio >= 1.2:
+        aspect_ratio = "4:3"
+    elif ratio >= 0.9:
+        aspect_ratio = "1:1"
+    else:
+        aspect_ratio = "3:4"
+
     result = fal_client.subscribe(
         MODEL,
         arguments={
-            "prompt": prompt,
-            "image_size": {"width": width, "height": height},
-            "style": RECRAFT_STYLE,
-            "colors": colors,
+            "prompt": GROUNDING_PREAMBLE + prompt,
+            "aspect_ratio": aspect_ratio,
+            "output_format": "png",
+            "num_images": 1,
         },
     )
     image_url = result["images"][0]["url"]
-    content_type = result["images"][0].get("content_type", "")
-
     response = requests.get(image_url, timeout=60)
     response.raise_for_status()
-
-    # vector_illustration styles return SVG — save directly
-    if "svg" in content_type or image_url.endswith(".svg"):
-        return response.content, "svg"
-
-    # Raster styles (webp/jpeg) — convert to PNG via Pillow
-    from PIL import Image
-    import io
-    img = Image.open(io.BytesIO(response.content)).convert("RGBA")
-    buf = io.BytesIO()
-    img.save(buf, format="PNG")
-    return buf.getvalue(), "png"
+    return response.content, "png"
 
 
 def output_path(out_dir: Path, entry: dict, ext: str = "png") -> Path:
@@ -322,7 +344,7 @@ def main():
         out_dir = DEFAULT_OUT_BASE
 
     print(f"\nMokuri Element Generator")
-    print(f"  Model:  {MODEL}  [{RECRAFT_STYLE}]")
+    print(f"  Model:  {MODEL}")
     print(f"  Output: {out_dir}")
     print(f"  Tasks:  {len(entries)} image(s)")
     if args.dry_run:
