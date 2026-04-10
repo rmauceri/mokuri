@@ -4787,7 +4787,7 @@ function deleteDisplayPaths(displayIndices, displayPaths) {
 }
 
 function updatePreviews() {
-  var vb = '0 0 ' + STATE.viewBoxW + ' ' + STATE.viewBoxH;
+  var vb = (STATE.viewBoxX || 0) + ' ' + (STATE.viewBoxY || 0) + ' ' + STATE.viewBoxW + ' ' + STATE.viewBoxH;
   ['block', 'shape', 'detail'].forEach((name, levelIdx) => {
     const svgEl = $('preview-' + name);
     svgEl.setAttribute('viewBox', vb);

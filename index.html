@@ -4972,13 +4972,19 @@ function addElement(defId, x, y) {
   const def = MOKURI_ELEMENTS.find(d => d.id === defId);
   if (!def) return;
 
+  // Scale elements with large viewBoxes (e.g. Forge exports) to a reasonable initial size.
+  // Native elements have viewBox ~160×100; Forge elements may be 800–1024px.
+  const vbParts = def.viewBox ? def.viewBox.split(' ').map(Number) : [0, 0, 160, 100];
+  const naturalMax = Math.max(vbParts[2], vbParts[3]);
+  const initialScale = naturalMax > 400 ? 200 / naturalMax : 1;
+
   const el = {
     id: STATE.nextId++,
     defId,
     x: x !== undefined ? x : STATE.paperW / 2,
     y: y !== undefined ? y : STATE.paperH / 2,
-    scaleX: 1,
-    scaleY: 1,
+    scaleX: initialScale,
+    scaleY: initialScale,
     rotation: 0,
     carveLevel: def.carveLevels.length - 1,
     colorOverrides: {},
