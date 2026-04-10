@@ -9,6 +9,20 @@ This spec defines how to generate raster images that will be processed by the Mo
 
 ---
 
+## Two Routes into the Forge
+
+Both workflows produce the same forge-compatible SVG paths. The image requirements in this document apply to **Route B** (PNG trace). Route A shares the same color zone model but has additional SVG-specific shape constraints — see `element-image-prompt.md`.
+
+**Route A — SVG Direct**
+Generate SVG from Recraft.ai using "Flat vector" or "Icon" style. The forge imports SVG paths directly, skipping raster tracing. Best for: bold stencil-style subjects, kamon aesthetic, strong geometric confidence in the source. Recraft can be less reliable for organic forms (birds, complex flowers) — it often over-geometrizes or adds hidden overlapping strokes.
+
+**Route B — PNG → SVG Trace (this document)**
+Generate PNG from any AI image generator (Midjourney, DALL-E, Firefly, Stable Diffusion). The forge's built-in Potrace pipeline converts the PNG to Bezier SVG paths per color zone. Best for: organic contours, natural subjects, when you want the most realistic mokuhanga silhouette. More control over organic form quality at the generation step.
+
+**Why Route B produces better organic results**: Potrace traces each flat color zone as a clean filled Bezier silhouette. Because Bezier curves approximate organic edges naturally, subjects with flowing contours (birds, flowers, fish) trace cleanly when the source image has flat colors and hard edges. The number of Bezier path commands stays low (~8–25 per zone), which is critical — the print engine's ink perturbation applies per-command, so fewer commands = more organic wobble, more commands = high-frequency noise.
+
+---
+
 ## How Mokuri Elements Work (Context for Image Design)
 
 A Mokuri element has:
@@ -218,6 +232,15 @@ Choose colors with high mutual contrast. Example palettes:
 | beam/frame | structural lines | `#3A3A3A` |
 | accent | doors, windows | `#8A4A2A` |
 
+**Vessels and Ceramics (suiban, tsubo, hanaire, kenzan):**
+| Zone | Role | Example Hex |
+|------|------|-------------|
+| body | main glaze surface | `#C4B890` |
+| accent | rim, band, or glaze drip | `#7A5830` |
+| interior | opening / water surface | `#7A8A9A` |
+
+Vessels typically use only 3 zones. The interior zone — the water surface in a moribana basin, the dark opening of a vase — is often the most expressive zone for bokashi (gradient) treatment. Keep the body glaze color clearly distinct from the accent and interior.
+
 ---
 
 ## Carve-Level Thinking
@@ -304,13 +327,33 @@ Before sending an image to the forge, verify:
 
 ---
 
+## Lessons from Practice
+
+These insights come from processing 30+ elements through the forge pipeline. Each one corresponds to a real failure mode encountered.
+
+**The darkest color rule is absolute.** The forge auto-assigns zones by pixel area (body = largest area) and by tone (detail = darkest color). If the darkest color covers a large area — a bird's dark back, a shadow-heavy wing — zone assignment breaks: the body zone gets mapped to a small feature and the dark mass takes the body slot. The result is an element where zones are inverted and palette expression is wrong. Keep the darkest color strictly for eyes, tips, fine lines, and beak ends. It should cover less than 8% of subject pixels.
+
+**Hard edges save hours of forge cleanup.** Feathered edges between color regions produce a ring of ambiguous pixels that K-means assigns inconsistently, creating jagged Potrace artifacts along zone boundaries. Stencil-sharp transitions (one pixel is color A, the adjacent pixel is color B) produce clean single-path zone boundaries with no artifacts. Any anti-aliasing beyond 1–2px creates noticeable noise in the SVG output.
+
+**Fewer zones is always better.** 4 zones is the sweet spot. 5 is manageable. 6+ introduces segmentation instability that requires significant forge cleanup. When considering whether to separate two similar colors into separate zones — don't. Let the carved boundary between them do the work. The user can always carve a groove between regions in Mokuri.
+
+**Subject fill percentage matters for trace quality.** A subject filling less than 40% of the canvas produces coarse Bezier approximations — not enough pixel resolution to capture smooth organic contours. A subject at 60–70% fill produces the best Potrace output. Very large subjects (>85%) create edge-clipping issues.
+
+**Single subject per image, always.** A branch behind a bird, a water surface beneath a heron — these extra elements create zones the forge can't distinguish from the primary subject's zones. The forge will assign a zone to the branch and waste a palette slot on environmental context. All environment is added in Mokuri's composition step.
+
+**Potrace needs binary masks, not the full PNG.** The forge converts each flat color to a white-on-black binary mask and traces that mask with Potrace separately per zone. Background contamination — slightly off-green pixels at edges, anti-aliased halos — gets included in zone masks and creates fringe artifacts. Use exact `#00FF00` chroma-key green (no off-by-one values) or fully transparent alpha PNG.
+
+---
+
 ## Mental Model
 
 > "Paint this as if you are preparing color separations for a woodblock print. Each color is a separate carved block. The blocks print edge-to-edge with no outlines. Use 4 flat colors on a green (#00FF00) background. The form should be elegant and simplified, like a Hasui Kawase nature study — not a sports logo or sticker."
 
 ---
 
-## Prompt Template for AI Image Generation
+## Prompt Templates
+
+### Full Template (for models that respond to detailed instruction)
 
 ```
 Create a [subject] illustration for Japanese woodblock print (mokuhanga) color separation.
@@ -319,7 +362,7 @@ CRITICAL REQUIREMENTS:
 - Solid #00FF00 green background filling the entire canvas (or fully transparent PNG)
 - Exactly [4] flat colors in the subject: [list specific hex colors and their roles]
   - Largest area color = body zone
-  - Darkest color = detail zone (use ONLY for small features: eye, tips, fine lines)
+  - Darkest color = detail zone (use ONLY for small features: eye, tips, fine lines — under 8% of pixels)
   - Remaining colors = marking/accent zones
 - Each color region is PERFECTLY UNIFORM — zero gradients, zero shading, zero texture
 - NO outlines of any kind — color regions meet edge-to-edge with clean boundaries
@@ -332,6 +375,16 @@ COMPOSITION: Single [subject] centered on green background, filling ~60% of canv
 Natural [pose/orientation]. [Specific anatomical/structural notes for this subject.]
 
 FORMAT: PNG, 1024x768, 8-bit RGB.
+```
+
+### Short Template (for models that respond better to concise prompts)
+
+```
+Japanese woodblock print [SUBJECT AND POSE]. Solid #00FF00 background.
+4 flat zones: [HEX] [zone 0 — largest area, body], [HEX] [zone 1 — marking],
+[HEX] [zone 2 — accent], [HEX] [zone 3 — small details only: eye, tips, fine lines].
+ZERO outlines. ZERO gradients. Hard stencil edges between zones. Single subject, ~60% of canvas.
+Mokuhanga / shin-hanga. PNG 1024×768.
 ```
 
 ---
