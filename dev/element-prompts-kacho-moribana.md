@@ -23,13 +23,13 @@ Each element has 3 variations to give compositional and pose choices. Choose one
 *4 zones: blue-gray body, darker folded wing, red crown patch, near-black detail (beak, legs, eye)*
 
 #### Variation A — Patient Stance
-> Japanese woodblock print grey heron, full profile facing right. S-curved neck held tall and upright, both long thin legs visible, dagger beak held horizontal. Solid #00FF00 background. 4 flat zones: `#A8B5C0` blue-gray plumage (body, largest area), `#6A8090` folded wing on back, `#C84040` small red crown patch, `#252525` beak tip, legs, eye dot only. ZERO outlines. Hard stencil edges. Single subject ~65% canvas. Mokuhanga shin-hanga. PNG 1024×768.
+> Japanese woodblock print grey heron, full profile facing right. S-curved neck held tall and upright, both long thin legs fully visible to feet, dagger beak held horizontal. Solid #00FF00 background. 4 flat zones: `#A8B5C0` blue-gray plumage (body, largest area), `#6A8090` folded wing on back, `#C84040` small red crown patch, `#252525` beak tip, legs, eye dot only. ZERO outlines. Hard stencil edges. Single subject ~65% canvas. Mokuhanga shin-hanga. PNG 1024×768.
 
 #### Variation B — Alert, Neck Extended
-> Japanese woodblock print grey heron, profile facing right, neck stretched forward and downward toward water in hunting posture. Body tilted slightly forward, beak angled down 30°. Solid #00FF00 background. 4 flat zones: `#A8B5C0` blue-gray plumage, `#6A8090` folded wing, `#C84040` small red crown patch, `#252525` beak, legs, eye only. ZERO outlines. Hard stencil edges. Single subject ~65% canvas. Mokuhanga. PNG 1024×768.
+> Japanese woodblock print grey heron, profile facing right, neck stretched forward and downward in hunting posture, body tilted slightly forward, beak angled down 30°, both legs fully visible to feet. Solid #00FF00 background. 4 flat zones: `#A8B5C0` blue-gray plumage, `#6A8090` folded wing, `#C84040` small red crown patch, `#252525` beak, legs, eye only. ZERO outlines. Hard stencil edges. Single subject ~65% canvas. Mokuhanga. PNG 1024×768.
 
 #### Variation C — Resting, Neck Tucked
-> Japanese woodblock print grey heron, three-quarter view facing left, neck pulled into compact S-curve close to body in resting posture, wings slightly raised on back. Solid #00FF00 background. 4 flat zones: `#A8B5C0` blue-gray plumage, `#6A8090` folded wing mass, `#C84040` small red crown patch, `#252525` beak, legs, eye only. ZERO outlines. Hard stencil edges. Single subject ~60% canvas. Mokuhanga. PNG 1024×768.
+> Japanese woodblock print grey heron, full profile facing left, neck pulled down in compact resting S-curve close to chest, body in relaxed lowered posture, both legs fully visible to feet. Solid #00FF00 background. 4 flat zones: `#A8B5C0` blue-gray plumage (body, largest area), `#6A8090` folded wing mass on back, `#C84040` small red crown patch, `#252525` beak, legs, eye only. ZERO outlines. Hard stencil edges. Single subject ~65% canvas. Mokuhanga. PNG 1024×768.
 
 ---
 

@@ -74,7 +74,10 @@ separate SVG path. The pipeline REQUIRES:
    No feathered or blended edges.
 6. SINGLE SUBJECT: One isolated subject on the green background. No environment, no ground, \
    no water, no other elements. Subject fills ~60% of the canvas.
-7. STYLE: Traditional mokuhanga / shin-hanga aesthetic. Elegant simplified forms like \
+7. COMPLETE BODY: The entire subject must be fully visible from head to foot-tips or \
+   wing-tips. No cropping. Feet or claws rest directly on the green background. \
+   Do not suggest water, ground, soil, or any perching surface.
+8. STYLE: Traditional mokuhanga / shin-hanga aesthetic. Elegant simplified forms like \
    Hokusai or Hiroshige kacho-e. NOT logo art, NOT anime, NOT sticker illustration.
 
 Mental model: "Paint this as color separations for a woodblock print. Each color is a \
