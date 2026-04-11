@@ -39,7 +39,10 @@ import requests
 # Config
 # ---------------------------------------------------------------------------
 
-PROMPTS_FILE = Path(__file__).parent / "element-prompts-kacho-moribana.md"
+PROMPTS_FILES = [
+    Path(__file__).parent / "element-prompts-kacho-moribana.md",
+    Path(__file__).parent / "element-prompts-core.md",
+]
 DEFAULT_OUT_BASE = Path(__file__).parent / "generated"
 
 # Nano Banana (Gemini 2.5 Flash Image) — follows chroma-key and flat color instructions
@@ -50,8 +53,10 @@ CHROMA_GREEN = "#00FF00"
 
 # Pack name → section header prefix in the prompts file
 PACK_SECTIONS = {
-    "kacho":    "## Kacho-e Pack",
-    "moribana": "## Moribana Pack",
+    "kacho":         "## Kacho-e Pack",
+    "moribana":      "## Moribana Pack",
+    "core-flora":    "## Core Flora Pack",
+    "core-figures":  "## Core Figures Pack",
 }
 
 # Grounding preamble prepended to every element prompt.
@@ -283,7 +288,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )
-    parser.add_argument("--pack", choices=["kacho", "moribana"],
+    parser.add_argument("--pack", choices=list(PACK_SECTIONS.keys()),
                         help="Generate all elements in a pack")
     parser.add_argument("--element", metavar="ID",
                         help="Generate one element by id (e.g. 'heron', 'suiban')")
@@ -299,11 +304,14 @@ def main():
                         help="List all available elements and exit")
     args = parser.parse_args()
 
-    if not PROMPTS_FILE.exists():
-        print(f"ERROR: Prompts file not found: {PROMPTS_FILE}")
+    if not any(f.exists() for f in PROMPTS_FILES):
+        print(f"ERROR: No prompts files found")
         sys.exit(1)
 
-    prompts = parse_prompts(PROMPTS_FILE)
+    prompts = []
+    for pf in PROMPTS_FILES:
+        if pf.exists():
+            prompts.extend(parse_prompts(pf))
 
     if args.list:
         cmd_list(prompts)
