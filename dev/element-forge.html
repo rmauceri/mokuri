@@ -124,6 +124,17 @@ html, body {
 
 .panel-section:last-child { margin-bottom: 0; }
 
+/* ── Drop Zone ── */
+.drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.drop-zone.drag-over {
+  border-color: var(--accent);
+  background: rgba(139, 107, 74, 0.08);
+}
+
 /* ── Subtle label ── */
 .subtle-label {
   font-size: 10px;
@@ -772,12 +783,12 @@ button.sm { padding: 3px 8px; font-size: 11px; }
 
         <div class="panel-section">
           <div class="subtle-label">Import</div>
-          <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-              <button class="sm" id="btn-import-file" style="flex-shrink:0;">📂 Import File</button>
-              <span id="import-status" style="font-size:11px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:130px;"></span>
-            </div>
-            <input type="file" id="import-file" accept=".svg,.png,.jpg,.jpeg,image/svg+xml,image/png,image/jpeg" style="display:none">
-            <div style="margin-top:6px; font-size:10px; color:var(--muted);">SVG or PNG — drag & drop supported</div>
+          <div class="drop-zone" id="import-drop" style="padding:18px 12px; text-align:center; cursor:pointer; margin-bottom:6px;">
+            <div style="font-size:13px; margin-bottom:4px;">📂 Drop file here or click to browse</div>
+            <div style="font-size:10px; color:var(--muted);">SVG or PNG</div>
+          </div>
+          <input type="file" id="import-file" accept=".svg,.png,.jpg,.jpeg,image/svg+xml,image/png,image/jpeg" style="display:none">
+          <span id="import-status" style="font-size:11px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:block; max-width:200px;"></span>
         </div>
 
       </div>
@@ -2559,9 +2570,7 @@ function loadSvgFile(file) {
 
 // Import SVG from in-memory string (used by png2svg modal)
 function loadSvgFromString(svgText, displayName) {
-  console.log('loadSvgFromString called, text length=', svgText?.length);
   const { paths, sourceW, sourceH } = parseSvgPaths(svgText);
-  console.log('parseSvgPaths returned', paths.length, 'paths, sourceW=', sourceW, 'sourceH=', sourceH);
   if (paths.length === 0) {
     alert('No filled paths found in SVG.');
     return;
@@ -3603,9 +3612,20 @@ function attachEvents() {
     if (e.target.files[0]) handleImportFile(e.target.files[0]);
     e.target.value = '';
   });
-  $('btn-import-file').addEventListener('click', () => $('import-file').click());
 
-  // Drag & drop on canvas area
+  // Import drop zone — click, drag-over highlight, drop
+  const importDrop = $('import-drop');
+  importDrop.addEventListener('click', () => $('import-file').click());
+  importDrop.addEventListener('dragover', e => { e.preventDefault(); importDrop.classList.add('drag-over'); });
+  importDrop.addEventListener('dragleave', () => importDrop.classList.remove('drag-over'));
+  importDrop.addEventListener('drop', e => {
+    e.preventDefault();
+    importDrop.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) handleImportFile(file);
+  });
+
+  // Also accept drag & drop on canvas area
   const canvasCol = document.querySelector('.canvas-column');
   canvasCol.addEventListener('dragover', e => { e.preventDefault(); });
   canvasCol.addEventListener('drop', e => {
@@ -4069,18 +4089,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Import to Forge
     document.getElementById('p2s-import').addEventListener('click', () => {
-        if (!_modalSvgStr) { console.warn('p2s-import: no _modalSvgStr'); return; }
+        if (!_modalSvgStr) return;
         const svgStr = _modalSvgStr;
         const fileName = _modalFileName;
-        console.log('p2s-import: svgStr length=', svgStr.length, 'fileName=', fileName);
-        console.log('p2s-import: svgStr preview=', svgStr.substring(0, 300));
         window.closePng2SvgModal();
-        // Use the forge's loadSvgFromString
         if (typeof window.loadSvgFromString === 'function') {
-            console.log('p2s-import: calling loadSvgFromString');
             window.loadSvgFromString(svgStr, fileName);
-        } else {
-            console.error('p2s-import: loadSvgFromString not found on window');
         }
     });
 
