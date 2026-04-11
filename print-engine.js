@@ -372,8 +372,8 @@ const PrintEngine = (() => {
       const overlayPaths = getOverlayPaths(def, el.carveLevel);
       const isBlock = el.carveLevel === 0;
       const vb = def.viewBox.split(' ').map(Number);
-      const offX = -vb[2] / 2;
-      const offY = -vb[3] / 2;
+      const offX = -vb[0] - vb[2] / 2;
+      const offY = -vb[1] - vb[3] / 2;
 
       // Procedural variation — seeded per element instance
       // Uses coordinate-value-based noise so concentric paths stay aligned
