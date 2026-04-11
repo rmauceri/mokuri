@@ -250,7 +250,7 @@ def run_generation(entries: list[dict], out_dir: Path, dry_run: bool, force: boo
             colors = extract_colors(entry["prompt"])
             color_hexes = ['#{:02X}{:02X}{:02X}'.format(c['r'], c['g'], c['b']) for c in colors]
             print(f"  DRY   {label}")
-            print(f"        {entry['width']}×{entry['height']}  style={RECRAFT_STYLE}")
+            print(f"        {entry['width']}×{entry['height']}  model={MODEL}")
             print(f"        colors={color_hexes}")
             print(f"        {entry['prompt'][:120]}...")
             continue
