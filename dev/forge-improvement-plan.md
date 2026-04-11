@@ -195,22 +195,61 @@ Zone-level assignment system for the SVG import workflow. Assign entire color zo
 
 ---
 
+## Phase 6: PNG→SVG Modal Integration ✅
+
+Replaced the old trace infrastructure (ImageTracer, vendored Potrace, mono/color mode toggle, reference overlay) with a streamlined unified import that routes PNG files through an integrated png2svg conversion modal.
+
+### 6A. Unified file import ✅
+- Single "Import File" button accepts both SVG and PNG files
+- SVG files go directly to `loadSvgFile()` → existing zone/color pipeline
+- PNG/JPG files open the png2svg conversion modal
+- MIME-aware detection: `image/svg+xml` correctly routes to SVG path even without `.svg` extension
+- CDN readiness guard: shows alert if esm-potrace-wasm module hasn't loaded yet
+- Drag-and-drop on canvas supports both file types
+
+### 6B. PNG→SVG conversion modal ✅
+- Full-viewport overlay: source PNG preview (left), live SVG preview (right)
+- 6 controls: Colors (2–8), Noise Removal, Smoothing, Background Color eyedropper, Green BG threshold, Posterize toggle
+- Pipeline: posterize → k-means quantize → per-zone binary mask → Potrace trace → SVG assembly
+- Debounced re-processing (200ms) on any control change
+- "Import to Forge" button: feeds in-memory SVG string to `loadSvgFromString()` → `parseSvgPaths()` → `clusterSvgColors()` → `buildStateFromSvgZones()`
+- Cancel button closes modal without changes
+
+### 6C. Old trace infrastructure removed ✅
+- Removed ~2150 lines: ImageTracer engine, vendored Potrace library, mono/color trace toggle, trace controls HTML/CSS, trace event listeners, reference overlay (image/URL/opacity), all related STATE properties
+- Preserved: path simplification functions (needed by Cleanup panel), SVG import pipeline, zone-level system
+- Net reduction: ~1470 lines
+
+### 6D. Library grid expansion ✅
+- Grid layout changed from flex-wrap to CSS grid: `grid-template-columns: repeat(3, 1fr)`
+- Max-height with vertical scroll for large element libraries
+- Accommodates style packs with many elements
+
+### 6E. CDN dependency (esm-potrace-wasm) ✅
+- `esm-potrace-wasm@0.4.1` loaded via ES module import from jsDelivr CDN
+- Single initialization on page load, exposed on `window._png2svg` for IIFE access
+- Dev-only tool (forge is not shipped with the app), always online — CDN dependency acceptable
+
+---
+
 ## Completed Work Summary
 
-All phases (0–4) are now implemented. The forge is a functional PNG → trace → cleanup → export pipeline with zone-level carve assignment.
+All phases (0–6) are now implemented. The forge is a complete element authoring environment with streamlined PNG→SVG conversion.
 
 ### What works
-- **Import**: SVG import, image drag-and-drop, URL paste, auto viewBox detection, chroma key detection
-- **Trace**: ImageTracer (default) and Potrace engines, color segmentation (2–6 clusters), mono fallback, smoothing (exponential curve 0–50), semantic zone naming
+- **Import**: Unified file picker (SVG direct or PNG via conversion modal), drag-and-drop, auto viewBox detection, chroma key detection
+- **PNG→SVG**: Integrated conversion modal with live preview, 6 controls (colors, noise, smooth, BG, green BG, posterize), powered by esm-potrace-wasm CDN
 - **Edit**: Select, draw stroke/fill, erase tools; multi-select (Shift+click, Ctrl+A); path hover highlight (blue glow); move paths between levels; zone reassignment; type/d-string editing in Inspector
-- **Cleanup**: Remove Small Paths (area threshold up to 2000), Clean Edges (margin-aware border cleanup), bulk delete
-- **Export**: Delta carve levels, path consolidation, clipboard copy with JS format
+- **Cleanup**: Remove Small Paths (area threshold up to 2000), Clean Edges (margin-aware border cleanup), Simplify paths, bulk delete
+- **Zone-Level**: Assign entire color zones to Block/Shape/Detail; auto-generated silhouette with evenodd fill-rule; zone-aware export
+- **Export**: Delta carve levels, path consolidation, clipboard copy with JS format, full pack .js export
 - **Layout**: Left-to-right Import → Edit → Export workflow, level preview bar, collapsible metadata with localStorage persistence
 
 ### Known limitations
-- **Outline residue**: PNG outlines trace as darkest-zone paths hugging the silhouette. Dimension-based and erosion-based filtering both failed — the paths wrap around the element giving them large bounding boxes. Manual cleanup still needed.
-- **Color matching edge cases**: ImageTracer sometimes matches feature colors to wrong clusters (e.g., eye outline to fin color instead of detail zone).
+- **Outline residue**: PNG outlines trace as darkest-zone paths hugging the silhouette. Manual cleanup still needed.
+- **Color matching edge cases**: Quantization sometimes matches feature colors to wrong clusters.
 - **Silhouette detection heuristic**: Uses largest fill by bounding-box area — works well for png2svg output but may need manual adjustment for non-standard SVG sources.
+- **Path simplification parser**: Only handles absolute M/L/C/Q/Z commands; relative and arc commands pass through unsimplified.
 
 ---
 
