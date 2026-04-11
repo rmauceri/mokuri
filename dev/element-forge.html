@@ -3976,10 +3976,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Import to Forge
     document.getElementById('p2s-import').addEventListener('click', () => {
         if (!_modalSvgStr) return;
+        const svgStr = _modalSvgStr;
+        const fileName = _modalFileName;
         window.closePng2SvgModal();
         // Use the forge's loadSvgFromString
         if (typeof window.loadSvgFromString === 'function') {
-            window.loadSvgFromString(_modalSvgStr, _modalFileName);
+            window.loadSvgFromString(svgStr, fileName);
         }
     });
 
