@@ -42,6 +42,7 @@ import requests
 PROMPTS_FILES = [
     Path(__file__).parent / "element-prompts-kacho-moribana.md",
     Path(__file__).parent / "element-prompts-core.md",
+    Path(__file__).parent / "element-prompts-staffage.md",
 ]
 DEFAULT_OUT_BASE = Path(__file__).parent / "generated"
 
@@ -53,10 +54,11 @@ CHROMA_KEY = "#FF00FF"
 
 # Pack name → section header prefix in the prompts file
 PACK_SECTIONS = {
-    "kacho":         "## Kacho-e Pack",
-    "moribana":      "## Moribana Pack",
-    "core-flora":    "## Core Flora Pack",
-    "core-figures":  "## Core Figures Pack",
+    "kacho":          "## Kacho-e Pack",
+    "moribana":       "## Moribana Pack",
+    "core-flora":     "## Core Flora Pack",
+    "core-figures":   "## Core Figures Pack",
+    "core-staffage":  "## Core Staffage Pack",
 }
 
 # Grounding preamble prepended to every element prompt.
