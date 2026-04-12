@@ -3347,7 +3347,11 @@ function updatePathInspector() {
       const displayPaths = STATE._displayPaths || getDisplayPathsForLevel(STATE.activeLevel);
       STATE.selectedPathSet.forEach(idx => {
         const dp = displayPaths[idx];
-        if (dp) STATE.paths[dp._srcLevel][dp._srcIndex].zone = zone;
+        if (dp) {
+          const srcPath = STATE.paths[dp._srcLevel][dp._srcIndex];
+          srcPath.zone = zone;
+          if (srcPath.silhouette) delete srcPath.silhouette;
+        }
       });
       renderCanvas();
       updatePreviews();
@@ -3432,6 +3436,7 @@ function updatePathInspector() {
     const srcPath = STATE.paths[dp._srcLevel][dp._srcIndex];
     srcPath.type = $('inspect-type').value;
     srcPath.zone = $('inspect-zone').value;
+    if (srcPath.silhouette) delete srcPath.silhouette;
     srcPath.d = $('inspect-d').value;
     if (srcPath.type === 'stroke') {
       const sw = $('inspect-sw');
