@@ -48,8 +48,8 @@ DEFAULT_OUT_BASE = Path(__file__).parent / "generated"
 # Nano Banana (Gemini 2.5 Flash Image) — follows chroma-key and flat color instructions
 MODEL = "fal-ai/nano-banana"
 
-# Background chroma-key green
-CHROMA_GREEN = "#00FF00"
+# Background chroma-key magenta (avoids conflicts with green foliage)
+CHROMA_KEY = "#FF00FF"
 
 # Pack name → section header prefix in the prompts file
 PACK_SECTIONS = {
@@ -66,8 +66,8 @@ You are generating color-separation artwork for Japanese woodblock (mokuhanga) p
 The image will be processed by a tracing pipeline that extracts each flat color region as a \
 separate SVG path. The pipeline REQUIRES:
 
-1. BACKGROUND: Solid #00FF00 (pure chroma-key green) filling the entire canvas. \
-   No green anywhere in the subject. No shadows, halos, or gradients at the edges.
+1. BACKGROUND: Solid #FF00FF (pure magenta) filling the entire canvas. \
+   No magenta anywhere in the subject. No shadows, halos, or gradients at the edges.
 2. FLAT COLORS: Each region of the subject must be a single perfectly uniform flat color — \
    zero gradients, zero shading, zero highlights, zero texture within any region. \
    Paint-bucket-fill flat.
@@ -108,7 +108,7 @@ def extract_colors(prompt: str) -> list[dict]:
     result = []
     for h in hexes:
         full = f"#{h.upper()}"
-        if full not in seen and full != CHROMA_GREEN:
+        if full not in seen and full != CHROMA_KEY:
             seen.add(full)
             result.append(hex_to_rgb(full))
     return result
