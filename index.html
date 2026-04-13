@@ -4251,9 +4251,11 @@ function svgToElementLocal(svgX, svgY, el) {
   // Step 3: undo scale
   x = rx / el.scaleX;
   y = ry / el.scaleY;
-  // Step 4: undo inner translate
+  // Step 4: undo inner translate and map to viewBox coordinates
   x -= offX;
   y -= offY;
+  x += vb[0];
+  y += vb[1];
   return { x, y };
 }
 
@@ -8009,8 +8011,8 @@ function renderCarvePreview(el, points) {
   const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
   if (!def) return;
   const vb = def.viewBox.split(' ').map(Number);
-  const offX = -vb[2] / 2;
-  const offY = -vb[3] / 2;
+  const offX = -vb[2] / 2 - vb[0];
+  const offY = -vb[3] / 2 - vb[1];
 
   const fakeStroke = { points, tool: STATE.carveTool };
   const items = carveStrokeRenderData(fakeStroke, PAPER_COLOR, CARVED_STROKE);
