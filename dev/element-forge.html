@@ -374,6 +374,7 @@ button.sm { padding: 3px 8px; font-size: 11px; }
   padding: 3px;
   transition: border-color 0.15s;
   flex-shrink: 0;
+  position: relative;
 }
 .library-thumb:hover { border-color: var(--accent); }
 .library-thumb.active { border-color: var(--accent); background: rgba(139,107,74,0.12); }
@@ -415,6 +416,7 @@ button.sm { padding: 3px 8px; font-size: 11px; }
   display: none;
 }
 .library-thumb:hover .library-thumb-del { display: block; }
+.library-thumb-del:hover { background: rgba(180,60,40,1); }
 
 .lib-empty {
   font-size: 11px;
