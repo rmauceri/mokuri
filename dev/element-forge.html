@@ -2947,7 +2947,7 @@ function buildElementDefinition() {
 
 function consolidatePaths(upToLevel) {
   // Zone-level-aware export: each zone has a level assignment (B/S/D).
-  // Block always gets full coverage (silhouette + block-zone paths + body-rezoned higher-zone fills).
+  // Block gets full coverage via body-colored copies of ALL fills, then block-zone colored fills on top.
   // Shape/Detail get paths from their assigned zones.
   const allPaths = [];
   var bodyZoneId = STATE.zones.length > 0 ? STATE.zones[0].id : 'body';
@@ -2991,25 +2991,32 @@ function consolidatePaths(upToLevel) {
   // Zone-level mode: distribute paths based on zone assignments + physical overrides
   // Physical placement in STATE.paths[1/2] overrides zone badge (same as getDisplayPathsForLevel)
   if (upToLevel === 0) {
-    // Block: silhouette + block-level fills + body-rezoned fills for higher-level zones
+    // Block: body-colored copies of ALL fills (universal coverage), then block-zone fills on top.
+    // Two passes: first lay down body-colored copies of every fill for hole-free coverage,
+    // then render block-zone fills with their actual zone colors on top.
+    var blockColoredPaths = [];
     for (var lvl = 0; lvl < 3; lvl++) {
       for (const p of STATE.paths[lvl]) {
+        if (p.type !== 'fill') continue;
+        let d = p.d.trim();
+        if (!d.endsWith('Z') && !d.endsWith('z')) d += ' Z';
+        var obj = { d: d, type: 'fill', zone: bodyZoneId };
+        if (p.silhouette && p.fillRule) obj.fillRule = p.fillRule;
+        allPaths.push(obj);
+      }
+    }
+    // Second pass: block-zone fills and strokes with their actual colors
+    for (var lvl = 0; lvl < 3; lvl++) {
+      for (const p of STATE.paths[lvl]) {
+        if (p.silhouette) continue;
         var pZoneLevel = lvl > 0 ? lvl : (zoneLevels[p.zone] !== undefined ? zoneLevels[p.zone] : 0);
-        if (p.silhouette) {
-          // Silhouette always in block
-          var obj = { d: p.d, type: 'fill', zone: bodyZoneId };
-          if (p.fillRule) obj.fillRule = p.fillRule;
-          allPaths.push(obj);
-        } else if (pZoneLevel === 0 && p.type === 'fill') {
+        if (pZoneLevel !== 0) continue;
+        if (p.type === 'fill') {
           let d = p.d.trim();
           if (!d.endsWith('Z') && !d.endsWith('z')) d += ' Z';
           allPaths.push({ d: d, type: 'fill', zone: p.zone });
-        } else if (pZoneLevel === 0 && p.type === 'stroke') {
+        } else if (p.type === 'stroke') {
           allPaths.push({ d: p.d, type: 'stroke', zone: p.zone, strokeWidth: p.strokeWidth || 2 });
-        } else if (lvl === 0 && pZoneLevel > 0 && p.type === 'fill') {
-          let d = p.d.trim();
-          if (!d.endsWith('Z') && !d.endsWith('z')) d += ' Z';
-          allPaths.push({ d: d, type: 'fill', zone: bodyZoneId });
         }
       }
     }
