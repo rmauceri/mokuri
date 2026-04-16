@@ -2459,6 +2459,12 @@ function buildStateFromSvgZones(zones, sourceW, sourceH) {
   }
 
   // Second pass: collect all paths with subpath splitting (skip silhouette source)
+  // Also filter edge-trace artifacts: very thin lines spanning most of the canvas
+  // (common ImageTracer artifact from PNG border edges)
+  const vbW = STATE.viewBoxW, vbH = STATE.viewBoxH;
+  const THIN_PX = 3;
+  const SPAN_RATIO = 0.6;
+  var edgeTraceCount = 0;
   const allPaths = [];
   for (const zone of zones) {
     if (!zone.zoneId) continue;
@@ -2469,10 +2475,24 @@ function buildStateFromSvgZones(zones, sourceW, sourceH) {
       var subs = splitImportSubpaths(scaledD);
       for (var si = 0; si < subs.length; si++) {
         var area = estimatePathBBox(subs[si]);
+        // Filter edge-trace artifacts: thin lines spanning most of canvas
+        var nums = subs[si].match(/[-+]?(?:\d+\.?\d*|\.\d+)/g);
+        if (nums && nums.length >= 4) {
+          var xs = [], ys = [];
+          for (var ni = 0; ni < nums.length - 1; ni += 2) { xs.push(+nums[ni]); ys.push(+nums[ni+1]); }
+          var pw = Math.max(...xs) - Math.min(...xs);
+          var ph = Math.max(...ys) - Math.min(...ys);
+          if ((ph < THIN_PX && pw > vbW * SPAN_RATIO) ||
+              (pw < THIN_PX && ph > vbH * SPAN_RATIO)) {
+            edgeTraceCount++;
+            continue;
+          }
+        }
         allPaths.push({ d: subs[si], area: area, zone: zone.zoneId });
       }
     }
   }
+  if (edgeTraceCount > 0) console.log('[Forge] Filtered ' + edgeTraceCount + ' edge-trace artifact(s) on import');
 
   allPaths.sort((a, b) => b.area - a.area);
 
@@ -3008,10 +3028,16 @@ function cleanEdgePaths() {
   var marginPct = parseInt($('clean-margin').value) || 5;
   var margin = marginPct / 100;
   var threshold = parseInt($('clean-threshold').value) || 100;
+  var vbW = STATE.viewBoxW, vbH = STATE.viewBoxH;
   const displayPaths = getDisplayPathsForLevel(STATE.activeLevel);
   const toDelete = displayPaths.map((p, i) => i).filter(i => {
     var bb = getPathBBox(displayPaths[i].d);
-    return bb.area < threshold && isEdgePath(bb, margin);
+    // Original: small paths near edge
+    if (bb.area < threshold && isEdgePath(bb, margin)) return true;
+    // New: thin lines spanning most of canvas (edge-trace artifacts)
+    if (bb.h < 3 && bb.w > vbW * 0.6) return true;
+    if (bb.w < 3 && bb.h > vbH * 0.6) return true;
+    return false;
   });
   if (toDelete.length === 0) return;
   pushUndo('deletePath');
