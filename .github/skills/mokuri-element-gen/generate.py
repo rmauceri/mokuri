@@ -140,13 +140,13 @@ def build_prompt(description: str, colors: list[str] | None = None,
 LOW_BALANCE_THRESHOLD = 1.00  # USD — warn if below this
 
 def check_balance() -> dict | None:
-    """Query fal.ai account balance. Returns {'balance': float, 'currency': str} or None on error."""
-    fal_key = os.environ.get("FAL_KEY")
+    """Query fal.ai account balance. Uses FAL_ADMIN key if available, falls back to FAL_KEY."""
+    fal_key = os.environ.get("FAL_ADMIN") or os.environ.get("FAL_KEY")
     if not fal_key:
         return None
     try:
         resp = requests.get(
-            "https://api.fal.ai/v1/account/billing",
+            "https://api.fal.ai/v1/account/billing?expand=credits",
             headers={"Authorization": f"Key {fal_key}"},
             timeout=10,
         )
