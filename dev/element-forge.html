@@ -1191,20 +1191,119 @@ const $ = id => document.getElementById(id);
 const svg = $('forge-svg');
 const canvasArea = $('canvas-area');
 
-// ── Library ──
-const LIBRARY_KEY = 'mokuri-forge-library';
+// ── Library (IndexedDB) ──
+const IDB_NAME = 'mokuri-forge';
+const IDB_VERSION = 1;
+const IDB_STORE_ELEMENTS = 'elements';
+const IDB_STORE_META = 'meta';
+const LIBRARY_KEY = 'mokuri-forge-library'; // legacy localStorage key for migration
 var _library = { packName: 'MyCustomElements', activeId: null, elements: [] };
+var _idb = null; // IndexedDB database handle
 
-function loadLibrary() {
+function _openIDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(IDB_NAME, IDB_VERSION);
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(IDB_STORE_ELEMENTS)) {
+        db.createObjectStore(IDB_STORE_ELEMENTS, { keyPath: '_id' });
+      }
+      if (!db.objectStoreNames.contains(IDB_STORE_META)) {
+        db.createObjectStore(IDB_STORE_META, { keyPath: 'key' });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function _idbGetAll(store) {
+  return new Promise((resolve, reject) => {
+    const tx = _idb.transaction(store, 'readonly');
+    const req = tx.objectStore(store).getAll();
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function _idbGet(store, key) {
+  return new Promise((resolve, reject) => {
+    const tx = _idb.transaction(store, 'readonly');
+    const req = tx.objectStore(store).get(key);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function _idbPut(store, value) {
+  return new Promise((resolve, reject) => {
+    const tx = _idb.transaction(store, 'readwrite');
+    const req = tx.objectStore(store).put(value);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function _idbDelete(store, key) {
+  return new Promise((resolve, reject) => {
+    const tx = _idb.transaction(store, 'readwrite');
+    const req = tx.objectStore(store).delete(key);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function _migrateFromLocalStorage() {
   try {
     const raw = localStorage.getItem(LIBRARY_KEY);
-    if (raw) _library = JSON.parse(raw);
-  } catch(e) {}
+    if (!raw) return false;
+    const legacy = JSON.parse(raw);
+    if (!Array.isArray(legacy.elements) || legacy.elements.length === 0) return false;
+
+    // Write each element as its own IndexedDB record
+    const tx = _idb.transaction([IDB_STORE_ELEMENTS, IDB_STORE_META], 'readwrite');
+    const elStore = tx.objectStore(IDB_STORE_ELEMENTS);
+    const metaStore = tx.objectStore(IDB_STORE_META);
+    legacy.elements.forEach(el => elStore.put(el));
+    metaStore.put({ key: 'packName', value: legacy.packName || 'MyCustomElements' });
+    metaStore.put({ key: 'activeId', value: legacy.activeId || null });
+
+    await new Promise((resolve, reject) => {
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+
+    // Remove legacy data
+    localStorage.removeItem(LIBRARY_KEY);
+    console.log('[Forge] Migrated ' + legacy.elements.length + ' elements from localStorage to IndexedDB');
+    return true;
+  } catch(e) {
+    console.warn('[Forge] Migration failed:', e);
+    return false;
+  }
+}
+
+async function loadLibrary() {
+  try {
+    _idb = await _openIDB();
+    await _migrateFromLocalStorage();
+
+    const elements = await _idbGetAll(IDB_STORE_ELEMENTS);
+    const packMeta = await _idbGet(IDB_STORE_META, 'packName');
+    const activeMeta = await _idbGet(IDB_STORE_META, 'activeId');
+
+    _library.elements = elements || [];
+    _library.packName = (packMeta && packMeta.value) || 'MyCustomElements';
+    _library.activeId = (activeMeta && activeMeta.value) || null;
+  } catch(e) {
+    console.warn('[Forge] IndexedDB load failed, starting fresh:', e);
+    _library = { packName: 'MyCustomElements', activeId: null, elements: [] };
+  }
+
   if (!Array.isArray(_library.elements)) _library.elements = [];
   if (!_library.packName) _library.packName = 'MyCustomElements';
 
   if (_library.elements.length === 0) {
-    // Empty library — create a default blank element (do not save current, nothing to save)
     _createAndActivateBlankEntry();
   } else {
     const active = _library.elements.find(e => e._id === _library.activeId) || _library.elements[0];
@@ -1214,23 +1313,44 @@ function loadLibrary() {
 }
 
 function saveLibrary() {
-  try {
-    localStorage.setItem(LIBRARY_KEY, JSON.stringify(_library));
-  } catch(e) {
+  if (!_idb) return;
+  // Save the active element record and metadata
+  const activeEntry = _library.elements.find(e => e._id === _library.activeId);
+  const ops = [];
+  if (activeEntry) ops.push(_idbPut(IDB_STORE_ELEMENTS, activeEntry));
+  ops.push(_idbPut(IDB_STORE_META, { key: 'packName', value: _library.packName }));
+  ops.push(_idbPut(IDB_STORE_META, { key: 'activeId', value: _library.activeId }));
+  Promise.all(ops).then(() => {
+    updateLibrarySizeIndicator();
+  }).catch(e => {
     showToast('Library save failed: ' + e.message, 3000);
-  }
-  updateLibrarySizeIndicator();
+  });
+}
+
+function _idbSaveElement(entry) {
+  if (!_idb) return Promise.resolve();
+  return _idbPut(IDB_STORE_ELEMENTS, entry);
+}
+
+function _idbDeleteElement(id) {
+  if (!_idb) return Promise.resolve();
+  return _idbDelete(IDB_STORE_ELEMENTS, id);
 }
 
 function updateLibrarySizeIndicator() {
+  if (!_idb) return;
+  // Estimate total size from in-memory library
   try {
-    const raw = localStorage.getItem(LIBRARY_KEY) || '';
-    const kb = Math.round(raw.length / 1024);
-    const pct = Math.round(kb / (5 * 1024) * 100);
+    let totalBytes = 0;
+    _library.elements.forEach(el => {
+      totalBytes += JSON.stringify(el).length;
+    });
+    const kb = Math.round(totalBytes / 1024);
+    const mb = (totalBytes / (1024 * 1024)).toFixed(1);
     const el = $('lib-size-indicator');
     if (el) {
-      el.textContent = kb + ' KB / 5 MB';
-      el.style.color = pct > 80 ? '#c23b22' : 'var(--muted)';
+      el.textContent = _library.elements.length + ' elements, ' + (kb > 1024 ? mb + ' MB' : kb + ' KB');
+      el.style.color = 'var(--muted)';
     }
   } catch(e) {}
 }
@@ -1380,6 +1500,7 @@ function deleteLibraryElement(id) {
   const name = (entry && entry.meta.name) ? entry.meta.name : 'this element';
   if (!confirm(`Delete "${name}" from the library?\nThis cannot be undone.`)) return;
   _library.elements = _library.elements.filter(e => e._id !== id);
+  _idbDeleteElement(id);
   if (_library.activeId === id) {
     if (_library.elements.length > 0) {
       _library.activeId = _library.elements[0]._id;
@@ -1546,8 +1667,8 @@ function exportPack() {
 }
 
 // ── Initialize ──
-function init() {
-  loadLibrary();
+async function init() {
+  await loadLibrary();
   syncMetadataFields();
   setupViewBox();
   renderZoneChips();
