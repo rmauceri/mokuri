@@ -134,6 +134,67 @@ def build_prompt(description: str, colors: list[str] | None = None,
 
 
 # ---------------------------------------------------------------------------
+# Balance check
+# ---------------------------------------------------------------------------
+
+LOW_BALANCE_THRESHOLD = 1.00  # USD — warn if below this
+
+def check_balance() -> dict | None:
+    """Query fal.ai account balance. Returns {'balance': float, 'currency': str} or None on error."""
+    fal_key = os.environ.get("FAL_KEY")
+    if not fal_key:
+        return None
+    try:
+        resp = requests.get(
+            "https://api.fal.ai/v1/account/billing",
+            headers={"Authorization": f"Key {fal_key}"},
+            timeout=10,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        # Navigate the response — structure may vary
+        if "credits" in data:
+            return {
+                "balance": float(data["credits"].get("current_balance", 0)),
+                "currency": data["credits"].get("currency", "USD"),
+            }
+        # Fallback: try top-level balance field
+        if "balance" in data:
+            return {"balance": float(data["balance"]), "currency": "USD"}
+        return {"balance": 0, "currency": "USD", "raw": data}
+    except requests.exceptions.HTTPError as e:
+        if e.response is not None and e.response.status_code == 403:
+            return {"error": "forbidden"}
+        return None
+    except Exception:
+        return None
+
+
+def print_balance():
+    """Print the current fal.ai account balance."""
+    info = check_balance()
+    if info is None:
+        print("Could not retrieve balance. Is FAL_KEY set?")
+        return
+    if info.get("error") == "forbidden":
+        print("\n  fal.ai Balance: requires admin API key")
+        print("  Your key can generate images but can't query billing.")
+        print("  Check balance at: https://fal.ai/dashboard/billing")
+        print()
+        return
+    bal = info["balance"]
+    cur = info["currency"]
+    print(f"\n  fal.ai Balance: ${bal:.2f} {cur}")
+    if bal < LOW_BALANCE_THRESHOLD:
+        print(f"  ⚠ Low balance — generation may fail")
+    else:
+        print(f"  ✓ Sufficient for image generation")
+    if "raw" in info:
+        print(f"  (Raw response: {info['raw']})")
+    print()
+
+
+# ---------------------------------------------------------------------------
 # Generation
 # ---------------------------------------------------------------------------
 
@@ -171,7 +232,8 @@ def main():
     parser = argparse.ArgumentParser(
         description="Generate a Mokuri element PNG from a short description",
     )
-    parser.add_argument("description", help="Short description of the element (e.g. 'tortoise crawling')")
+    parser.add_argument("description", nargs="?", default=None,
+                        help="Short description of the element (e.g. 'tortoise crawling')")
     parser.add_argument("--orientation", choices=list(ORIENTATIONS.keys()),
                         default="landscape",
                         help="Image orientation (default: landscape)")
@@ -181,8 +243,23 @@ def main():
                         help="Output file path (default: dev/generated/skill/<slug>.png)")
     parser.add_argument("--dry-run", action="store_true",
                         help="Print the full prompt without calling the API")
+    parser.add_argument("--balance", action="store_true",
+                        help="Check fal.ai account balance and exit")
 
     args = parser.parse_args()
+
+    # Balance check mode
+    if args.balance:
+        if not os.environ.get("FAL_KEY"):
+            print("ERROR: FAL_KEY not set.")
+            sys.exit(1)
+        print_balance()
+        return
+
+    # Require description for generation
+    if not args.description:
+        parser.print_help()
+        sys.exit(1)
 
     # Parse colors if provided
     colors = None
@@ -224,6 +301,11 @@ def main():
         print(f"  Create {PROJECT_ROOT / 'dev' / '.env'} with: FAL_KEY=your_key_here")
         print("  Or set the environment variable directly.")
         sys.exit(1)
+
+    # Pre-generation balance check (silent if billing API unavailable)
+    bal_info = check_balance()
+    if bal_info and "balance" in bal_info and bal_info["balance"] < LOW_BALANCE_THRESHOLD:
+        print(f"\n  ⚠ Low fal.ai balance: ${bal_info['balance']:.2f} — generation may fail")
 
     # Generate
     print(f"\nMokuri Element Generator")

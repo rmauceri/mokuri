@@ -18,6 +18,7 @@ The Forge converts these PNGs into multi-zone, multi-level SVG elements for the 
 - User asks to "generate", "create", or "make" a new Mokuri element
 - User describes a subject they want as a printable element (animal, plant, figure, object, scene piece)
 - User wants to experiment with element ideas before committing to the Forge pipeline
+- User asks about fal.ai budget, balance, credits, or remaining generation capacity
 
 ## How to generate an element
 
@@ -69,6 +70,17 @@ Tell the user:
 2. Import the generated PNG using the "Import PNG" button
 3. The Forge will auto-detect zones from the flat color regions
 4. Assign zones, set carve levels, and export to use in Mokuri
+
+## Checking balance
+
+When the user asks about fal.ai budget, balance, credits, or remaining generation capacity, run:
+
+```shell
+python .github/skills/mokuri-element-gen/generate.py --balance
+```
+
+This queries the fal.ai billing API and reports the current credit balance.
+The script also automatically warns before each generation if the balance is low (< $1.00).
 
 ### Requirements
 
