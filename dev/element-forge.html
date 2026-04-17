@@ -793,6 +793,14 @@ button.sm { padding: 3px 8px; font-size: 11px; }
           <span id="import-status" style="font-size:11px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:block; max-width:200px;"></span>
         </div>
 
+        <div class="panel-section">
+          <div class="subtle-label">Backup / Restore</div>
+          <div style="display:flex; gap:6px;">
+            <button class="sm" id="backup-lib-btn" title="Back up entire library to JSON file" style="flex:1;">💾 Backup</button>
+            <button class="sm" id="restore-lib-btn" title="Restore library from JSON backup" style="flex:1;">📂 Restore</button>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -1596,6 +1604,218 @@ function renderLibraryPanel() {
   const packInput = $('lib-pack-name');
   if (packInput && packInput.value !== (_library.packName || '')) packInput.value = _library.packName || '';
   updateLibrarySizeIndicator();
+}
+
+// ── Library Backup / Restore ──
+
+function backupLibrary() {
+  if (_library.elements.length === 0) { showToast('No elements to back up'); return; }
+  saveActiveToLibrary();
+  const backup = {
+    version: 1,
+    packName: _library.packName || 'MyCustomElements',
+    exportedAt: new Date().toISOString(),
+    elements: _library.elements.map(e => ({
+      meta: e.meta,
+      zones: e.zones,
+      paths: e.paths,
+      viewBoxX: e.viewBoxX, viewBoxY: e.viewBoxY,
+      viewBoxW: e.viewBoxW, viewBoxH: e.viewBoxH,
+      thumbnail: e.thumbnail,
+    })),
+  };
+  const json = JSON.stringify(backup);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (backup.packName.toLowerCase().replace(/[^a-z0-9_-]/g, '-') || 'forge') + '-backup.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Backed up ' + backup.elements.length + ' element' + (backup.elements.length !== 1 ? 's' : ''));
+}
+
+function restoreLibrary() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json,application/json';
+  input.addEventListener('change', () => {
+    if (!input.files || !input.files[0]) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const backup = JSON.parse(reader.result);
+        if (!backup.elements || !Array.isArray(backup.elements)) {
+          showToast('Invalid backup file'); return;
+        }
+        showRestoreDialog(backup);
+      } catch(e) {
+        showToast('Failed to parse backup: ' + e.message);
+      }
+    };
+    reader.readAsText(input.files[0]);
+  });
+  input.click();
+}
+
+function showRestoreDialog(backup) {
+  // Check for duplicates by elementId
+  const existingIds = new Set(_library.elements.map(e => e.meta.elementId).filter(Boolean));
+  const incoming = backup.elements;
+  const dupes = incoming.filter(e => existingIds.has(e.meta.elementId));
+  const fresh = incoming.filter(e => !existingIds.has(e.meta.elementId));
+
+  const dlg = document.createElement('dialog');
+  dlg.style.cssText = 'border:1px solid var(--border); border-radius:var(--radius); padding:20px; background:var(--panel); max-width:400px; width:90vw;';
+  dlg.innerHTML = `
+    <h3 style="margin:0 0 12px;">Restore Library</h3>
+    <div style="font-size:12px; margin-bottom:12px; color:var(--muted);">
+      Backup: <strong>${backup.packName || 'Unknown'}</strong><br>
+      ${incoming.length} element${incoming.length !== 1 ? 's' : ''} in backup,
+      ${dupes.length} duplicate${dupes.length !== 1 ? 's' : ''} found
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="display:block; margin-bottom:6px; font-size:12px; font-weight:600;">Mode</label>
+      <label style="display:block; font-size:12px; margin-bottom:4px;">
+        <input type="radio" name="restore-mode" value="append" checked> Append to current library
+      </label>
+      <label style="display:block; font-size:12px; margin-bottom:4px;">
+        <input type="radio" name="restore-mode" value="replace"> Replace current library
+      </label>
+    </div>
+    <div id="restore-dupe-section" style="margin-bottom:12px;${dupes.length === 0 ? ' display:none;' : ''}">
+      <label style="display:block; margin-bottom:6px; font-size:12px; font-weight:600;">Duplicate handling (append only)</label>
+      <label style="display:block; font-size:12px; margin-bottom:4px;">
+        <input type="radio" name="restore-dupes" value="skip" checked> Skip duplicates (keep existing)
+      </label>
+      <label style="display:block; font-size:12px; margin-bottom:4px;">
+        <input type="radio" name="restore-dupes" value="replace"> Replace existing with backup
+      </label>
+      <label style="display:block; font-size:12px; margin-bottom:4px;">
+        <input type="radio" name="restore-dupes" value="rename"> Import as copy (rename)
+      </label>
+    </div>
+    <div style="display:flex; gap:8px; justify-content:flex-end;">
+      <button id="restore-cancel" class="sm">Cancel</button>
+      <button id="restore-confirm" class="sm primary">Restore</button>
+    </div>
+  `;
+  document.body.appendChild(dlg);
+
+  // Toggle dupe section visibility based on mode
+  dlg.querySelectorAll('input[name="restore-mode"]').forEach(r => {
+    r.addEventListener('change', () => {
+      const sec = dlg.querySelector('#restore-dupe-section');
+      if (sec) sec.style.display = (r.value === 'replace' ? 'none' : (dupes.length > 0 ? '' : 'none'));
+    });
+  });
+
+  dlg.querySelector('#restore-cancel').addEventListener('click', () => { dlg.close(); dlg.remove(); });
+  dlg.querySelector('#restore-confirm').addEventListener('click', () => {
+    const mode = dlg.querySelector('input[name="restore-mode"]:checked').value;
+    const dupeMode = dlg.querySelector('input[name="restore-dupes"]:checked').value;
+    dlg.close();
+    dlg.remove();
+    executeRestore(backup, mode, dupeMode);
+  });
+
+  dlg.showModal();
+}
+
+async function executeRestore(backup, mode, dupeMode) {
+  const incoming = backup.elements;
+
+  if (mode === 'replace') {
+    // Delete all existing elements from IDB
+    for (const el of _library.elements) {
+      await _idbDeleteElement(el._id);
+    }
+    _library.elements = [];
+    _library.activeId = null;
+  }
+
+  const existingMap = {};
+  _library.elements.forEach(e => { if (e.meta.elementId) existingMap[e.meta.elementId] = e; });
+
+  let imported = 0, skipped = 0, replaced = 0;
+
+  for (const el of incoming) {
+    const eid = el.meta.elementId;
+    const existing = existingMap[eid];
+
+    if (existing && mode === 'append') {
+      if (dupeMode === 'skip') { skipped++; continue; }
+      if (dupeMode === 'replace') {
+        // Overwrite existing entry
+        Object.assign(existing, {
+          meta: el.meta, zones: el.zones, paths: el.paths,
+          viewBoxX: el.viewBoxX, viewBoxY: el.viewBoxY,
+          viewBoxW: el.viewBoxW, viewBoxH: el.viewBoxH,
+          thumbnail: el.thumbnail, savedAt: Date.now(),
+        });
+        await _idbSaveElement(existing);
+        replaced++;
+        continue;
+      }
+      if (dupeMode === 'rename') {
+        // Rename the incoming element
+        let suffix = 2;
+        let newId = eid + '-' + suffix;
+        while (existingMap[newId]) { suffix++; newId = eid + '-' + suffix; }
+        el.meta = { ...el.meta, elementId: newId, name: (el.meta.name || '') + ' (' + suffix + ')' };
+      }
+    }
+
+    // Create a new library entry
+    const newId = 'el-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+    const entry = {
+      _id: newId,
+      meta: el.meta,
+      zones: el.zones,
+      paths: el.paths,
+      viewBoxX: el.viewBoxX, viewBoxY: el.viewBoxY,
+      viewBoxW: el.viewBoxW, viewBoxH: el.viewBoxH,
+      thumbnail: el.thumbnail,
+      savedAt: Date.now(),
+    };
+    _library.elements.push(entry);
+    existingMap[entry.meta.elementId] = entry;
+    await _idbSaveElement(entry);
+    imported++;
+  }
+
+  // Activate first element if none active
+  if (!_library.activeId && _library.elements.length > 0) {
+    _library.activeId = _library.elements[0]._id;
+  }
+  // Update pack name if replace mode
+  if (mode === 'replace' && backup.packName) {
+    _library.packName = backup.packName;
+  }
+
+  // Persist metadata and refresh
+  saveLibrary();
+  if (_library.activeId) {
+    const active = _library.elements.find(e => e._id === _library.activeId);
+    if (active) {
+      _applyLibraryEntry(active);
+      syncMetadataFields();
+      setupViewBox();
+      renderZoneChips();
+      renderCanvas();
+      updateBudget();
+      updatePreviews();
+    }
+  }
+  renderLibraryPanel();
+
+  const parts = [];
+  if (imported > 0) parts.push(imported + ' imported');
+  if (replaced > 0) parts.push(replaced + ' replaced');
+  if (skipped > 0) parts.push(skipped + ' skipped');
+  showToast('Restore: ' + parts.join(', '));
 }
 
 function exportPack() {
@@ -3839,6 +4059,8 @@ function attachEvents() {
   // Library controls
   $('btn-lib-new').addEventListener('click', () => createLibraryElement());
   $('btn-export-pack').addEventListener('click', exportPack);
+  $('backup-lib-btn').addEventListener('click', backupLibrary);
+  $('restore-lib-btn').addEventListener('click', restoreLibrary);
   $('lib-pack-name').addEventListener('change', (e) => {
     _library.packName = e.target.value.trim() || 'MyCustomElements';
     saveLibrary();
