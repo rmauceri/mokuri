@@ -343,7 +343,7 @@ button.sm { padding: 3px 8px; font-size: 11px; }
 
 /* ── Zone palette slot input ── */
 .zone-slot {
-  width: 26px;
+  width: 38px;
   padding: 1px 3px;
   border: 1px solid var(--border);
   border-radius: 4px;
@@ -3084,7 +3084,8 @@ function buildElementDefinition() {
   if (tags.length) el.tags = tags;
   el.viewBox = `${STATE.viewBoxX || 0} ${STATE.viewBoxY || 0} ${STATE.viewBoxW} ${STATE.viewBoxH}`;
   el.suggestedLayer = $('el-layer').value;
-  el.colorZones = STATE.zones.map(z => ({ id: z.id, defaultPaletteSlot: z.defaultPaletteSlot }));
+  el.colorZones = STATE.zones.map(z => ({ id: z.id, defaultPaletteSlot: z.defaultPaletteSlot }))
+    .sort((a, b) => a.defaultPaletteSlot - b.defaultPaletteSlot);
 
   el.carveLevelMode = 'delta';
   el.carveLevels = LEVEL_NAMES.map((name, i) => ({
