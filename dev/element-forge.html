@@ -378,6 +378,8 @@ button.sm { padding: 3px 8px; font-size: 11px; }
 }
 .library-thumb:hover { border-color: var(--accent); }
 .library-thumb.active { border-color: var(--accent); background: rgba(139,107,74,0.12); }
+.library-thumb.multi-selected { border-color: #4a90d9; background: rgba(74,144,217,0.12); }
+.library-thumb.multi-selected.active { border-color: var(--accent); background: rgba(139,107,74,0.12); }
 
 .library-thumb img {
   width: 100%;
@@ -1174,6 +1176,7 @@ const STATE = {
   drawing: null,        // { points: [{x,y}], ... } during active stroke
   selectedPathIndex: -1, // index within current level's paths
   selectedPathSet: new Set(), // multi-select indices
+  marquee: null, // { startX, startY } during active marquee drag
 
   // Reference image
 
@@ -1205,7 +1208,7 @@ const IDB_VERSION = 1;
 const IDB_STORE_ELEMENTS = 'elements';
 const IDB_STORE_META = 'meta';
 const LIBRARY_KEY = 'mokuri-forge-library'; // legacy localStorage key for migration
-var _library = { packName: 'MyCustomElements', activeId: null, elements: [] };
+var _library = { packName: 'MyCustomElements', activeId: null, elements: [], selectedIds: new Set() };
 var _idb = null; // IndexedDB database handle
 
 function _openIDB() {
@@ -1305,7 +1308,7 @@ async function loadLibrary() {
     _library.activeId = (activeMeta && activeMeta.value) || null;
   } catch(e) {
     console.warn('[Forge] IndexedDB load failed, starting fresh:', e);
-    _library = { packName: 'MyCustomElements', activeId: null, elements: [] };
+    _library = { packName: 'MyCustomElements', activeId: null, elements: [], selectedIds: new Set() };
   }
 
   if (!Array.isArray(_library.elements)) _library.elements = [];
@@ -1508,6 +1511,7 @@ function deleteLibraryElement(id) {
   const name = (entry && entry.meta.name) ? entry.meta.name : 'this element';
   if (!confirm(`Delete "${name}" from the library?\nThis cannot be undone.`)) return;
   _library.elements = _library.elements.filter(e => e._id !== id);
+  _library.selectedIds.delete(id);
   _idbDeleteElement(id);
   if (_library.activeId === id) {
     if (_library.elements.length > 0) {
@@ -1595,12 +1599,31 @@ function renderLibraryPanel() {
     tile.appendChild(img);
     tile.appendChild(nm);
     tile.appendChild(del);
-    tile.addEventListener('click', () => loadLibraryElement(entry._id));
+    tile.addEventListener('click', (e) => {
+      if (e.shiftKey) {
+        e.preventDefault();
+        if (_library.selectedIds.has(entry._id)) {
+          _library.selectedIds.delete(entry._id);
+        } else {
+          _library.selectedIds.add(entry._id);
+        }
+        renderLibraryPanel();
+      } else {
+        _library.selectedIds.clear();
+        loadLibraryElement(entry._id);
+      }
+    });
+    if (_library.selectedIds.has(entry._id)) tile.classList.add('multi-selected');
     grid.appendChild(tile);
   });
 
   const countEl = $('lib-element-count');
-  if (countEl) countEl.textContent = _library.elements.length + ' element' + (_library.elements.length !== 1 ? 's' : '');
+  const selCount = _library.selectedIds.size;
+  if (countEl) {
+    let txt = _library.elements.length + ' element' + (_library.elements.length !== 1 ? 's' : '');
+    if (selCount > 0) txt += ' (' + selCount + ' selected)';
+    countEl.textContent = txt;
+  }
   const packInput = $('lib-pack-name');
   if (packInput && packInput.value !== (_library.packName || '')) packInput.value = _library.packName || '';
   updateLibrarySizeIndicator();
@@ -1829,7 +1852,10 @@ function exportPack() {
   const savedActiveId = _library.activeId;
 
   const results = [];
+  const exportSet = _library.selectedIds.size > 0 ? _library.selectedIds : null;
+  const totalCount = _library.elements.length;
   for (const entry of _library.elements) {
+    if (exportSet && !exportSet.has(entry._id)) continue;
     const total = (entry.paths[0] || []).length + (entry.paths[1] || []).length + (entry.paths[2] || []).length;
     if (total === 0) continue;
 
@@ -1883,7 +1909,7 @@ function exportPack() {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  showToast('Exported ' + results.length + ' element' + (results.length !== 1 ? 's' : '') + ' → ' + fileName);
+  showToast('Exported ' + results.length + (exportSet ? ' of ' + totalCount : '') + ' element' + (results.length !== 1 ? 's' : '') + ' → ' + fileName);
 }
 
 // ── Initialize ──
@@ -4099,14 +4125,33 @@ function attachEvents() {
       canvasArea.classList.add('drawing');
       beginStroke(e);
     } else if (STATE.tool === 'select') {
-      // Clicking empty space: start potential pan (drag = pan, no drag = deselect)
       const target = e.target;
       if (target === svg || target.classList.contains('paper-bg')) {
-        STATE.panning = true;
-        STATE.panIsClick = true;  // will be cleared if drag exceeds threshold
-        STATE.panStart = { x: e.clientX, y: e.clientY, vb: { ...STATE.viewBox } };
-        canvasArea.style.cursor = 'grabbing';
-        canvasArea.setPointerCapture(e.pointerId);
+        if (e.ctrlKey) {
+          // Marquee select
+          const pt = svgPoint(e);
+          STATE.marquee = { startX: pt.x, startY: pt.y };
+          const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          rect.id = 'marquee-rect';
+          rect.setAttribute('x', pt.x);
+          rect.setAttribute('y', pt.y);
+          rect.setAttribute('width', 0);
+          rect.setAttribute('height', 0);
+          rect.setAttribute('fill', 'rgba(74,144,217,0.08)');
+          rect.setAttribute('stroke', '#4a90d9');
+          rect.setAttribute('stroke-width', 0.5);
+          rect.setAttribute('stroke-dasharray', '3,2');
+          rect.setAttribute('pointer-events', 'none');
+          svg.appendChild(rect);
+          canvasArea.setPointerCapture(e.pointerId);
+        } else {
+          // Pan / click-to-deselect
+          STATE.panning = true;
+          STATE.panIsClick = true;
+          STATE.panStart = { x: e.clientX, y: e.clientY, vb: { ...STATE.viewBox } };
+          canvasArea.style.cursor = 'grabbing';
+          canvasArea.setPointerCapture(e.pointerId);
+        }
       }
     } else if (STATE.tool === 'erase') {
       // Check if clicking a path
@@ -4150,6 +4195,21 @@ function attachEvents() {
       return;
     }
 
+    if (STATE.marquee) {
+      const rect = svg.querySelector('#marquee-rect');
+      if (rect) {
+        const mx = Math.min(STATE.marquee.startX, pt.x);
+        const my = Math.min(STATE.marquee.startY, pt.y);
+        const mw = Math.abs(pt.x - STATE.marquee.startX);
+        const mh = Math.abs(pt.y - STATE.marquee.startY);
+        rect.setAttribute('x', mx);
+        rect.setAttribute('y', my);
+        rect.setAttribute('width', mw);
+        rect.setAttribute('height', mh);
+      }
+      return;
+    }
+
     if (STATE.drawing) {
       moveStroke(e);
     }
@@ -4158,6 +4218,37 @@ function attachEvents() {
   canvasArea.addEventListener('pointerup', e => {
     e.preventDefault();
     canvasArea.classList.remove('drawing');
+
+    if (STATE.marquee) {
+      const pt = svgPoint(e);
+      const mx = Math.min(STATE.marquee.startX, pt.x);
+      const my = Math.min(STATE.marquee.startY, pt.y);
+      const mw = Math.abs(pt.x - STATE.marquee.startX);
+      const mh = Math.abs(pt.y - STATE.marquee.startY);
+      STATE.marquee = null;
+      const marqueeEl = svg.querySelector('#marquee-rect');
+      if (marqueeEl) marqueeEl.remove();
+
+      if (mw > 1 && mh > 1) {
+        // Find paths whose bounding box intersects the marquee
+        if (!e.shiftKey) STATE.selectedPathSet.clear();
+        const pathEls = svg.querySelectorAll('[data-path-index]');
+        pathEls.forEach(el => {
+          const bbox = el.getBBox();
+          const intersects = bbox.x < mx + mw && bbox.x + bbox.width > mx &&
+                             bbox.y < my + mh && bbox.y + bbox.height > my;
+          if (intersects) {
+            const idx = parseInt(el.dataset.pathIndex);
+            STATE.selectedPathSet.add(idx);
+          }
+        });
+        STATE.selectedPathIndex = STATE.selectedPathSet.size > 0
+          ? Array.from(STATE.selectedPathSet).pop() : -1;
+        renderCanvas();
+        updatePathInspector();
+      }
+      return;
+    }
 
     if (STATE.panning) {
       const wasClick = STATE.panIsClick;
