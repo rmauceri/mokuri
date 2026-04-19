@@ -7448,6 +7448,11 @@ function buildElementPicker() {
   const sourceElements = devStyles ? MOKURI_ELEMENTS : MOKURI_ELEMENTS.filter(d => !d.pack || d.pack === 'core');
   const { featured, rest } = getAffinityElements(STATE.activeStyle, sourceElements);
 
+  // Get active pack for category ordering
+  const activePackId = STATE.activeStyle || 'core';
+  const activePack = typeof getPackById === 'function' ? getPackById(activePackId) : null;
+  const categoryOrder = (activePack && activePack.categoryOrder) || [];
+
   // Render a set of elements grouped by category
   function renderElementGroup(elements, container) {
     const cats = {};
@@ -7456,8 +7461,17 @@ function buildElementPicker() {
       cats[def.category].push(def);
     });
 
-    // Sort categories by element count descending, stable tiebreak by name
-    const orderedCats = Object.entries(cats).sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]));
+    // Sort: pack categoryOrder first (in declared order), then remaining by count desc
+    const orderedCats = Object.entries(cats).sort((a, b) => {
+      const aIdx = categoryOrder.indexOf(a[0]);
+      const bIdx = categoryOrder.indexOf(b[0]);
+      const aInOrder = aIdx >= 0;
+      const bInOrder = bIdx >= 0;
+      if (aInOrder && bInOrder) return aIdx - bIdx;
+      if (aInOrder) return -1;
+      if (bInOrder) return 1;
+      return b[1].length - a[1].length || a[0].localeCompare(b[0]);
+    });
 
     orderedCats.forEach(([cat, defs]) => {
       const section = document.createElement('div');

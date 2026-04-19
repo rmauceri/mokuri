@@ -287,7 +287,7 @@ const MOKURI_CORE_ELEMENTS = [
   {
     id: 'asanoha-star',
     name: 'Asanoha Star',
-    category: 'objects & patterns',
+    category: 'objects',
     pack: 'core',
     tags: ['decorative', 'geometric', 'minimal'],
     viewBox: '0 0 120 120',
@@ -370,7 +370,7 @@ const MOKURI_CORE_ELEMENTS = [
   {
     id: 'seigaiha-tile',
     name: 'Seigaiha Wave Tile',
-    category: 'objects & patterns',
+    category: 'objects',
     pack: 'core',
     tags: ['decorative', 'geometric', 'water'],
     viewBox: '0 0 120 60',
@@ -456,7 +456,7 @@ const MOKURI_CORE_ELEMENTS = [
   {
     id: 'sensu-fan',
     name: 'Folding Fan',
-    category: 'objects & patterns',
+    category: 'objects',
     pack: 'core',
     tags: ['decorative', 'structural', 'intimate'],
     viewBox: '0 0 140 80',
@@ -540,7 +540,7 @@ const MOKURI_CORE_ELEMENTS = [
   {
     id: 'paper-lantern',
     name: 'Paper Lantern',
-    category: 'objects & patterns',
+    category: 'objects',
     pack: 'core',
     tags: ['structural', 'atmospheric', 'intimate'],
     viewBox: '0 0 100 140',
@@ -622,7 +622,7 @@ const MOKURI_CORE_ELEMENTS = [
   {
     id: 'lantern-kasuga-premium',
     name: 'Kasuga Grand Lantern',
-    category: 'objects & patterns',
+    category: 'objects',
     pack: 'core',
     tags: ['structural', 'landscape'],
     viewBox: '0 0 160 280',
@@ -674,7 +674,7 @@ const MOKURI_CORE_ELEMENTS = [
   {
     id: 'lantern-yukimi-premium',
     name: 'Yukimi Lantern',
-    category: 'objects & patterns',
+    category: 'objects',
     pack: 'core',
     tags: ['structural', 'landscape', 'seasonal-winter'],
     viewBox: '0 0 240 200',
@@ -724,7 +724,7 @@ const MOKURI_CORE_ELEMENTS = [
   {
     id: 'lantern-oribe-premium',
     name: 'Oribe Lantern',
-    category: 'objects & patterns',
+    category: 'objects',
     pack: 'core',
     tags: ['structural', 'landscape', 'minimal'],
     viewBox: '0 0 140 240',
@@ -773,7 +773,7 @@ const MOKURI_CORE_ELEMENTS = [
   {
     id: 'fishing-boat',
     name: 'Fishing Boat',
-    category: 'objects & patterns',
+    category: 'objects',
     pack: 'core',
     tags: ['structural', 'water', 'landscape'],
     viewBox: '0 0 180 100',
@@ -903,7 +903,7 @@ const MOKURI_CORE_ELEMENTS = [
   {
     id: 'woodgrain-knot',
     name: 'Woodgrain Knot',
-    category: 'objects & patterns',
+    category: 'objects',
     pack: 'core',
     tags: ['decorative', 'organic'],
     viewBox: '0 0 120 80',
@@ -986,7 +986,7 @@ const MOKURI_CORE_ELEMENTS = [
   {
     id: 'gouge-mark',
     name: 'Gouge Mark',
-    category: 'objects & patterns',
+    category: 'objects',
     pack: 'core',
     tags: ['decorative', 'minimal'],
     viewBox: '0 0 120 40',

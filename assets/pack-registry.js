@@ -81,7 +81,8 @@ function getAffinityElements(packId, allElements) {
   for (const el of allElements) {
     if (packElIds.has(el.id)) {
       ownEls.push(el);
-    } else {
+    } else if (!el.pack || el.pack === 'core' || el.pack === packId) {
+      // Only include core elements and this pack's own — skip other packs' elements
       coreEls.push(el);
     }
   }

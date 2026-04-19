@@ -34,10 +34,12 @@ registerPack({
   description: 'Ikebana-inspired still-life — vessels, refined florals, structural branches',
   affinity: ['flora', 'vessel', 'minimal', 'structural', 'organic', 'intimate'],
   elementIds: [
-    'suiban', 'tsubo', 'hanaire', 'chawan',
-    'kiku', 'tsubaki', 'ran', 'suisen',
-    'ume-branch', 'matsu-branch', 'kenzan'
+    'vessel-suiban', 'vessel-oval', 'vessel-rectangle', 'vessel-bamboo', 'vessel-tsubo',
+    'blossum-kiku', 'blossum-ran', 'blossum-suisen',
+    'branch-ume-crooked', 'matsu-branch-upright',
+    'tsubaki-single', 'tsubaki-cluster'
   ],
+  categoryOrder: ['objects', 'flora'],
   paletteIds: ['seiji', 'shino', 'raku'],
   presetIds: null,
   atmospherePresets: [

@@ -471,7 +471,7 @@ const MOKURI_SCENE_ELEMENTS = [
   {
     id: 'rain-curtain',
     name: 'Rain Curtain',
-    category: 'objects & patterns',
+    category: 'objects',
     pack: 'core',
     tags: ['atmospheric', 'organic', 'landscape'],
     viewBox: '0 0 200 300',
@@ -598,7 +598,7 @@ const MOKURI_SCENE_ELEMENTS = [
   {
     id: 'snow-fall',
     name: 'Snow Fall',
-    category: 'objects & patterns',
+    category: 'objects',
     pack: 'core',
     tags: ['atmospheric', 'seasonal-winter', 'landscape'],
     viewBox: '0 0 200 280',
@@ -696,7 +696,7 @@ const MOKURI_SCENE_ELEMENTS = [
   {
     id: 'cloud-wisp',
     name: 'Cloud Wisp',
-    category: 'objects & patterns',
+    category: 'objects',
     pack: 'core',
     tags: ['atmospheric', 'organic', 'minimal'],
     viewBox: '0 0 260 80',
