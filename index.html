@@ -7681,6 +7681,12 @@ function buildElementThumb(def) {
 
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('viewBox', def.viewBox);
+  // Scale stroke-width so fine details remain visible at thumbnail size
+  // A 280-wide viewBox shown at ~43px display needs ~3x heavier strokes
+  const vbParts = def.viewBox.split(/\s+/).map(Number);
+  const vbSpan = Math.max(vbParts[2] || 100, vbParts[3] || 100);
+  const thumbStroke = Math.max(0.8, vbSpan / 120);
+  const thumbStrokeDetail = Math.max(1.2, vbSpan / 80);
   // Draw block silhouette in paper color (white background for detail view)
   getElementBlockPaths(def).forEach(p => {
     if (p.type !== 'fill') return;
@@ -7688,7 +7694,7 @@ function buildElementThumb(def) {
     path.setAttribute('d', p.d);
     path.setAttribute('fill', PAPER_COLOR);
     path.setAttribute('stroke', isHanko ? '#8b1a1a' : CARVED_STROKE);
-    path.setAttribute('stroke-width', 0.8);
+    path.setAttribute('stroke-width', thumbStroke);
     svg.appendChild(path);
   });
   const detailPaths = getElementVisiblePaths(def, def.carveLevels.length - 1);
@@ -7698,11 +7704,11 @@ function buildElementThumb(def) {
     if (p.type === 'fill') {
       path.setAttribute('fill', PAPER_COLOR);
       path.setAttribute('stroke', isHanko ? '#8b1a1a' : CARVED_STROKE);
-      path.setAttribute('stroke-width', 0.8);
+      path.setAttribute('stroke-width', thumbStroke);
     } else {
       path.setAttribute('fill', 'none');
       path.setAttribute('stroke', isHanko ? '#8b1a1a' : CARVED_STROKE);
-      path.setAttribute('stroke-width', p.strokeWidth || 1.5);
+      path.setAttribute('stroke-width', Math.max(thumbStrokeDetail, p.strokeWidth || 1.5));
     }
     svg.appendChild(path);
   });
