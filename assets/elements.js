@@ -392,21 +392,21 @@ const MOKURI_ELEMENTS = [
       {
         name: 'block',
         paths: [
-          { d: 'M0 80 Q35 50 70 55 Q105 60 140 45 Q175 30 210 40 Q245 50 280 35 L280 80 Z', type: 'fill', zone: 'body' },
+          { d: 'M0 80 Q35 50 70 55 Q105 60 140 45 Q175 30 210 40 Q245 50 280 35 L280 100 L0 100 Z', type: 'fill', zone: 'body' },
           { d: 'M60 55 Q65 52 70 55 M130 46 Q135 43 140 45 M200 40 Q205 37 210 40', type: 'stroke', zone: 'foam', strokeWidth: 1.5 },
         ],
       },
       {
         name: 'shape',
         paths: [
-          { d: 'M0 80 Q35 50 70 55 Q105 60 140 45 Q175 30 210 40 Q245 50 280 35 L280 80 Z', type: 'fill', zone: 'body' },
+          { d: 'M0 80 Q35 50 70 55 Q105 60 140 45 Q175 30 210 40 Q245 50 280 35 L280 100 L0 100 Z', type: 'fill', zone: 'body' },
           { d: 'M0 65 Q35 50 70 55 Q105 60 140 45 Q175 30 210 40 Q245 50 280 35', type: 'stroke', zone: 'body', strokeWidth: 2 },
         ],
       },
       {
         name: 'detail',
         paths: [
-          { d: 'M0 80 Q35 50 70 55 Q105 60 140 45 Q175 30 210 40 Q245 50 280 35 L280 80 Z', type: 'fill', zone: 'body' },
+          { d: 'M0 80 Q35 50 70 55 Q105 60 140 45 Q175 30 210 40 Q245 50 280 35 L280 100 L0 100 Z', type: 'fill', zone: 'body' },
           { d: 'M0 65 Q35 50 70 55 Q105 60 140 45 Q175 30 210 40 Q245 50 280 35', type: 'stroke', zone: 'body', strokeWidth: 2 },
           // Secondary wave lines
           { d: 'M0 72 Q40 60 80 64 Q120 68 160 58 Q200 48 240 52 Q260 54 280 48', type: 'stroke', zone: 'body', strokeWidth: 1 },
