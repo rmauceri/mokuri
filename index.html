@@ -3310,7 +3310,7 @@ const STATE = {
 
   // Atmosphere
   background: 'none',   // 'none' | 'dawn' | 'day' | 'dusk' | 'night' | 'aizuri' | 'akane' | 'overcast' | 'warm' | 'sakura' | 'haze'
-  foreground: 'none',   // 'none' | 'earth' | 'grass' | 'snow' | 'sand' | 'water' | 'stone'
+  foreground: 'none',   // 'none' | 'earth' | 'grass' | 'moss' | 'snow' | 'sand' | 'water' | 'shallows' | 'stone'
   horizon: 0.62,        // 0-1, fraction from top (0.62 = 62% down)
   mist: 0,              // 0-3 mist bands
   smoothHorizon: false, // true = clean gradient edge (interior/still-life), false = organic wobble (landscape)
@@ -3569,41 +3569,69 @@ const BACKGROUND_TYPES = {
 const FOREGROUND_TYPES = {
   none:  { name: 'None', stops: null },
   earth: { name: '土 Earth', stops: [
-    { offset: 0, color: '#5a4830', opacity: 0.58 },
-    { offset: 0.35, color: '#6a5838', opacity: 0.5 },
-    { offset: 0.7, color: '#7a6848', opacity: 0.4 },
-    { offset: 1, color: '#8a7858', opacity: 0.28 },
+    { offset: 0, color: '#483820', opacity: 0.65 },
+    { offset: 0.08, color: '#504028', opacity: 0.6 },
+    { offset: 0.18, color: '#5a4830', opacity: 0.5 },
+    { offset: 0.4, color: '#6a5838', opacity: 0.38 },
+    { offset: 0.7, color: '#7a6848', opacity: 0.24 },
+    { offset: 1, color: '#8a7858', opacity: 0.1 },
   ]},
   grass: { name: '草 Grass', stops: [
-    { offset: 0, color: '#2a4a28', opacity: 0.58 },
-    { offset: 0.25, color: '#3a5a32', opacity: 0.5 },
-    { offset: 0.55, color: '#4a6a3a', opacity: 0.4 },
-    { offset: 1, color: '#5a7a48', opacity: 0.25 },
+    { offset: 0, color: '#1e3a1a', opacity: 0.65 },
+    { offset: 0.08, color: '#264222', opacity: 0.6 },
+    { offset: 0.18, color: '#304e2a', opacity: 0.5 },
+    { offset: 0.4, color: '#3e5e34', opacity: 0.38 },
+    { offset: 0.7, color: '#507040', opacity: 0.22 },
+    { offset: 1, color: '#5a7a48', opacity: 0.08 },
+  ]},
+  moss:  { name: '苔 Moss', stops: [
+    { offset: 0, color: '#2a3020', opacity: 0.68 },
+    { offset: 0.08, color: '#303824', opacity: 0.62 },
+    { offset: 0.18, color: '#38402a', opacity: 0.52 },
+    { offset: 0.4, color: '#445030', opacity: 0.38 },
+    { offset: 0.7, color: '#586040', opacity: 0.22 },
+    { offset: 1, color: '#687050', opacity: 0.08 },
   ]},
   snow:  { name: '雪 Snow', stops: [
-    { offset: 0, color: '#b8c8e0', opacity: 0.42 },
-    { offset: 0.25, color: '#ccd4e6', opacity: 0.32 },
-    { offset: 0.6, color: '#dce0ec', opacity: 0.22 },
-    { offset: 1, color: '#eae8f0', opacity: 0.12 },
+    { offset: 0, color: '#90a8c8', opacity: 0.52 },
+    { offset: 0.08, color: '#9cb0cc', opacity: 0.46 },
+    { offset: 0.18, color: '#aabcd4', opacity: 0.38 },
+    { offset: 0.45, color: '#c0cede', opacity: 0.26 },
+    { offset: 0.75, color: '#d4dce6', opacity: 0.15 },
+    { offset: 1, color: '#e8e8f0', opacity: 0.06 },
   ]},
   sand:  { name: '砂 Sand', stops: [
-    { offset: 0, color: '#b89858', opacity: 0.48 },
-    { offset: 0.35, color: '#c8a868', opacity: 0.4 },
-    { offset: 0.7, color: '#d4b880', opacity: 0.3 },
-    { offset: 1, color: '#dcc890', opacity: 0.2 },
+    { offset: 0, color: '#a08040', opacity: 0.58 },
+    { offset: 0.08, color: '#a88848', opacity: 0.52 },
+    { offset: 0.18, color: '#b89458', opacity: 0.42 },
+    { offset: 0.4, color: '#c8a468', opacity: 0.32 },
+    { offset: 0.7, color: '#d4b880', opacity: 0.18 },
+    { offset: 1, color: '#dcc890', opacity: 0.06 },
   ]},
   water: { name: '水 Water', stops: [
-    { offset: 0, color: '#1a4060', opacity: 0.62 },
-    { offset: 0.2, color: '#285878', opacity: 0.55 },
-    { offset: 0.5, color: '#3a7090', opacity: 0.44 },
-    { offset: 0.75, color: '#5088a4', opacity: 0.32 },
-    { offset: 1, color: '#6898b0', opacity: 0.2 },
+    { offset: 0, color: '#0e2840', opacity: 0.72 },
+    { offset: 0.06, color: '#123048', opacity: 0.68 },
+    { offset: 0.15, color: '#1a3e58', opacity: 0.58 },
+    { offset: 0.35, color: '#285878', opacity: 0.45 },
+    { offset: 0.6, color: '#3a7090', opacity: 0.3 },
+    { offset: 0.85, color: '#5088a4', opacity: 0.16 },
+    { offset: 1, color: '#6898b0', opacity: 0.06 },
+  ]},
+  shallows: { name: '潮 Shallows', stops: [
+    { offset: 0, color: '#1a4848', opacity: 0.6 },
+    { offset: 0.08, color: '#205050', opacity: 0.55 },
+    { offset: 0.18, color: '#2a5e5a', opacity: 0.45 },
+    { offset: 0.4, color: '#3a7068', opacity: 0.34 },
+    { offset: 0.7, color: '#508878', opacity: 0.2 },
+    { offset: 1, color: '#68a090', opacity: 0.08 },
   ]},
   stone: { name: '石 Stone', stops: [
-    { offset: 0, color: '#58585e', opacity: 0.48 },
-    { offset: 0.35, color: '#686870', opacity: 0.4 },
-    { offset: 0.7, color: '#787880', opacity: 0.3 },
-    { offset: 1, color: '#888890', opacity: 0.2 },
+    { offset: 0, color: '#404048', opacity: 0.58 },
+    { offset: 0.08, color: '#484850', opacity: 0.52 },
+    { offset: 0.18, color: '#54545c', opacity: 0.42 },
+    { offset: 0.4, color: '#646468', opacity: 0.32 },
+    { offset: 0.7, color: '#787880', opacity: 0.18 },
+    { offset: 1, color: '#888890', opacity: 0.06 },
   ]},
 };
 
