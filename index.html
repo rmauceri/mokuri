@@ -4145,6 +4145,47 @@ function updateWorkspaceSurface() {
 }
 
 // ============================================================
+//  WATER RIPPLES — organic Bézier curves for water foregrounds
+// ============================================================
+// Deterministic seeded random for consistent ripple placement
+function _rippleSeed(i, k) { let s = (i * 2654435761 + k * 340573321) >>> 0; s ^= s >> 16; s = (s * 0x45d9f3b) >>> 0; s ^= s >> 16; return (s & 0x7fffffff) / 0x7fffffff; }
+
+function generateWaterRipples(W, horizonY, H, strokeColor, type) {
+  const groundH = H - horizonY;
+  if (groundH < 10) return '';
+  const count = type === 'shallows' ? 7 : 10;
+  let svg = '';
+  for (let i = 0; i < count; i++) {
+    // Vertical position: distribute across ground area, denser toward bottom
+    const t = (i + 0.5) / count;
+    const depth = t * t; // quadratic — clusters toward bottom
+    const ry = horizonY + groundH * (0.06 + depth * 0.88);
+    // Perspective: near horizon = thin/light, near bottom = wider/bolder
+    const perspective = 0.3 + depth * 0.7;
+    const rippleLen = W * (0.15 + _rippleSeed(i, 0) * 0.35) * perspective;
+    const sx = _rippleSeed(i, 1) * (W - rippleLen);
+    // Undulation: gentle sine wave via cubic Bézier segments
+    const amplitude = (1.5 + _rippleSeed(i, 2) * 3) * perspective;
+    const segments = 3 + Math.floor(_rippleSeed(i, 3) * 3);
+    const segLen = rippleLen / segments;
+    let d = `M${sx.toFixed(1)},${ry.toFixed(1)}`;
+    for (let j = 0; j < segments; j++) {
+      const x0 = sx + j * segLen;
+      const x1 = sx + (j + 1) * segLen;
+      const dir = (j % 2 === 0) ? -1 : 1;
+      const cpAmp = amplitude * dir * (0.7 + _rippleSeed(i, 4 + j) * 0.6);
+      const cp1x = x0 + segLen * 0.33;
+      const cp2x = x0 + segLen * 0.67;
+      d += ` C${cp1x.toFixed(1)},${(ry + cpAmp).toFixed(1)} ${cp2x.toFixed(1)},${(ry + cpAmp).toFixed(1)} ${x1.toFixed(1)},${ry.toFixed(1)}`;
+    }
+    const sw = (0.4 + perspective * 0.8).toFixed(2);
+    const op = (0.08 + perspective * 0.14).toFixed(2);
+    svg += `<path d="${d}" fill="none" stroke="${strokeColor}" stroke-opacity="${op}" stroke-width="${sw}" stroke-linecap="round"/>`;
+  }
+  return svg;
+}
+
+// ============================================================
 //  ATMOSPHERE RENDERING — sky, ground, mist in workspace
 // ============================================================
 function renderAtmosphere() {
@@ -4213,14 +4254,9 @@ function renderAtmosphere() {
     groundPath += ' Z';
     bodySvg += `<path d="${groundPath}" fill="url(#${gid})"/>`;
 
-    // Water ripple lines
-    if (STATE.foreground === 'water') {
-      for (let i = 0; i < 6; i++) {
-        const ry = horizonY + (H - horizonY) * (0.1 + i * 0.15) + Math.sin(i * 2.3) * 4;
-        const len = W * (0.3 + Math.random() * 0.5);
-        const sx = Math.random() * (W - len);
-        bodySvg += `<line x1="${sx.toFixed(0)}" y1="${ry.toFixed(1)}" x2="${(sx + len).toFixed(0)}" y2="${(ry + Math.sin(i) * 2).toFixed(1)}" stroke="${groundType.stops[0].color}" stroke-opacity="0.2" stroke-width="0.8"/>`;
-      }
+    // Water ripple curves — organic Bézier strokes suggesting surface movement
+    if (STATE.foreground === 'water' || STATE.foreground === 'shallows') {
+      bodySvg += generateWaterRipples(W, horizonY, H, groundType.stops[groundType.stops.length - 1].color, STATE.foreground);
     }
   }
 
@@ -9659,6 +9695,7 @@ async function pullPrint() {
       atmosphere: {
         sky: BACKGROUND_TYPES[STATE.background]?.stops ? BACKGROUND_TYPES[STATE.background] : null,
         ground: FOREGROUND_TYPES[STATE.foreground]?.stops ? FOREGROUND_TYPES[STATE.foreground] : null,
+        groundType: STATE.foreground,
         horizon: STATE.horizon,
         mist: STATE.mist,
         smoothHorizon: STATE.smoothHorizon,

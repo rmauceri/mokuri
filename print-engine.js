@@ -269,6 +269,12 @@ const PrintEngine = (() => {
         }
         gPath += ' Z';
         atmoBody += `<path d="${gPath}" fill="url(#${gid})"/>`;
+
+        // Water ripple curves (uses shared generateWaterRipples from index.html)
+        if (typeof generateWaterRipples === 'function' && (atmosphere.groundType === 'water' || atmosphere.groundType === 'shallows')) {
+          const rippleColor = atmosphere.ground.stops[atmosphere.ground.stops.length - 1].color;
+          atmoBody += generateWaterRipples(paperW, horizonY, paperH, rippleColor, atmosphere.groundType);
+        }
       }
 
       // Mist bands
