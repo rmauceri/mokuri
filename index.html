@@ -7681,12 +7681,14 @@ function buildElementThumb(def) {
 
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('viewBox', def.viewBox);
-  // Scale stroke-width so fine details remain visible at thumbnail size
-  // A 280-wide viewBox shown at ~43px display needs ~3x heavier strokes
+  // Scale stroke-width for larger viewBoxes (Forge elements) so details stay visible
+  // Below 180px span: no scaling (native elements stay as-is)
+  // Above 180px: gentle linear ramp, capped at 2px
   const vbParts = def.viewBox.split(/\s+/).map(Number);
   const vbSpan = Math.max(vbParts[2] || 100, vbParts[3] || 100);
-  const thumbStroke = Math.max(0.8, vbSpan / 120);
-  const thumbStrokeDetail = Math.max(1.2, vbSpan / 80);
+  const needsBoost = vbSpan > 180;
+  const thumbStroke = needsBoost ? Math.min(2, 0.8 + (vbSpan - 180) / 200) : 0.8;
+  const thumbStrokeDetail = needsBoost ? Math.min(2.5, 1.5 + (vbSpan - 180) / 250) : 1.5;
   // Draw block silhouette in paper color (white background for detail view)
   getElementBlockPaths(def).forEach(p => {
     if (p.type !== 'fill') return;
@@ -7708,7 +7710,7 @@ function buildElementThumb(def) {
     } else {
       path.setAttribute('fill', 'none');
       path.setAttribute('stroke', isHanko ? '#8b1a1a' : CARVED_STROKE);
-      path.setAttribute('stroke-width', Math.max(thumbStrokeDetail, p.strokeWidth || 1.5));
+      path.setAttribute('stroke-width', needsBoost ? Math.max(thumbStrokeDetail, p.strokeWidth || 1.5) : (p.strokeWidth || 1.5));
     }
     svg.appendChild(path);
   });
