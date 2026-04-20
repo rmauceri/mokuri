@@ -329,6 +329,7 @@ const MokuriAudio = (() => {
     switch (atmo.sky) {
       case 'dawn':
       case 'dusk':
+      case 'akane':
         // Warm: mix mid + some high, moderate pace
         atmo.notePool = [...SCALE_MID, ...SCALE_HIGH.slice(0, 3)];
         atmo.chimeMin = 3; atmo.chimeMax = 7;
@@ -336,6 +337,7 @@ const MokuriAudio = (() => {
         atmo.windBase = 500; atmo.windQ = 0.6; atmo.windVol = 0.035;
         break;
       case 'day':
+      case 'aizuri':
         // Bright and open: higher register, relaxed pace
         atmo.notePool = [...SCALE_MID.slice(2), ...SCALE_HIGH];
         atmo.chimeMin = 3; atmo.chimeMax = 8;
