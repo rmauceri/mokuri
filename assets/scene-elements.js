@@ -698,7 +698,7 @@ const MOKURI_SCENE_ELEMENTS = [
     name: 'Cloud Wisp',
     category: 'objects',
     pack: 'core',
-    tags: ['atmospheric', 'organic', 'minimal'],
+    tags: ['landscape', 'atmospheric', 'organic'],
     viewBox: '0 0 260 80',
     suggestedLayer: 'background',
     colorZones: [

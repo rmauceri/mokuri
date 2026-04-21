@@ -37,7 +37,7 @@ registerPack({
     'vessel-suiban', 'vessel-oval', 'vessel-rectangle', 'vessel-bamboo', 'vessel-tsubo',
     'blossum-kiku', 'blossum-ran', 'blossum-suisen',
     'branch-ume-crooked', 'matsu-branch-upright',
-    'tsubaki-single', 'tsubaki-cluster'
+    'tsubaki-single', 'tsubaki-cluster', 'lantern-small', 'lantern-round'
   ],
   categoryOrder: ['objects', 'flora'],
   paletteIds: ['seiji', 'shino', 'raku'],
