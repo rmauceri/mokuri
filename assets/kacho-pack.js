@@ -30,7 +30,7 @@ registerPack({
   icon: '花',
   description: 'Birds and flowers in the intimate kacho-e tradition',
   affinity: ['fauna', 'flora', 'water', 'organic', 'intimate'],
-  elementIds: ['heron-standing', 'bush-warbler', 'swallow-flight', 'kingfisher', 'egret', 'peony', 'lotus-pod', 'lotus-cluster', 'lily-pad', 'morning-glory', 'wisteria'],
+  elementIds: ['rabbit-run', 'rabbit-upright', 'rabbit-leaping', 'bushwarbler-flight', 'heron-wading', 'heron-hunting', 'heron-detailed-standing', 'koi-above', 'koi-goldfish', 'dragonfly-perched', 'wisteria-vine2', 'lilypad-pair', 'lilypad-single', 'susuki-grass-swept', 'pine-bough'],
   paletteIds: ['haru', 'natsu'],
   presetIds: null,
   atmospherePresets: [
