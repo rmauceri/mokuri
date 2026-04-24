@@ -5876,8 +5876,9 @@ function generateThumbnailSvg(data) {
   const pt = PAPER_TYPES[data.paperType || 'kozo'];
   const palette = PALETTES[data.paletteId || 'edo'] || PALETTES.edo;
   let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${vw} ${vh}">`;
-  s += `<defs><clipPath id="pc"><rect width="${vw}" height="${vh}"/></clipPath></defs>`;
-  s += `<g clip-path="url(#pc)">`;
+  const clipId = 'pc' + (generateThumbnailSvg._n = (generateThumbnailSvg._n || 0) + 1);
+  s += `<defs><clipPath id="${clipId}"><rect width="${vw}" height="${vh}"/></clipPath></defs>`;
+  s += `<g clip-path="url(#${clipId})">`;
   s += `<rect width="${vw}" height="${vh}" fill="${pt ? pt.base : '#f5f0e6'}"/>`;
 
   // Atmosphere
