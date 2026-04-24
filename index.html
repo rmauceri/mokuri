@@ -5875,37 +5875,44 @@ function generateThumbnailSvg(data) {
   const sc = vw / w;
   const pt = PAPER_TYPES[data.paperType || 'kozo'];
   const palette = PALETTES[data.paletteId || 'edo'] || PALETTES.edo;
-  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${vw} ${vh}" width="${vw}" height="${vh}">`;
+  // Use slice to fill thumbnail container cleanly regardless of paper aspect ratio
+  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${vw} ${vh}" preserveAspectRatio="xMidYMid slice">`;
   s += `<rect width="${vw}" height="${vh}" fill="${pt ? pt.base : '#f5f0e6'}"/>`;
 
   // Atmosphere
   const bgType = data.background || data.sky;
   if (bgType && bgType !== 'none') {
-    const cols = { dawn: '#e8a87c', day: '#87ceeb', dusk: '#c47a90', night: '#1a1a3a', overcast: '#8a8a98', warm: '#c9a84c', sakura: '#e8a0b8', haze: '#c8b890' };
+    const cols = { dawn: '#e8a87c', day: '#87ceeb', dusk: '#c47a90', night: '#1a1a3a', overcast: '#8a8a98', warm: '#c9a84c', sakura: '#e8a0b8', haze: '#c8b890', aizuri: '#1a3a6a', akane: '#c24a3a', shallows: '#3a6a7a', moss: '#2a3a20' };
     const hy = Math.round((data.horizon || 0.62) * vh);
     s += `<rect width="${vw}" height="${hy}" fill="${cols[bgType] || '#87ceeb'}" opacity="0.3"/>`;
   }
   const fgType = data.foreground || data.ground;
   if (fgType && fgType !== 'none') {
-    const cols = { earth: '#8b6b4a', grass: '#4a6a3a', snow: '#d8dce8', sand: '#c4a868', water: '#2a5a7a', stone: '#7a7a80' };
+    const cols = { earth: '#8b6b4a', grass: '#4a6a3a', snow: '#d8dce8', sand: '#c4a868', water: '#2a5a7a', stone: '#7a7a80', shallows: '#3a6a7a', moss: '#2a3a20' };
     const hy = Math.round((data.horizon || 0.62) * vh);
     s += `<rect y="${hy}" width="${vw}" height="${vh - hy}" fill="${cols[fgType] || '#8b6b4a'}" opacity="0.3"/>`;
   }
 
   // Element silhouettes using actual SVG paths
+  // Use nested <svg> per element (matching workspace renderer) for correct viewBox
+  // coordinate mapping, centering, and overflow clipping
   if (data.elements) {
     for (const el of data.elements) {
       const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
       if (!def || !def.carveLevels || !def.carveLevels[0]) continue;
       const vb = def.viewBox.split(' ').map(Number);
-      const sx = (el.scaleX || 1) * sc;
-      const sy = (el.scaleY || 1) * sc;
+      const esx = (el.scaleX || 1) * sc;
+      const esy = (el.scaleY || 1) * sc;
       const tx = el.x * sc;
       const ty = el.y * sc;
       const rot = el.rotation || 0;
-      s += `<g transform="translate(${tx},${ty}) rotate(${rot}) scale(${sx},${sy}) translate(${-vb[2]/2},${-vb[3]/2})">`;
+      const ew = vb[2] * Math.abs(esx);
+      const eh = vb[3] * Math.abs(esy);
+      const flipX = esx < 0 ? -1 : 1;
+      const flipY = esy < 0 ? -1 : 1;
+      s += `<g transform="translate(${tx},${ty}) rotate(${rot})${flipX < 0 || flipY < 0 ? ` scale(${flipX},${flipY})` : ''}">`;
+      s += `<svg x="${-ew/2}" y="${-eh/2}" width="${ew}" height="${eh}" viewBox="${def.viewBox}" overflow="hidden">`;
 
-      // Render the visible paths for the active carve level.
       const visiblePaths = getElementVisiblePaths(def, el.carveLevel || 0);
       for (const p of visiblePaths) {
         if (p.type === 'fill') {
@@ -5918,10 +5925,10 @@ function generateThumbnailSvg(data) {
             const z = def.colorZones.find(c => c.id === p.zone);
             col = z ? palette.colors[z.defaultPaletteSlot % palette.colors.length] : palette.colors[0];
           }
-          s += `<path d="${p.d}" fill="${col}" opacity="0.85"/>`;
+          s += `<path d="${p.d}" fill="${col}" opacity="0.85"${p.fillRule ? ` fill-rule="${p.fillRule}"` : ''}/>`;
         }
       }
-      s += '</g>';
+      s += '</svg></g>';
     }
   }
 
