@@ -5875,8 +5875,7 @@ function generateThumbnailSvg(data) {
   const sc = vw / w;
   const pt = PAPER_TYPES[data.paperType || 'kozo'];
   const palette = PALETTES[data.paletteId || 'edo'] || PALETTES.edo;
-  // Use slice to fill thumbnail container cleanly regardless of paper aspect ratio
-  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${vw} ${vh}" preserveAspectRatio="xMidYMid slice">`;
+  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${vw} ${vh}">`;
   s += `<rect width="${vw}" height="${vh}" fill="${pt ? pt.base : '#f5f0e6'}"/>`;
 
   // Atmosphere
@@ -5911,7 +5910,7 @@ function generateThumbnailSvg(data) {
       const flipX = esx < 0 ? -1 : 1;
       const flipY = esy < 0 ? -1 : 1;
       s += `<g transform="translate(${tx},${ty}) rotate(${rot})${flipX < 0 || flipY < 0 ? ` scale(${flipX},${flipY})` : ''}">`;
-      s += `<svg x="${-ew/2}" y="${-eh/2}" width="${ew}" height="${eh}" viewBox="${def.viewBox}" overflow="hidden">`;
+      s += `<svg x="${-ew/2}" y="${-eh/2}" width="${ew}" height="${eh}" viewBox="${def.viewBox}" preserveAspectRatio="none" overflow="hidden">`;
 
       const visiblePaths = getElementVisiblePaths(def, el.carveLevel || 0);
       for (const p of visiblePaths) {
@@ -6486,10 +6485,12 @@ async function buildWorkshopUI() {
     const card = document.createElement('div');
     card.className = 'workshop-recent' + (entry.id === STATE.activeCompositionId ? ' active' : '');
 
-    // Thumbnail
+    // Thumbnail — regenerate from composition data for consistent rendering
     const thumbDiv = document.createElement('div');
     thumbDiv.className = 'workshop-recent-thumb';
-    if (entry.thumbnail) {
+    if (entry.data) {
+      thumbDiv.innerHTML = generateThumbnailSvg(entry.data);
+    } else if (entry.thumbnail) {
       thumbDiv.innerHTML = entry.thumbnail;
     } else {
       thumbDiv.innerHTML = `<svg viewBox="0 0 120 84"><rect width="120" height="84" fill="#f5f0e6"/></svg>`;
