@@ -761,6 +761,9 @@ button.sm { padding: 3px 8px; font-size: 11px; }
           <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
             <div class="subtle-label" style="margin-bottom:0;">Library</div>
             <div style="display:flex; gap:4px; align-items:center;">
+              <select id="lib-pack-filter" title="Filter by pack" style="font-size:10px; padding:2px 4px; border:1px solid var(--border); border-radius:4px; background:rgba(255,255,255,0.65); color:var(--text); max-width:90px;">
+                <option value="">All</option>
+              </select>
               <span id="lib-element-count" style="font-size:10px; color:var(--muted);"></span>
               <button class="sm" id="btn-lib-new" title="Save current and start new element">＋ New</button>
             </div>
@@ -1570,14 +1573,36 @@ function renderLibraryPanel() {
   const grid = $('library-grid');
   if (!grid) return;
   grid.innerHTML = '';
-  if (_library.elements.length === 0) {
-    grid.innerHTML = '<div class="lib-empty">No elements yet</div>';
+
+  // Build pack filter options from library data
+  const filterEl = $('lib-pack-filter');
+  const activePack = filterEl ? filterEl.value : '';
+  if (filterEl) {
+    const packs = new Set();
+    _library.elements.forEach(e => { if (e.meta && e.meta.pack) packs.add(e.meta.pack); });
+    const prev = filterEl.value;
+    filterEl.innerHTML = '<option value="">All</option>';
+    [...packs].sort().forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p;
+      opt.textContent = p;
+      filterEl.appendChild(opt);
+    });
+    filterEl.value = packs.has(prev) ? prev : '';
+  }
+
+  const filtered = activePack
+    ? _library.elements.filter(e => e.meta && e.meta.pack === activePack)
+    : _library.elements;
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div class="lib-empty">No elements' + (activePack ? ' in ' + activePack : ' yet') + '</div>';
     const countEl = $('lib-element-count');
-    if (countEl) countEl.textContent = '';
+    if (countEl) countEl.textContent = activePack ? '0 / ' + _library.elements.length : '';
     updateLibrarySizeIndicator();
     return;
   }
-  _library.elements.forEach(entry => {
+  filtered.forEach(entry => {
     const tile = document.createElement('div');
     tile.className = 'library-thumb' + (entry._id === _library.activeId ? ' active' : '');
     tile.setAttribute('data-id', entry._id);
@@ -1620,8 +1645,8 @@ function renderLibraryPanel() {
   const countEl = $('lib-element-count');
   const selCount = _library.selectedIds.size;
   if (countEl) {
-    let txt = _library.elements.length + ' element' + (_library.elements.length !== 1 ? 's' : '');
-    if (selCount > 0) txt += ' (' + selCount + ' selected)';
+    let txt = filtered.length + (activePack ? ' / ' + _library.elements.length : '') + ' element' + (filtered.length !== 1 ? 's' : '');
+    if (selCount > 0) txt += ' (' + selCount + ' sel)';
     countEl.textContent = txt;
   }
   const packInput = $('lib-pack-name');
@@ -4084,6 +4109,7 @@ function attachEvents() {
 
   // Library controls
   $('btn-lib-new').addEventListener('click', () => createLibraryElement());
+  $('lib-pack-filter').addEventListener('change', () => renderLibraryPanel());
   $('btn-export-pack').addEventListener('click', exportPack);
   $('backup-lib-btn').addEventListener('click', backupLibrary);
   $('restore-lib-btn').addEventListener('click', restoreLibrary);
