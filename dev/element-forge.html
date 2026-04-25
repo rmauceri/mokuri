@@ -1569,6 +1569,13 @@ function scheduleMetaSave() {
   }, 400);
 }
 
+function getFilteredLibrary() {
+  const filterEl = $('lib-pack-filter');
+  const pack = filterEl ? filterEl.value : '';
+  if (!pack) return _library.elements;
+  return _library.elements.filter(e => e.meta && e.meta.pack === pack);
+}
+
 function renderLibraryPanel() {
   const grid = $('library-grid');
   if (!grid) return;
@@ -1659,11 +1666,13 @@ function renderLibraryPanel() {
 function backupLibrary() {
   if (_library.elements.length === 0) { showToast('No elements to back up'); return; }
   saveActiveToLibrary();
+  const filtered = getFilteredLibrary();
+  const isFiltered = filtered.length < _library.elements.length;
   const backup = {
     version: 1,
     packName: _library.packName || 'MyCustomElements',
     exportedAt: new Date().toISOString(),
-    elements: _library.elements.map(e => ({
+    elements: filtered.map(e => ({
       meta: e.meta,
       zones: e.zones,
       paths: e.paths,
@@ -1682,7 +1691,8 @@ function backupLibrary() {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  showToast('Backed up ' + backup.elements.length + ' element' + (backup.elements.length !== 1 ? 's' : ''));
+  const scope = isFiltered ? ' of ' + _library.elements.length + ' (filtered)' : '';
+  showToast('Backed up ' + backup.elements.length + scope + ' element' + (backup.elements.length !== 1 ? 's' : ''));
 }
 
 function restoreLibrary() {
@@ -1878,8 +1888,10 @@ function exportPack() {
 
   const results = [];
   const exportSet = _library.selectedIds.size > 0 ? _library.selectedIds : null;
+  const filtered = getFilteredLibrary();
+  const isFiltered = filtered.length < _library.elements.length;
   const totalCount = _library.elements.length;
-  for (const entry of _library.elements) {
+  for (const entry of (exportSet ? _library.elements : filtered)) {
     if (exportSet && !exportSet.has(entry._id)) continue;
     const total = (entry.paths[0] || []).length + (entry.paths[1] || []).length + (entry.paths[2] || []).length;
     if (total === 0) continue;
@@ -1934,7 +1946,8 @@ function exportPack() {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  showToast('Exported ' + results.length + (exportSet ? ' of ' + totalCount : '') + ' element' + (results.length !== 1 ? 's' : '') + ' → ' + fileName);
+  const scope = exportSet ? ' of ' + totalCount + ' (selected)' : isFiltered ? ' of ' + totalCount + ' (filtered)' : '';
+  showToast('Exported ' + results.length + scope + ' element' + (results.length !== 1 ? 's' : '') + ' → ' + fileName);
 }
 
 // ── Initialize ──
