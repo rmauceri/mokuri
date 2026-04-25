@@ -3363,7 +3363,7 @@ function buildElementDefinition() {
     name: $('el-name').value || 'Unnamed',
     category: category,
   };
-  if (pack !== 'core') el.pack = pack;
+  el.pack = pack;
   if (category === 'hanko') el.hanko = true;
   if (tags.length) el.tags = tags;
   el.viewBox = `${STATE.viewBoxX || 0} ${STATE.viewBoxY || 0} ${STATE.viewBoxW} ${STATE.viewBoxH}`;
