@@ -324,9 +324,10 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
   box-shadow: 0 0 0 2px var(--accent), var(--shadow);
   background: rgba(139,116,90, 0.12);
 }
-.element-thumb svg {
+.element-thumb svg, .element-thumb img {
   width: 78%;
   height: 78%;
+  object-fit: contain;
 }
 .element-thumb-label {
   position: absolute;
@@ -2349,9 +2350,10 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
   .ios-device .element-grid .element-thumb {
     touch-action: pan-x;
   }
-  .element-grid .element-thumb svg {
+  .element-grid .element-thumb svg, .element-grid .element-thumb img {
     width: 72%;
     height: 72%;
+    object-fit: contain;
   }
   .element-thumb-label { display: none; }
 
@@ -3411,6 +3413,12 @@ const WOOD_SURFACE = '#7a6955'; // block surface patina (compose/carve backgroun
 const WOOD_RECESS_TONES = ['#8a7d6a', '#877a67', '#8d8070', '#847762', '#8b7e6c'];
 const PAPER_COLOR = '#f5f0e6';
 const CARVED_STROKE = '#3a3028'; // dark line for carved outlines
+
+// Thumbnail rendering config
+const THUMB_CARVE_LEVEL = 1;   // 0=block, 1=shape, 2=detail
+const THUMB_PATH_LIMIT = 60;   // prune smallest overlay paths above this count
+const _thumbCache = new Map();  // def.id → dataURL
+let _thumbCacheGen = 0;         // generation token to discard stale async renders
 const MOVE_DEAD_ZONE = 6; // px of screen travel before element move commits
 const MARQUEE_THRESHOLD = 5; // px movement before marquee rect appears
 let marquee = null;          // marquee selection state
@@ -7683,50 +7691,140 @@ function placeArmedElement(clientX, clientY) {
   return true;
 }
 
-function buildElementThumb(def) {
-  const thumb = document.createElement('div');
-  thumb.className = 'element-thumb';
-  thumb.title = def.name;
-
+// Build an SVG element for a thumbnail (off-DOM, for rasterization)
+function _buildThumbSvg(def) {
   const isHanko = def.hanko;
-  const thumbColor = isHanko ? '#c23b22' : WOOD_TONES[0];
+  const strokeColor = isHanko ? '#8b1a1a' : CARVED_STROKE;
 
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('viewBox', def.viewBox);
-  // Scale stroke-width for larger viewBoxes (Forge elements) so details stay visible
-  // Below 180px span: no scaling (native elements stay as-is)
-  // Above 180px: gentle linear ramp, capped at 2px
+  svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+
   const vbParts = def.viewBox.split(/\s+/).map(Number);
   const vbSpan = Math.max(vbParts[2] || 100, vbParts[3] || 100);
   const needsBoost = vbSpan > 180;
   const thumbStroke = needsBoost ? Math.min(2, 0.8 + (vbSpan - 180) / 200) : 0.8;
   const thumbStrokeDetail = needsBoost ? Math.min(2.5, 1.5 + (vbSpan - 180) / 250) : 1.5;
-  // Draw block silhouette in paper color (white background for detail view)
+
+  // Block silhouette fills
   getElementBlockPaths(def).forEach(p => {
     if (p.type !== 'fill') return;
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     path.setAttribute('d', p.d);
     path.setAttribute('fill', PAPER_COLOR);
-    path.setAttribute('stroke', isHanko ? '#8b1a1a' : CARVED_STROKE);
+    path.setAttribute('stroke', strokeColor);
     path.setAttribute('stroke-width', thumbStroke);
+    if (p.fillRule) path.setAttribute('fill-rule', p.fillRule);
     svg.appendChild(path);
   });
-  const detailPaths = getElementVisiblePaths(def, def.carveLevels.length - 1);
-  detailPaths.forEach(p => {
+
+  // Overlay paths at configured carve level
+  const maxLevel = def.carveLevels.length - 1;
+  const renderLevel = Math.min(THUMB_CARVE_LEVEL, maxLevel);
+  let overlayPaths = getElementVisiblePaths(def, renderLevel);
+
+  // Adaptive pruning: for dense elements, skip smallest overlay paths (never block fills)
+  if (overlayPaths.length > THUMB_PATH_LIMIT) {
+    const blockKeys = new Set(getElementBlockPaths(def).map(getElementCarvePathKey));
+    const prunable = [];
+    const keep = [];
+    overlayPaths.forEach(p => {
+      if (blockKeys.has(getElementCarvePathKey(p))) { keep.push(p); return; }
+      // Estimate path size from d-string length (proxy for visual weight)
+      prunable.push(p);
+    });
+    // Sort prunable by d-string length (smallest = least visual impact)
+    prunable.sort((a, b) => (a.d || '').length - (b.d || '').length);
+    // Keep the largest paths up to limit
+    const pruneCount = overlayPaths.length - THUMB_PATH_LIMIT;
+    overlayPaths = keep.concat(prunable.slice(pruneCount));
+  }
+
+  overlayPaths.forEach(p => {
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     path.setAttribute('d', p.d);
     if (p.type === 'fill') {
       path.setAttribute('fill', PAPER_COLOR);
-      path.setAttribute('stroke', isHanko ? '#8b1a1a' : CARVED_STROKE);
+      path.setAttribute('stroke', strokeColor);
       path.setAttribute('stroke-width', thumbStroke);
+      if (p.fillRule) path.setAttribute('fill-rule', p.fillRule);
     } else {
       path.setAttribute('fill', 'none');
-      path.setAttribute('stroke', isHanko ? '#8b1a1a' : CARVED_STROKE);
+      path.setAttribute('stroke', strokeColor);
       path.setAttribute('stroke-width', needsBoost ? Math.max(thumbStrokeDetail, p.strokeWidth || 1.5) : (p.strokeWidth || 1.5));
     }
     svg.appendChild(path);
   });
-  thumb.appendChild(svg);
+
+  return svg;
+}
+
+// Rasterize an SVG to canvas and replace it with <img> in the thumb div
+function _rasterizeThumb(defId, svgEl, thumbDiv) {
+  const gen = _thumbCacheGen;
+  const vbParts = svgEl.getAttribute('viewBox').split(/\s+/).map(Number);
+  const vbW = vbParts[2] || 100;
+  const vbH = vbParts[3] || 100;
+  const dpr = window.devicePixelRatio || 1;
+  // Target ~120px on longest side
+  const maxPx = 120;
+  const scale = maxPx / Math.max(vbW, vbH);
+  const canvasW = Math.ceil(vbW * scale * dpr);
+  const canvasH = Math.ceil(vbH * scale * dpr);
+
+  svgEl.setAttribute('width', vbW * scale);
+  svgEl.setAttribute('height', vbH * scale);
+
+  const serializer = new XMLSerializer();
+  const svgString = serializer.serializeToString(svgEl);
+  const img = new Image();
+  img.onload = function() {
+    // Discard if cache generation changed (picker was rebuilt)
+    if (_thumbCacheGen !== gen) return;
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = canvasW;
+      canvas.height = canvasH;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvasW, canvasH);
+      const dataUrl = canvas.toDataURL('image/png');
+      _thumbCache.set(defId, dataUrl);
+      // Replace SVG with cached img in the thumb div
+      const svgInDom = thumbDiv.querySelector('svg');
+      if (svgInDom) {
+        const imgEl = document.createElement('img');
+        imgEl.src = dataUrl;
+        imgEl.alt = thumbDiv.title || '';
+        imgEl.draggable = false;
+        svgInDom.replaceWith(imgEl);
+      }
+    } catch(e) {
+      // Canvas tainted or other error — keep the live SVG as fallback
+    }
+  };
+  img.onerror = function() { /* keep live SVG as fallback */ };
+  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgString);
+}
+
+function buildElementThumb(def) {
+  const thumb = document.createElement('div');
+  thumb.className = 'element-thumb';
+  thumb.title = def.name;
+
+  // If cached, use <img> directly
+  const cached = _thumbCache.get(def.id);
+  if (cached) {
+    const img = document.createElement('img');
+    img.src = cached;
+    img.alt = def.name;
+    img.draggable = false;
+    thumb.appendChild(img);
+  } else {
+    // Build SVG off-DOM, then rasterize to canvas async
+    const svgEl = _buildThumbSvg(def);
+    thumb.appendChild(svgEl);
+    _rasterizeThumb(def.id, svgEl, thumb);
+  }
 
   const lbl = document.createElement('div');
   lbl.className = 'element-thumb-label';
