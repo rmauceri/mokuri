@@ -7732,9 +7732,10 @@ function _buildThumbSvg(def) {
     svg.appendChild(path);
   });
 
-  // Overlay paths at configured carve level
+  // Overlay paths: native elements at full detail, Forge elements at THUMB_CARVE_LEVEL
+  const isForge = def.carveLevelMode === 'delta';
   const maxLevel = def.carveLevels.length - 1;
-  const renderLevel = Math.min(THUMB_CARVE_LEVEL, maxLevel);
+  const renderLevel = isForge ? Math.min(THUMB_CARVE_LEVEL, maxLevel) : maxLevel;
   let overlayPaths = getElementVisiblePaths(def, renderLevel);
 
   // Adaptive pruning: for dense elements, skip smallest overlay paths (never block fills)
@@ -7769,6 +7770,19 @@ function _buildThumbSvg(def) {
     }
     svg.appendChild(path);
   });
+
+  // Tighten viewBox to actual content bounds (fixes Forge elements with oversized bounding boxes)
+  try {
+    document.body.appendChild(svg);
+    const bbox = svg.getBBox();
+    document.body.removeChild(svg);
+    if (bbox.width > 0 && bbox.height > 0) {
+      const pad = Math.max(bbox.width, bbox.height) * 0.05;
+      svg.setAttribute('viewBox',
+        (bbox.x - pad) + ' ' + (bbox.y - pad) + ' ' +
+        (bbox.width + pad * 2) + ' ' + (bbox.height + pad * 2));
+    }
+  } catch(e) { /* keep original viewBox */ }
 
   return svg;
 }
