@@ -2,7 +2,7 @@
 // Intimate nature compositions in the kacho-e tradition.
 // Birds follow sparrow anatomy pattern: separate head, body, beak, wing, tail fills.
 
-var MOKURI_KACHO_ELEMENTS = [
+var MOKURI_KACHOE_ELEMENTS = [
 
 {
   id: 'rabbit-run',
