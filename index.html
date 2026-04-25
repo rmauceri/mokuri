@@ -7695,7 +7695,20 @@ function placeArmedElement(clientX, clientY) {
 function _buildThumbSvg(def) {
   const isHanko = def.hanko;
   const strokeColor = isHanko ? '#8b1a1a' : CARVED_STROKE;
-  const THUMB_FILLS = ['#7a6a5a', '#9a8070', '#b8a090', '#5a4a3a', '#6a5a4a'];
+  const THUMB_FILLS = ['#8a7a6a', '#a89888', '#c4b4a0', '#9a8a78', '#b0a090'];
+
+  // Map zone IDs to stable fill colors
+  const zoneColorMap = {};
+  if (def.colorZones) {
+    def.colorZones.forEach((z, i) => {
+      zoneColorMap[z.id] = THUMB_FILLS[i % THUMB_FILLS.length];
+    });
+  }
+  function fillForPath(p) {
+    if (isHanko) return '#c23b22';
+    if (p.zone && zoneColorMap[p.zone]) return zoneColorMap[p.zone];
+    return THUMB_FILLS[0];
+  }
 
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('viewBox', def.viewBox);
@@ -7707,14 +7720,12 @@ function _buildThumbSvg(def) {
   const thumbStroke = needsBoost ? Math.min(2, 0.8 + (vbSpan - 180) / 200) : 0.8;
   const thumbStrokeDetail = needsBoost ? Math.min(2.5, 1.5 + (vbSpan - 180) / 250) : 1.5;
 
-  let fillIdx = 0;
-
   // Block silhouette fills
   getElementBlockPaths(def).forEach(p => {
     if (p.type !== 'fill') return;
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     path.setAttribute('d', p.d);
-    path.setAttribute('fill', isHanko ? '#c23b22' : THUMB_FILLS[fillIdx++ % THUMB_FILLS.length]);
+    path.setAttribute('fill', fillForPath(p));
     path.setAttribute('stroke', strokeColor);
     path.setAttribute('stroke-width', thumbStroke);
     if (p.fillRule) path.setAttribute('fill-rule', p.fillRule);
@@ -7747,7 +7758,7 @@ function _buildThumbSvg(def) {
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     path.setAttribute('d', p.d);
     if (p.type === 'fill') {
-      path.setAttribute('fill', isHanko ? '#c23b22' : THUMB_FILLS[fillIdx++ % THUMB_FILLS.length]);
+      path.setAttribute('fill', fillForPath(p));
       path.setAttribute('stroke', strokeColor);
       path.setAttribute('stroke-width', thumbStroke);
       if (p.fillRule) path.setAttribute('fill-rule', p.fillRule);
