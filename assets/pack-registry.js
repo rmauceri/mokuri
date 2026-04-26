@@ -120,7 +120,7 @@ registerPack({
   icon: '墨',
   description: 'Landscapes, flora, fauna, figures, and essential tools',
   affinity: ['landscape', 'structural', 'atmospheric', 'figure', 'water'],
-
+  categoryOrder: ['landscape', 'objects', 'flora', 'fauna', 'figures'],
   elementIds: [
     'mountain-distant', 'mountain-near', 'mountain-fuji-peak', 'rolling-hills',
     'farmland', 'tranquil-pond', 'flowing-stream', 'gentle-waves',
