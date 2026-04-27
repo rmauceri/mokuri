@@ -9,7 +9,7 @@
 
 const MOKURI_GALLERY_PRESETS = [
 
-  // Mokuri FRE preset (600×420)
+  // Mokuri FRE scene - Mountain Sunset (600×420)
   {
   "elements": [
     {
@@ -92,10 +92,10 @@ const MOKURI_GALLERY_PRESETS = [
     {
       "id": 15,
       "defId": "pagoda",
-      "x": 156.4563135452154,
-      "y": 286.8949998839738,
-      "scaleX": 0.7483379715346388,
-      "scaleY": 0.7483379715346388,
+      "x": 177.24297588385727,
+      "y": 242.88527768064338,
+      "scaleX": 0.20911200950890646,
+      "scaleY": 0.20911200950890646,
       "rotation": 0,
       "carveLevel": 0,
       "colorOverrides": {},
@@ -113,6 +113,7 @@ const MOKURI_GALLERY_PRESETS = [
   "foreground": "grass",
   "horizon": 0.66,
   "mist": 1,
+  "smoothHorizon": false,
   "backgroundCarveStrokes": [
     {
       "points": [
@@ -503,7 +504,6 @@ const MOKURI_GALLERY_PRESETS = [
 
   // Bridge in Summer (600×420)
   {
-  "pack": "core",
   "elements": [
     {
       "id": 1,
@@ -537,10 +537,10 @@ const MOKURI_GALLERY_PRESETS = [
     {
       "id": 3,
       "defId": "pine-tree",
-      "x": 560.3037902965972,
-      "y": 200.61240938172116,
-      "scaleX": 0.6063757942279911,
-      "scaleY": 0.6063757942279911,
+      "x": 466.46892348058316,
+      "y": 163.04172870261323,
+      "scaleX": 0.12716401615311554,
+      "scaleY": 0.12716401615311554,
       "rotation": 0,
       "carveLevel": 2,
       "colorOverrides": {
@@ -568,10 +568,10 @@ const MOKURI_GALLERY_PRESETS = [
     {
       "id": 5,
       "defId": "pine-tree",
-      "x": 471.8004008808362,
-      "y": 190.46475713471082,
-      "scaleX": 0.5515658518747395,
-      "scaleY": 0.5515658518747395,
+      "x": 336.0578227651885,
+      "y": 181.582458955704,
+      "scaleX": 0.14015210888337507,
+      "scaleY": 0.14015210888337507,
       "rotation": 0,
       "carveLevel": 2,
       "colorOverrides": {
@@ -583,10 +583,10 @@ const MOKURI_GALLERY_PRESETS = [
     {
       "id": 4,
       "defId": "pine-tree",
-      "x": 511.2568444834971,
-      "y": 209.2119883570291,
-      "scaleX": 0.672371289879249,
-      "scaleY": 0.672371289879249,
+      "x": 540.8135673737945,
+      "y": 220.72528437998983,
+      "scaleX": 0.19479706927291554,
+      "scaleY": 0.19479706927291554,
       "rotation": 0,
       "carveLevel": 2,
       "colorOverrides": {
@@ -740,6 +740,7 @@ const MOKURI_GALLERY_PRESETS = [
   "foreground": "earth",
   "horizon": 0.35,
   "mist": 2,
+  "smoothHorizon": false,
   "backgroundCarveStrokes": [],
   "presentationMargin": "narrow",
   "presentationTitle": "",
@@ -752,7 +753,6 @@ const MOKURI_GALLERY_PRESETS = [
 
   // Temple View (500×500)
   {
-  "pack": "core",
   "elements": [
     {
       "id": 2,
@@ -778,7 +778,7 @@ const MOKURI_GALLERY_PRESETS = [
       "scaleX": 2.23095366492314,
       "scaleY": 2.8152894919983864,
       "rotation": 0,
-      "carveLevel": 2,
+      "carveLevel": 0,
       "colorOverrides": {
         "far": "#4a90c4",
         "mid": "#a0b8c4",
@@ -1051,7 +1051,11 @@ const MOKURI_GALLERY_PRESETS = [
           "density": 1,
           "rotation": 45
         }
-      ]
+      ],
+      "zoneBokashi": {
+        "near": "down",
+        "mid": "down"
+      }
     },
     {
       "id": 7,
@@ -1069,41 +1073,33 @@ const MOKURI_GALLERY_PRESETS = [
       "variationSeed": 6532
     },
     {
-      "id": 1,
-      "defId": "pagoda",
-      "x": 411.44959461910787,
-      "y": 274.19860549731635,
-      "scaleX": 2.316116034425937,
-      "scaleY": 2.316116034425937,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "finial": 1
-      },
-      "variationSeed": 41258
-    },
-    {
       "id": 3,
       "defId": "sakura-blossom",
-      "x": 107.89414634010723,
-      "y": 45.49326628909198,
-      "scaleX": 1.2377655778016767,
-      "scaleY": 1.1262951135905581,
-      "rotation": 129.05840091407845,
+      "x": 86.03117346019711,
+      "y": 122.39565796539299,
+      "scaleX": 0.3251686203292313,
+      "scaleY": 0.29588464466773,
+      "rotation": 78.43483546759276,
       "carveLevel": 2,
-      "colorOverrides": {},
+      "colorOverrides": {
+        "branch": 4,
+        "centers": "#f5f0e1"
+      },
       "variationSeed": 25430
     },
     {
       "id": 4,
       "defId": "sakura-blossom",
-      "x": 149.59163031381883,
-      "y": 82.05501893206201,
-      "scaleX": 1.4026700927907125,
-      "scaleY": 1.5258404805741408,
-      "rotation": 139.39687548290922,
+      "x": 134.92496122166546,
+      "y": 81.62739407285821,
+      "scaleX": 0.33981015109743307,
+      "scaleY": 0.3696493472837177,
+      "rotation": 64.65137049401336,
       "carveLevel": 2,
-      "colorOverrides": {},
+      "colorOverrides": {
+        "branch": 4,
+        "centers": "#f5f0e1"
+      },
       "variationSeed": 19076,
       "locked": false
     },
@@ -1117,7 +1113,7 @@ const MOKURI_GALLERY_PRESETS = [
       "rotation": 0,
       "carveLevel": 2,
       "colorOverrides": {
-        "detail": 2
+        "detail": "#f5f0e1"
       },
       "variationSeed": 56076
     },
@@ -1132,19 +1128,36 @@ const MOKURI_GALLERY_PRESETS = [
       "carveLevel": 2,
       "colorOverrides": {},
       "variationSeed": 27793
+    },
+    {
+      "id": 11,
+      "defId": "pagoda",
+      "x": 396.50627661680846,
+      "y": 250.86580815920928,
+      "scaleX": 0.37839923759442395,
+      "scaleY": 0.37839923759442395,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "detail": 0,
+        "highlight": 1,
+        "marking": "#f5f0e1"
+      },
+      "variationSeed": 30281
     }
   ],
-  "nextId": 9,
+  "nextId": 12,
   "paletteId": "edo",
   "paperW": 500,
   "paperH": 500,
   "paperType": "torinoko",
-  "inkLoad": "light",
+  "inkLoad": "standard",
   "impressions": 1,
   "background": "day",
   "foreground": "water",
   "horizon": 0.33,
   "mist": 2,
+  "smoothHorizon": false,
   "backgroundCarveStrokes": [],
   "presentationMargin": "narrow",
   "presentationTitle": "Temple View",
@@ -1155,741 +1168,1316 @@ const MOKURI_GALLERY_PRESETS = [
   "compositionName": "Temple View"
 },
  
-  //Koi Fishing (420×280)
+  // Ships (420×600)
   {
-  "pack": "core",
   "elements": [
     {
-      "id": 3,
-      "defId": "rolling-hills",
-      "x": 211.13594890510947,
-      "y": 138.78010948905109,
-      "scaleX": 1.4075729927007299,
-      "scaleY": 2.0004301355578726,
+      "id": 2,
+      "defId": "boat-junk",
+      "x": 190.48107514088818,
+      "y": 313.08682436672615,
+      "scaleX": 0.16353110014070826,
+      "scaleY": 0.16353110014070826,
       "rotation": 0,
-      "carveLevel": 1,
-      "colorOverrides": {
-        "near": 3
-      },
-      "variationSeed": 23073
+      "carveLevel": 2,
+      "colorOverrides": {},
+      "variationSeed": 76083,
+      "locked": false
     },
     {
       "id": 1,
-      "defId": "flowing-stream",
-      "x": 213.95776449169202,
-      "y": 180.00116281730254,
-      "scaleX": 1.5523634372325528,
-      "scaleY": 1.313793103448276,
-      "rotation": 7.709793315073327,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "water": 1,
-        "rock": 2,
-        "foam": "#f5f0e1"
-      },
-      "variationSeed": 8822,
-      "carveStrokes": [
-        {
-          "points": [
-            {
-              "x": 239.2645884034119,
-              "y": 86.36068816225476,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 245.21527826675262,
-              "y": 84.07835653666903,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 264.0241490871006,
-              "y": 81.03200690850234,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 279.51386876315576,
-              "y": 81.09205600816406,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            }
-          ],
-          "tool": "pattern",
-          "pattern": "woodgrain",
-          "density": 0.7,
-          "rotation": 10
-        },
-        {
-          "points": [
-            {
-              "x": 159.26442114282793,
-              "y": 80.34670260359098,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 193.91048531216427,
-              "y": 80.25875703755167,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 207.32971405439974,
-              "y": 82.27686073750542,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 213.5562093368417,
-              "y": 85.28952519984266,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            }
-          ],
-          "tool": "pattern",
-          "pattern": "woodgrain",
-          "density": 0.7,
-          "rotation": 10
-        },
-        {
-          "points": [
-            {
-              "x": 85.29295778669136,
-              "y": 63.79182312383491,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 97.11107075867787,
-              "y": 67.1439638960958,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 114.67452540570659,
-              "y": 66.77000758049327,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 137.24637686827512,
-              "y": 71.05604038952548,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 160.76035829486557,
-              "y": 78.93690086640238,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 177.04387617791707,
-              "y": 78.1806188126957,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 187.72370798477777,
-              "y": 80.26953399405491,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            }
-          ],
-          "tool": "pattern",
-          "pattern": "woodgrain",
-          "density": 0.7,
-          "rotation": 10
-        },
-        {
-          "points": [
-            {
-              "x": 25.06591941396198,
-              "y": 48.4585353255906,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 27.831240383525444,
-              "y": 47.029498349507314,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 54.18703671107727,
-              "y": 42.77418482171279,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 66.89569185792024,
-              "y": 42.38895075747917,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 73.77071824189584,
-              "y": 44.115107867271725,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            }
-          ],
-          "tool": "pattern",
-          "pattern": "woodgrain",
-          "density": 0.7,
-          "rotation": 5
-        },
-        {
-          "points": [
-            {
-              "x": 19.268102640074602,
-              "y": 61.01460858127722,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 54.048730724541635,
-              "y": 57.16109637603101,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 59.422837965448295,
-              "y": 58.08406740280456,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            }
-          ],
-          "tool": "pattern",
-          "pattern": "woodgrain",
-          "density": 0.7,
-          "rotation": 5
-        },
-        {
-          "points": [
-            {
-              "x": 22.708825223121906,
-              "y": 55.675958199151985,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 50.814249672668616,
-              "y": 51.18013701960824,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 63.982302366960006,
-              "y": 51.61164782661912,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            }
-          ],
-          "tool": "pattern",
-          "pattern": "woodgrain",
-          "density": 0.7,
-          "rotation": 5
-        },
-        {
-          "points": [
-            {
-              "x": 25.99819158817033,
-              "y": 61.648138895892785,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 50.95625523666855,
-              "y": 59.10567680456028,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 57.22526425120965,
-              "y": 59.80371536569853,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            }
-          ],
-          "tool": "pattern",
-          "pattern": "woodgrain",
-          "density": 0.7,
-          "rotation": 5
-        },
-        {
-          "points": [
-            {
-              "x": 115.90852571287911,
-              "y": 65.73484806194493,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 122.73605088460306,
-              "y": 66.15628028579805,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 140.58435301813458,
-              "y": 72.67762430088845,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 160.43234482211238,
-              "y": 74.73047964494869,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            }
-          ],
-          "tool": "pattern",
-          "pattern": "woodgrain",
-          "density": 0.7,
-          "rotation": 5
-        },
-        {
-          "points": [
-            {
-              "x": 111.43753469428032,
-              "y": 67.13407767032024,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 157.2838547534719,
-              "y": 71.65017117242311,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 191.51931700839202,
-              "y": 83.93349864078108,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 215.46061093781248,
-              "y": 85.24809412031235,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            }
-          ],
-          "tool": "pattern",
-          "pattern": "woodgrain",
-          "density": 0.7,
-          "rotation": 5
-        },
-        {
-          "points": [
-            {
-              "x": 240.49341789735735,
-              "y": 84.45402731149576,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 275.01931847438465,
-              "y": 81.5635756153385,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            }
-          ],
-          "tool": "pattern",
-          "pattern": "woodgrain",
-          "density": 0.7,
-          "rotation": 5
-        },
-        {
-          "points": [
-            {
-              "x": 217.96767393399085,
-              "y": 79.93905015878073,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 226.8960957909748,
-              "y": 80.75667954602845,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 236.37514844472284,
-              "y": 84.10823114238593,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 246.41366416495086,
-              "y": 82.66617891507067,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            }
-          ],
-          "tool": "pattern",
-          "pattern": "woodgrain",
-          "density": 0.75,
-          "rotation": 15,
-          "pressure": 54
-        },
-        {
-          "points": [
-            {
-              "x": 213.2432617382964,
-              "y": 85.10534600410007,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 223.75561969115694,
-              "y": 83.54517621199666,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 231.49050896627367,
-              "y": 84.72369774769638,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 244.88635059823207,
-              "y": 83.8927421117837,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            }
-          ],
-          "tool": "pattern",
-          "pattern": "woodgrain",
-          "density": 0.75,
-          "rotation": 15,
-          "pressure": 54
-        },
-        {
-          "points": [
-            {
-              "x": 251.31967668243857,
-              "y": 140.95061683930382,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 214.92667624890018,
-              "y": 146.88419867950898,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            }
-          ],
-          "tool": "pattern",
-          "pattern": "woodgrain",
-          "density": 0.75,
-          "rotation": 15,
-          "pressure": 54
-        },
-        {
-          "points": [
-            {
-              "x": 235.15734125836417,
-              "y": 70.60814614036329,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 254.221292304392,
-              "y": 70.77272444227941,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            },
-            {
-              "x": 267.29460756363756,
-              "y": 68.930438674733,
-              "pressure": 0.5,
-              "tilt": 0,
-              "tiltX": 0,
-              "tiltY": 0
-            }
-          ],
-          "tool": "pattern",
-          "pattern": "woodgrain",
-          "density": 0.75,
-          "rotation": 15,
-          "pressure": 54
-        }
-      ]
-    },
-    {
-      "id": 2,
-      "defId": "wooden-bridge",
-      "x": 206.19910767855464,
-      "y": 149.76228390320088,
-      "scaleX": 1.0758874698452106,
-      "scaleY": 1.158020652990142,
-      "rotation": -1.137205016518763,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "shadow": "#1a1a1a",
-        "deck": 2,
-        "rail": "#c23b22"
-      },
-      "variationSeed": 52451
-    },
-    {
-      "id": 4,
-      "defId": "fisherman",
-      "x": 172.18601758925212,
-      "y": 199.82918726146374,
-      "scaleX": 0.6605172413793103,
-      "scaleY": 0.71959475204525,
-      "rotation": -3.0056513544306256,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "rod": "#c46a20",
-        "hat": "#1a1a1a"
-      },
-      "variationSeed": 9430
-    },
-    {
-      "id": 7,
-      "defId": "koi-leaping",
-      "x": 247.7962870775044,
-      "y": 201.004159148721,
-      "scaleX": 0.14016180206258005,
-      "scaleY": 0.1189019496043315,
+      "defId": "boat-junk",
+      "x": 303.7994572237767,
+      "y": 357.6937274042042,
+      "scaleX": 0.1858927505725609,
+      "scaleY": 0.1858927505725609,
       "rotation": 0,
       "carveLevel": 2,
-      "colorOverrides": {},
-      "variationSeed": 98835
+      "colorOverrides": {
+        "shadows": 4,
+        "sails": 3
+      },
+      "variationSeed": 67865
     },
     {
-      "id": 8,
-      "defId": "crane-flying",
-      "x": 128.09615384615384,
-      "y": 51.980769230769226,
-      "scaleX": 0.19038461538461535,
-      "scaleY": 0.19038461538461535,
+      "id": 3,
+      "defId": "full-moon",
+      "x": 107.72020761195421,
+      "y": 83.31605912005065,
+      "scaleX": 0.7512953376582472,
+      "scaleY": 0.7512953376582472,
       "rotation": 0,
       "carveLevel": 0,
       "colorOverrides": {
-        "body": "#f5f0e1",
-        "wing": "#f5f0e1",
-        "detail": 2
+        "body": 4
       },
-      "variationSeed": 13118
+      "variationSeed": 91326,
+      "zoneBokashi": {
+        "body": "down"
+      }
     },
     {
-      "id": 9,
-      "defId": "cloud-bank",
-      "x": 251.72297297297297,
-      "y": 28.33783783783784,
-      "scaleX": 0.35363825363825363,
-      "scaleY": 0.20219594594594595,
+      "id": 4,
+      "defId": "gentle-waves",
+      "x": 35.44041438369976,
+      "y": 475.64766396416553,
+      "scaleX": -1,
+      "scaleY": 1,
       "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "body": "#f5f0e1",
-        "highlight": 1
-      },
-      "variationSeed": 36608
+      "carveLevel": 0,
+      "colorOverrides": {},
+      "variationSeed": 19818,
+      "zoneBokashi": {
+        "body": "down"
+      }
     },
     {
-      "id": 10,
-      "defId": "cloud-bank",
-      "x": 276.8571517671517,
-      "y": 44.338295218295215,
-      "scaleX": 0.2662088597473213,
-      "scaleY": 0.15220738045738047,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "body": "#f5f0e1",
-        "highlight": 1
-      },
-      "variationSeed": 723,
-      "locked": false
-    },
-    {
-      "id": 11,
-      "defId": "cloud-bank",
-      "x": 14.35715176715172,
-      "y": 33.838295218295215,
-      "scaleX": 0.2662088597473213,
-      "scaleY": 0.15220738045738047,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "body": "#f5f0e1",
-        "highlight": 1
-      },
-      "variationSeed": 75136,
-      "locked": false
-    },
-    {
-      "id": 12,
-      "defId": "cloud-bank",
-      "x": 400.3571517671517,
-      "y": 45.838295218295215,
-      "scaleX": 0.2662088597473213,
-      "scaleY": 0.15220738045738047,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "body": "#f5f0e1",
-        "highlight": 1
-      },
-      "variationSeed": 6835,
-      "locked": false
-    },
-    {
-      "id": 13,
+      "id": 5,
       "defId": "hanko-mokuri",
-      "x": 406.9583166440333,
-      "y": 263.29165638486575,
-      "scaleX": 0.4458333333333333,
-      "scaleY": 0.4458333333333333,
+      "x": 401.6580304171131,
+      "y": 580.5699433895925,
+      "scaleX": 0.5077720224486143,
+      "scaleY": 0.5077720224486143,
       "rotation": 0,
       "carveLevel": 2,
       "colorOverrides": {},
-      "variationSeed": 91122
-    },
-    {
-      "id": 14,
-      "defId": "koi-leaping",
-      "x": 299.7280056094244,
-      "y": 220.962309872794,
-      "scaleX": -0.09486388342381127,
-      "scaleY": 0.0804748549186965,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {},
-      "variationSeed": 79539,
-      "locked": false
+      "variationSeed": 69605
     }
   ],
-  "nextId": 14,
-  "paletteId": "hiroshige",
+  "nextId": 6,
+  "paletteId": "sumi",
   "paperW": 420,
-  "paperH": 280,
-  "paperType": "hosho",
+  "paperH": 600,
+  "paperType": "kozo",
   "inkLoad": "standard",
   "impressions": 1,
-  "background": "day",
-  "foreground": "none",
-  "horizon": 0.58,
-  "mist": 1,
-  "backgroundCarveStrokes": [],
-  "presentationMargin": "standard",
-  "presentationTitle": "Koi Fishing",
+  "background": "warm",
+  "foreground": "water",
+  "horizon": 0.3,
+  "mist": 2,
+  "smoothHorizon": false,
+  "backgroundCarveStrokes": [
+    {
+      "points": [
+        {
+          "x": 114.55957162039624,
+          "y": 381.1398913792202,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 127.00108383472597,
+          "y": 378.72875095883023,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 131.3471361432757,
+          "y": 376.7875598362514,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 98.77434369647895,
+          "y": 377.4064580449255,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 97.15024544852122,
+          "y": 371.1917049952916,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 112.66411558490104,
+          "y": 378.4999978748138,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 123.62731376179177,
+          "y": 379.87622946742977,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 127.47506110756476,
+          "y": 377.38436553522257,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 105.85490853445873,
+          "y": 391.70983941214433,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 124.36660820614524,
+          "y": 393.57493445861013,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 96.5284837995257,
+          "y": 391.0880777631487,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 111.89199516221406,
+          "y": 397.17174285608695,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 123.94522025376457,
+          "y": 399.69202688250095,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 128.71545955646627,
+          "y": 399.79120754417306,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 134.59332894627457,
+          "y": 394.1357119573389,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 143.1606074741909,
+          "y": 386.11398457118446,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 154.43077301591276,
+          "y": 386.11398457118446,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 158.56422168512876,
+          "y": 384.4246659428842,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 171.73168125500038,
+          "y": 382.4696654065193,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 174.83917488234354,
+          "y": 380.3994976014631,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 153.730555507115,
+          "y": 406.6321189880372,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 175.67769465286966,
+          "y": 406.6321189880372,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 185.55278659036924,
+          "y": 400.1916222589694,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 202.04236306050097,
+          "y": 395.2983384004723,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 97.15024544852122,
+          "y": 415.33678207397463,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 111.88838483824972,
+          "y": 416.5369457436206,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 128.7795523535992,
+          "y": 416.0619888115243,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 101.50257699149,
+          "y": 360.6217569623675,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 127.8268569327127,
+          "y": 355.85204143862524,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 100.25905369349891,
+          "y": 346.32123903547017,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 107.96103039337615,
+          "y": 351.771816098827,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 114.20294699207707,
+          "y": 354.2096302739086,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 125.28673677864353,
+          "y": 355.823385476027,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 102.74610028948103,
+          "y": 327.0466279166086,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 114.1321731236056,
+          "y": 330.01184216507113,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 101.50257699149,
+          "y": 300.9326386587961,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 101.86410243960411,
+          "y": 302.88608338429424,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 103.74650813960453,
+          "y": 303.3309072435764,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 128.6580040259639,
+          "y": 303.4195615760541,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 100.25905369349891,
+          "y": 323.9378196716309,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 102.8170493072324,
+          "y": 328.48310330616897,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 109.53095700828268,
+          "y": 330.5250387545306,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 175.49221322195876,
+          "y": 422.79792186192105,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 189.31935945686732,
+          "y": 423.41021759249844,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 213.3905656358793,
+          "y": 422.1779931386626,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 111.45076337541855,
+          "y": 438.3419630868094,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 134.51812841535647,
+          "y": 437.7770965147073,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 141.9170841761998,
+          "y": 420.310875265939,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 160.9807361937922,
+          "y": 420.310875265939,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 172.11182110728674,
+          "y": 418.1976805112127,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 97.15024544852122,
+          "y": 440.8290096827916,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 123.15669556097004,
+          "y": 439.64238545081963,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 136.32122933524,
+          "y": 436.47667813982287,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 144.7668018476839,
+          "y": 441.410275976158,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 156.97505573241398,
+          "y": 444.2186866562013,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 164.22034981420592,
+          "y": 444.55438970283063,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 174.49130221629378,
+          "y": 441.73934705726066,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 190.4144927978516,
+          "y": 446.42486452375147,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 204.61751180131307,
+          "y": 445.00785751838555,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 224.62451097425122,
+          "y": 438.7132531189376,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 88.4455823625837,
+          "y": 444.5595795767648,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 102.453373174129,
+          "y": 447.52744664957305,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 121.30687200117671,
+          "y": 448.28927784499,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 64.19687805175784,
+          "y": 410.9844505310059,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 68.94552221850098,
+          "y": 416.36324837058635,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 83.88624219513895,
+          "y": 423.91245043752986,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 80.36268092564177,
+          "y": 403.5233107430595,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 104.57577560480189,
+          "y": 405.2840218823112,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 71.65801783970426,
+          "y": 376.7875598362514,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 76.85280725582008,
+          "y": 380.39152993073674,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 95.60484437252424,
+          "y": 382.3635864644349,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 82.22796587262837,
+          "y": 396.06217095511306,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 81.66309930052626,
+          "y": 398.3771411287254,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 82.84745768891726,
+          "y": 400.2706919378336,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 88.90769260903656,
+          "y": 402.8303855010624,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 56.11397661481587,
+          "y": 455.75128925868455,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 58.90917605606081,
+          "y": 459.3702002812234,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 67.0657270614575,
+          "y": 463.9569628756188,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 79.86569143668332,
+          "y": 463.84296146014316,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 94.04143720354352,
+          "y": 468.1865222385952,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 98.26196269189438,
+          "y": 469.8857770066474,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 106.18601492028702,
+          "y": 470.0504169495127,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 119.8686333692088,
+          "y": 465.21230593466476,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 145.64765407017302,
+          "y": 471.9170921325684,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 145.64765407017302,
+          "y": 473.8623511716571,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 147.78806854684015,
+          "y": 474.95371948481267,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 155.60380538598068,
+          "y": 476.01784069700693,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 174.04305269556224,
+          "y": 475.03540900222424,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 200.98444083077572,
+          "y": 476.26942367553715,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 215.57184640555386,
+          "y": 474.5560873759539,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 226.18891434497837,
+          "y": 470.9007006935865,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 254.45594264439177,
+          "y": 467.5647605895997,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 269.50949758816245,
+          "y": 462.14576481337633,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 191.03625444684712,
+          "y": 487.4611333574568,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 205.3443801076806,
+          "y": 489.8077594067825,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 217.98566744797319,
+          "y": 489.94812077743666,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 238.29013977050784,
+          "y": 506.11398282732284,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 274.3635042985906,
+          "y": 497.690213064607,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 240.77718636649,
+          "y": 485.59584841047024,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 260.7711774336253,
+          "y": 486.8386332808919,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 269.5364412825988,
+          "y": 482.7371865415776,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 243.26423296247214,
+          "y": 461.9689057486398,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 263.10369980385246,
+          "y": 460.7282470976808,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 110.20724007742746,
+          "y": 269.8445562090193,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 115.66685053127108,
+          "y": 270.16931435520655,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 117.86460593016199,
+          "y": 266.2714020019419,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 92.79791390555249,
+          "y": 282.9015508379256,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 105.99448784965148,
+          "y": 283.5233052339653,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 87.82382071358819,
+          "y": 287.2538823808943,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 104.33891430198844,
+          "y": 287.2530597842214,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 105.0843689393876,
+          "y": 286.02195797450656,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 84.7150124686105,
+          "y": 308.39377844674254,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 96.87593475541699,
+          "y": 309.01551611902465,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 84.09325081961498,
+          "y": 331.3989594595773,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 84.37304356166297,
+          "y": 332.9158208364977,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 87.08492518352284,
+          "y": 333.2467087926943,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 91.41082536662928,
+          "y": 331.44110496294684,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 79.11915762765068,
+          "y": 352.53885552542556,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 85.23691938900008,
+          "y": 353.7755976761098,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 88.25402404901925,
+          "y": 352.2183464116772,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 105.23314688546321,
+          "y": 251.1917067391532,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 107.62027036113577,
+          "y": 254.55309223758474,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 113.55498299030327,
+          "y": 254.91918530680178,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    },
+    {
+      "points": [
+        {
+          "x": 135.69946768624447,
+          "y": 258.03108487810414,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 142.28194508296724,
+          "y": 258.03108487810414,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        },
+        {
+          "x": 144.61109852329616,
+          "y": 254.43485962596094,
+          "pressure": 0.5,
+          "tilt": 0,
+          "tiltX": 0,
+          "tiltY": 0
+        }
+      ],
+      "tool": "ugouge"
+    }
+  ],
+  "presentationMargin": "narrow",
+  "presentationTitle": "Ships in Moonlight",
   "presentationEdition": "",
   "presentationHanko": null,
   "presentationHankoPos": "bottom-right",
   "presentationDeckle": true,
-  "compositionName": "Daylight Rolling Hills & Flowing Stream"
+  "compositionName": "Ships"
 },
 
   // Farm and Full Moon (600×420)
@@ -3461,7 +4049,6 @@ const MOKURI_GALLERY_PRESETS = [
  
   // Winter Branches (400×280)
   {
-  "pack": "core",
   "elements": [
     {
       "id": 4,
@@ -3473,7 +4060,9 @@ const MOKURI_GALLERY_PRESETS = [
       "rotation": 0,
       "carveLevel": 0,
       "colorOverrides": {
-        "far": 1
+        "far": 1,
+        "mid": 2,
+        "near": 1
       },
       "variationSeed": 65552,
       "zoneBokashi": {
@@ -3485,28 +4074,30 @@ const MOKURI_GALLERY_PRESETS = [
     {
       "id": 1,
       "defId": "bare-branch",
-      "x": 200,
-      "y": 114.25,
-      "scaleX": 1,
-      "scaleY": 1.3678571428571429,
+      "x": 72.04998668493768,
+      "y": 121.47861028811575,
+      "scaleX": 0.17177698193130062,
+      "scaleY": 0.23984152568782735,
       "rotation": 0,
       "carveLevel": 2,
       "colorOverrides": {
-        "bud": "#f5f0e1"
+        "bud": "#f5f0e1",
+        "marking": 2
       },
       "variationSeed": 296
     },
     {
       "id": 2,
       "defId": "bare-branch",
-      "x": 286.0929203539823,
-      "y": 178.60619469026548,
-      "scaleX": -0.7386615044247791,
-      "scaleY": 0.8199115044247789,
+      "x": 345.1806546412887,
+      "y": 129.5221700534824,
+      "scaleX": -0.14893314288598006,
+      "scaleY": 0.17373273942774933,
       "rotation": 0,
       "carveLevel": 2,
       "colorOverrides": {
-        "bud": "#f5f0e1"
+        "bud": "#f5f0e1",
+        "marking": 2
       },
       "variationSeed": 57086,
       "locked": false
@@ -3514,30 +4105,47 @@ const MOKURI_GALLERY_PRESETS = [
     {
       "id": 3,
       "defId": "bare-branch",
-      "x": 94.12389380530976,
-      "y": 193.141592920354,
-      "scaleX": 0.8265486725663717,
-      "scaleY": 0.8265486725663717,
-      "rotation": 0,
+      "x": 191.99340990376274,
+      "y": 147.06240558373767,
+      "scaleX": 0.2060217941322178,
+      "scaleY": 0.2060217941322178,
+      "rotation": 16.691137645278303,
       "carveLevel": 2,
       "colorOverrides": {
-        "bud": "#f5f0e1"
+        "bud": "#f5f0e1",
+        "marking": 2
       },
       "variationSeed": 22650,
       "locked": false
     },
     {
+      "id": 6,
+      "defId": "hanko-mokuri",
+      "x": 389.2654257000038,
+      "y": 268.73003144072317,
+      "scaleX": 0.31945954829706125,
+      "scaleY": 0.31945954829706125,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {},
+      "variationSeed": 98717
+    },
+    {
       "id": 5,
       "defId": "paper-lantern",
-      "x": 266.929054054054,
-      "y": 83.30067567567568,
-      "scaleX": 0.3185810810810811,
-      "scaleY": 0.3185810810810811,
+      "x": 169.34853374851423,
+      "y": 109.79641060079837,
+      "scaleX": 0.059317659207435175,
+      "scaleY": 0.059317659207435175,
       "rotation": 0,
       "carveLevel": 2,
       "colorOverrides": {
         "rib": 1,
-        "detail": "#f5f0e1"
+        "detail": "#f5f0e1",
+        "body": "#e8c870",
+        "frame": 3,
+        "marking": "#d4826a",
+        "accent": 0
       },
       "variationSeed": 31733,
       "zoneBokashi": {
@@ -3545,19 +4153,70 @@ const MOKURI_GALLERY_PRESETS = [
       }
     },
     {
-      "id": 6,
-      "defId": "hanko-mokuri",
-      "x": 383.0154257000038,
-      "y": 261.98003144072317,
-      "scaleX": 0.4277928816303946,
-      "scaleY": 0.4277928816303946,
+      "id": 7,
+      "defId": "paper-lantern",
+      "x": 367.51524871670216,
+      "y": 113.34991450324586,
+      "scaleX": 0.041473722656763884,
+      "scaleY": 0.041473722656763884,
       "rotation": 0,
       "carveLevel": 2,
-      "colorOverrides": {},
-      "variationSeed": 98717
+      "colorOverrides": {
+        "rib": 1,
+        "detail": "#f5f0e1",
+        "body": "#e8c870",
+        "marking": "#d4826a",
+        "frame": 3,
+        "accent": 0
+      },
+      "variationSeed": 37114,
+      "zoneBokashi": {
+        "body": "right"
+      },
+      "locked": false
+    },
+    {
+      "id": 8,
+      "defId": "paper-lantern",
+      "x": 37.3119501552546,
+      "y": 78.66596065110616,
+      "scaleX": 0.04985562316807337,
+      "scaleY": 0.04985562316807337,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "rib": 1,
+        "detail": "#f5f0e1",
+        "body": "#e8c870",
+        "marking": "#d4826a",
+        "frame": 3,
+        "accent": 0
+      },
+      "variationSeed": 58511,
+      "zoneBokashi": {
+        "body": "right"
+      },
+      "locked": false
+    },
+    {
+      "id": 9,
+      "defId": "rock-formation",
+      "x": 74.08353781861251,
+      "y": 248.3264309483539,
+      "scaleX": 0.4166685256237501,
+      "scaleY": 0.2177946131455763,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "detail": 2,
+        "rock": 0,
+        "moss": 2,
+        "shadow": 1
+      },
+      "variationSeed": 82923
     }
   ],
-  "nextId": 7,
+  "nextId": 10,
   "paletteId": "fuyu",
   "paperW": 400,
   "paperH": 280,
@@ -3568,8 +4227,9 @@ const MOKURI_GALLERY_PRESETS = [
   "foreground": "none",
   "horizon": 0.85,
   "mist": 0,
+  "smoothHorizon": false,
   "backgroundCarveStrokes": [],
-  "presentationMargin": "standard",
+  "presentationMargin": "narrow",
   "presentationTitle": "Winter Branches",
   "presentationEdition": "",
   "presentationHanko": null,
@@ -3715,7 +4375,6 @@ const MOKURI_GALLERY_PRESETS = [
 
   // Sparrows and Wisps (800×320)
   {
-  "pack": "core",
   "elements": [
     {
       "id": 1,
@@ -3753,16 +4412,20 @@ const MOKURI_GALLERY_PRESETS = [
     {
       "id": 3,
       "defId": "cherry-branch",
-      "x": 668.6078164867548,
-      "y": 101.7652405569981,
-      "scaleX": 1.3166614388118754,
-      "scaleY": 1.3166614388118754,
+      "x": 641.6072858104533,
+      "y": 100.6761659439133,
+      "scaleX": 0.28258373573378354,
+      "scaleY": 0.28258373573378354,
       "rotation": 0,
       "carveLevel": 2,
       "colorOverrides": {
         "blossom": "#d4a030",
         "branch": 1,
-        "detail": 1
+        "detail": 1,
+        "petals": "#c23b22",
+        "centers": "#d4a030",
+        "2nd petals": 4,
+        "buds": "#c46a20"
       },
       "variationSeed": 8598
     },
@@ -3821,6 +4484,7 @@ const MOKURI_GALLERY_PRESETS = [
   "foreground": "water",
   "horizon": 0.33,
   "mist": 3,
+  "smoothHorizon": false,
   "backgroundCarveStrokes": [],
   "presentationMargin": "narrow",
   "presentationTitle": "Sparrows and Wisps",
@@ -3831,2933 +4495,5 @@ const MOKURI_GALLERY_PRESETS = [
   "compositionName": "Sparrows and Wisps"
 },
 
-  // Spring (420×280)
-  {
-  "pack": "core",
-  "elements": [
-    {
-      "id": 3,
-      "defId": "chrysanthemum",
-      "x": 40.51231133046235,
-      "y": 151.1388447868489,
-      "scaleX": 1.3111736734507327,
-      "scaleY": 1.3111736734507327,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {},
-      "variationSeed": 55815,
-      "locked": false
-    },
-    {
-      "id": 2,
-      "defId": "chrysanthemum",
-      "x": 303.76766531291725,
-      "y": 196.79722575917728,
-      "scaleX": 1.3111736734507327,
-      "scaleY": 1.3111736734507327,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "petal": 0
-      },
-      "variationSeed": 36604
-    },
-    {
-      "id": 4,
-      "defId": "sakura-blossom",
-      "x": 173.7035898702909,
-      "y": 252.87305595400701,
-      "scaleX": 1.41486153447945,
-      "scaleY": 1.41486153447945,
-      "rotation": -17.771110860125304,
-      "carveLevel": 2,
-      "colorOverrides": {},
-      "variationSeed": 37343
-    },
-    {
-      "id": 5,
-      "defId": "maple-branch",
-      "x": 273.8141890857461,
-      "y": -32.377979427777575,
-      "scaleX": 1.636132897188238,
-      "scaleY": -1.636132897188238,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "leaf": 2
-      },
-      "variationSeed": 40001
-    },
-    {
-      "id": 1,
-      "defId": "ume-blossom",
-      "x": 121.7984894234691,
-      "y": 65.67607056474765,
-      "scaleX": 1.3063086583021335,
-      "scaleY": 1.3063086583021335,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "petal": 3,
-        "center": 0,
-        "detail": 4
-      },
-      "variationSeed": 32598
-    },
-    {
-      "id": 6,
-      "defId": "ume-blossom",
-      "x": 238.3174761864522,
-      "y": 116.49028216167056,
-      "scaleX": 0.9935007733028737,
-      "scaleY": 0.9935007733028737,
-      "rotation": 34.014727570442695,
-      "carveLevel": 2,
-      "colorOverrides": {},
-      "variationSeed": 49710,
-      "locked": false
-    },
-    {
-      "id": 8,
-      "defId": "hanko-mokuri",
-      "x": 406.250054664908,
-      "y": 264.4166851515566,
-      "scaleX": 0.374999764313308,
-      "scaleY": 0.374999764313308,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {},
-      "variationSeed": 90239
-    }
-  ],
-  "nextId": 9,
-  "paletteId": "beni",
-  "paperW": 420,
-  "paperH": 280,
-  "paperType": "kozo",
-  "inkLoad": "standard",
-  "impressions": 1,
-  "background": "sakura",
-  "foreground": "grass",
-  "horizon": 0.1,
-  "mist": 0,
-  "backgroundCarveStrokes": [
-    {
-      "points": [
-        {
-          "x": 380.4356413586372,
-          "y": 257.21536299472007,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 395.1513536894927,
-          "y": 258.06993682546664,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 417.682068245623,
-          "y": 254.48388779456994,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 433.163856405539,
-          "y": 250.11527149895102,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 440.01486359112135,
-          "y": 245.06309669577507,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 447.102700353074,
-          "y": 243.38577754639726,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 396.29746253737983,
-          "y": 260.65331295552573,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 415.30098183104064,
-          "y": 243.65967455655695,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 403.63501707480793,
-          "y": 255.1765141066972,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 385.58025907886366,
-          "y": 268.2184390378657,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 380.3476151941033,
-          "y": 275.96728799169307,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 415.30129504389686,
-          "y": 220.5572892076682,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 416.25318025853704,
-          "y": 226.0234843389863,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 414.81103190439075,
-          "y": 231.31841991589005,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 396.89161031267713,
-          "y": 260.0540260598575,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 376.6205741595157,
-          "y": 276.8936849370099,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 365.925052628271,
-          "y": 283.3334939391031,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 362.5381127480498,
-          "y": 283.7554682881481,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 384.4876319363817,
-          "y": 281.68254723051933,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 399.66684378249494,
-          "y": 277.71471948695415,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 434.8330748001324,
-          "y": 255.8088504387675,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 350.3149749546467,
-          "y": 270.4423750296245,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 362.99290187180657,
-          "y": 263.8972850612409,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 391.85185934457104,
-          "y": 242.77331881510273,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 416.13447431822283,
-          "y": 229.61607251488374,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 443.75959155579824,
-          "y": 203.93883675433446,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 419.20386779077086,
-          "y": 180.53960344875253,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 414.78948805815344,
-          "y": 184.2149317665812,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 411.3053113412033,
-          "y": 192.9560698991167,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 412.28109894990104,
-          "y": 228.3488788617202,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 410.8600993164409,
-          "y": 240.1733404208624,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 404.1918978996895,
-          "y": 258.5636009663471,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 391.1690569757759,
-          "y": 281.006904914272,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 392.35543671884693,
-          "y": 289.96139288494464,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 409.1929203096592,
-          "y": 246.94860055943838,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 401.78433935868026,
-          "y": 248.5350147110614,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 383.8824030741355,
-          "y": 248.77303350968833,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 374.70545282577456,
-          "y": 250.69857810649702,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 332.0114575025272,
-          "y": 267.5095369799895,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 317.2613708416892,
-          "y": 269.9102643244129,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 417.16774287935834,
-          "y": 272.16524995466585,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 396.4697315161344,
-          "y": 268.6909716124341,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 379.00019290601864,
-          "y": 269.0409006715576,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 328.5916649361609,
-          "y": 275.5787332969304,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 304.97892457051955,
-          "y": 281.3330879642099,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 288.0697824499304,
-          "y": 283.5319292040077,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 231.88037594081746,
-          "y": 223.1416015952302,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 237.48353511347145,
-          "y": 226.8600047473762,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 249.8347110667901,
-          "y": 239.76677362854636,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 275.29321801049633,
-          "y": 259.5648074708196,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 288.1860601712869,
-          "y": 271.15514906309784,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 319.08949550067297,
-          "y": 306.79627916870555,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 235.61327161174043,
-          "y": 214.1356644870594,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 230.91441916500906,
-          "y": 214.27872725600886,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 228.94818073329245,
-          "y": 221.19138056179975,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 238.31141562796333,
-          "y": 260.3800205687979,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 239.00681313076134,
-          "y": 182.73235335335065,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 238.68069533113314,
-          "y": 180.89383016018851,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 240.06710622853902,
-          "y": 190.5686325589438,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 241.1368444242716,
-          "y": 224.68927278183705,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 243.71704093286186,
-          "y": 232.21303962261348,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 247.494465327359,
-          "y": 238.2551704353448,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 258.44495294109305,
-          "y": 249.99441783365845,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 285.19941869789966,
-          "y": 272.59110760611657,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 323.391009179549,
-          "y": 297.93030885667207,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 172.66307643390286,
-          "y": 158.53380465235315,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 172.03617536657836,
-          "y": 157.66845824726133,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 169.23218251768236,
-          "y": 158.4182859521999,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 148.66497518997556,
-          "y": 171.55335681209507,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 130.57464900525454,
-          "y": 178.84692190836512,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 129.70321871460177,
-          "y": 183.93468902475317,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 131.2262685352113,
-          "y": 184.22572283191016,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 134.7214208843291,
-          "y": 181.73570799613125,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 184.37552794393952,
-          "y": 128.89913068654394,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 190.06134235045567,
-          "y": 124.84953134209076,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 193.97121767541816,
-          "y": 124.86922661942444,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 198.75901379149764,
-          "y": 130.06109715722934,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 189.46495920644725,
-          "y": 132.43236526283798,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 180.24535571801232,
-          "y": 136.79816264914052,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 172.70843891755194,
-          "y": 143.1028530246264,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 168.21004956079545,
-          "y": 149.00625980890024,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 145.9210639534607,
-          "y": 197.38967823184862,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 146.70914996887535,
-          "y": 200.2587101079501,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 151.17301433336888,
-          "y": 203.6929097983146,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 190.20714444115941,
-          "y": 221.46168561986488,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 172.0473444088795,
-          "y": 173.88190672066338,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 170.46202552360808,
-          "y": 167.00442201715384,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 171.194887609304,
-          "y": 161.1917670074077,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 178.19016032462582,
-          "y": 149.76643265827303,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 183.50252276672754,
-          "y": 145.77748299449763,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 191.32242528344833,
-          "y": 146.6204572174374,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 204.82569670030497,
-          "y": 154.03230858836332,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 210.18151256065008,
-          "y": 152.65361923072803,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 188.44304449735,
-          "y": 149.4495550475895,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 204.96782381627142,
-          "y": 144.89151386656428,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 213.3774798506126,
-          "y": 145.13931077521372,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 237.80218934113452,
-          "y": 161.18529946371547,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 243.45983007498856,
-          "y": 167.32151256657727,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 253.5657579435285,
-          "y": 192.96480160008588,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 257.19744508045676,
-          "y": 212.93604310600165,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 255.52440775036064,
-          "y": 219.47206128009208,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 250.89130827172187,
-          "y": 228.0924819019128,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 241.78104741170802,
-          "y": 237.54001248663477,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 236.70102930938023,
-          "y": 238.2702943124774,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 222.7640315640094,
-          "y": 235.54285938455487,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 213.3873078916517,
-          "y": 235.75002383801186,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 219.4145193530381,
-          "y": 227.16708713638246,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 236.02553197128285,
-          "y": 212.61465962796143,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 238.2996800246729,
-          "y": 207.53664390927347,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 237.95674883265562,
-          "y": 196.65209604432332,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 234.21782652167192,
-          "y": 176.21081632250122,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 231.00370286825336,
-          "y": 170.1851204708065,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 222.20324151884137,
-          "y": 161.30440400029292,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 206.2665646152528,
-          "y": 148.66644489115006,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 201.97324853325094,
-          "y": 146.45614064175535,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 198.68630102874553,
-          "y": 147.1185639705944,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 17.044226544551975,
-          "y": 262.5961016977319,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 32.76352539117259,
-          "y": 267.3271992198706,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 58.61544106255816,
-          "y": 282.0914758318892,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 67.52677446568819,
-          "y": 283.6713983177193,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 79.15926470864072,
-          "y": 282.82769299555173,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 14.377297234584404,
-          "y": 258.10335155247884,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 10.13937267041987,
-          "y": 253.4312547149753,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 16.451832845579045,
-          "y": 254.71632560504924,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 35.796192696963274,
-          "y": 254.13998450945334,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 61.16376236553035,
-          "y": 260.90760465936535,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 69.94581115027145,
-          "y": 270.737164960485,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 74.92549817559204,
-          "y": 273.2454587298932,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 83.31462696043288,
-          "y": 274.5810502907332,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 94.16708034249103,
-          "y": 274.2209596908792,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 108.60744481632092,
-          "y": 269.1755115965526,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 116.34143768913684,
-          "y": 274.0200887326118,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 118.55401991784116,
-          "y": 277.5311588798772,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 90.25143610316158,
-          "y": 246.77915940553964,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 79.70842300941804,
-          "y": 249.8431911474691,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 51.94715707797042,
-          "y": 248.13833980673115,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 33.56686711264002,
-          "y": 252.42057217661835,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 22.799694407726868,
-          "y": 249.7011047309242,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 11.448490020919232,
-          "y": 248.68783418121458,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 6.770671191332436,
-          "y": 249.61506364100904,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": -1.8750810962671292,
-          "y": 253.90579164115425,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 2.2427688742319845,
-          "y": 275.8897185658779,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": -6.8643241147931455,
-          "y": 273.51684232319536,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 9.961583761183778,
-          "y": 281.98592790856577,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 15.231759604691586,
-          "y": 283.4556301261041,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 51.72978583616839,
-          "y": 278.5889659488059,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 64.07930023986601,
-          "y": 280.5509527592658,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 85.67533781957447,
-          "y": 286.48742906608663,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 104.6514561596411,
-          "y": 288.8465122596069,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 8.37670628715739,
-          "y": 265.79641686969296,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 29.128007094972617,
-          "y": 265.8915357952477,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 45.17695884533889,
-          "y": 262.72211432518543,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 53.23210381054713,
-          "y": 262.77961945203197,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 67.66257666414899,
-          "y": 266.4937614585648,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 86.53210800511658,
-          "y": 274.85181271371914,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 5.976469908186573,
-          "y": 246.22525870270024,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 3.5041582243429406,
-          "y": 239.50122227202047,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 5.800693192214815,
-          "y": 249.49551485230685,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 11.67417044242675,
-          "y": 255.99228382681284,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 24.05015119580061,
-          "y": 262.7394004816653,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 40.67029991822243,
-          "y": 267.9487729383636,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 54.18395012802999,
-          "y": 269.1231631003665,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 96.18384044298378,
-          "y": 267.8825954203932,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 128.74577664907437,
-          "y": 271.6582016308108,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 155.13008610012741,
-          "y": 281.1305080562252,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 169.9464700030345,
-          "y": 282.25906042433985,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 178.4466996793104,
-          "y": 279.6189040522325,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 78.5169471393043,
-          "y": 259.14960843561994,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 85.08416638915817,
-          "y": 259.7884567349986,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 102.28486425194016,
-          "y": 264.5277186582854,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 129.99585105365864,
-          "y": 278.96819904114096,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 127.58844644270746,
-          "y": 197.23582877969284,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 133.4739535565015,
-          "y": 194.5413788107305,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 155.9434837808645,
-          "y": 176.8511396321641,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 160.02408586338018,
-          "y": 175.84289010960106,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 163.89260972770577,
-          "y": 177.8786323665707,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 158.9248658348263,
-          "y": 213.9759288929386,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 166.54166280761828,
-          "y": 231.37679685259522,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 171.2825467015832,
-          "y": 238.94008880516404,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 156.12459005936037,
-          "y": 272.2585917361529,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 152.66335592723,
-          "y": 280.814639096267,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 143.6983990966929,
-          "y": 290.4544238518977,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 25.29630099526082,
-          "y": 25.333188897751157,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 36.41599814846837,
-          "y": 17.20456396916544,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 50.86323620268327,
-          "y": 10.049214836035885,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 64.41591153103222,
-          "y": -0.8460664188907061,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 68.54269016118066,
-          "y": -2.6669494439870793,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 70.79972759495564,
-          "y": -1.167373427229478,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 71.85946711094108,
-          "y": 3.3919049088974234,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 69.83672906793552,
-          "y": 8.426608492531942,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 55.62734805233515,
-          "y": 20.24086450478356,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 25.46730196860098,
-          "y": 39.735844501075654,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 7.544898303215593,
-          "y": 49.02147751897524,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": -2.230831340394742,
-          "y": 52.40041365200987,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 9.091667514621678,
-          "y": 43.97675626191336,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 22.24090222522091,
-          "y": 29.823778533744672,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 36.34788111208279,
-          "y": 11.496284409357026,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 38.60489291823448,
-          "y": 4.736886306863229,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 35.931829393409025,
-          "y": 2.517973662315462,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 31.821113999976465,
-          "y": 1.9604574523875287,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 17.16211789159931,
-          "y": 4.072288531461726,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 7.135676824654038,
-          "y": 9.543801165117973,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 3.145537644303423,
-          "y": 17.551445388353756,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 19.295472948251593,
-          "y": 16.726287798569782,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 87.65692196786058,
-          "y": 19.155456321304698,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 52.66820966313785,
-          "y": 32.19724434707274,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 5.772433002528764,
-          "y": 56.359120491484866,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 4.364483698879077,
-          "y": 59.50868930192063,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 9.200365635654087,
-          "y": 65.15125753081762,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 19.3050624336769,
-          "y": 73.06097111146816,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 30.823513199011117,
-          "y": 79.53323880715472,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 25.065527182996675,
-          "y": 39.71218125286505,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 28.375897398142833,
-          "y": 31.063701478787284,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 37.841928515032876,
-          "y": 19.12692221364601,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 52.87795891193298,
-          "y": 5.716096117489133,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 68.89820558482063,
-          "y": -6.321478045886918,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 77.04471955575681,
-          "y": -10.198812928351302,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 86.59148833035154,
-          "y": -12.28237569715451,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 108.2761643733013,
-          "y": -11.72279820900599,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 9.37290794903501,
-          "y": 27.569919693542076,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 32.818229240888826,
-          "y": 33.28197968055198,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 51.21625487867828,
-          "y": 33.53771432032607,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 60.063261005676424,
-          "y": 30.878067547944976,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 74.748184138385,
-          "y": 22.06721290595868,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 89.58553833944039,
-          "y": 16.366717277152095,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 108.24845349319143,
-          "y": 13.551784229527177,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 131.1648796969692,
-          "y": 14.69353644210586,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 29.681003428279496,
-          "y": 7.119800892709989,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 15.095800001682935,
-          "y": 16.60669790517967,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": -8.349314100733439,
-          "y": 34.51284691957974,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": -13.310941621700103,
-          "y": 39.60503426834564,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": -14.561603177413591,
-          "y": 45.246832474286094,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": -13.968198291360387,
-          "y": 48.987132355778456,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": -6.649374472489588,
-          "y": 72.39473990976627,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": -7.089255389261115,
-          "y": 81.91780548920046,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": -9.131469499244476,
-          "y": 88.85536736438485,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 58.75850377356139,
-          "y": 26.71783177133601,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 52.020727702481985,
-          "y": 36.58062237798423,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 40.26834171034174,
-          "y": 58.95397165376789,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 22.878111026109536,
-          "y": 81.53147110397099,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": -6.199424536312525,
-          "y": 101.75939060109492,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 46.98903934809016,
-          "y": 39.8186922431408,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 14.75848648718827,
-          "y": 64.36763687654461,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 5.799249859331288,
-          "y": 69.4387093159808,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": -3.67598051061068,
-          "y": 72.82037343511901,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 249.37767270374272,
-          "y": 33.42802415870875,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 261.16907939175127,
-          "y": 37.305161392254,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 272.9951959941476,
-          "y": 43.7358869543876,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 291.1564720867314,
-          "y": 55.69820380176486,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 312.05231727835337,
-          "y": 72.38587815590974,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 268.3011253094023,
-          "y": 29.274095537954196,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 268.9877956724669,
-          "y": 39.57926756022637,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 276.2659509840652,
-          "y": 57.7841303026898,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 277.64362316856744,
-          "y": 71.41390991042978,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 281.04720557718883,
-          "y": 77.4160695912935,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 290.59401065795583,
-          "y": 82.95076231162521,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 315.97979050662286,
-          "y": 87.26267315376585,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 271.99350630562856,
-          "y": 40.67078016534687,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 264.47821698501065,
-          "y": 37.99222726843829,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 218.3560777954132,
-          "y": 31.456208543705493,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 212.02559366009942,
-          "y": 31.775182776516285,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 210.42776188966096,
-          "y": 35.69023350078491,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 402.60628415385804,
-          "y": 28.7788404996642,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 434.85458927630214,
-          "y": 6.616549228161649,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 402.1024484209902,
-          "y": 33.35211869031093,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 420.00478914318586,
-          "y": 21.75167785810972,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 429.6712813026287,
-          "y": 5.594220389561974,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 412.3471083226367,
-          "y": 29.786511965399924,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 430.2292636850785,
-          "y": 14.05127875951139,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 439.953170731798,
-          "y": 10.196725064666541,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 409.6599844140081,
-          "y": 109.93513747014671,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 432.89655404720884,
-          "y": 150.9692541447311,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 366.3301113873721,
-          "y": 111.3303748842423,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 375.9223812645188,
-          "y": 116.93056962799288,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 402.2158623756654,
-          "y": 123.99814079169782,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 421.1909949202954,
-          "y": 134.17233179783284,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 429.6832738095431,
-          "y": 140.28918622880028,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 430.8283226741967,
-          "y": 142.32877324931786,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 334.084624483829,
-          "y": 108.07482091801921,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 342.87063795251197,
-          "y": 106.93639439045558,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 351.82723540016934,
-          "y": 107.94845273938365,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 387.90344635995393,
-          "y": 117.03425706460197,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 397.3037249057701,
-          "y": 120.7815956181166,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 403.14378538814947,
-          "y": 125.98313614925065,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 412.71536720722344,
-          "y": 141.67474988937786,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 427.0302275237038,
-          "y": 158.46369413363715,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 433.2933165898198,
-          "y": 168.45248955424773,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 385.97970496921863,
-          "y": 114.50841566079345,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 397.2012517896325,
-          "y": 126.2618490129513,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 412.58002536947686,
-          "y": 137.14441282703675,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 414.95172241854635,
-          "y": 141.16843342927012,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 321.1528406735539,
-          "y": 46.839401077156154,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 344.48769782900337,
-          "y": 28.918569671293426,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 358.31094209675604,
-          "y": 25.912959745331236,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 377.3244926101573,
-          "y": 19.030785601278176,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 340.9703794996898,
-          "y": 9.09048401494212,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 368.7200022959015,
-          "y": -4.260099271629885,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 383.0249032159782,
-          "y": -6.789608080967869,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 310.4043450390395,
-          "y": 49.16479676731551,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 318.71641597868035,
-          "y": 46.52696527234326,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 328.4924690874871,
-          "y": 46.84205319784164,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 334.6308970383619,
-          "y": 43.71679558622136,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 356.2044806515749,
-          "y": 49.74213569217607,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    },
-    {
-      "points": [
-        {
-          "x": 325.3514717807861,
-          "y": 35.83254075981425,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 332.9154685696206,
-          "y": 35.37783138232015,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 350.1453444485154,
-          "y": 24.359809124007317,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 356.2570169625712,
-          "y": 22.16299226544864,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 376.07748731502545,
-          "y": 21.873961854446765,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        },
-        {
-          "x": 388.951200567535,
-          "y": 24.76500848755919,
-          "pressure": 1,
-          "tilt": 0,
-          "tiltX": 0,
-          "tiltY": 0
-        }
-      ],
-      "tool": "pattern",
-      "pattern": "asanoha",
-      "density": 1,
-      "rotation": 65
-    }
-  ],
-  "presentationMargin": "standard",
-  "presentationTitle": "Spring",
-  "presentationEdition": "",
-  "presentationHanko": null,
-  "presentationHankoPos": "bottom-right",
-  "presentationDeckle": true,
-  "compositionName": "Spring"
-},
 
 ];
