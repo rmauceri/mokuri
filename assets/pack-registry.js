@@ -125,7 +125,7 @@ registerPack({
     'mountain-distant', 'mountain-near', 'mountain-fuji-peak', 'rolling-hills',
     'farmland', 'tranquil-pond', 'flowing-stream', 'gentle-waves',
     'waterfall', 'full-moon', 'cloud-bank', 'pine-tree',
-    'cherry-branch', 'crane', 'torii-gate', 'twisted-pine',
+    'cherry-branch', 'torii-gate', 'twisted-pine',
     'weeping-willow', 'cherry-tree', 'cherry-tree-simple','sakura-blossom', 'ume-blossom', 'chrysanthemum',
     'susuki-grass', 'asanoha-star', 'seigaiha-tile', 'sensu-fan',
     'paper-lantern', 'lantern-kasuga-premium', 'lantern-yukimi-premium', 'lantern-oribe-premium',
