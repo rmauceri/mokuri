@@ -324,6 +324,9 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
   box-shadow: 0 0 0 2px var(--accent), var(--shadow);
   background: rgba(139,116,90, 0.12);
 }
+.element-thumb.pending {
+  background: rgba(180, 160, 140, 0.08);
+}
 .element-thumb svg, .element-thumb img {
   width: 78%;
   height: 78%;
@@ -3419,6 +3422,7 @@ const THUMB_CARVE_LEVEL = 1;   // 0=block, 1=shape, 2=detail
 const THUMB_PATH_LIMIT = 60;   // prune smallest overlay paths above this count
 const _thumbCache = new Map();  // def.id → dataURL
 let _thumbCacheGen = 0;         // generation token to discard stale async renders
+let _thumbObserver = null;      // IntersectionObserver for lazy thumbnail builds
 const MOVE_DEAD_ZONE = 6; // px of screen travel before element move commits
 const MARQUEE_THRESHOLD = 5; // px movement before marquee rect appears
 let marquee = null;          // marquee selection state
@@ -7561,6 +7565,8 @@ function updateStyleBadge() {
 function buildElementPicker() {
   const list = $('element-list');
   list.innerHTML = '';
+  _thumbCacheGen++;
+  if (_thumbObserver) { _thumbObserver.disconnect(); _thumbObserver = null; }
 
   // Two-tier: featured (pack + affinity) vs rest
   // When dev-styles is off, exclude non-core pack elements entirely
@@ -7650,6 +7656,40 @@ function buildElementPicker() {
     renderElementGroup(rest, content);
     list.appendChild(accordion);
   }
+  _startThumbObserver();
+}
+
+function _startThumbObserver() {
+  if (_thumbObserver) { _thumbObserver.disconnect(); _thumbObserver = null; }
+  const list = $('element-list');
+  if (!list) return;
+  const pending = list.querySelectorAll('[data-pending-id]');
+  if (!pending.length) return;
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      const thumb = entry.target;
+      obs.unobserve(thumb);
+      const defId = thumb.dataset.pendingId;
+      if (!defId) return;
+      delete thumb.dataset.pendingId;
+      thumb.classList.remove('pending');
+      const def = MOKURI_ELEMENTS.find(d => d.id === defId);
+      if (!def) return;
+      const cached = _thumbCache.get(defId);
+      if (cached) {
+        const img = document.createElement('img');
+        img.src = cached; img.alt = def.name; img.draggable = false;
+        thumb.prepend(img);
+        return;
+      }
+      const svgEl = _buildThumbSvg(def);
+      thumb.prepend(svgEl);
+      _rasterizeThumb(defId, svgEl, thumb);
+    });
+  }, { root: list, rootMargin: '200px' });
+  _thumbObserver = obs;
+  pending.forEach(el => obs.observe(el));
 }
 
 // ============================================================
@@ -7848,10 +7888,9 @@ function buildElementThumb(def) {
     img.draggable = false;
     thumb.appendChild(img);
   } else {
-    // Build SVG off-DOM, then rasterize to canvas async
-    const svgEl = _buildThumbSvg(def);
-    thumb.appendChild(svgEl);
-    _rasterizeThumb(def.id, svgEl, thumb);
+    // Lazy: mark as pending; IntersectionObserver will build when scrolled into view
+    thumb.classList.add('pending');
+    thumb.dataset.pendingId = def.id;
   }
 
   const lbl = document.createElement('div');
@@ -11539,7 +11578,6 @@ async function init() {
   fitPaperToView();
   buildPaletteUI();
   buildStyleSelector();
-  buildElementPicker();
   updateStyleBadge();
   setupInteraction();
   setupKeyboard();
@@ -11575,6 +11613,10 @@ async function init() {
   }
   // Sync ambient tone to current atmosphere
   MokuriAudio.setAmbienceForAtmosphere(STATE.background, STATE.foreground);
+
+  // Defer element picker build until after composition is on screen
+  const _ric = window.requestIdleCallback || (fn => setTimeout(fn, 0));
+  _ric(buildElementPicker);
 
   // Makimono: first run / splash / about wiring
   handleFirstRun();
