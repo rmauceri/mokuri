@@ -3137,6 +3137,16 @@ if (typeof MOKURI_KACHOE_PRESETS !== 'undefined' && typeof MOKURI_GALLERY_PRESET
 }
 
 // ============================================================
+//  ELEMENT LOOKUP MAP — O(1) element definition access
+// ============================================================
+let _elemMap = new Map();
+function rebuildElementMap() {
+  _elemMap = new Map(MOKURI_ELEMENTS.map(d => [d.id, d]));
+}
+function getElementDef(id) { return _elemMap.get(id); }
+rebuildElementMap();
+
+// ============================================================
 //  VERSION
 // ============================================================
 // Display version — single source of truth is CACHE_NAME in sw.js.
@@ -4347,7 +4357,7 @@ function clientToSvg(clientX, clientY) {
 
 // Convert SVG workspace coords to element-local coords
 function svgToElementLocal(svgX, svgY, el) {
-  const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+  const def = getElementDef(el.defId);
   if (!def) return { x: 0, y: 0 };
   const vb = def.viewBox.split(' ').map(Number);
   const offX = -vb[2] / 2;
@@ -4433,7 +4443,7 @@ function getElementVisiblePaths(def, carveLevel) {
 }
 
 function renderElementSvg(el, layerIndex) {
-  const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+  const def = getElementDef(el.defId);
   if (!def) return null;
   const blockPaths = getElementBlockPaths(def);
   const overlayPaths = getElementOverlayPaths(def, el.carveLevel);
@@ -4722,7 +4732,7 @@ function selectElement(id) {
   STATE.selectedIds.add(id);
   const el = STATE.elements.find(e => e.id === id);
   if (el) {
-    const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+    const def = getElementDef(el.defId);
     STATE.activeZone = def && def.colorZones.length ? def.colorZones[0].id : null;
   }
   refreshSelectionUI();
@@ -4732,7 +4742,7 @@ function addToSelection(id) {
   STATE.selectedIds.add(id);
   const el = STATE.elements.find(e => e.id === id);
   if (el) {
-    const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+    const def = getElementDef(el.defId);
     STATE.activeZone = def && def.colorZones.length ? def.colorZones[0].id : null;
   }
   refreshSelectionUI();
@@ -4745,7 +4755,7 @@ function removeFromSelection(id) {
   if (pid) {
     const el = STATE.elements.find(e => e.id === pid);
     if (el) {
-      const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+      const def = getElementDef(el.defId);
       STATE.activeZone = def && def.colorZones.length ? def.colorZones[0].id : null;
     }
   } else {
@@ -4782,7 +4792,7 @@ function computeGroupAABB(ids) {
   for (const id of ids) {
     const el = STATE.elements.find(e => e.id === id);
     if (!el) continue;
-    const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+    const def = getElementDef(el.defId);
     if (!def) continue;
     const vb = def.viewBox.split(' ').map(Number);
     const hw = (vb[2] / 2) * Math.abs(el.scaleX);
@@ -4817,7 +4827,7 @@ function updateSelection() {
     // --- Single selection: full handles (resize, rotate) ---
     const el = STATE.elements.find(e => STATE.selectedIds.has(e.id));
     if (!el) return;
-    const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+    const def = getElementDef(el.defId);
     if (!def) return;
 
     const vb = def.viewBox.split(' ').map(Number);
@@ -5043,7 +5053,7 @@ function updateSelection() {
     for (const id of STATE.selectedIds) {
       const el = STATE.elements.find(e => e.id === id);
       if (!el) continue;
-      const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+      const def = getElementDef(el.defId);
       if (!def) continue;
 
       const vb = def.viewBox.split(' ').map(Number);
@@ -5084,7 +5094,7 @@ function updateSelection() {
 //  ADD / REMOVE ELEMENTS
 // ============================================================
 function addElement(defId, x, y) {
-  const def = MOKURI_ELEMENTS.find(d => d.id === defId);
+  const def = getElementDef(defId);
   if (!def) return;
 
   // Scale elements with large viewBoxes (e.g. Forge exports) to a reasonable initial size.
@@ -5131,7 +5141,7 @@ function carveSelected() {
   if (!pid) return;
   const el = STATE.elements.find(e => e.id === pid);
   if (!el || el.locked) return;
-  const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+  const def = getElementDef(el.defId);
   if (!def || def.carveLevels.length <= 1) return;
   pushUndo();
   el.carveLevel = (el.carveLevel + 1) % def.carveLevels.length;
@@ -5254,7 +5264,7 @@ function moveLayerToExtreme(dir) {
 function elementsAtPoint(svgX, svgY) {
   const hits = [];
   for (const el of STATE.elements) {
-    const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+    const def = getElementDef(el.defId);
     if (!def) continue;
     const vb = def.viewBox.split(' ').map(Number);
     const hw = vb[2] / 2 * Math.abs(el.scaleX);
@@ -5864,7 +5874,7 @@ function generateCompositionName(data) {
   if (data.elements && data.elements.length) {
     const names = [];
     for (const el of data.elements) {
-      const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+      const def = getElementDef(el.defId);
       if (def && !names.includes(def.name)) {
         names.push(def.name);
         if (names.length >= 2) break;
@@ -5913,7 +5923,7 @@ function generateThumbnailSvg(data) {
   // coordinate mapping, centering, and overflow clipping
   if (data.elements) {
     for (const el of data.elements) {
-      const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+      const def = getElementDef(el.defId);
       if (!def || !def.carveLevels || !def.carveLevels[0]) continue;
       const vb = def.viewBox.split(' ').map(Number);
       const esx = (el.scaleX || 1) * sc;
@@ -5970,7 +5980,7 @@ function getCompositionData() {
   const seenDefIds = new Set();
   for (const el of STATE.elements) {
     if (seenDefIds.has(el.defId)) continue;
-    const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+    const def = getElementDef(el.defId);
     if (def && def.custom) {
       customDefs.push(def);
       seenDefIds.add(el.defId);
@@ -6007,11 +6017,12 @@ function applyCompositionData(data) {
   let hasCustomDefs = false;
   if (data.customDefs) {
     for (const def of data.customDefs) {
-      if (!MOKURI_ELEMENTS.find(d => d.id === def.id)) {
+      if (!getElementDef(def.id)) {
         MOKURI_ELEMENTS.push(def);
         hasCustomDefs = true;
       }
     }
+    if (hasCustomDefs) rebuildElementMap();
   }
   STATE.elements = data.elements || [];
   STATE.nextId = data.nextId || (STATE.elements.length ? Math.max(...STATE.elements.map(e => e.id)) + 1 : 1);
@@ -6377,7 +6388,9 @@ async function buildWorkshopUI() {
     chip.addEventListener('click', () => {
       workshopPaperW = p.w;
       workshopPaperH = p.h;
-      buildWorkshopUI();
+      // Only update chip active states — don't rebuild thumbnails
+      paperRow.querySelectorAll('.workshop-paper-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
     });
     paperRow.appendChild(chip);
   });
@@ -6501,13 +6514,15 @@ async function buildWorkshopUI() {
     const card = document.createElement('div');
     card.className = 'workshop-recent' + (entry.id === STATE.activeCompositionId ? ' active' : '');
 
-    // Thumbnail — regenerate from composition data for consistent rendering
+    // Thumbnail — use stored thumbnail (generated at save time) for instant display
     const thumbDiv = document.createElement('div');
     thumbDiv.className = 'workshop-recent-thumb';
-    if (entry.data) {
-      thumbDiv.innerHTML = generateThumbnailSvg(entry.data);
-    } else if (entry.thumbnail) {
+    if (entry.thumbnail) {
       thumbDiv.innerHTML = entry.thumbnail;
+    } else if (entry.data) {
+      // Legacy entry without stored thumbnail — mark for lazy generation
+      thumbDiv.innerHTML = `<svg viewBox="0 0 120 84"><rect width="120" height="84" fill="#f5f0e6"/></svg>`;
+      thumbDiv.dataset.needsThumb = entry.id;
     } else {
       thumbDiv.innerHTML = `<svg viewBox="0 0 120 84"><rect width="120" height="84" fill="#f5f0e6"/></svg>`;
     }
@@ -6605,6 +6620,26 @@ async function buildWorkshopUI() {
 
     recents.appendChild(card);
   });
+
+  // Lazy-generate thumbnails for entries missing stored thumbnail
+  const pendingThumbs = recents.querySelectorAll('[data-needs-thumb]');
+  if (pendingThumbs.length) {
+    const idleRender = (idx) => {
+      if (idx >= pendingThumbs.length) return;
+      const thumbDiv = pendingThumbs[idx];
+      if (!thumbDiv.isConnected) return; // Workshop was closed
+      const entryId = thumbDiv.dataset.needsThumb;
+      const entry = gallery.find(e => e.id === entryId);
+      if (entry && entry.data) {
+        thumbDiv.innerHTML = generateThumbnailSvg(entry.data);
+        delete thumbDiv.dataset.needsThumb;
+      }
+      const schedule = window.requestIdleCallback || ((fn) => setTimeout(fn, 50));
+      schedule(() => idleRender(idx + 1));
+    };
+    const schedule = window.requestIdleCallback || ((fn) => setTimeout(fn, 50));
+    schedule(() => idleRender(0));
+  }
 }
 
 // ============================================================
@@ -7674,7 +7709,7 @@ function _startThumbObserver() {
       if (!defId) return;
       delete thumb.dataset.pendingId;
       thumb.classList.remove('pending');
-      const def = MOKURI_ELEMENTS.find(d => d.id === defId);
+      const def = getElementDef(defId);
       if (!def) return;
       const cached = _thumbCache.get(defId);
       if (cached) {
@@ -8307,7 +8342,7 @@ function buildPaletteUI() {
 function renderCarvePreview(el, points) {
   clearCarvePreview();
   if (points.length < 2) return;
-  const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+  const def = getElementDef(el.defId);
   if (!def) return;
   const vb = def.viewBox.split(' ').map(Number);
   const offX = -vb[2] / 2 - vb[0];
@@ -8662,7 +8697,7 @@ function enterCarveFocus(elementId) {
   if (STATE.carveFocus) return;
   const el = STATE.elements.find(e => e.id === elementId);
   if (!el) return;
-  const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+  const def = getElementDef(el.defId);
   if (!def) return;
 
   // Save current viewport
@@ -8988,7 +9023,7 @@ function buildCarveStudioUI() {
         : 'Select an element to see carve options';
       elContent.appendChild(hint);
     } else {
-      const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+      const def = getElementDef(el.defId);
       if (def) {
         // Carve level pips
         const levelRow = document.createElement('div');
@@ -9199,7 +9234,7 @@ function buildInkStudioUI() {
         : 'Select an element to edit its colors';
       zoneContent.appendChild(hint);
     } else {
-    const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+    const def = getElementDef(el.defId);
     if (def && def.colorZones.length) {
 
     def.colorZones.forEach(z => {
@@ -10973,7 +11008,7 @@ function setupInteraction() {
     const id = parseInt(gEl.getAttribute('data-id'));
     const el = STATE.elements.find(el => el.id === id);
     if (!el) return;
-    const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
+    const def = getElementDef(el.defId);
     if (!def) return;
     pushUndo();
     el.carveLevel = (el.carveLevel + 1) % def.carveLevels.length;
@@ -11536,6 +11571,7 @@ function setupToolbar() {
     if (!def) return;
     // Register the custom hanko as an element
     MOKURI_ELEMENTS.push(def);
+    rebuildElementMap();
     hideHankoCreator();
     // Place at center of visible area
     const svgPt = clientToSvg(
