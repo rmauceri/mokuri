@@ -6067,6 +6067,15 @@ async function autoSave() {
   };
 
   await saveComposition(entry);
+
+  // Invalidate Workshop thumbnail cache for this composition so next open shows fresh thumbnail
+  for (const key of _wsThumbCache.keys()) {
+    if (key.startsWith(id + ':')) {
+      URL.revokeObjectURL(_wsThumbCache.get(key));
+      _wsThumbCache.delete(key);
+      break;
+    }
+  }
 }
 
 async function autoLoad() {
@@ -6514,6 +6523,25 @@ async function buildWorkshopUI() {
     recents.querySelectorAll('.workshop-recent').forEach(c => {
       c.classList.toggle('active', c.dataset.compId === STATE.activeCompositionId);
     });
+    // Refresh active composition thumbnail if its cache was invalidated (e.g. by autoSave)
+    if (STATE.activeCompositionId) {
+      const activeCard = recents.querySelector(`.workshop-recent[data-comp-id="${STATE.activeCompositionId}"]`);
+      if (activeCard) {
+        const img = activeCard.querySelector('.workshop-recent-thumb img');
+        if (img) {
+          const gallery = await getGallery();
+          const entry = gallery.find(e => e.id === STATE.activeCompositionId);
+          if (entry && entry.thumbnail) {
+            const cacheKey = entry.id + ':' + (entry.updatedAt || 0);
+            if (!_wsThumbCache.has(cacheKey)) {
+              const url = svgToBlobUrl(entry.thumbnail);
+              _wsThumbCache.set(cacheKey, url);
+              img.src = url;
+            }
+          }
+        }
+      }
+    }
     return;
   }
 
