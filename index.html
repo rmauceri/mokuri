@@ -776,7 +776,6 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
   color: var(--text-muted);
   font-size: 11px;
   cursor: pointer;
-  transition: all 0.15s;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -843,7 +842,7 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
   background: #f5f0e6;
   border: 1px solid rgba(0,0,0,0.08);
 }
-.workshop-starter-thumb svg { display: block; width: 100%; height: 100%; }
+.workshop-starter-thumb svg, .workshop-starter-thumb img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .workshop-starter-name {
   font-size: 10px;
   font-weight: 600;
@@ -872,8 +871,8 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
   border-radius: 8px;
   background: var(--bg);
   cursor: pointer;
-  transition: all 0.15s;
   overflow: hidden;
+  contain: layout style paint;
 }
 .workshop-recent:hover { border-color: var(--accent); background: var(--selection); }
 .workshop-recent.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
@@ -886,7 +885,7 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
   justify-content: center;
   background: #f5f0e6;
 }
-.workshop-recent-thumb svg { display: block; width: 100%; height: 100%; }
+.workshop-recent-thumb svg, .workshop-recent-thumb img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .workshop-recent-info {
   padding: 6px 8px;
 }
@@ -3149,27 +3148,7 @@ rebuildElementMap();
 // ============================================================
 //  VERSION
 // ============================================================
-// Display version — single source of truth is CACHE_NAME in sw.js.
-// This variable is populated at runtime from the installed cache name.
-// Do NOT hardcode this — it will be set by initVersionDisplay() below.
-let MOKURI_VERSION = '…';
-
-// Read the installed SW cache name to determine the actual running version.
-// Updates all version displays once the cache is read.
-function initVersionDisplay() {
-  if (!('caches' in window)) return;
-  caches.keys().then(function(keys) {
-    const cacheKey = keys.find(k => /^mokuri-v\d+$/.test(k));
-    if (!cacheKey) return;
-    const num = parseInt(cacheKey.replace('mokuri-v', ''));
-    if (!num) return;
-    MOKURI_VERSION = '0.' + num;
-    // Update any version elements already in the DOM
-    const el = document.getElementById('maki-version');
-    if (el) el.textContent = 'v' + MOKURI_VERSION;
-  }).catch(function() {});
-}
-initVersionDisplay();
+const MOKURI_VERSION = '0.92';
 
 // ============================================================
 //  FEEDBACK
@@ -5845,6 +5824,7 @@ function importCompositions() {
           await saveComposition(entry);
           imported++;
         }
+        _workshopGalleryGen++;
         await buildWorkshopUI();
         $('status-hint').textContent = 'Imported ' + imported + ' composition' + (imported !== 1 ? 's' : '');
         MokuriAudio.playPlace();
@@ -6230,6 +6210,7 @@ async function newComposition(paperW, paperH, presetId) {
   }
 
   autoSave();
+  _workshopGalleryGen++;
   $('status-hint').textContent = STATE.compositionName;
 }
 
@@ -6258,6 +6239,7 @@ async function switchToComposition(compositionId) {
 
 async function deleteComposition(compositionId) {
   await removeComposition(compositionId);
+  _workshopGalleryGen++;
 
   if (STATE.activeCompositionId === compositionId) {
     const gallery = await getGallery();
@@ -6284,6 +6266,7 @@ async function renameComposition(compositionId, newName) {
     entry.name = newName;
     entry.userNamed = true;
     await saveComposition(entry);
+    _workshopGalleryGen++;
     if (compositionId === STATE.activeCompositionId) {
       STATE.compositionName = newName;
     }
@@ -6364,12 +6347,34 @@ function setPaperSize(w, h) {
 // ============================================================
 let workshopPaperW = 600, workshopPaperH = 420;
 
+// --- Workshop persistent DOM state ---
+let _workshopBuilt = false;        // starters built at least once
+let _workshopGalleryGen = 0;       // generation counter: bumped on new/delete/rename/import
+let _workshopLastGen = -1;         // generation rendered in recents
+let _cachedPresetSvgs = null;      // cached preset thumbnail data URIs
+const _wsThumbCache = new Map();   // cacheKey → blob URL (persistent across opens)
+
+// Convert SVG string to a Blob URL for use in <img> src — O(1), no string encoding
+function svgToBlobUrl(svgStr) {
+  return URL.createObjectURL(new Blob([svgStr], { type: 'image/svg+xml' }));
+}
+
+// For cached preset URIs we use data URIs (small, persistent across GC)
+function svgToDataUri(svgStr) {
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgStr);
+}
+
 function openWorkshop() {
   workshopPaperW = STATE.paperW;
   workshopPaperH = STATE.paperH;
-  buildWorkshopUI();
+  // Reset scroll position to top
+  const wsc = document.querySelector('.workshop-content');
+  if (wsc) wsc.scrollTop = 0;
+  // Show modal IMMEDIATELY so user sees instant feedback
   $('workshop-modal').classList.add('visible');
   MokuriAudio.playModalOpen();
+  // Build/update UI after modal is visible (non-blocking paint)
+  requestAnimationFrame(() => { buildWorkshopUI(); });
 }
 
 function closeWorkshop() {
@@ -6378,116 +6383,143 @@ function closeWorkshop() {
 }
 
 async function buildWorkshopUI() {
-  // Paper size chips
+  // Paper size chips — always update active state (cheap)
   const paperRow = $('workshop-paper-row');
-  paperRow.innerHTML = '';
-  PAPER_PRESETS.forEach(p => {
-    const chip = document.createElement('button');
-    chip.className = 'workshop-paper-chip' + (workshopPaperW === p.w && workshopPaperH === p.h ? ' active' : '');
-    chip.innerHTML = `${p.name}<span class="workshop-chip-dims">${p.dims}</span>`;
-    chip.addEventListener('click', () => {
-      workshopPaperW = p.w;
-      workshopPaperH = p.h;
-      // Only update chip active states — don't rebuild thumbnails
-      paperRow.querySelectorAll('.workshop-paper-chip').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-    });
-    paperRow.appendChild(chip);
-  });
-
-  // Starter cards: blank + presets
-  const starters = $('workshop-starters');
-  starters.innerHTML = '';
-
-  // Blank card
-  const blankCard = document.createElement('div');
-  blankCard.className = 'workshop-starter';
-  const blankThumb = document.createElement('div');
-  blankThumb.className = 'workshop-starter-thumb';
-  const pt = PAPER_TYPES[STATE.paperType || 'kozo'];
-  blankThumb.innerHTML = `<svg viewBox="0 0 64 44"><rect width="64" height="44" fill="${pt.base}"/><text x="32" y="24" text-anchor="middle" fill="#c8c0b0" font-size="8" font-weight="600">+</text></svg>`;
-  const blankName = document.createElement('div');
-  blankName.className = 'workshop-starter-name';
-  blankName.textContent = 'Blank';
-  blankCard.appendChild(blankThumb);
-  blankCard.appendChild(blankName);
-  blankCard.addEventListener('click', () => {
-    closeWorkshop();
-    newComposition(workshopPaperW, workshopPaperH);
-  });
-  starters.appendChild(blankCard);
-
-  // Curated presets from gallery.js replace generated scene presets
-  const hasCurated = typeof MOKURI_GALLERY_PRESETS !== 'undefined' && MOKURI_GALLERY_PRESETS.length;
-
-  if (hasCurated) {
-    MOKURI_GALLERY_PRESETS.forEach((preset, idx) => {
-      const card = document.createElement('div');
-      card.className = 'workshop-starter';
-      const thumb = document.createElement('div');
-      thumb.className = 'workshop-starter-thumb';
-      thumb.innerHTML = generateThumbnailSvg(preset);
-      const name = document.createElement('div');
-      name.className = 'workshop-starter-name';
-      name.textContent = preset.presentationTitle || preset.compositionName || `Curated ${idx + 1}`;
-      card.appendChild(thumb);
-      card.appendChild(name);
-      if (preset.paperW && preset.paperH) {
-        const dims = document.createElement('div');
-        dims.className = 'workshop-starter-dims';
-        dims.textContent = `${preset.paperW} × ${preset.paperH}`;
-        card.appendChild(dims);
-      }
-      card.addEventListener('click', () => {
-        closeWorkshop();
-        const id = generateCompositionId();
-        STATE.activeCompositionId = id;
-        setActiveCompositionId(id);
-        resetToCompose();
-        applyCompositionData(preset);
-        STATE.compositionName = preset.presentationTitle || preset.compositionName || `Curated ${idx + 1}`;
-        autoSave();
-        $('status-hint').textContent = STATE.compositionName;
+  if (!paperRow.children.length) {
+    PAPER_PRESETS.forEach(p => {
+      const chip = document.createElement('button');
+      chip.className = 'workshop-paper-chip' + (workshopPaperW === p.w && workshopPaperH === p.h ? ' active' : '');
+      chip.innerHTML = `${p.name}<span class="workshop-chip-dims">${p.dims}</span>`;
+      chip.dataset.pw = p.w;
+      chip.dataset.ph = p.h;
+      chip.addEventListener('click', () => {
+        workshopPaperW = p.w;
+        workshopPaperH = p.h;
+        paperRow.querySelectorAll('.workshop-paper-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
       });
-      starters.appendChild(card);
+      paperRow.appendChild(chip);
     });
   } else {
-    // Fallback: generated scene presets (used until curated presets are added)
-    Object.entries(SCENE_PRESETS).forEach(([pid, preset]) => {
-      const card = document.createElement('div');
-      card.className = 'workshop-starter';
-      const thumb = document.createElement('div');
-      thumb.className = 'workshop-starter-thumb';
-      const previewData = {
-        paperW: workshopPaperW, paperH: workshopPaperH,
-        paperType: preset.paperType || 'kozo',
-        paletteId: preset.palette,
-        background: preset.background || preset.sky, foreground: preset.foreground || preset.ground,
-        horizon: preset.horizon, mist: preset.mist || 0,
-        elements: preset.elements(workshopPaperW, workshopPaperH),
-      };
-      thumb.innerHTML = generateThumbnailSvg(previewData);
-      const name = document.createElement('div');
-      name.className = 'workshop-starter-name';
-      name.textContent = preset.name;
-      card.appendChild(thumb);
-      card.appendChild(name);
-      const dims = document.createElement('div');
-      dims.className = 'workshop-starter-dims';
-      dims.textContent = `${workshopPaperW} × ${workshopPaperH}`;
-      card.appendChild(dims);
-      card.addEventListener('click', () => {
-        closeWorkshop();
-        newComposition(workshopPaperW, workshopPaperH, pid);
-      });
-      starters.appendChild(card);
+    paperRow.querySelectorAll('.workshop-paper-chip').forEach(c => {
+      const pw = parseInt(c.dataset.pw), ph = parseInt(c.dataset.ph);
+      c.classList.toggle('active', pw === workshopPaperW && ph === workshopPaperH);
     });
   }
 
-  // Inspiration prompt from active packs
+  // Starter cards: build once, reuse thereafter
+  const starters = $('workshop-starters');
+  if (!_workshopBuilt) {
+    starters.innerHTML = '';
+    // Blank card
+    const blankCard = document.createElement('div');
+    blankCard.className = 'workshop-starter';
+    const blankThumb = document.createElement('div');
+    blankThumb.className = 'workshop-starter-thumb';
+    const pt = PAPER_TYPES[STATE.paperType || 'kozo'];
+    blankThumb.innerHTML = `<svg viewBox="0 0 64 44"><rect width="64" height="44" fill="${pt.base}"/><text x="32" y="24" text-anchor="middle" fill="#c8c0b0" font-size="8" font-weight="600">+</text></svg>`;
+    const blankName = document.createElement('div');
+    blankName.className = 'workshop-starter-name';
+    blankName.textContent = 'Blank';
+    blankCard.appendChild(blankThumb);
+    blankCard.appendChild(blankName);
+    blankCard.addEventListener('click', () => {
+      closeWorkshop();
+      newComposition(workshopPaperW, workshopPaperH);
+    });
+    starters.appendChild(blankCard);
+
+    // Curated presets — generate thumbnail SVGs once, render as <img> data URIs
+    const hasCurated = typeof MOKURI_GALLERY_PRESETS !== 'undefined' && MOKURI_GALLERY_PRESETS.length;
+    if (hasCurated) {
+      if (!_cachedPresetSvgs) {
+        _cachedPresetSvgs = MOKURI_GALLERY_PRESETS.map(p => svgToDataUri(generateThumbnailSvg(p)));
+      }
+      MOKURI_GALLERY_PRESETS.forEach((preset, idx) => {
+        const card = document.createElement('div');
+        card.className = 'workshop-starter';
+        const thumb = document.createElement('div');
+        thumb.className = 'workshop-starter-thumb';
+        const img = document.createElement('img');
+        img.src = _cachedPresetSvgs[idx];
+        img.alt = preset.presentationTitle || preset.compositionName || '';
+        thumb.appendChild(img);
+        const name = document.createElement('div');
+        name.className = 'workshop-starter-name';
+        name.textContent = preset.presentationTitle || preset.compositionName || `Curated ${idx + 1}`;
+        card.appendChild(thumb);
+        card.appendChild(name);
+        if (preset.paperW && preset.paperH) {
+          const dims = document.createElement('div');
+          dims.className = 'workshop-starter-dims';
+          dims.textContent = `${preset.paperW} × ${preset.paperH}`;
+          card.appendChild(dims);
+        }
+        card.addEventListener('click', () => {
+          closeWorkshop();
+          const id = generateCompositionId();
+          STATE.activeCompositionId = id;
+          setActiveCompositionId(id);
+          resetToCompose();
+          applyCompositionData(preset);
+          STATE.compositionName = preset.presentationTitle || preset.compositionName || `Curated ${idx + 1}`;
+          autoSave();
+          _workshopGalleryGen++;
+          $('status-hint').textContent = STATE.compositionName;
+        });
+        starters.appendChild(card);
+      });
+    } else {
+      Object.entries(SCENE_PRESETS).forEach(([pid, preset]) => {
+        const card = document.createElement('div');
+        card.className = 'workshop-starter';
+        const thumb = document.createElement('div');
+        thumb.className = 'workshop-starter-thumb';
+        const previewData = {
+          paperW: workshopPaperW, paperH: workshopPaperH,
+          paperType: preset.paperType || 'kozo',
+          paletteId: preset.palette,
+          background: preset.background || preset.sky, foreground: preset.foreground || preset.ground,
+          horizon: preset.horizon, mist: preset.mist || 0,
+          elements: preset.elements(workshopPaperW, workshopPaperH),
+        };
+        const img = document.createElement('img');
+        img.src = svgToDataUri(generateThumbnailSvg(previewData));
+        thumb.appendChild(img);
+        const name = document.createElement('div');
+        name.className = 'workshop-starter-name';
+        name.textContent = preset.name;
+        card.appendChild(thumb);
+        card.appendChild(name);
+        const dims = document.createElement('div');
+        dims.className = 'workshop-starter-dims';
+        dims.textContent = `${workshopPaperW} × ${workshopPaperH}`;
+        card.appendChild(dims);
+        card.addEventListener('click', () => {
+          closeWorkshop();
+          newComposition(workshopPaperW, workshopPaperH, pid);
+        });
+        starters.appendChild(card);
+      });
+    }
+    _workshopBuilt = true;
+  }
+
+  // Inspiration prompt
   refreshWorkshopPrompt();
 
-  // Recent prints
+  // Recent prints — only rebuild if gallery has changed since last render
+  if (_workshopLastGen === _workshopGalleryGen) {
+    const recents = $('workshop-recents');
+    recents.querySelectorAll('.workshop-recent').forEach(c => {
+      c.classList.toggle('active', c.dataset.compId === STATE.activeCompositionId);
+    });
+    return;
+  }
+
+  // Yield so starters and paper chips are painted and interactive before heavy recents work
+  await new Promise(r => setTimeout(r, 0));
+
   const recents = $('workshop-recents');
   recents.innerHTML = '';
   const gallery = await getGallery();
@@ -6504,27 +6536,43 @@ async function buildWorkshopUI() {
     empty.className = 'workshop-empty';
     empty.textContent = 'No recent prints yet. Create one above!';
     recents.appendChild(empty);
+    _workshopLastGen = _workshopGalleryGen;
     return;
   }
 
-  // Sort by updatedAt descending
   gallery.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+
+  // Purge stale cache entries (compositions that no longer exist)
+  const galleryIds = new Set(gallery.map(e => e.id));
+  for (const key of _wsThumbCache.keys()) {
+    const id = key.split(':')[0];
+    if (!galleryIds.has(id)) {
+      URL.revokeObjectURL(_wsThumbCache.get(key));
+      _wsThumbCache.delete(key);
+    }
+  }
+
+  // Build all cards into a fragment with eager blob URL creation (cached across opens)
+  const frag = document.createDocumentFragment();
 
   gallery.forEach(entry => {
     const card = document.createElement('div');
     card.className = 'workshop-recent' + (entry.id === STATE.activeCompositionId ? ' active' : '');
+    card.dataset.compId = entry.id;
 
-    // Thumbnail — use stored thumbnail (generated at save time) for instant display
     const thumbDiv = document.createElement('div');
     thumbDiv.className = 'workshop-recent-thumb';
+
     if (entry.thumbnail) {
-      thumbDiv.innerHTML = entry.thumbnail;
-    } else if (entry.data) {
-      // Legacy entry without stored thumbnail — mark for lazy generation
-      thumbDiv.innerHTML = `<svg viewBox="0 0 120 84"><rect width="120" height="84" fill="#f5f0e6"/></svg>`;
-      thumbDiv.dataset.needsThumb = entry.id;
-    } else {
-      thumbDiv.innerHTML = `<svg viewBox="0 0 120 84"><rect width="120" height="84" fill="#f5f0e6"/></svg>`;
+      const cacheKey = entry.id + ':' + (entry.updatedAt || 0);
+      let url = _wsThumbCache.get(cacheKey);
+      if (!url) {
+        url = svgToBlobUrl(entry.thumbnail);
+        _wsThumbCache.set(cacheKey, url);
+      }
+      const img = document.createElement('img');
+      img.src = url;
+      thumbDiv.appendChild(img);
     }
     card.appendChild(thumbDiv);
 
@@ -6538,7 +6586,6 @@ async function buildWorkshopUI() {
     nameDiv.title = 'Click to rename';
     nameDiv.addEventListener('click', (e) => {
       e.stopPropagation();
-      // Inline rename
       const input = document.createElement('input');
       input.className = 'workshop-recent-name-input';
       input.value = entry.name || '';
@@ -6608,7 +6655,6 @@ async function buildWorkshopUI() {
     });
     card.appendChild(delBtn);
 
-    // Click to switch
     card.addEventListener('click', () => {
       if (entry.id === STATE.activeCompositionId) {
         closeWorkshop();
@@ -6618,28 +6664,11 @@ async function buildWorkshopUI() {
       closeWorkshop();
     });
 
-    recents.appendChild(card);
+    frag.appendChild(card);
   });
 
-  // Lazy-generate thumbnails for entries missing stored thumbnail
-  const pendingThumbs = recents.querySelectorAll('[data-needs-thumb]');
-  if (pendingThumbs.length) {
-    const idleRender = (idx) => {
-      if (idx >= pendingThumbs.length) return;
-      const thumbDiv = pendingThumbs[idx];
-      if (!thumbDiv.isConnected) return; // Workshop was closed
-      const entryId = thumbDiv.dataset.needsThumb;
-      const entry = gallery.find(e => e.id === entryId);
-      if (entry && entry.data) {
-        thumbDiv.innerHTML = generateThumbnailSvg(entry.data);
-        delete thumbDiv.dataset.needsThumb;
-      }
-      const schedule = window.requestIdleCallback || ((fn) => setTimeout(fn, 50));
-      schedule(() => idleRender(idx + 1));
-    };
-    const schedule = window.requestIdleCallback || ((fn) => setTimeout(fn, 50));
-    schedule(() => idleRender(0));
-  }
+  recents.appendChild(frag);
+  _workshopLastGen = _workshopGalleryGen;
 }
 
 // ============================================================
