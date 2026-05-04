@@ -7109,7 +7109,7 @@ const FRE_HINTS = {
   'carve-level':   { text: 'Add more carve detail',                target: '.cs-carve-level-row', arrow: 'left' },
   'carve-detail':  { text: 'Press C to carve deeper detail',       target: () => _freSelectedElementTarget(), arrow: 'left' },
   'carve-pattern': { text: 'Try a carve pattern',                  target: () => _freSelectedElementTarget(), arrow: 'left' },
-  'atmosphere':    { text: 'Set the mood of your scene',           target: '#btn-phase-ink', arrow: 'bottom' },
+  'atmosphere':    { text: 'Set the mood with an atmosphere preset', target: '.is-atmo-presets', arrow: 'left' },
   'bokashi':       { text: 'Add a gradient fade to a zone',        target: () => _freSelectedElementTarget(), arrow: 'left' },
   'color-zones':   { text: 'Click a zone to change its color',     target: () => _freSelectedElementTarget(), arrow: 'left' },
   'elements':      { text: 'Browse the element library',           target: '#element-list',  arrow: 'right' },
@@ -9481,6 +9481,7 @@ function buildInkStudioUI() {
           buildInkStudioUI();
           autoSave();
           MokuriAudio.setAmbienceForAtmosphere(STATE.background, STATE.foreground);
+          freAdvance('atmosphere');
         });
         presetRow.appendChild(chip);
         // Separator between pack presets and core presets
