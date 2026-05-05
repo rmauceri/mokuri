@@ -757,32 +757,34 @@ const MOKURI_GALLERY_PRESETS = [
     {
       "id": 2,
       "defId": "mountain-fuji-peak",
-      "x": 203.65888612017582,
-      "y": 204.28820558661872,
-      "scaleX": 1.456177839693121,
-      "scaleY": 1.3633547982145218,
+      "x": 149.61254223078492,
+      "y": 281.5250421818341,
+      "scaleX": 0.8310961621814715,
+      "scaleY": 0.7781185165725167,
       "rotation": 0,
       "carveLevel": 2,
       "colorOverrides": {
         "snow": "#f5f0e1",
-        "mountain": 0,
-        "texture": "#d4a0a0"
+        "texture": "#d4a0a0",
+        "peak": "#f5f0e1",
+        "shadows": 0
       },
       "variationSeed": 99804
     },
     {
       "id": 5,
       "defId": "rolling-hills",
-      "x": 231.51635236345857,
-      "y": 305.18251076744,
-      "scaleX": 2.23095366492314,
-      "scaleY": 2.8152894919983864,
+      "x": 226.71887647901417,
+      "y": 413.85399919833634,
+      "scaleX": 1.0529468095017926,
+      "scaleY": 0.7861787722476729,
       "rotation": 0,
-      "carveLevel": 0,
+      "carveLevel": 1,
       "colorOverrides": {
         "far": "#4a90c4",
         "mid": "#a0b8c4",
-        "near": "#c8c8c8"
+        "near": "#c8c8c8",
+        "middle": "#f5f0e1"
       },
       "variationSeed": 54743,
       "locked": false,
@@ -1060,15 +1062,17 @@ const MOKURI_GALLERY_PRESETS = [
     {
       "id": 7,
       "defId": "cloud-wisp",
-      "x": 348.1226275544309,
-      "y": 54.45654223152354,
-      "scaleX": 0.7449966342907848,
-      "scaleY": 0.7449966342907848,
+      "x": 420.6034006122443,
+      "y": 61.7963671430623,
+      "scaleX": 0.25888292821198144,
+      "scaleY": 0.17698871463176985,
       "rotation": 0,
       "carveLevel": 2,
       "colorOverrides": {
         "cloud": "#f5f0e1",
-        "detail": "#4a90c4"
+        "detail": "#4a90c4",
+        "color": "#f5f0e1",
+        "shadow": "#B3D9FF"
       },
       "variationSeed": 6532
     },
@@ -1141,7 +1145,10 @@ const MOKURI_GALLERY_PRESETS = [
       "colorOverrides": {
         "detail": 0,
         "highlight": 1,
-        "marking": "#f5f0e1"
+        "marking": "#f5f0e1",
+        "roof": "#f5f0e1",
+        "shadows": 0,
+        "details": 1
       },
       "variationSeed": 30281
     }
@@ -2482,7 +2489,6 @@ const MOKURI_GALLERY_PRESETS = [
 
   // Farm and Full Moon (600×420)
   {
-  "pack": "core",
   "elements": [
     {
       "id": 1,
@@ -3934,16 +3940,61 @@ const MOKURI_GALLERY_PRESETS = [
     {
       "id": 3,
       "defId": "tea-house",
-      "x": 130.00859203751506,
-      "y": 179.70051497140452,
-      "scaleX": 0.7126184912463938,
-      "scaleY": 0.7126184912463938,
+      "x": 143.15678838768227,
+      "y": 165.29797000944865,
+      "scaleX": 0.22857379153365173,
+      "scaleY": 0.22857379153365173,
       "rotation": 0,
       "carveLevel": 2,
       "colorOverrides": {
         "thatch": "#d4a030"
       },
       "variationSeed": 5204
+    },
+    {
+      "id": 8,
+      "defId": "field-worker",
+      "x": 405.3512791795036,
+      "y": 217.06829071076783,
+      "scaleX": 0.07729134486156697,
+      "scaleY": 0.07729134486156697,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "garment": 4,
+        "hat": 3,
+        "marking": 4,
+        "accent": 4
+      },
+      "variationSeed": 59729
+    },
+    {
+      "id": 11,
+      "defId": "hanko-mokuri",
+      "x": 580.9742027923032,
+      "y": 401.4220092332934,
+      "scaleX": 0.477477079835639,
+      "scaleY": 0.477477079835639,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {},
+      "variationSeed": 15232
+    },
+    {
+      "id": 12,
+      "defId": "fisherman",
+      "x": 182.13443447382787,
+      "y": 306.8029303426967,
+      "scaleX": 0.1872245695397698,
+      "scaleY": 0.1872245695397698,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "skin": 2,
+        "pants": 3,
+        "body": 4
+      },
+      "variationSeed": 7736
     },
     {
       "id": 4,
@@ -3971,72 +4022,47 @@ const MOKURI_GALLERY_PRESETS = [
       "locked": false
     },
     {
-      "id": 6,
-      "defId": "cloud-wisp",
-      "x": 345.2445264320893,
-      "y": 42.72032720874405,
-      "scaleX": 0.46030624083192234,
-      "scaleY": 0.46030624083192234,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {},
-      "variationSeed": 12371
-    },
-    {
-      "id": 7,
+      "id": 19,
       "defId": "cloud-bank",
-      "x": 508.30289062007,
-      "y": 86.91904440504815,
-      "scaleX": 0.3838119894017187,
-      "scaleY": 0.3838119894017187,
+      "x": 354.71652531725357,
+      "y": 58.91177993085989,
+      "scaleX": -0.13317561148669568,
+      "scaleY": 0.0961637804872101,
       "rotation": 0,
       "carveLevel": 2,
       "colorOverrides": {
         "body": 2,
-        "highlight": 1
+        "highlight": 1,
+        "shadow": 1
       },
-      "variationSeed": 22444
+      "variationSeed": 79111,
+      "locked": false
     },
     {
-      "id": 8,
-      "defId": "field-worker",
-      "x": 329.3833861748464,
-      "y": 216.89779572934253,
-      "scaleX": 0.506714149900824,
-      "scaleY": 0.506714149900824,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "garment": 4,
-        "hat": 3,
-        "accent": "#d4826a"
-      },
-      "variationSeed": 59729
-    },
-    {
-      "id": 11,
-      "defId": "hanko-mokuri",
-      "x": 576.3526106550687,
-      "y": 396.80041709605877,
-      "scaleX": 0.6315301510767938,
-      "scaleY": 0.6315301510767938,
+      "id": 20,
+      "defId": "cloud-wisp",
+      "x": 91.84909587003264,
+      "y": 57.45617537862961,
+      "scaleX": -0.11402920710349478,
+      "scaleY": 0.11402920710349478,
       "rotation": 0,
       "carveLevel": 2,
       "colorOverrides": {},
-      "variationSeed": 15232
+      "variationSeed": 66179
     }
   ],
-  "nextId": 12,
+  "nextId": 21,
   "paletteId": "fuyu",
   "paperW": 600,
   "paperH": 420,
   "paperType": "kozo",
   "inkLoad": "standard",
   "impressions": 1,
-  "background": "day",
+  "background": "night",
   "foreground": "none",
-  "horizon": 0.34,
+  "horizon": 0.56,
   "mist": 1,
+  "smoothHorizon": false,
   "backgroundCarveStrokes": [],
   "presentationMargin": "narrow",
   "presentationTitle": "Farm and Full Moon",
@@ -4240,13 +4266,12 @@ const MOKURI_GALLERY_PRESETS = [
 
   // Cloud Peak (320×800)
   {
-  "pack": "core",
   "elements": [
     {
       "id": 1,
       "defId": "full-moon",
-      "x": 131.7080552802654,
-      "y": 84.57488788004622,
+      "x": 94.80914010421907,
+      "y": 95.11743507320233,
       "scaleX": 1,
       "scaleY": 1,
       "rotation": 0,
@@ -4255,21 +4280,25 @@ const MOKURI_GALLERY_PRESETS = [
         "body": "#f5f0e1",
         "glow": "#4a90c4"
       },
-      "variationSeed": 40390
+      "variationSeed": 40390,
+      "zoneBokashi": {
+        "body": "down"
+      }
     },
     {
       "id": 2,
       "defId": "mountain-fuji-peak",
-      "x": 194.2297728359727,
-      "y": 273.5861980255747,
-      "scaleX": 1.403000719053984,
-      "scaleY": 1.9858219741995085,
+      "x": 149.69864020712896,
+      "y": 406.6667325683924,
+      "scaleX": 0.9033314397338768,
+      "scaleY": 0.9819128981830421,
       "rotation": 0,
       "carveLevel": 2,
       "colorOverrides": {
-        "mountain": "#4a90c4",
         "snow": "#f5f0e1",
-        "texture": "#1b4872"
+        "texture": "#1b4872",
+        "peak": "#f5f0e1",
+        "shadows": "#4a90c4"
       },
       "variationSeed": 60028,
       "zoneBokashi": {
@@ -4279,30 +4308,34 @@ const MOKURI_GALLERY_PRESETS = [
     {
       "id": 3,
       "defId": "cloud-bank",
-      "x": 105.41103887329422,
-      "y": 442.5968025443226,
-      "scaleX": 1,
-      "scaleY": 1,
+      "x": 54.879550980742465,
+      "y": 528.2400657879462,
+      "scaleX": 0.305732686830847,
+      "scaleY": 0.305732686830847,
       "rotation": 0,
       "carveLevel": 1,
       "colorOverrides": {
-        "body": "#f5f0e1",
-        "highlight": "#4a90c4"
+        "body": 1,
+        "highlight": "#4a90c4",
+        "color": "#f5f0e1",
+        "shadow": "#B3D9FF"
       },
       "variationSeed": 43441
     },
     {
       "id": 4,
       "defId": "cloud-bank",
-      "x": 249.29311291273126,
-      "y": 450.2673088070625,
-      "scaleX": 1,
-      "scaleY": 1,
+      "x": 304.52859607779595,
+      "y": 539.1295505583564,
+      "scaleX": 0.25799621528152583,
+      "scaleY": 0.25799621528152583,
       "rotation": 0,
       "carveLevel": 1,
       "colorOverrides": {
-        "body": "#f5f0e1",
-        "highlight": "#4a90c4"
+        "body": 1,
+        "highlight": "#4a90c4",
+        "color": "#f5f0e1",
+        "shadow": "#4a90c4"
       },
       "variationSeed": 34965,
       "locked": false
@@ -4322,15 +4355,17 @@ const MOKURI_GALLERY_PRESETS = [
     {
       "id": 6,
       "defId": "cloud-bank",
-      "x": 56.451467495570625,
-      "y": 493.2455115631043,
-      "scaleX": 1,
-      "scaleY": 1.1741400660448675,
+      "x": 198.2929229490412,
+      "y": 563.6510880862421,
+      "scaleX": 0.23018459730860003,
+      "scaleY": 0.2702689582864309,
       "rotation": 0,
       "carveLevel": 2,
       "colorOverrides": {
         "body": "#f5f0e1",
-        "highlight": "#4a90c4"
+        "highlight": "#4a90c4",
+        "color": "#f5f0e1",
+        "shadow": "#B3D9FF"
       },
       "variationSeed": 60560,
       "locked": false
@@ -4338,31 +4373,53 @@ const MOKURI_GALLERY_PRESETS = [
     {
       "id": 7,
       "defId": "cloud-bank",
-      "x": 225.30994736023487,
-      "y": 512.298216138885,
-      "scaleX": 1.1974845262279974,
-      "scaleY": 1.1974845262279974,
+      "x": 107.6738927722356,
+      "y": 632.1962118111522,
+      "scaleX": 0.37227901381158945,
+      "scaleY": 0.37227901381158945,
       "rotation": 0,
       "carveLevel": 2,
       "colorOverrides": {
         "body": "#f5f0e1",
-        "highlight": "#4a90c4"
+        "highlight": "#4a90c4",
+        "color": "#f5f0e1",
+        "shadow": "#B3D9FF"
       },
       "variationSeed": 37956,
       "locked": false
+    },
+    {
+      "id": 8,
+      "defId": "cloud-wisp",
+      "x": 186.12686239582206,
+      "y": 258.02550724636757,
+      "scaleX": -0.20831163420477034,
+      "scaleY": 0.1437443439318625,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "color": 2,
+        "shadow": 1,
+        "cloud": 1
+      },
+      "variationSeed": 4666,
+      "zoneBokashi": {
+        "color": "down"
+      }
     }
   ],
-  "nextId": 8,
-  "paletteId": "matcha",
+  "nextId": 9,
+  "paletteId": "fuyu",
   "paperW": 320,
   "paperH": 800,
   "paperType": "gampi",
   "inkLoad": "standard",
   "impressions": 1,
-  "background": "day",
+  "background": "sakura",
   "foreground": "water",
   "horizon": 0.66,
-  "mist": 3,
+  "mist": 1,
+  "smoothHorizon": false,
   "backgroundCarveStrokes": [],
   "presentationMargin": "narrow",
   "presentationTitle": "Cloud Peak",
@@ -4379,30 +4436,35 @@ const MOKURI_GALLERY_PRESETS = [
     {
       "id": 1,
       "defId": "distant-village",
-      "x": 316.82410080158274,
-      "y": 86.22346529995372,
-      "scaleX": 1,
-      "scaleY": 1,
+      "x": 201.66717391291496,
+      "y": 117.92447100502217,
+      "scaleX": 0.41140250700789704,
+      "scaleY": 0.41140250700789704,
       "rotation": 0,
       "carveLevel": 2,
       "colorOverrides": {
         "tree": "#e8c870",
-        "detail": "#c23b22"
+        "detail": "#c23b22",
+        "roof": "#c23b22",
+        "structure": 1,
+        "details": 0
       },
       "variationSeed": 80000
     },
     {
       "id": 2,
       "defId": "cloud-wisp",
-      "x": 124.4992999747808,
-      "y": 47.27146606112012,
-      "scaleX": 0.6430737276412758,
-      "scaleY": 0.6430737276412758,
+      "x": 206.0029243588533,
+      "y": 50.78103624944367,
+      "scaleX": -0.2252549127815445,
+      "scaleY": 0.14103042229863183,
       "rotation": 0,
       "carveLevel": 2,
       "colorOverrides": {
-        "cloud": 4,
-        "detail": 2
+        "cloud": 1,
+        "detail": 2,
+        "color": 2,
+        "shadow": 1
       },
       "variationSeed": 78873,
       "zoneBokashi": {
@@ -4420,27 +4482,30 @@ const MOKURI_GALLERY_PRESETS = [
       "carveLevel": 2,
       "colorOverrides": {
         "blossom": "#d4a030",
-        "branch": 1,
+        "branch": 3,
         "detail": 1,
-        "petals": "#c23b22",
+        "petals": "#c47a90",
         "centers": "#d4a030",
-        "2nd petals": 4,
-        "buds": "#c46a20"
+        "2nd petals": 2,
+        "buds": 0
       },
       "variationSeed": 8598
     },
     {
       "id": 4,
       "defId": "sparrow",
-      "x": 131.39215712731243,
-      "y": 249.5359452395718,
-      "scaleX": -1,
-      "scaleY": 1,
+      "x": 160.6759773536438,
+      "y": 236.35269291335237,
+      "scaleX": -0.16762898199640192,
+      "scaleY": 0.16762898199640192,
       "rotation": -9.458250958410446,
       "carveLevel": 2,
       "colorOverrides": {
         "detail": "#c46a20",
-        "body": 2
+        "body": 4,
+        "accent": 3,
+        "marking": 2,
+        "feathers": 0
       },
       "variationSeed": 70098
     },
@@ -4459,22 +4524,43 @@ const MOKURI_GALLERY_PRESETS = [
     {
       "id": 6,
       "defId": "sparrow",
-      "x": 237.09922203353977,
-      "y": 246.38602468218463,
-      "scaleX": 0.7270844589116013,
-      "scaleY": 0.7270844589116013,
+      "x": 307.82421482768643,
+      "y": 242.8332216543366,
+      "scaleX": 0.14275943566731322,
+      "scaleY": 0.14275943566731322,
       "rotation": -4.842287462346093,
       "carveLevel": 2,
       "colorOverrides": {
         "detail": "#c46a20",
-        "body": 2
+        "accent": 3,
+        "marking": 2,
+        "feathers": 0,
+        "body": 4
       },
       "variationSeed": 23443,
       "locked": false
+    },
+    {
+      "id": 7,
+      "defId": "sparrow-alert",
+      "x": 635.8451501429932,
+      "y": 95.04416408484275,
+      "scaleX": 0.1159439663930548,
+      "scaleY": 0.1159439663930548,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "detail": "#c46a20",
+        "accent": 3,
+        "body": 4,
+        "marking": 2,
+        "feathers": 0
+      },
+      "variationSeed": 87261
     }
   ],
-  "nextId": 7,
-  "paletteId": "sumi",
+  "nextId": 8,
+  "paletteId": "fuyu",
   "paperW": 800,
   "paperH": 320,
   "paperType": "hosho",
