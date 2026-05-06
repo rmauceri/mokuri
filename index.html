@@ -2038,6 +2038,33 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
 }
 .print-ink-wash.visible { opacity: 1; }
 
+/* Print prep status — shown during computation before animation */
+.print-prep-status {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: rgba(245, 240, 230, 0.92);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+  z-index: 2;
+  white-space: nowrap;
+}
+.print-prep-kanji {
+  font-size: min(2.8rem, 8vw);
+  font-family: serif;
+  opacity: 0.55;
+  margin-bottom: 0.4rem;
+  line-height: 1;
+}
+.print-prep-text {
+  font-size: min(1.05rem, 4vw);
+  letter-spacing: 0.1em;
+  font-weight: 400;
+}
+
 .print-paper-sheet {
   position: absolute;
   border-radius: 2px;
@@ -2656,6 +2683,10 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
       <!-- Print animation layers -->
       <div class="print-anim-layer" id="print-anim-layer" style="display:none;">
         <div class="print-ink-wash" id="print-ink-wash"></div>
+        <div class="print-prep-status" id="print-prep-status">
+          <div class="print-prep-kanji" id="print-prep-kanji">墨</div>
+          <div class="print-prep-text"><span id="print-prep-label">Inking the block</span><span id="print-prep-dots"></span></div>
+        </div>
         <div class="print-paper-sheet" id="print-paper-sheet"></div>
         <div class="print-baren" id="print-baren"></div>
         <div class="print-baren-shadow" id="print-baren-shadow"></div>
@@ -9924,6 +9955,7 @@ async function pullPrint() {
 
   const pullBtn = $('ps-pull-print');
   pullBtn.disabled = true;
+  let _dotsInterval = null;
 
   try {
 
@@ -9942,26 +9974,7 @@ async function pullPrint() {
   const W = paperRect.width;
   const H = paperRect.height;
 
-  // Start rendering early — runs in parallel with paper lay + baren animation
-  const printPromise = PrintEngine.print(
-    STATE.elements, STATE.paletteId, STATE.paperW, STATE.paperH, {
-      paperType: PAPER_TYPES[STATE.paperType],
-      inkLoad: INK_LOADS[STATE.inkLoad],
-      impressions: STATE.impressions,
-      atmosphere: {
-        sky: BACKGROUND_TYPES[STATE.background]?.stops ? BACKGROUND_TYPES[STATE.background] : null,
-        ground: FOREGROUND_TYPES[STATE.foreground]?.stops ? FOREGROUND_TYPES[STATE.foreground] : null,
-        groundType: STATE.foreground,
-        horizon: STATE.horizon,
-        mist: STATE.mist,
-        smoothHorizon: STATE.smoothHorizon,
-        paperBase: PAPER_TYPES[STATE.paperType].base,
-      },
-      backgroundCarveStrokes: STATE.backgroundCarveStrokes,
-    }
-  );
-
-  // Get all animation elements
+  // ── Get animation element references ──────────────────────
   const animLayer = $('print-anim-layer');
   const inkWash = $('print-ink-wash');
   const sheet = $('print-paper-sheet');
@@ -9969,6 +9982,10 @@ async function pullPrint() {
   const barenShadow = $('print-baren-shadow');
   const peelShadow = $('print-peel-shadow');
   const peelHighlight = $('print-peel-highlight');
+  const prepStatus = $('print-prep-status');
+  const prepKanji = $('print-prep-kanji');
+  const prepLabel = $('print-prep-label');
+  const prepDots = $('print-prep-dots');
 
   // Full reset
   animLayer.style.display = 'block';
@@ -9984,10 +10001,70 @@ async function pullPrint() {
   sheet.style.background = `url(${buildAnimPaperTexture(STATE.paperType, W, H)}) center/cover no-repeat`;
   sheet.style.opacity = '0';
 
-  // ── Step 1: Lay the paper down ─────────────────────────────
-  $('status-hint').textContent = 'Laying paper on the block...';
+  // ── Prep phase: render print before animation ──────────────
+  // Show ink-wash overlay and prep status text immediately
   inkWash.classList.add('visible');
-  await wait(300);
+  prepKanji.textContent = '墨';
+  prepLabel.textContent = 'Inking the block';
+  prepDots.textContent = '';
+  prepStatus.style.opacity = '1';
+  $('status-hint').textContent = 'Preparing the block...';
+
+  // Animated dots — JS setInterval (more reliable than CSS content keyframes on iOS/WebKit)
+  const _DOT_STATES = ['', ' ·', ' · ·', ' · · ·'];
+  let _dotPhase = 0;
+  _dotsInterval = setInterval(() => {
+    _dotPhase = (_dotPhase + 1) % _DOT_STATES.length;
+    prepDots.textContent = _DOT_STATES[_dotPhase];
+  }, 400);
+
+  // Phase transition callback — fire-and-forget fade; never awaited so computation continues
+  const _PREP_PHASES = {
+    aligning: { kanji: '紙', text: 'Aligning the paper' },
+    baren:    { kanji: '刷', text: 'Preparing the baren' },
+  };
+  function onPrintPhase(phase) {
+    const data = _PREP_PHASES[phase];
+    if (!data) return;
+    prepStatus.style.opacity = '0';
+    setTimeout(() => {
+      prepKanji.textContent = data.kanji;
+      prepLabel.textContent = data.text;
+      _dotPhase = 0;
+      prepDots.textContent = '';
+      prepStatus.style.opacity = '1';
+    }, 200);
+  }
+
+  // Run full print pipeline sequentially — all computation finishes before animation begins
+  const rawCanvas = await PrintEngine.print(
+    STATE.elements, STATE.paletteId, STATE.paperW, STATE.paperH, {
+      paperType: PAPER_TYPES[STATE.paperType],
+      inkLoad: INK_LOADS[STATE.inkLoad],
+      impressions: STATE.impressions,
+      atmosphere: {
+        sky: BACKGROUND_TYPES[STATE.background]?.stops ? BACKGROUND_TYPES[STATE.background] : null,
+        ground: FOREGROUND_TYPES[STATE.foreground]?.stops ? FOREGROUND_TYPES[STATE.foreground] : null,
+        groundType: STATE.foreground,
+        horizon: STATE.horizon,
+        mist: STATE.mist,
+        smoothHorizon: STATE.smoothHorizon,
+        paperBase: PAPER_TYPES[STATE.paperType].base,
+      },
+      backgroundCarveStrokes: STATE.backgroundCarveStrokes,
+    },
+    onPrintPhase
+  );
+
+  // Print complete — stop dots and fade out prep status
+  clearInterval(_dotsInterval);
+  _dotsInterval = null;
+  prepStatus.style.opacity = '0';
+  await wait(250);
+
+  // ── Step 1: Lay the paper down ─────────────────────────────
+  // (ink wash already visible from prep phase — skip the initial 300ms wait)
+  $('status-hint').textContent = 'Laying paper on the block...';
 
   // Paper lays down from top edge — hinges at top, front edge swings down
   await animate(1000, (e) => {
@@ -10076,9 +10153,6 @@ async function pullPrint() {
   baren.style.opacity = '0';
   barenShadow.style.opacity = '0';
   await wait(200);
-
-  // Wait for print render to complete
-  const rawCanvas = await printPromise;
 
   // ── Apply presentation wrapper (margins, edges, title, etc.) ──
   const presetKey = STATE.presentationMargin || 'none';
@@ -10198,11 +10272,15 @@ async function pullPrint() {
 
   } catch (err) {
     console.error('Print failed:', err);
+    // Stop dots interval if still running
+    if (_dotsInterval) { clearInterval(_dotsInterval); _dotsInterval = null; }
     // Clean up animation state so UI isn't stuck
     const animLayer = $('print-anim-layer');
     if (animLayer) animLayer.style.display = 'none';
     const inkWash = $('print-ink-wash');
     if (inkWash) inkWash.classList.remove('visible');
+    const prepStatus = $('print-prep-status');
+    if (prepStatus) prepStatus.style.opacity = '0';
     workspaceEl.classList.remove('print-preview-active');
     pullBtn.disabled = false;
     $('status-hint').textContent = 'Print failed — try again or check console for details';

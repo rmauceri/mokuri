@@ -752,11 +752,11 @@ const PrintEngine = (() => {
   //  MAIN PRINT PIPELINE
   // ============================================================
 
-  async function print(elements, paletteId, paperW, paperH, opts) {
+  async function print(elements, paletteId, paperW, paperH, opts, onPhase) {
     opts = opts || {};
-    // Yield immediately so the caller (pullPrint) can set up the page-flip animation
-    // before any heavy synchronous work touches the main thread.
+    // Yield immediately so the overlay renders before any heavy work starts
     await new Promise(r => setTimeout(r, 0));
+    // 'inking' phase is already displayed by pullPrint before calling print()
 
     const paperType = opts.paperType || PAPER_TYPES.kozo;
     const inkLoad = opts.inkLoad || INK_LOADS.standard;
@@ -783,7 +783,7 @@ const PrintEngine = (() => {
       _paperTextureCache.set(_texKey, ctx.getImageData(0, 0, w, h));
     }
 
-    // Step 2 — Render SVG with ink/baren pass settings
+    let _aligningSignalled = false;
     for (let imp = 0; imp < impressions; imp++) {
       const impOffset = imp === 0 ? { x: 0, y: 0 } : {
         x: (Math.random() - 0.5) * 0.3,
@@ -793,15 +793,29 @@ const PrintEngine = (() => {
 
       const svgStr = await renderColoredSvg(elements, palette, paperW, paperH, scale, inkLoad, impOffset, atmosphere, bgStrokes, paperType.base);
 
+      // Signal phase transition once — stays on 'aligning' for multiple impressions
+      if (!_aligningSignalled) {
+        _aligningSignalled = true;
+        onPhase && onPhase('aligning');
+        await new Promise(r => setTimeout(r, 0));
+      }
+
       // Draw SVG to canvas; detect blank render (mobile SVG filter failure)
       // and retry without the wobble filter if needed
       const drew = await drawSvgImpression(ctx, svgStr, w, h, impOpacity);
       if (!drew) {
         console.warn('Print: SVG filters rendered blank — retrying without wobble filter');
         const simpleSvg = svgStr.replace(/ filter="url\(#wobble(?:-hanko)?\)"/g, '');
-        await drawSvgImpression(ctx, simpleSvg, w, h, impOpacity);
+        const drewRetry = await drawSvgImpression(ctx, simpleSvg, w, h, impOpacity);
+        if (!drewRetry) {
+          throw new Error('SVG render failed — blank canvas on both attempts');
+        }
       }
     }
+
+    // Signal baren phase before post-processing
+    onPhase && onPhase('baren');
+    await new Promise(r => setTimeout(r, 0));
 
     // Step 3 — Post-processing (intensity scaled by paper type)
     const paperBase = paperBaseFromType(paperType);
