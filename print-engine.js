@@ -5,6 +5,10 @@
 
 const PrintEngine = (() => {
 
+  // Caches — deterministic data that never changes between prints
+  const _perturbCache = new Map();   // key: `${elemSeed}|${perturbAmt}|${callIdx}` → perturbed d string
+  const _paperTextureCache = new Map(); // key: `${paperTypeId}:${w}:${h}` → ImageData
+
   // Default paper base (Kozo); overridden per-print by paperType.base
   const PAPER_BASE = { r: 245, g: 240, b: 230 };
   function paperBaseFromType(paperType) {
@@ -163,7 +167,7 @@ const PrintEngine = (() => {
   //  RENDER COLORED SVG — organic edges, ink pooling, misregistration
   // ============================================================
 
-  function renderColoredSvg(elements, palette, paperW, paperH, scale, inkLoad, impOffset, atmosphere, backgroundCarveStrokes, paperBase) {
+  async function renderColoredSvg(elements, palette, paperW, paperH, scale, inkLoad, impOffset, atmosphere, backgroundCarveStrokes, paperBase) {
     inkLoad = inkLoad || { opacityMul: 1.0, edgeMul: 1.0, turbScale: 3.5, misreg: 3 };
     impOffset = impOffset || { x: 0, y: 0 };
     atmosphere = atmosphere || {};
@@ -371,9 +375,9 @@ const PrintEngine = (() => {
         .filter(path => !blockKeys.has(getCarvePathKey(path)));
     };
 
-    elements.forEach(el => {
+    for (const el of elements) {
       const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
-      if (!def) return;
+      if (!def) continue;
       const blockPaths = getBlockPaths(def);
       const overlayPaths = getOverlayPaths(def, el.carveLevel);
       const isBlock = el.carveLevel === 0;
@@ -386,7 +390,14 @@ const PrintEngine = (() => {
       const isHanko = def.hanko;
       const perturbAmt = isHanko ? 0.06 : (isBlock ? 0.6 : (el.carveLevel === 1 ? 0.9 : 1.3));
       const elemSeed = el.variationSeed || el.id * 31;
-      const perturb = (d) => perturbPath(d, perturbAmt, elemSeed);
+      let _pIdx = 0;
+      const perturb = (d) => {
+        const key = `${elemSeed}|${perturbAmt.toFixed(1)}|${_pIdx++}`;
+        if (_perturbCache.has(key)) return _perturbCache.get(key);
+        const result = perturbPath(d, perturbAmt, elemSeed);
+        _perturbCache.set(key, result);
+        return result;
+      };
 
       // Per-element spatial misregistration + impression offset
       // Hanko: reduced misregistration (stamped separately, more carefully)
@@ -533,7 +544,8 @@ const PrintEngine = (() => {
       }
 
       svgContent += '</g></g>';
-    });
+      await new Promise(r => setTimeout(r, 0));
+    }
 
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${paperW} ${paperH}">
       <defs>${defs.replace('<defs>', '').replace('</defs>', '')}${bokashiDefs}</defs>
@@ -742,6 +754,10 @@ const PrintEngine = (() => {
 
   async function print(elements, paletteId, paperW, paperH, opts) {
     opts = opts || {};
+    // Yield immediately so the caller (pullPrint) can set up the page-flip animation
+    // before any heavy synchronous work touches the main thread.
+    await new Promise(r => setTimeout(r, 0));
+
     const paperType = opts.paperType || PAPER_TYPES.kozo;
     const inkLoad = opts.inkLoad || INK_LOADS.standard;
     const impressions = opts.impressions || 1;
@@ -758,8 +774,14 @@ const PrintEngine = (() => {
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     if (!ctx) throw new Error('Canvas 2D context unavailable');
 
-    // Step 1 — Paper texture base layer (varies by paper type)
-    drawPaperTexture(ctx, w, h, paperType);
+    // Step 1 — Paper texture base layer (cached per paper type + dimensions)
+    const _texKey = `${paperType.id || paperType.base}:${w}:${h}`;
+    if (_paperTextureCache.has(_texKey)) {
+      ctx.putImageData(_paperTextureCache.get(_texKey), 0, 0);
+    } else {
+      drawPaperTexture(ctx, w, h, paperType);
+      _paperTextureCache.set(_texKey, ctx.getImageData(0, 0, w, h));
+    }
 
     // Step 2 — Render SVG with ink/baren pass settings
     for (let imp = 0; imp < impressions; imp++) {
@@ -769,7 +791,7 @@ const PrintEngine = (() => {
       };
       const impOpacity = impressions === 1 ? 1.0 : (imp === 0 ? 0.92 : 0.35);
 
-      const svgStr = renderColoredSvg(elements, palette, paperW, paperH, scale, inkLoad, impOffset, atmosphere, bgStrokes, paperType.base);
+      const svgStr = await renderColoredSvg(elements, palette, paperW, paperH, scale, inkLoad, impOffset, atmosphere, bgStrokes, paperType.base);
 
       // Draw SVG to canvas; detect blank render (mobile SVG filter failure)
       // and retry without the wobble filter if needed
