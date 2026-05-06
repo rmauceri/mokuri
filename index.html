@@ -10011,20 +10011,20 @@ async function pullPrint() {
   inkWash.classList.add('visible');
   prepKanji.textContent = '墨';
   prepLabel.textContent = 'Inking the block';
-  prepDots.textContent = '';
   // Double rAF: ensures element paints at opacity:0 before transition fires
   requestAnimationFrame(() => requestAnimationFrame(() => {
     prepStatus.style.opacity = '1';
   }));
   $('status-hint').textContent = 'Preparing the block...';
 
-  // Animated dots — JS setInterval (more reliable than CSS content keyframes on iOS/WebKit)
-  const _DOT_STATES = ['', ' ·', ' · ·', ' · · ·'];
+  // Animated dots — start visible immediately; 200ms interval so ticks fire even on fast renders
+  const _DOT_STATES = [' ·', ' · ·', ' · · ·', ''];
   let _dotPhase = 0;
+  prepDots.textContent = _DOT_STATES[0];
   _dotsInterval = setInterval(() => {
     _dotPhase = (_dotPhase + 1) % _DOT_STATES.length;
     prepDots.textContent = _DOT_STATES[_dotPhase];
-  }, 400);
+  }, 200);
 
   // Phase transition callback — unused (single phase: 墨 for full duration)
   function onPrintPhase() {}
