@@ -813,11 +813,7 @@ const PrintEngine = (() => {
       }
     }
 
-    // Signal baren phase before post-processing
-    onPhase && onPhase('baren');
-    await new Promise(r => setTimeout(r, 0));
-
-    // Step 3 — Post-processing (intensity scaled by paper type)
+    // Step 3 — Post-processing(intensity scaled by paper type)
     const paperBase = paperBaseFromType(paperType);
     applyColorMuting(ctx, w, h);
     applyInkAbsorption(ctx, w, h, paperBase);

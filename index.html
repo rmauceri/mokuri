@@ -10018,22 +10018,17 @@ async function pullPrint() {
     prepDots.textContent = _DOT_STATES[_dotPhase];
   }, 400);
 
-  // Phase transition callback — fire-and-forget fade; never awaited so computation continues
+  // Phase transition callback — direct text swap, no setTimeout (avoids race on fast renders)
   const _PREP_PHASES = {
     aligning: { kanji: '紙', text: 'Aligning the paper' },
-    baren:    { kanji: '刷', text: 'Preparing the baren' },
   };
   function onPrintPhase(phase) {
     const data = _PREP_PHASES[phase];
     if (!data) return;
-    prepStatus.style.opacity = '0';
-    setTimeout(() => {
-      prepKanji.textContent = data.kanji;
-      prepLabel.textContent = data.text;
-      _dotPhase = 0;
-      prepDots.textContent = '';
-      prepStatus.style.opacity = '1';
-    }, 200);
+    prepKanji.textContent = data.kanji;
+    prepLabel.textContent = data.text;
+    _dotPhase = 0;
+    prepDots.textContent = '';
   }
 
   // Run full print pipeline sequentially — all computation finishes before animation begins
@@ -10056,11 +10051,11 @@ async function pullPrint() {
     onPrintPhase
   );
 
-  // Print complete — stop dots and fade out prep status
+  // Print complete — stop dots and fade out prep status; wait for transition to finish
   clearInterval(_dotsInterval);
   _dotsInterval = null;
   prepStatus.style.opacity = '0';
-  await wait(250);
+  await wait(300); // 300ms > 0.25s CSS transition — ensures status is fully gone
 
   // ── Step 1: Lay the paper down ─────────────────────────────
   // (ink wash already visible from prep phase — skip the initial 300ms wait)
