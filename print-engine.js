@@ -5,6 +5,16 @@
 
 const PrintEngine = (() => {
 
+  // Perturb cache: keyed by element id + carve amount + call index within element.
+  // perturbPath is deterministic (path data and seed never change for a placed element),
+  // so results are valid across any composition edit that doesn't change carve level.
+  const _perturbCache = new Map();
+
+  // Paper texture cache: keyed by paper base color + canvas dimensions.
+  // Texture is visually indistinguishable between prints; caching eliminates ~4,600
+  // canvas stroke calls on repeated prints in the same session.
+  const _paperTextureCache = new Map();
+
   // Default paper base (Kozo); overridden per-print by paperType.base
   const PAPER_BASE = { r: 245, g: 240, b: 230 };
   function paperBaseFromType(paperType) {
@@ -163,7 +173,7 @@ const PrintEngine = (() => {
   //  RENDER COLORED SVG — organic edges, ink pooling, misregistration
   // ============================================================
 
-  function renderColoredSvg(elements, palette, paperW, paperH, scale, inkLoad, impOffset, atmosphere, backgroundCarveStrokes, paperBase) {
+  async function renderColoredSvg(elements, palette, paperW, paperH, scale, inkLoad, impOffset, atmosphere, backgroundCarveStrokes, paperBase) {
     inkLoad = inkLoad || { opacityMul: 1.0, edgeMul: 1.0, turbScale: 3.5, misreg: 3 };
     impOffset = impOffset || { x: 0, y: 0 };
     atmosphere = atmosphere || {};
@@ -371,9 +381,9 @@ const PrintEngine = (() => {
         .filter(path => !blockKeys.has(getCarvePathKey(path)));
     };
 
-    elements.forEach(el => {
+    for (const el of elements) {
       const def = MOKURI_ELEMENTS.find(d => d.id === el.defId);
-      if (!def) return;
+      if (!def) continue;
       const blockPaths = getBlockPaths(def);
       const overlayPaths = getOverlayPaths(def, el.carveLevel);
       const isBlock = el.carveLevel === 0;
@@ -386,7 +396,16 @@ const PrintEngine = (() => {
       const isHanko = def.hanko;
       const perturbAmt = isHanko ? 0.06 : (isBlock ? 0.6 : (el.carveLevel === 1 ? 0.9 : 1.3));
       const elemSeed = el.variationSeed || el.id * 31;
-      const perturb = (d) => perturbPath(d, perturbAmt, elemSeed);
+      // Cache key: element id + carve amount + sequential call index within this element.
+      // Index is deterministic because processing order (block paths, then overlay) is fixed.
+      let _pIdx = 0;
+      const perturb = (d) => {
+        const key = `${el.id}-${perturbAmt.toFixed(1)}-${_pIdx++}`;
+        if (_perturbCache.has(key)) return _perturbCache.get(key);
+        const result = perturbPath(d, perturbAmt, elemSeed);
+        _perturbCache.set(key, result);
+        return result;
+      };
 
       // Per-element spatial misregistration + impression offset
       // Hanko: reduced misregistration (stamped separately, more carefully)
@@ -533,7 +552,10 @@ const PrintEngine = (() => {
       }
 
       svgContent += '</g></g>';
-    });
+      // Yield to the event loop after each element so animation frames can run
+      // between elements. Critical for Forge elements (80+ paths each).
+      await Promise.resolve();
+    }
 
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${paperW} ${paperH}">
       <defs>${defs.replace('<defs>', '').replace('</defs>', '')}${bokashiDefs}</defs>
@@ -758,8 +780,20 @@ const PrintEngine = (() => {
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     if (!ctx) throw new Error('Canvas 2D context unavailable');
 
+    // Yield immediately via macrotask so the animation setup in pullPrint() can
+    // run and the page-flip begins before any blocking work touches the thread.
+    await new Promise(r => setTimeout(r, 0));
+
     // Step 1 — Paper texture base layer (varies by paper type)
-    drawPaperTexture(ctx, w, h, paperType);
+    // Cached by paper type + canvas dimensions: texture variation between prints
+    // is imperceptible, and this saves ~4,600 canvas stroke calls on warm prints.
+    const texKey = `${paperType.base}:${w}:${h}`;
+    if (_paperTextureCache.has(texKey)) {
+      ctx.putImageData(_paperTextureCache.get(texKey), 0, 0);
+    } else {
+      drawPaperTexture(ctx, w, h, paperType);
+      _paperTextureCache.set(texKey, ctx.getImageData(0, 0, w, h));
+    }
 
     // Step 2 — Render SVG with ink/baren pass settings
     for (let imp = 0; imp < impressions; imp++) {
@@ -769,7 +803,7 @@ const PrintEngine = (() => {
       };
       const impOpacity = impressions === 1 ? 1.0 : (imp === 0 ? 0.92 : 0.35);
 
-      const svgStr = renderColoredSvg(elements, palette, paperW, paperH, scale, inkLoad, impOffset, atmosphere, bgStrokes, paperType.base);
+      const svgStr = await renderColoredSvg(elements, palette, paperW, paperH, scale, inkLoad, impOffset, atmosphere, bgStrokes, paperType.base);
 
       // Draw SVG to canvas; detect blank render (mobile SVG filter failure)
       // and retry without the wobble filter if needed
