@@ -10018,18 +10018,8 @@ async function pullPrint() {
     prepDots.textContent = _DOT_STATES[_dotPhase];
   }, 400);
 
-  // Phase transition callback — direct text swap, no setTimeout (avoids race on fast renders)
-  const _PREP_PHASES = {
-    aligning: { kanji: '紙', text: 'Aligning the paper' },
-  };
-  function onPrintPhase(phase) {
-    const data = _PREP_PHASES[phase];
-    if (!data) return;
-    prepKanji.textContent = data.kanji;
-    prepLabel.textContent = data.text;
-    _dotPhase = 0;
-    prepDots.textContent = '';
-  }
+  // Phase transition callback — unused (single phase: 墨 for full duration)
+  function onPrintPhase() {}
 
   // Run full print pipeline sequentially — all computation finishes before animation begins
   const rawCanvas = await PrintEngine.print(

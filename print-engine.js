@@ -793,12 +793,8 @@ const PrintEngine = (() => {
 
       const svgStr = await renderColoredSvg(elements, palette, paperW, paperH, scale, inkLoad, impOffset, atmosphere, bgStrokes, paperType.base);
 
-      // Signal phase transition once — stays on 'aligning' for multiple impressions
-      if (!_aligningSignalled) {
-        _aligningSignalled = true;
-        onPhase && onPhase('aligning');
-        await new Promise(r => setTimeout(r, 0));
-      }
+      // Signal phase transition once — no longer needed (single-phase prep)
+      // _aligningSignalled kept as no-op for future use
 
       // Draw SVG to canvas; detect blank render (mobile SVG filter failure)
       // and retry without the wobble filter if needed
