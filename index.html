@@ -2047,7 +2047,7 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
   text-align: center;
   color: rgba(245, 240, 230, 0.92);
   opacity: 0;
-  transition: opacity 0.25s ease;
+  transition: opacity 0.4s ease;
   pointer-events: none;
   z-index: 2;
   white-space: nowrap;
@@ -10002,12 +10002,15 @@ async function pullPrint() {
   sheet.style.opacity = '0';
 
   // ── Prep phase: render print before animation ──────────────
-  // Show ink-wash overlay and prep status text immediately
+  // Show ink-wash overlay immediately; fade in status text via CSS transition
   inkWash.classList.add('visible');
   prepKanji.textContent = '墨';
   prepLabel.textContent = 'Inking the block';
   prepDots.textContent = '';
-  prepStatus.style.opacity = '1';
+  // Double rAF: ensures element paints at opacity:0 before transition fires
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    prepStatus.style.opacity = '1';
+  }));
   $('status-hint').textContent = 'Preparing the block...';
 
   // Animated dots — JS setInterval (more reliable than CSS content keyframes on iOS/WebKit)
@@ -10045,7 +10048,7 @@ async function pullPrint() {
   clearInterval(_dotsInterval);
   _dotsInterval = null;
   prepStatus.style.opacity = '0';
-  await wait(300); // 300ms > 0.25s CSS transition — ensures status is fully gone
+  await wait(450); // 450ms > 0.4s CSS transition — ensures status is fully gone
 
   // ── Step 1: Lay the paper down ─────────────────────────────
   // (ink wash already visible from prep phase — skip the initial 300ms wait)
