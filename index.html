@@ -2064,11 +2064,6 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
   letter-spacing: 0.1em;
   font-weight: 400;
 }
-#print-prep-dots {
-  display: inline-block;
-  width: 2.6em;
-  text-align: left;
-}
 
 .print-paper-sheet {
   position: absolute;
@@ -2690,7 +2685,7 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
         <div class="print-ink-wash" id="print-ink-wash"></div>
         <div class="print-prep-status" id="print-prep-status">
           <div class="print-prep-kanji" id="print-prep-kanji">墨</div>
-          <div class="print-prep-text"><span id="print-prep-label">Inking the block</span><span id="print-prep-dots"></span></div>
+          <div class="print-prep-text"><span id="print-prep-label">Inking the block</span></div>
         </div>
         <div class="print-paper-sheet" id="print-paper-sheet"></div>
         <div class="print-baren" id="print-baren"></div>
@@ -9960,7 +9955,6 @@ async function pullPrint() {
 
   const pullBtn = $('ps-pull-print');
   pullBtn.disabled = true;
-  let _dotsInterval = null;
 
   try {
 
@@ -9990,7 +9984,6 @@ async function pullPrint() {
   const prepStatus = $('print-prep-status');
   const prepKanji = $('print-prep-kanji');
   const prepLabel = $('print-prep-label');
-  const prepDots = $('print-prep-dots');
 
   // Full reset
   animLayer.style.display = 'block';
@@ -10017,15 +10010,6 @@ async function pullPrint() {
   }));
   $('status-hint').textContent = 'Preparing the block...';
 
-  // Animated dots — start visible immediately; 200ms interval so ticks fire even on fast renders
-  const _DOT_STATES = [' ·', ' · ·', ' · · ·', ''];
-  let _dotPhase = 0;
-  prepDots.textContent = _DOT_STATES[0];
-  _dotsInterval = setInterval(() => {
-    _dotPhase = (_dotPhase + 1) % _DOT_STATES.length;
-    prepDots.textContent = _DOT_STATES[_dotPhase];
-  }, 200);
-
   // Phase transition callback — unused (single phase: 墨 for full duration)
   function onPrintPhase() {}
 
@@ -10049,9 +10033,7 @@ async function pullPrint() {
     onPrintPhase
   );
 
-  // Print complete — stop dots and fade out prep status; wait for transition to finish
-  clearInterval(_dotsInterval);
-  _dotsInterval = null;
+  // Print complete — fade out prep status; wait for transition to finish
   prepStatus.style.opacity = '0';
   await wait(450); // 450ms > 0.4s CSS transition — ensures status is fully gone
 
@@ -10265,8 +10247,6 @@ async function pullPrint() {
 
   } catch (err) {
     console.error('Print failed:', err);
-    // Stop dots interval if still running
-    if (_dotsInterval) { clearInterval(_dotsInterval); _dotsInterval = null; }
     // Clean up animation state so UI isn't stuck
     const animLayer = $('print-anim-layer');
     if (animLayer) animLayer.style.display = 'none';
