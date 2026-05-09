@@ -11533,7 +11533,26 @@ function setupToolbar() {
   });
 
   // Printing Workbench
-  $('ps-pull-print').addEventListener('click', () => pullPrint());
+  // Long-press Pull Print to open tuning console (touch devices)
+  let _pullLpTimer = null, _pullLpFired = false;
+  $('ps-pull-print').addEventListener('pointerdown', (e) => {
+    _pullLpFired = false;
+    _pullLpTimer = setTimeout(() => {
+      _pullLpTimer = null;
+      _pullLpFired = true;
+      togglePrintTuningConsole();
+    }, 800);
+  });
+  $('ps-pull-print').addEventListener('pointerup', () => {
+    if (_pullLpTimer) { clearTimeout(_pullLpTimer); _pullLpTimer = null; }
+  });
+  $('ps-pull-print').addEventListener('pointercancel', () => {
+    if (_pullLpTimer) { clearTimeout(_pullLpTimer); _pullLpTimer = null; }
+  });
+  $('ps-pull-print').addEventListener('click', (e) => {
+    if (_pullLpFired) { _pullLpFired = false; return; }
+    pullPrint();
+  });
   $('cs-tool-row').addEventListener('click', (e) => {
     const btn = e.target.closest('.cs-tool-btn');
     if (!btn) return;
@@ -12056,6 +12075,9 @@ const _ptcGroups = [
     { key: 'edgeWeight', label: 'Edge weight', min: 0, max: 5, step: 0.1 },
     { key: 'edgeOpacity', label: 'Edge opacity', min: 0, max: 1, step: 0.01 },
   ]},
+  { label: 'Wobble', params: [
+    { key: 'wobbleScale', label: 'Displacement', min: 0, max: 8, step: 0.1 },
+  ]},
 ];
 
 // Print style profiles — authentic mokuhanga traditions
@@ -12064,36 +12086,39 @@ const _ptcProfiles = {
     label: '浮世絵', sublabel: 'Ukiyo-e',
     desc: 'Bold, vivid, clean edges',
     values: {
-      bleedRadius: 0.8, bleedOpacity: 0.08, bleedWarmth: 0.15,
-      saturation: 0.90, warmShift: 1.5, coolShift: 0.8,
+      bleedRadius: 0.6, bleedOpacity: 0.06, bleedWarmth: 0.10,
+      saturation: 0.93, warmShift: 0.8, coolShift: 0.3,
       brushVariation: 0, dryBrushChance: 0, dryBrushOpacity: 0,
-      blockPerturb: 0.5, shapePerturb: 0.7, detailPerturb: 1.0,
-      grainOpacity: 0.06, grainInInk: 0.02,
-      edgeWeight: 2.2, edgeOpacity: 0.35,
+      blockPerturb: 0.4, shapePerturb: 0.6, detailPerturb: 0.9,
+      grainOpacity: 0.04, grainInInk: 0.01,
+      edgeWeight: 2.0, edgeOpacity: 0.30,
+      wobbleScale: 5.5,
     },
   },
   'shinhanga': {
     label: '新版画', sublabel: 'Shin-hanga',
     desc: 'Soft, atmospheric, refined',
     values: {
-      bleedRadius: 1.5, bleedOpacity: 0.15, bleedWarmth: 0.3,
-      saturation: 0.82, warmShift: 2.5, coolShift: 1.5,
+      bleedRadius: 1.8, bleedOpacity: 0.18, bleedWarmth: 0.35,
+      saturation: 0.78, warmShift: 2.8, coolShift: 1.8,
       brushVariation: 0, dryBrushChance: 0, dryBrushOpacity: 0,
       blockPerturb: 0.8, shapePerturb: 1.2, detailPerturb: 1.8,
       grainOpacity: 0.10, grainInInk: 0.04,
       edgeWeight: 2.8, edgeOpacity: 0.50,
+      wobbleScale: 3.5,
     },
   },
   'sosaku': {
     label: '創作版画', sublabel: 'Sōsaku-hanga',
     desc: 'Raw, textured, visible hand',
     values: {
-      bleedRadius: 2.2, bleedOpacity: 0.22, bleedWarmth: 0.45,
-      saturation: 0.72, warmShift: 3.5, coolShift: 2.0,
+      bleedRadius: 2.5, bleedOpacity: 0.25, bleedWarmth: 0.50,
+      saturation: 0.68, warmShift: 4.0, coolShift: 0.5,
       brushVariation: 0, dryBrushChance: 0, dryBrushOpacity: 0,
-      blockPerturb: 1.4, shapePerturb: 2.0, detailPerturb: 2.8,
-      grainOpacity: 0.22, grainInInk: 0.12,
-      edgeWeight: 3.5, edgeOpacity: 0.65,
+      blockPerturb: 1.6, shapePerturb: 2.2, detailPerturb: 3.2,
+      grainOpacity: 0.25, grainInInk: 0.14,
+      edgeWeight: 3.8, edgeOpacity: 0.70,
+      wobbleScale: 2.5,
     },
   },
 };
@@ -12181,6 +12206,16 @@ $('ptc-close').addEventListener('click', () => {
 });
 
 $('ptc-pull').addEventListener('click', () => {
+  // Stamp active profile name into edition field for easy comparison
+  const prevEdition = STATE.presentationEdition;
+  if (_ptcActiveProfile) {
+    const profile = _ptcProfiles[_ptcActiveProfile];
+    STATE.presentationEdition = profile.sublabel;
+    $('ps-edition-input').value = profile.sublabel;
+  } else {
+    STATE.presentationEdition = 'Custom';
+    $('ps-edition-input').value = 'Custom';
+  }
   pullPrint();
 });
 

@@ -36,6 +36,8 @@ const PrintEngine = (() => {
     // Edge darkening
     edgeWeight: 2.8,
     edgeOpacity: 0.5,
+    // Wobble (feTurbulence displacement)
+    wobbleScale: 3.5,
   };
 
   let _printTuning = null; // when set, overrides defaults
@@ -218,13 +220,14 @@ const PrintEngine = (() => {
 
     // feTurbulence makes every edge slightly wobbly/hand-carved
     // Hanko get a gentler filter — stamps are applied separately with more control
-    const hankoTurbScale = Math.max(1, inkLoad.turbScale * 0.3);
+    const wobble = T('wobbleScale') * (inkLoad.turbScale / 3.5);
+    const hankoTurbScale = Math.max(1, wobble * 0.3);
     const defs = `<defs>
       <filter id="wobble" x="-5%" y="-5%" width="110%" height="110%"
               color-interpolation-filters="sRGB">
         <feTurbulence type="turbulence" baseFrequency="0.04" numOctaves="3"
                       seed="${seed}" result="noise"/>
-        <feDisplacementMap in="SourceGraphic" in2="noise" scale="${inkLoad.turbScale}"
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="${wobble}"
                           xChannelSelector="R" yChannelSelector="G"/>
       </filter>
       <filter id="wobble-hanko" x="-5%" y="-5%" width="110%" height="110%"
