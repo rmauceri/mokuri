@@ -6281,7 +6281,7 @@ async function autoLoad() {
 }
 
 function resetToCompose() {
-  if (STATE.printStudioOpen) {
+  if (STATE.printStudioOpen || STATE.printPreview) {
     const c = $('inline-print-canvas');
     c.style.display = 'none';
     workspaceEl.classList.remove('print-preview-active');
@@ -11417,6 +11417,7 @@ function setupKeyboard() {
       else if (STATE.carveStudioOpen) { closeCarveStudio(); }
       else if (STATE.inkStudioOpen) { closeInkStudio(); }
       else if (STATE.printStudioOpen) { closePrintStudio(); }
+      else if (STATE.printPreview) { resetToCompose(); }
       else { setMode('select'); if (STATE.viewMode === 'ink') setViewMode('carve'); }
       e.preventDefault();
     }
