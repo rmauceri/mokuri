@@ -9,6 +9,43 @@ const PrintEngine = (() => {
   const _perturbCache = new Map();   // key: `${elemSeed}|${perturbAmt}|${callIdx}` → perturbed d string
   const _paperTextureCache = new Map(); // key: `${paperTypeId}:${w}:${h}` → ImageData
 
+  // ============================================================
+  //  PRINT TUNING — overridable parameters for dev console
+  // ============================================================
+
+  const _defaultTuning = {
+    // Ink bleed
+    bleedRadius: 1.5,
+    bleedOpacity: 0.15,
+    bleedWarmth: 0.3,
+    // Color muting
+    saturation: 0.82,
+    warmShift: 2.5,
+    coolShift: 1.5,
+    // Brush variation
+    brushVariation: 0.12,
+    dryBrushChance: 0.15,
+    dryBrushOpacity: 0.08,
+    // Perturbation
+    blockPerturb: 0.8,
+    shapePerturb: 1.2,
+    detailPerturb: 1.8,
+    // Wood grain
+    grainOpacity: 0.15,
+    grainInInk: 0.08,
+    // Edge darkening
+    edgeWeight: 2.8,
+    edgeOpacity: 0.5,
+  };
+
+  let _printTuning = null; // when set, overrides defaults
+
+  // Get a tuning parameter — console override → default
+  function T(key) {
+    if (_printTuning && _printTuning[key] !== undefined) return _printTuning[key];
+    return _defaultTuning[key];
+  }
+
   // Default paper base (Kozo); overridden per-print by paperType.base
   const PAPER_BASE = { r: 245, g: 240, b: 230 };
   function paperBaseFromType(paperType) {
@@ -176,8 +213,8 @@ const PrintEngine = (() => {
     const h = paperH * scale;
     const seed = Math.floor(Math.random() * 10000);
     const inkOpacity = Math.min(1, 0.92 * inkLoad.opacityMul);
-    const edgeWeight = 2.5 * inkLoad.edgeMul;
-    const edgeOpacity = Math.min(0.7, 0.45 * inkLoad.edgeMul);
+    const edgeWeight = T('edgeWeight') * inkLoad.edgeMul;
+    const edgeOpacity = Math.min(0.7, T('edgeOpacity') * inkLoad.edgeMul);
 
     // feTurbulence makes every edge slightly wobbly/hand-carved
     // Hanko get a gentler filter — stamps are applied separately with more control
@@ -388,7 +425,7 @@ const PrintEngine = (() => {
       // Procedural variation — seeded per element instance
       // Uses coordinate-value-based noise so concentric paths stay aligned
       const isHanko = def.hanko;
-      const perturbAmt = isHanko ? 0.06 : (isBlock ? 0.6 : (el.carveLevel === 1 ? 0.9 : 1.3));
+      const perturbAmt = isHanko ? 0.06 : (isBlock ? T('blockPerturb') : (el.carveLevel === 1 ? T('shapePerturb') : T('detailPerturb')));
       const elemSeed = el.variationSeed || el.id * 31;
       let _pIdx = 0;
       const perturb = (d) => {
@@ -554,6 +591,119 @@ const PrintEngine = (() => {
   }
 
   // ============================================================
+  //  INK BLEED — soft halo simulating water-based ink feathering
+  // ============================================================
+
+  function applyInkBleed(ctx, w, h, paperBase) {
+    const radius = T('bleedRadius');
+    const opacity = T('bleedOpacity');
+    if (radius <= 0 || opacity <= 0) return;
+
+    // Create blurred copy of current canvas
+    const blurCanvas = document.createElement('canvas');
+    blurCanvas.width = w;
+    blurCanvas.height = h;
+    const bCtx = blurCanvas.getContext('2d');
+    if (!bCtx) return;
+
+    // Check for filter support (Chrome/Edge have it; old mobile may not)
+    if (typeof bCtx.filter === 'undefined') return;
+
+    bCtx.filter = `blur(${radius}px)`;
+    bCtx.drawImage(ctx.canvas, 0, 0);
+    bCtx.filter = 'none';
+
+    // Optional warm tint on the bleed halo
+    const warmth = T('bleedWarmth');
+    if (warmth > 0) {
+      bCtx.globalCompositeOperation = 'source-atop';
+      bCtx.fillStyle = `rgba(180,140,100,${(warmth * 0.15).toFixed(3)})`;
+      bCtx.fillRect(0, 0, w, h);
+      bCtx.globalCompositeOperation = 'source-over';
+    }
+
+    // Composite blurred copy onto the main canvas at low opacity
+    // Uses multiply blend to keep the halo ink-like (darkens paper, doesn't lighten)
+    ctx.globalAlpha = opacity;
+    ctx.globalCompositeOperation = 'multiply';
+    ctx.drawImage(blurCanvas, 0, 0);
+    ctx.globalAlpha = 1.0;
+    ctx.globalCompositeOperation = 'source-over';
+  }
+
+  // ============================================================
+  //  BRUSH VARIATION — ink density variation from hand application
+  // ============================================================
+
+  function applyBrushVariation(ctx, w, h, paperBase) {
+    const variation = T('brushVariation');
+    if (variation <= 0) return;
+    paperBase = paperBase || PAPER_BASE;
+
+    const d = ctx.getImageData(0, 0, w, h);
+    const px = d.data;
+
+    // Large-scale noise waves for brush-direction variation
+    const waves = [
+      { fx: 0.003 + Math.random() * 0.002, fy: 0.001 + Math.random() * 0.001,
+        ph: Math.random() * Math.PI * 2, amp: variation },
+      { fx: 0.008 + Math.random() * 0.004, fy: 0.003 + Math.random() * 0.002,
+        ph: Math.random() * Math.PI * 2, amp: variation * 0.5 },
+    ];
+
+    // Dry-brush streaks
+    const dryChance = T('dryBrushChance');
+    const dryOpacity = T('dryBrushOpacity');
+    const dryBands = [];
+    if (dryChance > 0 && dryOpacity > 0) {
+      for (let y = 0; y < h; y += 3 + Math.random() * 8) {
+        if (Math.random() < dryChance * 0.1) {
+          dryBands.push({ y, thickness: 1 + Math.random() * 3, strength: dryOpacity * (0.5 + Math.random() * 0.5) });
+        }
+      }
+    }
+
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = (y * w + x) * 4;
+
+        // Ink density: how far is this pixel from paper color (0 = paper, 1 = full ink)
+        const dr = px[i] - paperBase.r;
+        const dg = px[i + 1] - paperBase.g;
+        const db = px[i + 2] - paperBase.b;
+        const dist = Math.sqrt(dr * dr + dg * dg + db * db);
+        const inkDensity = Math.min(1, dist / 180);
+
+        // Skip near-paper pixels (preserves bokashi fades)
+        if (inkDensity < 0.05) continue;
+
+        // Compute noise — scaled by ink density so bokashi fades stay smooth
+        let noise = 0;
+        for (const f of waves) {
+          noise += Math.sin(x * f.fx + f.ph) * Math.cos(y * f.fy + f.ph * 0.7) * f.amp;
+        }
+        noise *= inkDensity;
+
+        // Dry-brush lightening
+        let dryLighten = 0;
+        for (const band of dryBands) {
+          const dy = Math.abs(y - band.y);
+          if (dy < band.thickness) {
+            dryLighten += band.strength * (1 - dy / band.thickness) * inkDensity;
+          }
+        }
+
+        // Apply: lighten toward paper (negative noise) or darken slightly (positive)
+        const shift = noise * 30 - dryLighten * 40;
+        px[i]     = Math.min(255, Math.max(0, px[i] + shift));
+        px[i + 1] = Math.min(255, Math.max(0, px[i + 1] + shift));
+        px[i + 2] = Math.min(255, Math.max(0, px[i + 2] + shift));
+      }
+    }
+    ctx.putImageData(d, 0, 0);
+  }
+
+  // ============================================================
   //  POST-PROCESSING EFFECTS
   // ============================================================
 
@@ -561,12 +711,14 @@ const PrintEngine = (() => {
   function applyColorMuting(ctx, w, h) {
     const d = ctx.getImageData(0, 0, w, h);
     const px = d.data;
+    const s = T('saturation');
+    const warm = T('warmShift');
+    const cool = T('coolShift');
     for (let i = 0; i < px.length; i += 4) {
       const avg = (px[i] + px[i + 1] + px[i + 2]) / 3;
-      const s = 0.9;
-      px[i]     = Math.min(255, Math.round(px[i] * s + avg * (1 - s) + 2));
+      px[i]     = Math.min(255, Math.round(px[i] * s + avg * (1 - s) + warm));
       px[i + 1] = Math.min(255, Math.round(px[i + 1] * s + avg * (1 - s)));
-      px[i + 2] = Math.max(0,   Math.round(px[i + 2] * s + avg * (1 - s) - 1));
+      px[i + 2] = Math.max(0,   Math.round(px[i + 2] * s + avg * (1 - s) - cool));
     }
     ctx.putImageData(d, 0, 0);
   }
@@ -608,9 +760,11 @@ const PrintEngine = (() => {
 
   // Wood grain — visible horizontal streaks via multiply blend
   function applyWoodGrain(ctx, w, h) {
+    const opacity = T('grainOpacity');
+    if (opacity <= 0) return;
     ctx.save();
     ctx.globalCompositeOperation = 'multiply';
-    ctx.globalAlpha = 0.12;
+    ctx.globalAlpha = opacity;
     const spacing = 2.5 + Math.random() * 2;
     ctx.strokeStyle = '#9b8b70';
     ctx.lineWidth = 0.8;
@@ -809,8 +963,10 @@ const PrintEngine = (() => {
       }
     }
 
-    // Step 3 — Post-processing(intensity scaled by paper type)
+    // Step 3 — Post-processing (intensity scaled by paper type)
     const paperBase = paperBaseFromType(paperType);
+    applyInkBleed(ctx, w, h, paperBase);
+    applyBrushVariation(ctx, w, h, paperBase);
     applyColorMuting(ctx, w, h);
     applyInkAbsorption(ctx, w, h, paperBase);
     applyBarenPressure(ctx, w, h, paperType.barenIntensity, paperBase);
@@ -1183,5 +1339,11 @@ const PrintEngine = (() => {
     ctx.restore();
   }
 
-  return { print, exportPng, applyPresentation };
+  return {
+    print, exportPng, applyPresentation,
+    // Dev tuning interface
+    get tuning() { return _printTuning; },
+    set tuning(v) { _printTuning = v; },
+    get defaults() { return Object.assign({}, _defaultTuning); },
+  };
 })();

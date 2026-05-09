@@ -2542,6 +2542,121 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
     white-space: nowrap;
   }
 }
+
+/* ── Print Tuning Console (dev tool) ── */
+.print-tuning-console {
+  display: none;
+  position: fixed;
+  top: 60px;
+  right: 20px;
+  width: 280px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  background: rgba(35,30,28,0.94);
+  color: #d8d0c8;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 11px;
+  font-family: system-ui, sans-serif;
+  z-index: 9999;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  cursor: move;
+}
+.print-tuning-console.visible { display: block; }
+.ptc-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #c8b8a0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: move;
+}
+.ptc-title span { font-size: 10px; color: #887868; cursor: pointer; }
+.ptc-group {
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.ptc-group-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #9b8878;
+  margin-bottom: 5px;
+}
+.ptc-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 3px;
+}
+.ptc-row label {
+  flex: 0 0 90px;
+  font-size: 10px;
+  color: #a89888;
+}
+.ptc-row input[type="range"] {
+  flex: 1;
+  min-width: 0;
+  height: 3px;
+  accent-color: #9b7065;
+}
+.ptc-row .ptc-val {
+  flex: 0 0 32px;
+  text-align: right;
+  font-size: 10px;
+  font-family: monospace;
+  color: #c8b8a0;
+}
+.ptc-buttons {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+.ptc-buttons button {
+  flex: 1;
+  padding: 5px 0;
+  font-size: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 4px;
+  background: rgba(255,255,255,0.06);
+  color: #d8d0c8;
+  cursor: pointer;
+}
+.ptc-buttons button:hover { background: rgba(255,255,255,0.12); }
+.ptc-buttons button.ptc-pull {
+  background: rgba(155,112,101,0.3);
+  border-color: rgba(155,112,101,0.5);
+  color: #e8d8c8;
+}
+.ptc-styles {
+  display: flex;
+  gap: 4px;
+  padding: 6px 8px 2px;
+}
+.ptc-style-chip {
+  flex: 1;
+  padding: 5px 4px;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 4px;
+  background: rgba(255,255,255,0.04);
+  color: #c4b4a4;
+  font-size: 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  line-height: 1.3;
+}
+.ptc-style-chip:hover { background: rgba(255,255,255,0.1); }
+.ptc-style-chip.active {
+  background: rgba(155,112,101,0.3);
+  border-color: rgba(155,112,101,0.6);
+  color: #e8d8c8;
+}
+.ptc-style-chip .ptc-style-jp { font-size: 11px; display: block; }
+.ptc-style-chip .ptc-style-en { font-size: 8px; display: block; color: #887868; margin-top: 1px; }
 </style>
 </head>
 <body>
@@ -2845,6 +2960,20 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
           <button class="ps-pull-btn" id="ps-pull-print">Pull Print</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Print Tuning Console (dev tool, Ctrl+Shift+P) -->
+  <div class="print-tuning-console" id="print-tuning-console">
+    <div class="ptc-title" id="ptc-drag-handle">
+      🎛 Print Tuning <span id="ptc-close">✕</span>
+    </div>
+    <div class="ptc-styles" id="ptc-styles"></div>
+    <div id="ptc-sliders"></div>
+    <div class="ptc-buttons">
+      <button class="ptc-pull" id="ptc-pull">Pull Print</button>
+      <button id="ptc-reset">Reset</button>
+      <button id="ptc-copy">Copy</button>
     </div>
   </div>
 
@@ -6772,10 +6901,10 @@ async function buildPrintGalleryUI() {
     } catch (e) { _pgalleryPrints = []; }
   }
 
-  // Counter
+  // Counter — show current gallery count
   try {
-    const total = _useLocalStorage ? 0 : ((await MokuriDB.getMeta('printCount')) || 0);
-    $('pgallery-counter').textContent = total > 0 ? '摺 ' + total : '';
+    const count = _pgalleryPrints.length;
+    $('pgallery-counter').textContent = count > 0 ? '摺 ' + count : '';
   } catch (e) { $('pgallery-counter').textContent = ''; }
 
   // Artist name
@@ -6838,6 +6967,14 @@ function buildThumbnailStrip() {
     strip.appendChild(thumb);
   });
 }
+
+// Convert vertical mouse wheel to horizontal scroll on thumbnail strip
+$('pgallery-strip').addEventListener('wheel', (e) => {
+  if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+    e.preventDefault();
+    $('pgallery-strip').scrollLeft += e.deltaY;
+  }
+}, { passive: false });
 
 function updateStripActive() {
   const thumbs = $('pgallery-strip').querySelectorAll('.pgallery-strip-thumb');
@@ -11209,6 +11346,25 @@ function setupKeyboard() {
     if ($('pgallery-modal').classList.contains('visible')) {
       if (e.key === 'ArrowLeft') { galleryNav(-1); e.preventDefault(); }
       if (e.key === 'ArrowRight') { galleryNav(1); e.preventDefault(); }
+      // Ctrl+Shift+A: purge all non-favorite prints
+      if (e.key === 'A' && (e.ctrlKey || e.metaKey) && e.shiftKey) {
+        e.preventDefault();
+        const count = _pgalleryPrints.filter(p => !p.favorite).length;
+        if (count === 0) {
+          showFlash('No non-favorite prints to purge');
+          return;
+        }
+        mokConfirm(`${count} non-favorite print${count > 1 ? 's' : ''} selected to delete`, 'Delete').then(async ok => {
+          if (!ok) return;
+          const all = await MokuriDB.getAllPrints(false);
+          const toDelete = all.filter(p => !p.favorite);
+          for (const p of toDelete) await MokuriDB.deletePrint(p.id);
+          _pgalleryIndex = 0;
+          await buildPrintGalleryUI();
+          showFlash(`Purged ${toDelete.length} print${toDelete.length > 1 ? 's' : ''}`);
+        });
+        return;
+      }
       if (e.key === 'Delete' || e.key === 'Backspace') {
         const print = currentPrint();
         if (print) {
@@ -11245,6 +11401,11 @@ function setupKeyboard() {
       }).catch(() => {
         $('status-hint').textContent = 'Clipboard write failed — check permissions';
       });
+    }
+    // Dev: Ctrl+Shift+P — toggle Print Tuning Console
+    if (e.key === 'P' && (e.ctrlKey || e.metaKey) && e.shiftKey) {
+      e.preventDefault();
+      togglePrintTuningConsole();
     }
     if (e.key === 'Escape') {
       if (_armedElementDef) { clearArmedElement(); $('status-hint').textContent = 'Place elements on the canvas'; }
@@ -11861,6 +12022,213 @@ window.addEventListener('online', () => {
 window.addEventListener('offline', () => {
   $('status-hint').textContent = 'Offline — your work is saved locally';
 });
+
+// ============================================================
+//  PRINT TUNING CONSOLE (dev tool)
+// ============================================================
+
+const _ptcGroups = [
+  { label: 'Ink Bleed', params: [
+    { key: 'bleedRadius', label: 'Radius', min: 0, max: 4, step: 0.1 },
+    { key: 'bleedOpacity', label: 'Opacity', min: 0, max: 0.5, step: 0.01 },
+    { key: 'bleedWarmth', label: 'Warmth', min: 0, max: 1, step: 0.05 },
+  ]},
+  { label: 'Color Muting', params: [
+    { key: 'saturation', label: 'Saturation', min: 0.5, max: 1, step: 0.01 },
+    { key: 'warmShift', label: 'Warm shift', min: 0, max: 5, step: 0.1 },
+    { key: 'coolShift', label: 'Cool shift', min: 0, max: 3, step: 0.1 },
+  ]},
+  { label: 'Brush Variation', params: [
+    { key: 'brushVariation', label: 'Variation', min: 0, max: 0.3, step: 0.01 },
+    { key: 'dryBrushChance', label: 'Dry brush', min: 0, max: 0.5, step: 0.01 },
+    { key: 'dryBrushOpacity', label: 'Dry opacity', min: 0, max: 0.4, step: 0.01 },
+  ]},
+  { label: 'Perturbation', params: [
+    { key: 'blockPerturb', label: 'Block', min: 0, max: 3, step: 0.1 },
+    { key: 'shapePerturb', label: 'Shape', min: 0, max: 3, step: 0.1 },
+    { key: 'detailPerturb', label: 'Detail', min: 0, max: 4, step: 0.1 },
+  ]},
+  { label: 'Wood Grain', params: [
+    { key: 'grainOpacity', label: 'Grain opacity', min: 0, max: 0.3, step: 0.01 },
+    { key: 'grainInInk', label: 'In ink areas', min: 0, max: 0.2, step: 0.01 },
+  ]},
+  { label: 'Edge Darkening', params: [
+    { key: 'edgeWeight', label: 'Edge weight', min: 0, max: 5, step: 0.1 },
+    { key: 'edgeOpacity', label: 'Edge opacity', min: 0, max: 1, step: 0.01 },
+  ]},
+];
+
+// Print style profiles — authentic mokuhanga traditions
+const _ptcProfiles = {
+  'ukiyoe': {
+    label: '浮世絵', sublabel: 'Ukiyo-e',
+    desc: 'Bold, vivid, clean edges',
+    values: {
+      bleedRadius: 0.8, bleedOpacity: 0.08, bleedWarmth: 0.15,
+      saturation: 0.90, warmShift: 1.5, coolShift: 0.8,
+      brushVariation: 0, dryBrushChance: 0, dryBrushOpacity: 0,
+      blockPerturb: 0.5, shapePerturb: 0.7, detailPerturb: 1.0,
+      grainOpacity: 0.06, grainInInk: 0.02,
+      edgeWeight: 2.2, edgeOpacity: 0.35,
+    },
+  },
+  'shinhanga': {
+    label: '新版画', sublabel: 'Shin-hanga',
+    desc: 'Soft, atmospheric, refined',
+    values: {
+      bleedRadius: 1.5, bleedOpacity: 0.15, bleedWarmth: 0.3,
+      saturation: 0.82, warmShift: 2.5, coolShift: 1.5,
+      brushVariation: 0, dryBrushChance: 0, dryBrushOpacity: 0,
+      blockPerturb: 0.8, shapePerturb: 1.2, detailPerturb: 1.8,
+      grainOpacity: 0.10, grainInInk: 0.04,
+      edgeWeight: 2.8, edgeOpacity: 0.50,
+    },
+  },
+  'sosaku': {
+    label: '創作版画', sublabel: 'Sōsaku-hanga',
+    desc: 'Raw, textured, visible hand',
+    values: {
+      bleedRadius: 2.2, bleedOpacity: 0.22, bleedWarmth: 0.45,
+      saturation: 0.72, warmShift: 3.5, coolShift: 2.0,
+      brushVariation: 0, dryBrushChance: 0, dryBrushOpacity: 0,
+      blockPerturb: 1.4, shapePerturb: 2.0, detailPerturb: 2.8,
+      grainOpacity: 0.22, grainInInk: 0.12,
+      edgeWeight: 3.5, edgeOpacity: 0.65,
+    },
+  },
+};
+
+let _ptcActiveProfile = null; // tracks which profile chip is active
+
+function buildPrintTuningConsole() {
+  const container = $('ptc-sliders');
+  const defaults = PrintEngine.defaults;
+  const saved = (() => {
+    try { return JSON.parse(localStorage.getItem('mokuri-print-tuning')); } catch { return null; }
+  })();
+
+  // Initialize tuning from saved or defaults
+  const tuning = Object.assign({}, defaults, saved || {});
+  PrintEngine.tuning = tuning;
+
+  // Build style profile chips
+  const stylesRow = $('ptc-styles');
+  stylesRow.innerHTML = '';
+  for (const [id, profile] of Object.entries(_ptcProfiles)) {
+    const chip = document.createElement('div');
+    chip.className = 'ptc-style-chip' + (id === _ptcActiveProfile ? ' active' : '');
+    chip.innerHTML = `<span class="ptc-style-jp">${profile.label}</span><span class="ptc-style-en">${profile.sublabel}</span>`;
+    chip.title = profile.desc;
+    chip.addEventListener('click', () => {
+      _ptcActiveProfile = id;
+      const profileValues = Object.assign({}, profile.values);
+      PrintEngine.tuning = profileValues;
+      _savePrintTuning(profileValues);
+      buildPrintTuningConsole();
+      $('status-hint').textContent = `Print style: ${profile.sublabel} (${profile.label})`;
+    });
+    stylesRow.appendChild(chip);
+  }
+
+  container.innerHTML = '';
+  for (const group of _ptcGroups) {
+    const div = document.createElement('div');
+    div.className = 'ptc-group';
+    div.innerHTML = `<div class="ptc-group-label">${group.label}</div>`;
+    for (const p of group.params) {
+      const val = tuning[p.key] !== undefined ? tuning[p.key] : defaults[p.key];
+      const row = document.createElement('div');
+      row.className = 'ptc-row';
+      row.innerHTML = `<label>${p.label}</label><input type="range" min="${p.min}" max="${p.max}" step="${p.step}" value="${val}" data-key="${p.key}"><span class="ptc-val">${Number(val).toFixed(2)}</span>`;
+      const slider = row.querySelector('input');
+      const valSpan = row.querySelector('.ptc-val');
+      slider.addEventListener('input', () => {
+        const v = parseFloat(slider.value);
+        valSpan.textContent = v.toFixed(2);
+        tuning[p.key] = v;
+        PrintEngine.tuning = tuning;
+        _savePrintTuning(tuning);
+        // Clear active profile highlight when manually adjusting
+        if (_ptcActiveProfile) {
+          _ptcActiveProfile = null;
+          $('ptc-styles').querySelectorAll('.ptc-style-chip').forEach(c => c.classList.remove('active'));
+        }
+      });
+      div.appendChild(row);
+    }
+    container.appendChild(div);
+  }
+}
+
+function _savePrintTuning(tuning) {
+  try { localStorage.setItem('mokuri-print-tuning', JSON.stringify(tuning)); } catch {}
+}
+
+function togglePrintTuningConsole() {
+  const panel = $('print-tuning-console');
+  const visible = panel.classList.toggle('visible');
+  if (visible) {
+    buildPrintTuningConsole();
+    $('status-hint').textContent = 'Print Tuning Console opened';
+  } else {
+    $('status-hint').textContent = 'Print Tuning Console closed';
+  }
+}
+
+// Console button handlers
+$('ptc-close').addEventListener('click', () => {
+  $('print-tuning-console').classList.remove('visible');
+});
+
+$('ptc-pull').addEventListener('click', () => {
+  pullPrint();
+});
+
+$('ptc-reset').addEventListener('click', () => {
+  const defaults = PrintEngine.defaults;
+  PrintEngine.tuning = Object.assign({}, defaults);
+  localStorage.removeItem('mokuri-print-tuning');
+  _ptcActiveProfile = null;
+  buildPrintTuningConsole();
+  $('status-hint').textContent = 'Print tuning reset to defaults';
+});
+
+$('ptc-copy').addEventListener('click', () => {
+  const tuning = PrintEngine.tuning;
+  if (!tuning) return;
+  const lines = Object.entries(tuning).map(([k, v]) => `  ${k}: ${typeof v === 'number' ? v : JSON.stringify(v)},`);
+  const text = `{\n${lines.join('\n')}\n}`;
+  navigator.clipboard.writeText(text).then(() => {
+    $('status-hint').textContent = '✓ Print tuning values copied to clipboard';
+  }).catch(() => {
+    $('status-hint').textContent = 'Clipboard write failed';
+  });
+});
+
+// Draggable console panel
+(() => {
+  const panel = $('print-tuning-console');
+  const handle = $('ptc-drag-handle');
+  let dragging = false, startX, startY, origX, origY;
+  handle.addEventListener('pointerdown', (e) => {
+    if (e.target.id === 'ptc-close') return;
+    dragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    const rect = panel.getBoundingClientRect();
+    origX = rect.left;
+    origY = rect.top;
+    handle.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+  handle.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    panel.style.left = (origX + e.clientX - startX) + 'px';
+    panel.style.top = (origY + e.clientY - startY) + 'px';
+    panel.style.right = 'auto';
+  });
+  handle.addEventListener('pointerup', () => { dragging = false; });
+})();
 </script>
 </body>
 </html>
