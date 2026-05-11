@@ -11994,6 +11994,7 @@ init();
 
 // Register service worker for offline support
 if ('serviceWorker' in navigator) {
+  var _hadController = !!navigator.serviceWorker.controller; // true only on revisit, false on first install
   navigator.serviceWorker.register('./sw.js').then(function(reg) {
     // Force check for SW update on visibility
     document.addEventListener('visibilitychange', function() {
@@ -12004,7 +12005,7 @@ if ('serviceWorker' in navigator) {
       var newSW = reg.installing;
       if (!newSW) return;
       newSW.addEventListener('statechange', function() {
-        if (newSW.state === 'activated' && navigator.serviceWorker.controller) {
+        if (newSW.state === 'activated' && _hadController) {
           // New SW active (update, not first install) — reload to pick up new assets
           window.location.reload();
         }
