@@ -181,8 +181,8 @@ registerPack({
       prompt: 'A calm evening by the water',
       promptType: 'scene',
       startingPreset: 1,
-      featureHints: ['open-ink', 'atmosphere', 'print-2', 'edit-title', 'pull-print', 'open-gallery', 'exit-gallery'],
-      completionMessage: 'Visit the Workshop to create new or work on existing prints',
+      featureHints: ['open-ink', 'atmosphere', 'print-2', 'choose-paper', 'pull-print', 'open-gallery', 'exit-gallery'],
+      completionMessage: 'Visit the Workshop to create new art work.',
       suggestedNext: null,
     },
     {

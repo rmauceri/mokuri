@@ -1256,6 +1256,7 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
   line-height: 1;
 }
 .fre-hint-close:hover { color: #3a5a78; }
+.fre-hint[data-celebration]::after { display: none; }
 .fre-hint-skip {
   display: block;
   margin-top: 8px;
@@ -3386,6 +3387,7 @@ function _showFeedbackNudge(persist) {
 function _maybeFeedbackNudge() {
   if (localStorage.getItem('mokuri-feedback-nudge')) return;
   if (_activeJourney) return;
+  if (Date.now() - _freJustCompletedAt < 10000) return;
   const visits = getMokuriVisits();
   if (visits < 2) return;  // never during first session
   setTimeout(() => _showFeedbackNudge(true), 2000);
@@ -7263,7 +7265,7 @@ const FRE_HINTS = {
   'open-ink':      { text: 'Open the Inking Workbench',            target: '#btn-phase-ink',   arrow: 'bottom' },
   'atmosphere-bg': { text: 'Change the background',                target: '#is-atmo-bg-chips', arrow: 'left' },
   'print-2':       { text: 'Pull a print of your evening scene',   target: '#btn-phase-print', arrow: 'bottom' },
-  'edit-title':    { text: 'Give your print a title',              target: '#ps-title-input',  arrow: 'left' },
+  'choose-paper':  { text: 'Choose a paper type',                  target: '#ps-paper-row',    arrow: 'left' },
   'pull-print':    { text: 'Pull your print',                      target: '#ps-pull-print',   arrow: 'left' },
   'open-gallery':  { text: 'Open the Gallery to see your prints',  target: '#btn-print-gallery', arrow: 'top' },
   'exit-gallery':  { text: 'Close the gallery to continue',        target: '#pgallery-close',  arrow: 'right' },
@@ -7470,6 +7472,7 @@ let _activeJourney = null;   // current journey object from pack registry
 let _hintIndex = -1;         // current step in featureHints array
 let _freSkipped = false;     // user clicked "Skip guide"
 let _freEditTitleTimer = null; // auto-advance timer for edit-title hint
+let _freJustCompletedAt = 0;  // timestamp of last journey completion
 
 async function freStartJourney(journeyId, opts) {
   const allJourneys = typeof getPackJourneys === 'function' ? getPackJourneys() : [];
@@ -7577,6 +7580,7 @@ function freCompleteJourney() {
 
   _activeJourney = null;
   _hintIndex = -1;
+  _freJustCompletedAt = Date.now();
 }
 
 function freSkipJourney() {
@@ -7618,10 +7622,6 @@ function _freShowCurrentHint() {
     autoSave();
   }
 
-  // Auto-advance edit-title after 5s if user doesn't type
-  if (hintId === 'edit-title') {
-    _freEditTitleTimer = setTimeout(() => freAdvance('edit-title'), 5000);
-  }
 
   // Don't close print studio for gallery hint — keep the print visible
   // Gallery button is still accessible in the toolbar
@@ -7634,10 +7634,19 @@ function _freShowCelebration(journey) {
   toast.className = 'fre-hint';
   toast.style.maxWidth = '280px';
   toast.style.textAlign = 'center';
-  toast.style.left = '50%';
-  toast.style.top = '40%';
+  // Center over the workspace canvas, not the whole window
+  const wsEl = document.querySelector('#workspace-svg');
+  if (wsEl) {
+    const r = wsEl.getBoundingClientRect();
+    toast.style.left = (r.left + r.width / 2) + 'px';
+    toast.style.top = (r.top + r.height * 0.4) + 'px';
+  } else {
+    toast.style.left = '50%';
+    toast.style.top = '40%';
+  }
   toast.style.transform = 'translate(-50%, -50%)';
   toast.style.padding = '20px 24px';
+  toast.dataset.celebration = '1';
 
   // Ensō circle — calligraphic completion mark
   const enso = document.createElement('div');
@@ -9844,6 +9853,7 @@ function buildPrintStudioUI() {
       updateWorkspaceSurface();
       autoSave();
       buildPrintStudioUI();
+      freAdvance('choose-paper');
     });
     paperRow.appendChild(chip);
   });
@@ -11994,8 +12004,8 @@ if ('serviceWorker' in navigator) {
       var newSW = reg.installing;
       if (!newSW) return;
       newSW.addEventListener('statechange', function() {
-        if (newSW.state === 'activated') {
-          // New SW active — reload to pick up new assets
+        if (newSW.state === 'activated' && navigator.serviceWorker.controller) {
+          // New SW active (update, not first install) — reload to pick up new assets
           window.location.reload();
         }
       });
@@ -12022,7 +12032,7 @@ if ('serviceWorker' in navigator) {
       caches.keys().then(function(keys) {
         var cacheKey = keys.find(function(k) { return /^mokuri-v\d+$/.test(k); });
         var local = cacheKey ? parseInt(cacheKey.replace('mokuri-v', '')) : 0;
-        if (remote > local) {
+        if (local > 0 && remote > local) {
           console.log('Mokuri update available: v' + remote + ' (installed: v' + local + ')');
           return Promise.all(keys.map(function(k) { return caches.delete(k); }))
             .then(function() { window.location.reload(); });

@@ -1470,23 +1470,21 @@ const MOKURI_ELEMENTS = [
       {
         name: 'block',
         paths: [
-          { d: 'M60 5 A55 55 0 1 1 59.99 5 Z', type: 'stroke', zone: 'glow', strokeWidth: 4 },
           { d: 'M60 10 A50 50 0 1 1 59.99 10 Z', type: 'fill', zone: 'body' },
         ],
       },
       {
         name: 'shape',
         paths: [
-          { d: 'M60 5 A55 55 0 1 1 59.99 5 Z', type: 'stroke', zone: 'glow', strokeWidth: 4 },
           { d: 'M60 10 A50 50 0 1 1 59.99 10 Z', type: 'fill', zone: 'body' },
-          { d: 'M60 10 A50 50 0 1 1 59.99 10 Z', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
+          { d: 'M60 5 A55 55 0 1 1 59.99 5 Z', type: 'stroke', zone: 'glow', strokeWidth: 4 },
         ],
       },
       {
         name: 'detail',
         paths: [
-          { d: 'M60 5 A55 55 0 1 1 59.99 5 Z', type: 'stroke', zone: 'glow', strokeWidth: 4 },
           { d: 'M60 10 A50 50 0 1 1 59.99 10 Z', type: 'fill', zone: 'body' },
+          { d: 'M60 5 A55 55 0 1 1 59.99 5 Z', type: 'stroke', zone: 'glow', strokeWidth: 4 },
           { d: 'M60 10 A50 50 0 1 1 59.99 10 Z', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
           // Crater suggestions
           { d: 'M45 45 A8 8 0 1 1 44.99 45 Z', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
