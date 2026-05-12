@@ -74,7 +74,7 @@ const MokuriAudio = (() => {
   // --- Ambient Soundscape (generative chimes + wind + bell + water) ---
 
   function playChime() {
-    if (!ctx || !ambientRunning) return;
+    if (!ctx || !ambientRunning || ctx.state === 'suspended') return;
     const freq = atmo.notePool[Math.floor(Math.random() * atmo.notePool.length)];
     const osc = ctx.createOscillator();
     osc.type = Math.random() < 0.6 ? 'sine' : 'triangle';
@@ -116,7 +116,7 @@ const MokuriAudio = (() => {
   }
 
   function playBell() {
-    if (!ctx || !ambientRunning) return;
+    if (!ctx || !ambientRunning || ctx.state === 'suspended') return;
     const now = ctx.currentTime;
 
     // Fundamental
@@ -158,7 +158,7 @@ const MokuriAudio = (() => {
   }
 
   function playWaterDrop() {
-    if (!ctx || !ambientRunning) return;
+    if (!ctx || !ambientRunning || ctx.state === 'suspended') return;
     const now = ctx.currentTime;
     const freq = 1200 + Math.random() * 800; // 1200-2000 Hz
     const osc = ctx.createOscillator();
@@ -187,6 +187,11 @@ const MokuriAudio = (() => {
 
   function scheduleWindBreath() {
     if (!ambientRunning || !windGain) return;
+    // If context is suspended, retry shortly rather than bail — prevents wind going permanently silent
+    if (ctx.state === 'suspended') {
+      windBreathTimeout = setTimeout(scheduleWindBreath, 1000);
+      return;
+    }
     const duration = 12 + Math.random() * 12; // 12-24 second breath cycle
     const peak = atmo.windVol * (0.6 + Math.random() * 0.8);
     const now = ctx.currentTime;
