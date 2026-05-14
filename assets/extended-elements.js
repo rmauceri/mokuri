@@ -2199,7 +2199,7 @@ const MOKURI_CORE_ELEMENTS = [
 
 {
   id: 'lotus-cluster',
-  name: 'Lotus Blossum',
+  name: 'Lotus Blossom',
   category: 'flora',
   pack: 'core',
   tags: ['flora', 'water', 'organic'],

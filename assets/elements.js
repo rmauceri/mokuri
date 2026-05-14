@@ -2781,7 +2781,7 @@ const MOKURI_ELEMENTS = [
 
   {
   id: 'cherry-branch',
-  name: 'Cherry Blossum',
+  name: 'Cherry Blossom',
   category: 'flora',
   tags: ['flora', 'organic', 'atmospheric', 'seasonal-spring'],
   viewBox: '-56.8 35.1 1299.9 799.9',

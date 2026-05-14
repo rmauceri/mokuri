@@ -141,8 +141,8 @@ registerPack({
     'form-oval', 'form-rectangle', 'form-square', 'form-triangle',
     'form-diamond', 'form-arch', 'form-hexagon', 'form-leaf',
     'form-cloud', 'form-wave-band', 'form-pebble', 'traveler',
-    'umbrella-figure', 'fisherman', 'field-worker', 'two-travelers',
-    'seated-figure', 'boatman', 'woman-kimono', 'woman-elegant', 'woman-bundle', 'hanko-circle',
+    'umbrella-figure', 'fisherman', 'fisherman-standing','field-worker', 'field-worker-hoe', 'two-travelers',
+    'seated-figure', 'boatman', 'boatman-standing','woman-umbrella','woman-kimono', 'woman-elegant', 'woman-bundle', 'hanko-circle',
     'hanko-square', 'hanko-gourd', 'hanko-oval', 'hanko-diamond', 'hanko-cloud', 'hanko-mokuri',
   ],
 

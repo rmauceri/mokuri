@@ -35,7 +35,7 @@ registerPack({
   affinity: ['flora', 'vessel', 'minimal', 'structural', 'organic', 'intimate'],
   elementIds: [
     'vessel-suiban', 'vessel-oval', 'vessel-rectangle', 'vessel-bamboo', 'vessel-tsubo',
-    'blossum-kiku', 'blossum-ran', 'blossum-suisen',
+    'blossum-kiku', 'blossum-ran', 'blossum-suisen', 'blossom-kacho',
     'branch-ume-crooked', 'matsu-branch-upright', 'blossum-chrysanthemum', 'lotus-pod',
     'tsubaki-single', 'tsubaki-cluster', 'bamboo-branch','bamboo-shoots','lantern-small', 'lantern-round'
   ],
