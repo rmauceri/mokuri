@@ -32,9 +32,8 @@ registerPack({
   affinity: ['fauna', 'flora', 'water', 'organic', 'intimate'],
   elementIds: ['rabbit-run', 'rabbit-laying', 'rabbit-leaping', 'bushwarbler-flight', 'swallow-flight', 'kingfisher-crouch', 
     'kingfisher-sitting', 'heron-wading', 'heron-hunting', 'heron-detailed-standing', 'koi-above', 'koi-goldfish', 
-    'dragonfly-perched', 'butterfly-resting', 'wisteria-vine',
-    'wisteria-vine-knotted', 'lilypad-pair', 'lilypad-single', 'egret-hunting', 'susuki-grass-swept', 'matsu-branch', 
-    'lotus-cluster', 'lotus-cluster-tall', 'teahouse-open'],
+    'dragonfly-perched', 'butterfly-resting', 'wisteria-vine-knotted', 'lilypad-pair', 'lilypad-single', 'egret-hunting', 
+    'susuki-grass-swept', 'matsu-branch', 'lotus-cluster-tall', 'teahouse-open'],
   paletteIds: ['haru', 'natsu'],
   presetIds: null,
   atmospherePresets: [

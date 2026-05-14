@@ -127,8 +127,8 @@ registerPack({
     'waterfall', 'full-moon', 'cloud-bank', 'pine-tree',
     'cherry-branch', 'torii-gate', 'twisted-pine',
     'weeping-willow', 'cherry-tree', 'cherry-tree-simple','sakura-blossom', 'ume-blossom', 'chrysanthemum',
-    'susuki-grass', 'asanoha-star', 'seigaiha-tile', 'sensu-fan',
-    'paper-lantern', 'lantern-toro', 'lantern-yukimi', 'latern-kasuga',
+    'wisteria-vine', 'ginko-branch', 'lotus-cluster', 'susuki-grass', 'asanoha-star', 'seigaiha-tile', 'sensu-fan',
+    'paper-lantern', 'lantern-toro', 'lantern-yukimi', 'latern-kasuga', 'koinobori-pole', 'koinobori-higoi',
     'fishing-boat', 'pine-bough', 'woodgrain-knot', 'gouge-mark',
     'bare-branch', 'koi', 'dragonfly', 'turtle',
     'crane-flying', 'rabbit', 'frog', 'butterfly', 'swallow-soaring',
@@ -142,9 +142,8 @@ registerPack({
     'form-diamond', 'form-arch', 'form-hexagon', 'form-leaf',
     'form-cloud', 'form-wave-band', 'form-pebble', 'traveler',
     'umbrella-figure', 'fisherman', 'field-worker', 'two-travelers',
-    'seated-figure', 'boatman', 'woman-bundle', 'hanko-circle',
-    'hanko-square', 'hanko-gourd', 'hanko-oval', 'hanko-diamond',
-    'hanko-cloud', 'hanko-mokuri',
+    'seated-figure', 'boatman', 'woman-kimono', 'woman-elegant', 'woman-bundle', 'hanko-circle',
+    'hanko-square', 'hanko-gourd', 'hanko-oval', 'hanko-diamond', 'hanko-cloud', 'hanko-mokuri',
   ],
 
   paletteIds: [
