@@ -1759,7 +1759,7 @@ const MOKURI_SCENE_ELEMENTS = [
 {
   id: 'wooden-bridge',
   name: 'Wooden Bridge',
-  category: 'objects',
+  category: 'structures',
   pack: 'core',
   tags: ['landscape', 'structural', 'geometric'],
   viewBox: '-59.2 -42.2 1302.4 949.3',
@@ -1950,7 +1950,7 @@ const MOKURI_SCENE_ELEMENTS = [
 {
   id: 'foot-bridge',
   name: 'Foot Bridge',
-  category: 'objects',
+  category: 'structures',
   pack: 'core',
   tags: ['landscape', 'structural', 'geometric'],
   viewBox: '-59.2 -42.1 1302.4 948.2',
@@ -3861,7 +3861,7 @@ const MOKURI_SCENE_ELEMENTS = [
 {
   id: 'pagoda',
   name: 'Pagoda',
-  category: 'landscape',
+  category: 'structures',
   pack: 'core',
   tags: ['landscape', 'structural', 'geometric'],
   viewBox: '109.6 12.9 646.1 1082.2',
@@ -4460,7 +4460,7 @@ const MOKURI_SCENE_ELEMENTS = [
 {
   id: 'pagoda-with-trees',
   name: 'Pagoda with Trees',
-  category: 'landscape',
+  category: 'structures',
   pack: 'core',
   tags: ['landscape', 'structural', 'geometric'],
   viewBox: '-49.5 -34.6 1089.3 760.4',
@@ -5189,7 +5189,7 @@ const MOKURI_SCENE_ELEMENTS = [
  {
   id: 'tea-house',
   name: 'Tea House',
-  category: 'landscape',
+  category: 'structures',
   pack: 'core',
   tags: ['landscape', 'structural', 'geometric'],
   viewBox: '-35.1 -43 1276.3 950',
@@ -5656,7 +5656,7 @@ const MOKURI_SCENE_ELEMENTS = [
  {
   id: 'farmhouse',
   name: 'Farmhouse',
-  category: 'landscape',
+  category: 'structures',
   pack: 'core',
   tags: ['landscape', 'structural', 'geometric'],
   viewBox: '95.1 148.2 992 570.6',
@@ -6301,38 +6301,31 @@ const MOKURI_SCENE_ELEMENTS = [
       {
         name: 'block',
         paths: [
-          // Water surface
-          { d: 'M0,20 Q50,10 100,16 Q150,22 200,14 L200,110 Q150,118 100,112 Q50,106 0,114 Z', type: 'fill', zone: 'water' },
-          // Central ripple rings (elliptical — perspective)
-          { d: 'M72,56 Q85,48 100,46 Q115,48 128,56 Q115,64 100,66 Q85,64 72,56 Z', type: 'fill', zone: 'ripple' },
+          { d: 'M0,18 Q40,10 100,16 Q160,22 200,14 L200,108 Q160,116 100,110 Q40,104 0,112 Z', type: 'fill', zone: 'water' },
+          // Central disturbance — wavy fill ellipse, rx=18 ry=10, alternating bow ~1.5px per quadrant
+          { d: 'M100,50 C111,48.5 119.5,54 118,60 C116.5,65 108.5,71.5 100,70 C91.5,71.5 80.5,65.5 82,60 C83.5,54 90.5,48.5 100,50 Z', type: 'fill', zone: 'ripple' },
         ],
       },
       {
         name: 'shape',
         paths: [
-          { d: 'M0,20 Q50,10 100,16 Q150,22 200,14 L200,110 Q150,118 100,112 Q50,106 0,114 Z', type: 'fill', zone: 'water' },
-          { d: 'M72,56 Q85,48 100,46 Q115,48 128,56 Q115,64 100,66 Q85,64 72,56 Z', type: 'fill', zone: 'ripple' },
-          // Ripple ring outlines — expanding ellipses
-          { d: 'M72,56 Q85,48 100,46 Q115,48 128,56 Q115,64 100,66 Q85,64 72,56', type: 'stroke', zone: 'ripple', strokeWidth: 1.2 },
-          { d: 'M56,58 Q76,44 100,40 Q124,44 144,58 Q124,72 100,76 Q76,72 56,58', type: 'stroke', zone: 'ripple', strokeWidth: 1 },
-          { d: 'M38,60 Q64,40 100,34 Q136,40 162,60 Q136,80 100,86 Q64,80 38,60', type: 'stroke', zone: 'ripple', strokeWidth: 0.8 },
+          { d: 'M0,18 Q40,10 100,16 Q160,22 200,14 L200,108 Q160,116 100,110 Q40,104 0,112 Z', type: 'fill', zone: 'water' },
+          { d: 'M100,50 C111,48.5 119.5,54 118,60 C116.5,65 108.5,71.5 100,70 C91.5,71.5 80.5,65.5 82,60 C83.5,54 90.5,48.5 100,50 Z', type: 'fill', zone: 'ripple' },
+          { d: 'M100,46 C116,44 128,53 126,60 C124,67 112,73 100,74 C84,76 72,68 74,60 C76,53 87,47 100,46', type: 'stroke', zone: 'ripple', strokeWidth: 0.9 },
+          { d: 'M100,40 C123,37 141,50 138,60 C136,68 119,82 100,80 C81,83 59,72 62,60 C64,50 81,37 100,40', type: 'stroke', zone: 'ripple', strokeWidth: 0.7 },
+          { d: 'M100,34 C132,30 156,47 152,60 C148,72 126,89 100,86 C74,90 44,73 48,60 C52,48 74,30 100,34', type: 'stroke', zone: 'ripple', strokeWidth: 0.55 },
         ],
       },
       {
         name: 'detail',
         paths: [
-          { d: 'M0,20 Q50,10 100,16 Q150,22 200,14 L200,110 Q150,118 100,112 Q50,106 0,114 Z', type: 'fill', zone: 'water' },
-          { d: 'M72,56 Q85,48 100,46 Q115,48 128,56 Q115,64 100,66 Q85,64 72,56 Z', type: 'fill', zone: 'ripple' },
-          { d: 'M72,56 Q85,48 100,46 Q115,48 128,56 Q115,64 100,66 Q85,64 72,56', type: 'stroke', zone: 'ripple', strokeWidth: 1.2 },
-          { d: 'M56,58 Q76,44 100,40 Q124,44 144,58 Q124,72 100,76 Q76,72 56,58', type: 'stroke', zone: 'ripple', strokeWidth: 1 },
-          { d: 'M38,60 Q64,40 100,34 Q136,40 162,60 Q136,80 100,86 Q64,80 38,60', type: 'stroke', zone: 'ripple', strokeWidth: 0.8 },
-          // Outer ripples — fading
-          { d: 'M20,62 Q52,36 100,28 Q148,36 180,62 Q148,88 100,96 Q52,88 20,62', type: 'stroke', zone: 'ripple', strokeWidth: 0.5 },
-          { d: 'M4,64 Q42,32 100,22 Q158,32 196,64 Q158,96 100,106 Q42,96 4,64', type: 'stroke', zone: 'ripple', strokeWidth: 0.3 },
-          // Subtle surface current lines
-          { d: 'M8,34 Q30,28 55,32 M145,28 Q170,24 192,30 M10,90 Q32,84 58,88 M142,86 Q168,82 190,88', type: 'stroke', zone: 'water', strokeWidth: 0.4 },
-          // Tiny secondary ripple set (offset)
-          { d: 'M30,40 Q38,36 46,40 Q38,44 30,40 M154,38 Q162,34 170,38 Q162,42 154,38 M28,82 Q36,78 44,82 Q36,86 28,82 M156,80 Q164,76 172,80 Q164,84 156,80', type: 'stroke', zone: 'ripple', strokeWidth: 0.3 },
+          { d: 'M0,18 Q40,10 100,16 Q160,22 200,14 L200,108 Q160,116 100,110 Q40,104 0,112 Z', type: 'fill', zone: 'water' },
+          { d: 'M100,50 C111,48.5 119.5,54 118,60 C116.5,65 108.5,71.5 100,70 C91.5,71.5 80.5,65.5 82,60 C83.5,54 90.5,48.5 100,50 Z', type: 'fill', zone: 'ripple' },
+          { d: 'M100,46 C116,44 128,53 126,60 C124,67 112,73 100,74 C84,76 72,68 74,60 C76,53 87,47 100,46', type: 'stroke', zone: 'ripple', strokeWidth: 0.9 },
+          { d: 'M100,40 C123,37 141,50 138,60 C136,68 119,82 100,80 C81,83 59,72 62,60 C64,50 81,37 100,40', type: 'stroke', zone: 'ripple', strokeWidth: 0.7 },
+          { d: 'M100,34 C132,30 156,47 152,60 C148,72 126,89 100,86 C74,90 44,73 48,60 C52,48 74,30 100,34', type: 'stroke', zone: 'ripple', strokeWidth: 0.55 },
+          { d: 'M100,28 C141,23 171,44 166,60 C161,75 132,96 100,92 C68,97 29,76 34,60 C39,45 68,23 100,28', type: 'stroke', zone: 'ripple', strokeWidth: 0.4 },
+          { d: 'M100,22 C149,16 186,41 180,60 C174,78 139,103 100,98 C61,104 14,79 20,60 C26,42 61,16 100,22', type: 'stroke', zone: 'ripple', strokeWidth: 0.25 },
         ],
       },
     ],

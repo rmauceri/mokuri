@@ -7828,6 +7828,10 @@ function buildElementPicker() {
   const activePack = typeof getPackById === 'function' ? getPackById(activePackId) : null;
   const categoryOrder = (activePack && activePack.categoryOrder) || [];
 
+  // Build element id → position index from pack's elementIds for within-category sorting
+  const packIdOrder = (activePack && activePack.elementIds) || [];
+  const packIdIndex = new Map(packIdOrder.map((id, i) => [id, i]));
+
   // Render a set of elements grouped by category
   function renderElementGroup(elements, container) {
     const cats = {};
@@ -7846,6 +7850,15 @@ function buildElementPicker() {
       if (aInOrder) return -1;
       if (bInOrder) return 1;
       return b[1].length - a[1].length || a[0].localeCompare(b[0]);
+    });
+
+    // Sort elements within each category by their position in pack elementIds
+    orderedCats.forEach(([, defs]) => {
+      defs.sort((a, b) => {
+        const ai = packIdIndex.has(a.id) ? packIdIndex.get(a.id) : Infinity;
+        const bi = packIdIndex.has(b.id) ? packIdIndex.get(b.id) : Infinity;
+        return ai - bi;
+      });
     });
 
     orderedCats.forEach(([cat, defs]) => {

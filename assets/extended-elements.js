@@ -7542,7 +7542,7 @@ const MOKURI_CORE_ELEMENTS = [
 {
   id: 'boat-fishing',
   name: 'Fishing Rowboat',
-  category: 'objects',
+  category: 'structures',
   pack: 'core',
   tags: ['landscape', 'geometric', 'water'],
   viewBox: '-59.2 -43.2 1302.4 950.4',
