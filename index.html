@@ -4729,16 +4729,20 @@ function renderElementSvg(el, layerIndex) {
 
   if (hasGrads) g.insertBefore(gradDefs, g.firstChild);
 
-  // Invisible hit target — gives every element a full bounding-box click area,
-  // critical for stroke-only elements (rain, snow, fine lines) that have near-zero hit area.
-  const hitRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-  hitRect.setAttribute('x', vb[0]);
-  hitRect.setAttribute('y', vb[1]);
-  hitRect.setAttribute('width', vb[2]);
-  hitRect.setAttribute('height', vb[3]);
-  hitRect.setAttribute('fill', 'none');
-  hitRect.setAttribute('pointer-events', 'all');
-  inner.appendChild(hitRect);
+  // Invisible hit target — only for stroke-only elements with no block-level fills
+  // (e.g. rain-curtain). Elements with fills already have natural SVG hit coverage;
+  // adding a full-viewBox rect to them causes accidental selection in empty bounding-box space.
+  const hasBlockFills = blockPaths.some(p => p.type === 'fill');
+  if (!hasBlockFills) {
+    const hitRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    hitRect.setAttribute('x', vb[0]);
+    hitRect.setAttribute('y', vb[1]);
+    hitRect.setAttribute('width', vb[2]);
+    hitRect.setAttribute('height', vb[3]);
+    hitRect.setAttribute('fill', 'none');
+    hitRect.setAttribute('pointer-events', 'all');
+    inner.appendChild(hitRect);
+  }
 
   g.appendChild(inner);
   return g;
