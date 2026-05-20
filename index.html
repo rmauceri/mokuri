@@ -10617,6 +10617,16 @@ function setupInteraction() {
     }
     if (pinchPointers.size > 2) { e.preventDefault(); return; }
 
+    // During print preview, never interact with elements — any drag is a pan
+    if (STATE.printPreview) {
+      if (e.button === 0 || e.button === 1) {
+        STATE.dragging = { type: 'pan', startX: e.clientX, startY: e.clientY, origVBx: STATE.viewBox.x, origVBy: STATE.viewBox.y };
+        ws.setPointerCapture(e.pointerId);
+        ws.style.cursor = 'grabbing';
+      }
+      return;
+    }
+
     if (e.button === 1 || (e.button === 0 && e.altKey)) {
       // Middle click or alt+click: pan (always available)
       STATE.dragging = { type: 'pan', startX: e.clientX, startY: e.clientY, origVBx: STATE.viewBox.x, origVBy: STATE.viewBox.y };
