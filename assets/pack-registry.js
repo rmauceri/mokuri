@@ -122,29 +122,42 @@ registerPack({
   affinity: ['landscape', 'structural', 'atmospheric', 'figure', 'water'],
   categoryOrder: ['landscape', 'structures', 'objects', 'flora', 'fauna', 'figures'],
   elementIds: [
+    // --- Landscape elements
     'mountain-distant', 'mountain-near', 'mountain-fuji-peak', 'rolling-hills',
-    'farmland', 'tranquil-pond', 'flowing-stream', 'gentle-waves',
-    'waterfall', 'full-moon', 'cloud-bank', 'pine-tree',
-    'cherry-branch', 'torii-gate', 'twisted-pine', 'treeline-mixed', 'treeline-pines',
-    'weeping-willow', 'cherry-tree', 'cherry-tree-simple','sakura-blossom', 'ume-blossom', 'chrysanthemum',
-    'wisteria-vine', 'ginko-branch', 'lotus-cluster', 'susuki-grass', 'asanoha-star', 'seigaiha-tile', 'sensu-fan',
-    'paper-lantern', 'lantern-toro', 'lantern-yukimi', 'latern-kasuga', 'koinobori-pole', 'koinobori-higoi',
-    'boat-fishing', 'pine-bough', 'tsukubai', 'shimenawa', 'vessel-tall', 'tsubo-jar',
-    'bare-branch', 'koi', 'dragonfly', 'turtle',
-    'crane-flying', 'rabbit', 'frog', 'butterfly', 'swallow-soaring',
-    'sparrow', 'sparrow-alert', 'koi-leaping', 'koi-overhead', 'crane-standing',
-    'crane-landing', 'bamboo-grove', 'rock-formation', 'distant-village',
-    'distant-village-hills', 'stone-path', 'wooden-bridge', 'foot-bridge', 'rain-curtain',
-    'snow-fall', 'cloud-wisp', 'maple-branch', 'iris-cluster',
+    'farmland', 'distant-village', 'distant-village-hills', 'stone-path', 'rock-formation',
+
+    // --- water and atmospheric elements
+    'tranquil-pond', 'flowing-stream', 'gentle-waves',
+    'shore-waves', 'river-rapids', 'water-ripples', 'waterfall', 
+    'full-moon', 'cloud-bank', 'cloud-wisp', 'rain-curtain', 'snow-fall', 
+
+    // --- Structural elements
     'pagoda', 'pagoda-with-trees', 'tea-house', 'bamboo-fence', 'farmhouse', 'farmhouse-simple',
-    'stone-wall', 'castle-wall', 'wooden-dock', 'torii-detailed', 'torii-grand',
-    'shore-waves', 'river-rapids', 'water-ripples', 'form-circle',
-    'form-oval', 'form-rectangle', 'form-square', 'form-triangle',
-    'form-diamond', 'form-arch', 'form-hexagon', 'form-leaf',
-    'form-cloud', 'form-wave-band', 'form-pebble', 'traveler',
-    'umbrella-figure', 'fisherman', 'fisherman-standing','field-worker', 'field-worker-hoe', 'two-travelers',
-    'seated-figure', 'boatman', 'boatman-standing','woman-umbrella','woman-kimono', 'woman-elegant', 'woman-bundle', 'hanko-circle',
-    'hanko-square', 'hanko-gourd', 'hanko-oval', 'hanko-diamond', 'hanko-cloud', 'hanko-mokuri',
+    'stone-wall', 'castle-wall', 'wooden-dock', 'torii-gate', 'torii-detailed', 'torii-grand',
+    'torii-gate', 'wooden-bridge', 'foot-bridge', 'boat-fishing', 
+
+     // --- Object elements
+    'asanoha-star', 'paper-lantern', 'lantern-toro', 'lantern-yukimi', 'latern-kasuga', 'koinobori-pole', 'koinobori-higoi',
+   'tsukubai', 'shimenawa', 'vessel-tall', 'tsubo-jar',
+   
+    // --- Flora and fauna elements
+    'treeline-mixed', 'treeline-pines','pine-tree','twisted-pine', 'weeping-willow', 'cherry-tree', 'cherry-tree-simple',
+    'pine-bough', 'bare-branch', 'maple-branch', 'cherry-branch', 'sakura-blossom', 'ume-blossom', 
+    'wisteria-vine', 'ginko-branch', 'bamboo-grove', 'susuki-grass', 'lotus-cluster', 'iris-cluster', 'chrysanthemum',
+
+    'koi', 'koi-swim', 'koi-leaping', 'koi-overhead',
+    'turtle', 'rabbit', 'rabbit-run', 'frog', 'frog-leaping', 'dragonfly', 'butterfly',
+    'swallow-soaring', 'sparrow', 'sparrow-alert', 
+    'crane-standing', 'crane-flying', 'crane-landing', 
+     
+    // --- Figure elements
+    'traveler', 'traveler-standing','two-travelers', 'fisherman', 'fisherman-standing','field-worker', 'field-worker-hoe', 'porter',
+    'boatman', 'boatman-standing', 'seated-figure', 'umbrella-figure', 'woman-umbrella','woman-kimono', 'woman-elegant', 'woman-bundle', 
+
+   // -- Forms and Hanko elements
+    'form-circle','form-oval', 'form-rectangle', 'form-square', 'form-triangle',
+    'form-diamond', 'form-arch', 'form-hexagon', 'form-leaf', 'form-cloud', 'form-wave-band', 'form-pebble',
+    'hanko-circle','hanko-square', 'hanko-gourd', 'hanko-oval', 'hanko-diamond', 'hanko-cloud', 'hanko-mokuri',
   ],
 
   paletteIds: [
