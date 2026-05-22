@@ -2497,8 +2497,9 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
   .print-studio-inner .ps-text-input { padding: 4px 6px; font-size: 11px; }
 
   /* ---- Ink Studio: Palette | Zones | Atmosphere ---- */
+  .ink-studio-inner { grid-template-columns: minmax(0, 0.8fr) 1fr 1fr; }
   .ink-studio-inner > div:not([class]) { grid-column: 1; display: flex; flex-direction: column; }
-  .ink-studio-inner > #is-zone-section { grid-column: 2; border-top: none; padding-top: 0; overflow-y: auto; max-height: 246px; }
+  .ink-studio-inner > #is-zone-section { grid-column: 2; border-top: none; padding-top: 0; overflow-y: visible; max-height: none; }
   .ink-studio-inner > #is-atmo-section { grid-column: 3; border-top: none; padding-top: 0; }
   .ink-studio-inner > .ps-actions { display: none; }
   /* Swatch row on top, then label, then chips */
@@ -2507,7 +2508,7 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
   /* Palette chips: 3-column grid, scaled down, no scrolling */
   .ink-studio-inner .is-palette-chips {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(1, 1fr);
     gap: 3px;
     margin-bottom: 0;
   }
@@ -2519,6 +2520,17 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
   /* Hide palette collapse toggle in portrait (always expanded) */
   .ink-studio-inner .is-palette-header { pointer-events: none; }
   .ink-studio-inner #is-palette-chevron { display: none; }
+  /* Accent chips: remove indent and label, fit full column width */
+  .ink-studio-inner .is-accent-row { padding-left: 0; }
+  .ink-studio-inner .is-accent-label { display: none; }
+  .ink-studio-inner .is-accent-swatch { width: 16px; height: 16px; }
+  /* Zone picker: remove indent, compact swatches to match accent size */
+  .ink-studio-inner .is-zone-picker { padding-left: 0; }
+  .ink-studio-inner .is-pick-swatch { width: 16px; height: 16px; }
+  /* Bokashi: remove indent and label, align under accent chips */
+  .ink-studio-inner .is-bokashi-row { padding-left: 0; }
+  .ink-studio-inner .is-bokashi-label { display: none; }
+  .ink-studio-inner .is-bokashi-btn { width: 20px; height: 20px; font-size: 10px; }
 
   /* ---- Carve Studio: 2 cols — Level+Tools+Pressure | Patterns+Sliders ---- */
   .carve-studio-inner { grid-template-columns: 1fr 1fr; align-items: start; height: auto; }
