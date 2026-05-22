@@ -10666,6 +10666,11 @@ function setupInteraction() {
 
     // ---- CARVE MODE ----
     if (STATE.mode === 'carve') {
+      // Allow resize/rotate handles even in carve mode
+      const handleInCarve = e.target.closest('[data-handle]');
+      if (handleInCarve) {
+        // Fall through to SELECT MODE handle logic below
+      } else {
       const ring = document.getElementById('carve-ring');
       if (ring) ring.style.display = 'none';
       const gEl = e.target.closest('g[data-id]');
@@ -10724,6 +10729,7 @@ function setupInteraction() {
       ws.setPointerCapture(e.pointerId);
       ws.style.cursor = 'grabbing';
       return;
+      } // end else (not a handle)
     }
 
     // ---- ERASE MODE ----
