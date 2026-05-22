@@ -3296,7 +3296,7 @@ rebuildElementMap();
 // ============================================================
 //  VERSION
 // ============================================================
-const MOKURI_VERSION = '0.94';
+const MOKURI_VERSION = '0.95';
 
 // ============================================================
 //  FEEDBACK
@@ -3463,7 +3463,7 @@ const STATE = {
   guides: localStorage.getItem('mokuri-guides') === 'true',
 
   // Active style — which pack sets the creative context
-  activeStyle: (localStorage.getItem('mokuri-dev-styles') ? localStorage.getItem('mokuri-activeStyle') : null) || 'core',
+  activeStyle: (MOKURI_IS_DEV && localStorage.getItem('mokuri-dev-styles') ? localStorage.getItem('mokuri-activeStyle') : null) || 'core',
 
   // Composition identity (set at runtime, not serialized)
   activeCompositionId: null,
@@ -7789,7 +7789,7 @@ function buildStyleSelector() {
   const container = $('style-selector');
   container.innerHTML = '';
   const packs = getAllPacks();
-  if (packs.length <= 1 || !localStorage.getItem('mokuri-dev-styles')) { container.style.display = 'none'; return; }
+  if (packs.length <= 1 || !MOKURI_IS_DEV || !localStorage.getItem('mokuri-dev-styles')) { container.style.display = 'none'; return; }
   container.style.display = '';
 
   packs.forEach(pack => {
@@ -7842,7 +7842,7 @@ function buildElementPicker() {
 
   // Two-tier: featured (pack + affinity) vs rest
   // When dev-styles is off, exclude non-core pack elements entirely
-  const devStyles = !!localStorage.getItem('mokuri-dev-styles');
+  const devStyles = MOKURI_IS_DEV && !!localStorage.getItem('mokuri-dev-styles');
   const sourceElements = devStyles ? MOKURI_ELEMENTS : MOKURI_ELEMENTS.filter(d => !d.pack || d.pack === 'core');
   const { featured, rest } = getAffinityElements(STATE.activeStyle, sourceElements);
 
