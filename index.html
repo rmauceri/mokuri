@@ -2980,6 +2980,7 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
 
   <!-- Status bar -->
   <div class="status-bar">
+    <span id="status-dev" style="display:none; font-size:9px; font-weight:600; color:#c87030; letter-spacing:0.05em; margin-right:6px;">DEV</span>
     <span id="status-elements">0 elements</span>
     <span id="status-zoom">100%</span>
     <span id="status-hint" class="status-hint">Place elements on the canvas</span>
@@ -3241,6 +3242,13 @@ window.onunhandledrejection = (e) => {
   if (hint) hint.textContent = 'Something went wrong — your work is saved';
 };
 
+// Environment detection — dev features enabled on file://, localhost, and dev/preview URLs
+const MOKURI_IS_DEV = location.hostname === ''              // file:// local testing
+  || location.hostname === 'localhost'
+  || location.hostname === '127.0.0.1'
+  || location.hostname === 'dev.mokuri.art'                 // dev subdomain
+  || location.hostname.endsWith('.vercel.app');             // all Vercel preview deployments
+
 // Merge extended and fauna elements into main array
 if (typeof MOKURI_CORE_ELEMENTS !== 'undefined') {
   MOKURI_ELEMENTS.push(...MOKURI_CORE_ELEMENTS);
@@ -3267,7 +3275,7 @@ if (typeof MOKURI_MORIBANA_ELEMENTS !== 'undefined') {
   MOKURI_ELEMENTS.push(...MOKURI_MORIBANA_ELEMENTS);
 }
 // Test elements disabled — use element-harness.html to preview test pack
-if (typeof MOKURI_TEST_ELEMENTS !== 'undefined') {
+if (MOKURI_IS_DEV && typeof MOKURI_TEST_ELEMENTS !== 'undefined') {
   MOKURI_ELEMENTS.push(...MOKURI_TEST_ELEMENTS);
 }
 
@@ -3289,7 +3297,7 @@ rebuildElementMap();
 // ============================================================
 //  VERSION
 // ============================================================
-const MOKURI_VERSION = '0.93';
+const MOKURI_VERSION = '0.95';
 
 // ============================================================
 //  FEEDBACK
@@ -3456,7 +3464,7 @@ const STATE = {
   guides: localStorage.getItem('mokuri-guides') === 'true',
 
   // Active style — which pack sets the creative context
-  activeStyle: (localStorage.getItem('mokuri-dev-styles') ? localStorage.getItem('mokuri-activeStyle') : null) || 'core',
+  activeStyle: (MOKURI_IS_DEV && localStorage.getItem('mokuri-dev-styles') ? localStorage.getItem('mokuri-activeStyle') : null) || 'core',
 
   // Composition identity (set at runtime, not serialized)
   activeCompositionId: null,
@@ -4728,6 +4736,22 @@ function renderElementSvg(el, layerIndex) {
   }
 
   if (hasGrads) g.insertBefore(gradDefs, g.firstChild);
+
+  // Invisible hit target — only for stroke-only elements with no block-level fills
+  // (e.g. rain-curtain). Elements with fills already have natural SVG hit coverage;
+  // adding a full-viewBox rect to them causes accidental selection in empty bounding-box space.
+  const hasBlockFills = blockPaths.some(p => p.type === 'fill');
+  if (!hasBlockFills) {
+    const hitRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    hitRect.setAttribute('x', vb[0]);
+    hitRect.setAttribute('y', vb[1]);
+    hitRect.setAttribute('width', vb[2]);
+    hitRect.setAttribute('height', vb[3]);
+    hitRect.setAttribute('fill', 'none');
+    hitRect.setAttribute('pointer-events', 'all');
+    inner.appendChild(hitRect);
+  }
+
   g.appendChild(inner);
   return g;
 }
@@ -7766,7 +7790,7 @@ function buildStyleSelector() {
   const container = $('style-selector');
   container.innerHTML = '';
   const packs = getAllPacks();
-  if (packs.length <= 1 || !localStorage.getItem('mokuri-dev-styles')) { container.style.display = 'none'; return; }
+  if (packs.length <= 1 || !MOKURI_IS_DEV || !localStorage.getItem('mokuri-dev-styles')) { container.style.display = 'none'; return; }
   container.style.display = '';
 
   packs.forEach(pack => {
@@ -7819,7 +7843,7 @@ function buildElementPicker() {
 
   // Two-tier: featured (pack + affinity) vs rest
   // When dev-styles is off, exclude non-core pack elements entirely
-  const devStyles = !!localStorage.getItem('mokuri-dev-styles');
+  const devStyles = MOKURI_IS_DEV && !!localStorage.getItem('mokuri-dev-styles');
   const sourceElements = devStyles ? MOKURI_ELEMENTS : MOKURI_ELEMENTS.filter(d => !d.pack || d.pack === 'core');
   const { featured, rest } = getAffinityElements(STATE.activeStyle, sourceElements);
 
@@ -7827,6 +7851,10 @@ function buildElementPicker() {
   const activePackId = STATE.activeStyle || 'core';
   const activePack = typeof getPackById === 'function' ? getPackById(activePackId) : null;
   const categoryOrder = (activePack && activePack.categoryOrder) || [];
+
+  // Build element id → position index from pack's elementIds for within-category sorting
+  const packIdOrder = (activePack && activePack.elementIds) || [];
+  const packIdIndex = new Map(packIdOrder.map((id, i) => [id, i]));
 
   // Render a set of elements grouped by category
   function renderElementGroup(elements, container) {
@@ -7846,6 +7874,15 @@ function buildElementPicker() {
       if (aInOrder) return -1;
       if (bInOrder) return 1;
       return b[1].length - a[1].length || a[0].localeCompare(b[0]);
+    });
+
+    // Sort elements within each category by their position in pack elementIds
+    orderedCats.forEach(([, defs]) => {
+      defs.sort((a, b) => {
+        const ai = packIdIndex.has(a.id) ? packIdIndex.get(a.id) : Infinity;
+        const bi = packIdIndex.has(b.id) ? packIdIndex.get(b.id) : Infinity;
+        return ai - bi;
+      });
     });
 
     orderedCats.forEach(([cat, defs]) => {
@@ -10588,6 +10625,16 @@ function setupInteraction() {
     }
     if (pinchPointers.size > 2) { e.preventDefault(); return; }
 
+    // During print preview, never interact with elements — any drag is a pan
+    if (STATE.printPreview) {
+      if (e.button === 0 || e.button === 1) {
+        STATE.dragging = { type: 'pan', startX: e.clientX, startY: e.clientY, origVBx: STATE.viewBox.x, origVBy: STATE.viewBox.y };
+        ws.setPointerCapture(e.pointerId);
+        ws.style.cursor = 'grabbing';
+      }
+      return;
+    }
+
     if (e.button === 1 || (e.button === 0 && e.altKey)) {
       // Middle click or alt+click: pan (always available)
       STATE.dragging = { type: 'pan', startX: e.clientX, startY: e.clientY, origVBx: STATE.viewBox.x, origVBy: STATE.viewBox.y };
@@ -11277,8 +11324,8 @@ function setupKeyboard() {
       }
       e.preventDefault();
     }
-    // Ctrl+Shift+X: toggle dev style packs
-    if (e.key === 'X' && (e.ctrlKey || e.metaKey) && e.shiftKey) {
+    // Ctrl+Shift+X: toggle dev style packs (dev only)
+    if (e.key === 'X' && (e.ctrlKey || e.metaKey) && e.shiftKey && MOKURI_IS_DEV) {
       if (localStorage.getItem('mokuri-dev-styles')) {
         localStorage.removeItem('mokuri-dev-styles');
         if (STATE.activeStyle !== 'core') switchActiveStyle('core');
@@ -11415,7 +11462,7 @@ function setupKeyboard() {
       });
     }
     // Dev: Ctrl+Shift+P — toggle Print Tuning Console
-    if (e.key === 'P' && (e.ctrlKey || e.metaKey) && e.shiftKey) {
+    if (e.key === 'P' && (e.ctrlKey || e.metaKey) && e.shiftKey && MOKURI_IS_DEV) {
       e.preventDefault();
       togglePrintTuningConsole();
     }
@@ -11936,7 +11983,8 @@ async function init() {
 
   // Makimono: first run / splash / about wiring
   handleFirstRun();
-  $('maki-version').textContent = 'v' + MOKURI_VERSION;
+  $('maki-version').textContent = 'v' + MOKURI_VERSION + (MOKURI_IS_DEV ? ' DEV' : '');
+  if (MOKURI_IS_DEV) $('status-dev').style.display = '';
 
   // Resume any in-progress journey (unless Makimono is showing)
   if (getMokuriVisits() > 3) {
@@ -11970,6 +12018,7 @@ async function init() {
     _brandPressTimer = setTimeout(() => {
       _brandPressTimer = null;
       _brandLongPressed = true;
+      if (!MOKURI_IS_DEV) return;
       if (localStorage.getItem('mokuri-dev-styles')) {
         localStorage.removeItem('mokuri-dev-styles');
         if (STATE.activeStyle !== 'core') switchActiveStyle('core');
@@ -11994,8 +12043,9 @@ async function init() {
 
 init();
 
-// Register service worker for offline support
-if ('serviceWorker' in navigator) {
+// Register service worker for offline support (production only)
+// On dev, skip SW to ensure fresh content on every reload
+if ('serviceWorker' in navigator && !MOKURI_IS_DEV) {
   var _hadController = !!navigator.serviceWorker.controller; // true only on revisit, false on first install
   navigator.serviceWorker.register('./sw.js').then(function(reg) {
     // Force check for SW update on visibility
@@ -12016,10 +12066,8 @@ if ('serviceWorker' in navigator) {
   }).catch(() => {});
 }
 
-// Version check — sw.js is the single source of truth.
-// Fetches sw.js from network and compares its CACHE_NAME version against
-// the locally installed cache. No hardcoded version number in index.html.
-(function() {
+// Version check — sw.js is the single source of truth (production only).
+if (!MOKURI_IS_DEV) (function() {
   var lastCheck = 0;
   function checkVersion() {
     var now = Date.now();
