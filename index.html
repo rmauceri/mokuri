@@ -2980,6 +2980,7 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
 
   <!-- Status bar -->
   <div class="status-bar">
+    <span id="status-dev" style="display:none; font-size:9px; font-weight:600; color:#c87030; letter-spacing:0.05em; margin-right:6px;">DEV</span>
     <span id="status-elements">0 elements</span>
     <span id="status-zoom">100%</span>
     <span id="status-hint" class="status-hint">Place elements on the canvas</span>
@@ -11982,7 +11983,8 @@ async function init() {
 
   // Makimono: first run / splash / about wiring
   handleFirstRun();
-  $('maki-version').textContent = 'v' + MOKURI_VERSION;
+  $('maki-version').textContent = 'v' + MOKURI_VERSION + (MOKURI_IS_DEV ? ' DEV' : '');
+  if (MOKURI_IS_DEV) $('status-dev').style.display = '';
 
   // Resume any in-progress journey (unless Makimono is showing)
   if (getMokuriVisits() > 3) {
