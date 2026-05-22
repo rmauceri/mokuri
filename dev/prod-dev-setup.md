@@ -85,7 +85,7 @@ Once `mokuri.art` is confirmed working on Vercel:
 
 - `https://mokuri.art` → serves main branch ✅
 - `https://www.mokuri.art` → redirects to `mokuri.art` ✅
-- `https://mokuri-git-dev-rmauceri.vercel.app` → serves dev branch ✅
+- `https://dev.mokuri.art` → serves dev branch ✅
 
 ---
 
@@ -102,6 +102,7 @@ Add this near the top of `index.html`, just after the `<script>` section begins 
 const MOKURI_IS_DEV = location.hostname === ''              // file:// local testing
   || location.hostname === 'localhost'
   || location.hostname === '127.0.0.1'
+  || location.hostname === 'dev.mokuri.art'                 // dev subdomain
   || location.hostname.endsWith('.vercel.app');             // all Vercel preview/dev deployments
 ```
 

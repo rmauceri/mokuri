@@ -3267,7 +3267,7 @@ if (typeof MOKURI_MORIBANA_ELEMENTS !== 'undefined') {
   MOKURI_ELEMENTS.push(...MOKURI_MORIBANA_ELEMENTS);
 }
 // Test elements disabled — use element-harness.html to preview test pack
-if (typeof MOKURI_TEST_ELEMENTS !== 'undefined') {
+if (MOKURI_IS_DEV && typeof MOKURI_TEST_ELEMENTS !== 'undefined') {
   MOKURI_ELEMENTS.push(...MOKURI_TEST_ELEMENTS);
 }
 
@@ -3290,6 +3290,13 @@ rebuildElementMap();
 //  VERSION
 // ============================================================
 const MOKURI_VERSION = '0.93';
+
+// Environment detection — dev features enabled on file://, localhost, and dev/preview URLs
+const MOKURI_IS_DEV = location.hostname === ''              // file:// local testing
+  || location.hostname === 'localhost'
+  || location.hostname === '127.0.0.1'
+  || location.hostname === 'dev.mokuri.art'
+  || location.hostname.endsWith('.vercel.app');             // all Vercel preview deployments
 
 // ============================================================
 //  FEEDBACK
@@ -11316,8 +11323,8 @@ function setupKeyboard() {
       }
       e.preventDefault();
     }
-    // Ctrl+Shift+X: toggle dev style packs
-    if (e.key === 'X' && (e.ctrlKey || e.metaKey) && e.shiftKey) {
+    // Ctrl+Shift+X: toggle dev style packs (dev only)
+    if (e.key === 'X' && (e.ctrlKey || e.metaKey) && e.shiftKey && MOKURI_IS_DEV) {
       if (localStorage.getItem('mokuri-dev-styles')) {
         localStorage.removeItem('mokuri-dev-styles');
         if (STATE.activeStyle !== 'core') switchActiveStyle('core');
@@ -11454,7 +11461,7 @@ function setupKeyboard() {
       });
     }
     // Dev: Ctrl+Shift+P — toggle Print Tuning Console
-    if (e.key === 'P' && (e.ctrlKey || e.metaKey) && e.shiftKey) {
+    if (e.key === 'P' && (e.ctrlKey || e.metaKey) && e.shiftKey && MOKURI_IS_DEV) {
       e.preventDefault();
       togglePrintTuningConsole();
     }
@@ -12009,6 +12016,7 @@ async function init() {
     _brandPressTimer = setTimeout(() => {
       _brandPressTimer = null;
       _brandLongPressed = true;
+      if (!MOKURI_IS_DEV) return;
       if (localStorage.getItem('mokuri-dev-styles')) {
         localStorage.removeItem('mokuri-dev-styles');
         if (STATE.activeStyle !== 'core') switchActiveStyle('core');
@@ -12033,8 +12041,9 @@ async function init() {
 
 init();
 
-// Register service worker for offline support
-if ('serviceWorker' in navigator) {
+// Register service worker for offline support (production only)
+// On dev, skip SW to ensure fresh content on every reload
+if ('serviceWorker' in navigator && !MOKURI_IS_DEV) {
   var _hadController = !!navigator.serviceWorker.controller; // true only on revisit, false on first install
   navigator.serviceWorker.register('./sw.js').then(function(reg) {
     // Force check for SW update on visibility
@@ -12055,10 +12064,8 @@ if ('serviceWorker' in navigator) {
   }).catch(() => {});
 }
 
-// Version check — sw.js is the single source of truth.
-// Fetches sw.js from network and compares its CACHE_NAME version against
-// the locally installed cache. No hardcoded version number in index.html.
-(function() {
+// Version check — sw.js is the single source of truth (production only).
+if (!MOKURI_IS_DEV) (function() {
   var lastCheck = 0;
   function checkVersion() {
     var now = Date.now();

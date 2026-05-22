@@ -1,0 +1,944 @@
+// ============================================================
+//  MOKURI — Element Library
+//  Procedural SVG element definitions for Japanese woodblock prints
+// ============================================================
+
+const MOKURI_ELEMENTS = [
+
+  // ============================================================
+  //  LANDSCAPE
+  // ============================================================
+  {
+    id: 'mountain-distant',
+    name: 'Distant Mountain',
+    category: 'landscape',
+    pack: 'core',
+    tags: ['landscape', 'organic'],
+    viewBox: '0 0 240 140',
+    suggestedLayer: 'background',
+    colorZones: [
+      { id: 'body', defaultPaletteSlot: 0 },
+      { id: 'snow', defaultPaletteSlot: 4 },
+      { id: 'detail', defaultPaletteSlot: 3 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          { d: 'M0,140 Q14,130 30,112 Q46,88 62,65 Q72,48 80,40 Q88,46 98,55 Q108,44 122,30 Q132,20 140,18 Q150,22 160,35 Q170,48 182,55 Q192,46 205,56 Q218,76 230,108 Q236,128 240,140 L240,160 L0,160 Z', type: 'fill', zone: 'body' },
+          { d: 'M110,42 Q118,32 128,24 Q134,20 140,18 Q148,22 156,30 Q162,38 168,46 Q160,50 154,44 Q148,36 140,34 Q134,36 128,44 Q122,48 115,44 Z', type: 'fill', zone: 'snow' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M0,140 Q14,130 30,112 Q46,88 62,65 Q72,48 80,40 Q88,46 98,55 Q108,44 122,30 Q132,20 140,18 Q150,22 160,35 Q170,48 182,55 Q192,46 205,56 Q218,76 230,108 Q236,128 240,140 L240,160 L0,160 Z', type: 'fill', zone: 'body' },
+          { d: 'M110,42 Q118,32 128,24 Q134,20 140,18 Q148,22 156,30 Q162,38 168,46 Q160,50 154,44 Q148,36 140,34 Q134,36 128,44 Q122,48 115,44 Z', type: 'fill', zone: 'snow' },
+          { d: 'M0,140 Q14,130 30,112 Q46,88 62,65 Q72,48 80,40 Q88,46 98,55 Q108,44 122,30 Q132,20 140,18 Q150,22 160,35 Q170,48 182,55 Q192,46 205,56 Q218,76 230,108 Q236,128 240,140', type: 'stroke', zone: 'body', strokeWidth: 1.8 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M0,140 Q14,130 30,112 Q46,88 62,65 Q72,48 80,40 Q88,46 98,55 Q108,44 122,30 Q132,20 140,18 Q150,22 160,35 Q170,48 182,55 Q192,46 205,56 Q218,76 230,108 Q236,128 240,140 L240,160 L0,160 Z', type: 'fill', zone: 'body' },
+          { d: 'M110,42 Q118,32 128,24 Q134,20 140,18 Q148,22 156,30 Q162,38 168,46 Q160,50 154,44 Q148,36 140,34 Q134,36 128,44 Q122,48 115,44 Z', type: 'fill', zone: 'snow' },
+          { d: 'M0,140 Q14,130 30,112 Q46,88 62,65 Q72,48 80,40 Q88,46 98,55 Q108,44 122,30 Q132,20 140,18 Q150,22 160,35 Q170,48 182,55 Q192,46 205,56 Q218,76 230,108 Q236,128 240,140', type: 'stroke', zone: 'body', strokeWidth: 1.8 },
+          // Ridge contours following slopes
+          { d: 'M62,65 Q66,78 70,92 M122,30 Q128,48 132,66 M160,35 Q166,52 172,70 M205,56 Q210,72 216,88', type: 'stroke', zone: 'detail', strokeWidth: 0.9 },
+          // Rock texture — varied angles following terrain
+          { d: 'M22,122 Q28,116 34,110 M50,116 Q55,110 58,106 M82,96 Q86,90 90,86 M162,80 Q166,74 170,70 M200,94 Q204,88 208,84 M224,106 Q228,100 232,96 M112,82 Q116,78 120,74', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'mountain-near',
+    name: 'Near Mountain',
+    category: 'landscape',
+    pack: 'core',
+    tags: ['landscape', 'organic'],
+    viewBox: '0 0 260 160',
+    suggestedLayer: 'midground',
+    colorZones: [
+      { id: 'body', defaultPaletteSlot: 3 },
+      { id: 'shadow', defaultPaletteSlot: 0 },
+      { id: 'detail', defaultPaletteSlot: 4 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          { d: 'M0,160 Q14,146 30,122 Q48,92 66,68 Q78,50 88,42 Q96,38 102,42 Q112,52 124,56 Q136,46 150,34 Q162,24 170,22 Q180,26 192,38 Q206,56 222,78 Q238,108 250,135 Q256,148 260,160 L260,180 L0,180 Z', type: 'fill', zone: 'body' },
+          { d: 'M88,42 Q98,50 112,56 Q124,50 134,42 Q126,60 114,76 Q102,84 92,74 Q84,60 88,42 Z', type: 'fill', zone: 'shadow' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M0,160 Q14,146 30,122 Q48,92 66,68 Q78,50 88,42 Q96,38 102,42 Q112,52 124,56 Q136,46 150,34 Q162,24 170,22 Q180,26 192,38 Q206,56 222,78 Q238,108 250,135 Q256,148 260,160 L260,180 L0,180 Z', type: 'fill', zone: 'body' },
+          { d: 'M88,42 Q98,50 112,56 Q124,50 134,42 Q126,60 114,76 Q102,84 92,74 Q84,60 88,42 Z', type: 'fill', zone: 'shadow' },
+          { d: 'M0,160 Q14,146 30,122 Q48,92 66,68 Q78,50 88,42 Q96,38 102,42 Q112,52 124,56 Q136,46 150,34 Q162,24 170,22 Q180,26 192,38 Q206,56 222,78 Q238,108 250,135 Q256,148 260,160', type: 'stroke', zone: 'shadow', strokeWidth: 2 },
+          // Ravine division
+          { d: 'M124,56 Q128,68 126,82 Q120,96 112,106', type: 'stroke', zone: 'shadow', strokeWidth: 1.2 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M0,160 Q14,146 30,122 Q48,92 66,68 Q78,50 88,42 Q96,38 102,42 Q112,52 124,56 Q136,46 150,34 Q162,24 170,22 Q180,26 192,38 Q206,56 222,78 Q238,108 250,135 Q256,148 260,160 L260,180 L0,180 Z', type: 'fill', zone: 'body' },
+          { d: 'M88,42 Q98,50 112,56 Q124,50 134,42 Q126,60 114,76 Q102,84 92,74 Q84,60 88,42 Z', type: 'fill', zone: 'shadow' },
+          { d: 'M0,160 Q14,146 30,122 Q48,92 66,68 Q78,50 88,42 Q96,38 102,42 Q112,52 124,56 Q136,46 150,34 Q162,24 170,22 Q180,26 192,38 Q206,56 222,78 Q238,108 250,135 Q256,148 260,160', type: 'stroke', zone: 'shadow', strokeWidth: 2 },
+          { d: 'M124,56 Q128,68 126,82 Q120,96 112,106', type: 'stroke', zone: 'shadow', strokeWidth: 1.2 },
+          // Ridge contours
+          { d: 'M66,68 Q70,82 74,96 M150,34 Q156,52 160,70 M192,38 Q198,56 204,74 M222,78 Q226,92 230,106', type: 'stroke', zone: 'detail', strokeWidth: 0.9 },
+          // Rock texture — follows terrain contour
+          { d: 'M18,138 Q24,130 30,124 M44,130 Q50,122 54,118 M72,108 Q78,100 82,96 M160,86 Q166,78 170,74 M206,96 Q212,88 216,84 M234,116 Q238,110 242,106 M140,82 Q144,76 148,72', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
+          // Tree suggestions — rounded organic crowns
+          { d: 'M28,112 Q32,106 36,108 Q40,104 44,110 M52,104 Q56,98 60,100 Q64,96 68,102 M200,92 Q204,86 208,88 Q212,84 216,90 M228,100 Q232,94 236,98', type: 'stroke', zone: 'detail', strokeWidth: 0.7 },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'mountain-fuji-peak',
+    name: 'Great Peak (Fuji style)',
+    category: 'landscape',
+    pack: 'core',
+    tags: ['landscape', 'organic', 'seasonal-winter'],
+    viewBox: '0 0 320 180',
+    suggestedLayer: 'background',
+    colorZones: [
+      { id: 'mountain', defaultPaletteSlot: 3 },
+      { id: 'snow', defaultPaletteSlot: 4 },
+      { id: 'texture', defaultPaletteSlot: 0 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          // Broad volcanic cone — wide summit with concave crater cup
+          { d: 'M0,180 Q12,176 22,175 Q48,158 78,130 Q108,98 130,72 Q142,56 150,48 Q155,44 159,40 Q163,42 166,43 Q169,42 171,40 Q175,44 180,48 Q188,56 200,72 Q224,98 252,130 Q278,158 302,175 Q312,176 320,180 L320,200 L0,200 Z', type: 'fill', zone: 'mountain' },
+          // Snow cap with irregular drip edge
+          { d: 'M130,72 Q142,56 150,48 Q155,44 159,40 Q163,42 166,43 Q169,42 171,40 Q175,44 180,48 Q188,56 200,72 Q192,78 186,72 Q180,64 174,68 Q168,62 164,66 Q160,62 154,66 Q148,62 142,68 Q136,74 130,72 Z', type: 'fill', zone: 'snow' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M0,180 Q12,176 22,175 Q48,158 78,130 Q108,98 130,72 Q142,56 150,48 Q155,44 159,40 Q163,42 166,43 Q169,42 171,40 Q175,44 180,48 Q188,56 200,72 Q224,98 252,130 Q278,158 302,175 Q312,176 320,180 L320,200 L0,200 Z', type: 'fill', zone: 'mountain' },
+          { d: 'M130,72 Q142,56 150,48 Q155,44 159,40 Q163,42 166,43 Q169,42 171,40 Q175,44 180,48 Q188,56 200,72 Q192,78 186,72 Q180,64 174,68 Q168,62 164,66 Q160,62 154,66 Q148,62 142,68 Q136,74 130,72 Z', type: 'fill', zone: 'snow' },
+          // Mountain outline
+          { d: 'M0,180 Q12,176 22,175 Q48,158 78,130 Q108,98 130,72 Q142,56 150,48 Q155,44 159,40 Q163,42 166,43 Q169,42 171,40 Q175,44 180,48 Q188,56 200,72 Q224,98 252,130 Q278,158 302,175 Q312,176 320,180', type: 'stroke', zone: 'mountain', strokeWidth: 2 },
+          // Major slope ridges
+          { d: 'M110,114 Q120,96 132,76 M212,114 Q204,96 194,78', type: 'stroke', zone: 'texture', strokeWidth: 2 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M0,180 Q12,176 22,175 Q48,158 78,130 Q108,98 130,72 Q142,56 150,48 Q155,44 159,40 Q163,42 166,43 Q169,42 171,40 Q175,44 180,48 Q188,56 200,72 Q224,98 252,130 Q278,158 302,175 Q312,176 320,180 L320,200 L0,200 Z', type: 'fill', zone: 'mountain' },
+          { d: 'M130,72 Q142,56 150,48 Q155,44 159,40 Q163,42 166,43 Q169,42 171,40 Q175,44 180,48 Q188,56 200,72 Q192,78 186,72 Q180,64 174,68 Q168,62 164,66 Q160,62 154,66 Q148,62 142,68 Q136,74 130,72 Z', type: 'fill', zone: 'snow' },
+          { d: 'M0,180 Q12,176 22,175 Q48,158 78,130 Q108,98 130,72 Q142,56 150,48 Q155,44 159,40 Q163,42 166,43 Q169,42 171,40 Q175,44 180,48 Q188,56 200,72 Q224,98 252,130 Q278,158 302,175 Q312,176 320,180', type: 'stroke', zone: 'mountain', strokeWidth: 2 },
+          { d: 'M110,114 Q120,96 132,76 M212,114 Q204,96 194,78', type: 'stroke', zone: 'texture', strokeWidth: 2 },
+          // Secondary contour lines following slope curvature
+          { d: 'M82,148 Q98,126 116,100 M238,148 Q224,126 210,102 M162,54 Q166,48 170,44', type: 'stroke', zone: 'texture', strokeWidth: 1 },
+          // Fine slope texture — curving with mountain form
+          { d: 'M58,162 Q66,154 74,146 M96,142 Q104,132 112,124 M210,124 Q218,132 226,142 M254,146 Q262,154 268,162 M142,84 Q148,76 154,70 M176,70 Q182,76 188,84', type: 'stroke', zone: 'texture', strokeWidth: 0.6 },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'rolling-hills',
+    name: 'Rolling Hills',
+    category: 'landscape',
+    pack: 'core',
+    tags: ['landscape', 'organic'],
+    viewBox: '0 0 300 140',
+    suggestedLayer: 'background',
+    colorZones: [
+      { id: 'far', defaultPaletteSlot: 0 },
+      { id: 'mid', defaultPaletteSlot: 3 },
+      { id: 'near', defaultPaletteSlot: 2 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          { d: 'M0,70 Q50,45 100,55 Q150,35 200,50 Q250,40 300,55 L300,160 L0,160 Z', type: 'fill', zone: 'far' },
+          { d: 'M0,90 Q60,65 130,75 Q190,60 250,72 L300,80 L300,160 L0,160 Z', type: 'fill', zone: 'mid' },
+          { d: 'M0,115 Q80,90 160,98 Q230,85 300,100 L300,160 L0,160 Z', type: 'fill', zone: 'near' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M0,70 Q50,45 100,55 Q150,35 200,50 Q250,40 300,55 L300,160 L0,160 Z', type: 'fill', zone: 'far' },
+          { d: 'M0,90 Q60,65 130,75 Q190,60 250,72 L300,80 L300,160 L0,160 Z', type: 'fill', zone: 'mid' },
+          { d: 'M0,115 Q80,90 160,98 Q230,85 300,100 L300,160 L0,160 Z', type: 'fill', zone: 'near' },
+          { d: 'M0,70 Q50,45 100,55 Q150,35 200,50 Q250,40 300,55', type: 'stroke', zone: 'far', strokeWidth: 1.5 },
+          { d: 'M0,90 Q60,65 130,75 Q190,60 250,72 L300,80', type: 'stroke', zone: 'mid', strokeWidth: 1.5 },
+          { d: 'M0,115 Q80,90 160,98 Q230,85 300,100', type: 'stroke', zone: 'near', strokeWidth: 2 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M0,70 Q50,45 100,55 Q150,35 200,50 Q250,40 300,55 L300,160 L0,160 Z', type: 'fill', zone: 'far' },
+          { d: 'M0,90 Q60,65 130,75 Q190,60 250,72 L300,80 L300,160 L0,160 Z', type: 'fill', zone: 'mid' },
+          { d: 'M0,115 Q80,90 160,98 Q230,85 300,100 L300,160 L0,160 Z', type: 'fill', zone: 'near' },
+          { d: 'M0,70 Q50,45 100,55 Q150,35 200,50 Q250,40 300,55', type: 'stroke', zone: 'far', strokeWidth: 1.5 },
+          { d: 'M0,90 Q60,65 130,75 Q190,60 250,72 L300,80', type: 'stroke', zone: 'mid', strokeWidth: 1.5 },
+          { d: 'M0,115 Q80,90 160,98 Q230,85 300,100', type: 'stroke', zone: 'near', strokeWidth: 2 },
+          // Tree suggestions — rounded organic crowns on far hills
+          { d: 'M62,56 Q66,50 70,52 Q74,48 78,54 M118,52 Q122,46 126,48 Q130,44 134,50 M172,44 Q176,38 180,40 Q184,36 188,44 M228,48 Q232,42 236,44 Q240,40 244,48', type: 'stroke', zone: 'far', strokeWidth: 0.8 },
+          // Grass texture on mid hill — varied Q-curve tufts
+          { d: 'M28,82 Q32,76 34,78 M68,74 Q72,68 76,70 M112,76 Q116,70 118,72 M158,70 Q162,64 166,66 M208,68 Q212,62 216,64 M258,74 Q262,68 264,70', type: 'stroke', zone: 'mid', strokeWidth: 0.6 },
+          // Grass texture on near hill — fuller tufts
+          { d: 'M38,108 Q42,102 46,106 M98,98 Q102,92 108,96 M168,96 Q172,90 178,94 M228,92 Q232,86 238,90 M278,96 Q282,90 286,94', type: 'stroke', zone: 'near', strokeWidth: 0.7 },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'farmland',
+    name: 'Farmland',
+    category: 'landscape',
+    pack: 'core',
+    tags: ['landscape', 'structural'],
+    viewBox: '0 0 280 160',
+    suggestedLayer: 'background',
+    colorZones: [
+      { id: 'field', defaultPaletteSlot: 2 },
+      { id: 'bund', defaultPaletteSlot: 0 },
+      { id: 'water', defaultPaletteSlot: 4 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          { d: 'M0,30 Q140,15 280,35 L280,65 Q140,50 0,68 Z', type: 'fill', zone: 'field' },
+          { d: 'M0,68 Q140,50 280,65 L280,100 Q140,88 0,105 Z', type: 'fill', zone: 'water' },
+          { d: 'M0,105 Q140,88 280,100 L280,135 Q140,125 0,140 Z', type: 'fill', zone: 'field' },
+          { d: 'M0,140 Q140,125 280,135 L280,180 L0,180 Z', type: 'fill', zone: 'bund' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M0,30 Q140,15 280,35 L280,65 Q140,50 0,68 Z', type: 'fill', zone: 'field' },
+          { d: 'M0,68 Q140,50 280,65 L280,100 Q140,88 0,105 Z', type: 'fill', zone: 'water' },
+          { d: 'M0,105 Q140,88 280,100 L280,135 Q140,125 0,140 Z', type: 'fill', zone: 'field' },
+          { d: 'M0,140 Q140,125 280,135 L280,180 L0,180 Z', type: 'fill', zone: 'bund' },
+          // Bund dividers between paddies
+          { d: 'M0,30 Q140,15 280,35', type: 'stroke', zone: 'bund', strokeWidth: 2 },
+          { d: 'M0,68 Q140,50 280,65', type: 'stroke', zone: 'bund', strokeWidth: 2.5 },
+          { d: 'M0,105 Q140,88 280,100', type: 'stroke', zone: 'bund', strokeWidth: 2.5 },
+          { d: 'M0,140 Q140,125 280,135', type: 'stroke', zone: 'bund', strokeWidth: 2 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M0,30 Q140,15 280,35 L280,65 Q140,50 0,68 Z', type: 'fill', zone: 'field' },
+          { d: 'M0,68 Q140,50 280,65 L280,100 Q140,88 0,105 Z', type: 'fill', zone: 'water' },
+          { d: 'M0,105 Q140,88 280,100 L280,135 Q140,125 0,140 Z', type: 'fill', zone: 'field' },
+          { d: 'M0,140 Q140,125 280,135 L280,180 L0,180 Z', type: 'fill', zone: 'bund' },
+          { d: 'M0,30 Q140,15 280,35', type: 'stroke', zone: 'bund', strokeWidth: 2 },
+          { d: 'M0,68 Q140,50 280,65', type: 'stroke', zone: 'bund', strokeWidth: 2.5 },
+          { d: 'M0,105 Q140,88 280,100', type: 'stroke', zone: 'bund', strokeWidth: 2.5 },
+          { d: 'M0,140 Q140,125 280,135', type: 'stroke', zone: 'bund', strokeWidth: 2 },
+          // Rice plant marks in top paddy
+          { d: 'M30,42 V36 M60,38 V32 M90,34 V28 M120,32 V26 M150,30 V24 M180,32 V26 M210,35 V29 M240,38 V32', type: 'stroke', zone: 'field', strokeWidth: 0.8 },
+          // Water ripples in flooded paddy
+          { d: 'M30,80 Q70,76 110,80 M140,76 Q180,72 220,76 M40,90 Q80,86 120,90 M160,86 Q200,82 240,86', type: 'stroke', zone: 'water', strokeWidth: 0.6 },
+          // Rice plant marks in lower paddy
+          { d: 'M30,115 V109 M70,112 V106 M110,108 V102 M150,106 V100 M190,108 V102 M230,112 V106', type: 'stroke', zone: 'field', strokeWidth: 0.8 },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'tranquil-pond',
+    name: 'Tranquil Pond',
+    category: 'landscape',
+    pack: 'core',
+    tags: ['landscape', 'water', 'organic', 'minimal'],
+    viewBox: '0 0 240 140',
+    suggestedLayer: 'midground',
+    colorZones: [
+      { id: 'water', defaultPaletteSlot: 0 },
+      { id: 'shore', defaultPaletteSlot: 3 },
+      { id: 'reflection', defaultPaletteSlot: 4 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          { d: 'M15,70 Q50,10 130,5 Q210,10 240,70 Q210,130 130,135 Q50,130 15,70 Z', type: 'fill', zone: 'shore' },
+          { d: 'M35,70 Q60,25 130,20 Q200,25 215,70 Q200,115 130,120 Q60,115 35,70 Z', type: 'fill', zone: 'water' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M15,70 Q50,10 130,5 Q210,10 240,70 Q210,130 130,135 Q50,130 15,70 Z', type: 'fill', zone: 'shore' },
+          { d: 'M35,70 Q60,25 130,20 Q200,25 215,70 Q200,115 130,120 Q60,115 35,70 Z', type: 'fill', zone: 'water' },
+          // Shoreline
+          { d: 'M35,70 Q60,25 130,20 Q200,25 215,70 Q200,115 130,120 Q60,115 35,70 Z', type: 'stroke', zone: 'shore', strokeWidth: 2 },
+          // Surface reflection highlight
+          { d: 'M80,55 Q120,42 170,55 Q155,48 120,50 Q90,48 80,55 Z', type: 'fill', zone: 'reflection' },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M15,70 Q50,10 130,5 Q210,10 240,70 Q210,130 130,135 Q50,130 15,70 Z', type: 'fill', zone: 'shore' },
+          { d: 'M35,70 Q60,25 130,20 Q200,25 215,70 Q200,115 130,120 Q60,115 35,70 Z', type: 'fill', zone: 'water' },
+          { d: 'M35,70 Q60,25 130,20 Q200,25 215,70 Q200,115 130,120 Q60,115 35,70 Z', type: 'stroke', zone: 'shore', strokeWidth: 2 },
+          { d: 'M80,55 Q120,42 170,55 Q155,48 120,50 Q90,48 80,55 Z', type: 'fill', zone: 'reflection' },
+          // Gentle ripple lines
+          { d: 'M55,65 Q90,60 130,65 Q170,60 200,65', type: 'stroke', zone: 'reflection', strokeWidth: 0.6 },
+          { d: 'M65,80 Q100,75 140,80 Q180,75 195,80', type: 'stroke', zone: 'reflection', strokeWidth: 0.5 },
+          { d: 'M60,95 Q100,90 140,95 Q175,90 190,95', type: 'stroke', zone: 'reflection', strokeWidth: 0.6 },
+          // Reed suggestions at edges
+          { d: 'M40,85 L38,72 M45,90 L42,76 M48,88 L46,78 M195,80 L198,68 M200,85 L203,72 M205,82 L207,73', type: 'stroke', zone: 'shore', strokeWidth: 0.8 },
+        ],
+      },
+    ],
+  },
+
+  // ============================================================
+  //  WATER
+  // ============================================================
+  {
+    id: 'flowing-stream',
+    name: 'Flowing Stream',
+    category: 'landscape',
+    pack: 'core',
+    tags: ['landscape', 'water', 'organic'],
+    viewBox: '0 0 280 120',
+    suggestedLayer: 'midground',
+    colorZones: [
+      { id: 'water', defaultPaletteSlot: 0 },
+      { id: 'rock', defaultPaletteSlot: 3 },
+      { id: 'foam', defaultPaletteSlot: 2 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          // Stream body — winding S-curve
+          { d: 'M0,52 Q30,30 70,35 Q120,42 150,55 Q190,72 230,65 Q260,60 280,48 L280,90 Q260,100 230,95 Q190,100 150,88 Q120,78 70,72 Q30,68 0,82 Z', type: 'fill', zone: 'water' },
+          // Exposed rocks
+          { d: 'M85,52 Q90,44 98,46 Q104,50 100,56 Q94,58 85,52 Z', type: 'fill', zone: 'rock' },
+          { d: 'M195,72 Q202,66 210,70 Q214,76 208,80 Q200,78 195,72 Z', type: 'fill', zone: 'rock' },
+          { d: 'M138,60 Q143,55 148,58 Q150,63 145,65 Q140,63 138,60 Z', type: 'fill', zone: 'rock' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M0,52 Q30,30 70,35 Q120,42 150,55 Q190,72 230,65 Q260,60 280,48 L280,90 Q260,100 230,95 Q190,100 150,88 Q120,78 70,72 Q30,68 0,82 Z', type: 'fill', zone: 'water' },
+          { d: 'M85,52 Q90,44 98,46 Q104,50 100,56 Q94,58 85,52 Z', type: 'fill', zone: 'rock' },
+          { d: 'M195,72 Q202,66 210,70 Q214,76 208,80 Q200,78 195,72 Z', type: 'fill', zone: 'rock' },
+          { d: 'M138,60 Q143,55 148,58 Q150,63 145,65 Q140,63 138,60 Z', type: 'fill', zone: 'rock' },
+          // Stream banks
+          { d: 'M0,52 Q30,30 70,35 Q120,42 150,55 Q190,72 230,65 Q260,60 280,48', type: 'stroke', zone: 'water', strokeWidth: 1.5 },
+          { d: 'M0,82 Q30,68 70,72 Q120,78 150,88 Q190,100 230,95 Q260,100 280,90', type: 'stroke', zone: 'water', strokeWidth: 1.5 },
+          // Rock outlines
+          { d: 'M85,52 Q90,44 98,46 Q104,50 100,56 Q94,58 85,52 Z M195,72 Q202,66 210,70 Q214,76 208,80 Q200,78 195,72 Z M138,60 Q143,55 148,58 Q150,63 145,65 Q140,63 138,60 Z', type: 'stroke', zone: 'rock', strokeWidth: 1 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M0,52 Q30,30 70,35 Q120,42 150,55 Q190,72 230,65 Q260,60 280,48 L280,90 Q260,100 230,95 Q190,100 150,88 Q120,78 70,72 Q30,68 0,82 Z', type: 'fill', zone: 'water' },
+          { d: 'M85,52 Q90,44 98,46 Q104,50 100,56 Q94,58 85,52 Z', type: 'fill', zone: 'rock' },
+          { d: 'M195,72 Q202,66 210,70 Q214,76 208,80 Q200,78 195,72 Z', type: 'fill', zone: 'rock' },
+          { d: 'M138,60 Q143,55 148,58 Q150,63 145,65 Q140,63 138,60 Z', type: 'fill', zone: 'rock' },
+          { d: 'M0,52 Q30,30 70,35 Q120,42 150,55 Q190,72 230,65 Q260,60 280,48', type: 'stroke', zone: 'water', strokeWidth: 1.5 },
+          { d: 'M0,82 Q30,68 70,72 Q120,78 150,88 Q190,100 230,95 Q260,100 280,90', type: 'stroke', zone: 'water', strokeWidth: 1.5 },
+          { d: 'M85,52 Q90,44 98,46 Q104,50 100,56 Q94,58 85,52 Z M195,72 Q202,66 210,70 Q214,76 208,80 Q200,78 195,72 Z M138,60 Q143,55 148,58 Q150,63 145,65 Q140,63 138,60 Z', type: 'stroke', zone: 'rock', strokeWidth: 1 },
+          // Flow lines curving around rocks
+          { d: 'M10,62 Q35,48 65,50 Q78,52 82,54 M105,50 Q120,52 140,60 M152,62 Q175,70 192,74 M212,72 Q235,68 260,58 M15,74 Q40,62 68,64 Q76,66 80,68 M106,60 Q125,66 145,72 M155,75 Q180,82 195,84 M215,80 Q240,78 265,68', type: 'stroke', zone: 'water', strokeWidth: 0.5 },
+          // Foam around rocks
+          { d: 'M78,48 Q82,46 85,48 M104,48 Q108,45 112,48 M188,68 Q192,66 196,68 M214,68 Q218,65 222,68 M132,56 Q136,54 140,56 M150,60 Q154,58 158,60', type: 'stroke', zone: 'foam', strokeWidth: 0.8 },
+          // Rock texture hatching
+          { d: 'M90,48 L93,50 M96,48 L94,52 M200,70 L203,72 M206,70 L204,74 M142,58 L144,60', type: 'stroke', zone: 'rock', strokeWidth: 0.4 },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'gentle-waves',
+    name: 'Gentle Waves',
+    category: 'landscape',
+    pack: 'core',
+    tags: ['landscape', 'water', 'organic'],
+    viewBox: '0 0 280 80',
+    suggestedLayer: 'midground',
+    colorZones: [
+      { id: 'body', defaultPaletteSlot: 0 },
+      { id: 'foam', defaultPaletteSlot: 2 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          { d: 'M0 80 Q35 50 70 55 Q105 60 140 45 Q175 30 210 40 Q245 50 280 35 L280 100 L0 100 Z', type: 'fill', zone: 'body' },
+          { d: 'M60 55 Q65 52 70 55 M130 46 Q135 43 140 45 M200 40 Q205 37 210 40', type: 'stroke', zone: 'foam', strokeWidth: 1.5 },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M0 80 Q35 50 70 55 Q105 60 140 45 Q175 30 210 40 Q245 50 280 35 L280 100 L0 100 Z', type: 'fill', zone: 'body' },
+          { d: 'M0 65 Q35 50 70 55 Q105 60 140 45 Q175 30 210 40 Q245 50 280 35', type: 'stroke', zone: 'body', strokeWidth: 2 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M0 80 Q35 50 70 55 Q105 60 140 45 Q175 30 210 40 Q245 50 280 35 L280 100 L0 100 Z', type: 'fill', zone: 'body' },
+          { d: 'M0 65 Q35 50 70 55 Q105 60 140 45 Q175 30 210 40 Q245 50 280 35', type: 'stroke', zone: 'body', strokeWidth: 2 },
+          // Secondary wave lines
+          { d: 'M0 72 Q40 60 80 64 Q120 68 160 58 Q200 48 240 52 Q260 54 280 48', type: 'stroke', zone: 'body', strokeWidth: 1 },
+          // Foam accents
+          { d: 'M60 55 Q65 52 70 55 M130 46 Q135 43 140 45 M200 40 Q205 37 210 40 M265 37 Q270 34 275 36', type: 'stroke', zone: 'foam', strokeWidth: 1.5 },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'waterfall',
+    name: 'Waterfall',
+    category: 'landscape',
+    pack: 'core',
+    tags: ['landscape', 'water', 'organic'],
+    viewBox: '0 0 140 200',
+    suggestedLayer: 'midground',
+    colorZones: [
+      { id: 'rock', defaultPaletteSlot: 0 },
+      { id: 'water', defaultPaletteSlot: 4 },
+      { id: 'spray', defaultPaletteSlot: 2 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          // Left cliff
+          { d: 'M0,0 L52,0 Q46,50 52,100 Q45,150 50,200 L0,200 Z', type: 'fill', zone: 'rock' },
+          // Right cliff
+          { d: 'M88,0 L140,0 L140,200 L90,200 Q95,150 88,100 Q94,50 88,0 Z', type: 'fill', zone: 'rock' },
+          // Water column
+          { d: 'M52,0 L88,0 Q94,50 88,100 Q95,150 90,200 L50,200 Q45,150 52,100 Q46,50 52,0 Z', type: 'fill', zone: 'water' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M0,0 L52,0 Q46,50 52,100 Q45,150 50,200 L0,200 Z', type: 'fill', zone: 'rock' },
+          { d: 'M88,0 L140,0 L140,200 L90,200 Q95,150 88,100 Q94,50 88,0 Z', type: 'fill', zone: 'rock' },
+          { d: 'M52,0 L88,0 Q94,50 88,100 Q95,150 90,200 L50,200 Q45,150 52,100 Q46,50 52,0 Z', type: 'fill', zone: 'water' },
+          // Cliff edges along water
+          { d: 'M52,0 Q46,50 52,100 Q45,150 50,200', type: 'stroke', zone: 'rock', strokeWidth: 2 },
+          { d: 'M88,0 Q94,50 88,100 Q95,150 90,200', type: 'stroke', zone: 'rock', strokeWidth: 2 },
+          // Splash pool at base
+          { d: 'M30,185 Q70,172 110,185 Q70,198 30,198 Z', type: 'fill', zone: 'spray' },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M0,0 L52,0 Q46,50 52,100 Q45,150 50,200 L0,200 Z', type: 'fill', zone: 'rock' },
+          { d: 'M88,0 L140,0 L140,200 L90,200 Q95,150 88,100 Q94,50 88,0 Z', type: 'fill', zone: 'rock' },
+          { d: 'M52,0 L88,0 Q94,50 88,100 Q95,150 90,200 L50,200 Q45,150 52,100 Q46,50 52,0 Z', type: 'fill', zone: 'water' },
+          { d: 'M52,0 Q46,50 52,100 Q45,150 50,200', type: 'stroke', zone: 'rock', strokeWidth: 2 },
+          { d: 'M88,0 Q94,50 88,100 Q95,150 90,200', type: 'stroke', zone: 'rock', strokeWidth: 2 },
+          { d: 'M30,185 Q70,172 110,185 Q70,198 30,198 Z', type: 'fill', zone: 'spray' },
+          // Rock face texture
+          { d: 'M10,30 L25,25 M15,70 L30,65 M8,110 L22,105 M12,150 L28,145 M120,35 L130,30 M115,75 L128,70 M122,115 L132,110 M118,155 L130,150', type: 'stroke', zone: 'rock', strokeWidth: 0.7 },
+          // Water flow lines
+          { d: 'M62,15 V55 M72,10 V60 M66,65 V115 M76,60 V110 M64,120 V165 M74,115 V160', type: 'stroke', zone: 'water', strokeWidth: 0.6 },
+          // Spray droplets
+          { d: 'M38,178 Q42,172 46,178 M58,175 Q62,170 66,175 M74,175 Q78,170 82,175 M94,178 Q98,172 102,178', type: 'stroke', zone: 'spray', strokeWidth: 0.8 },
+        ],
+      },
+    ],
+  },
+
+  // ============================================================
+  //  SKY & ATMOSPHERE
+  // ============================================================
+  {
+    id: 'full-moon',
+    name: 'Full Moon',
+    category: 'landscape',
+    pack: 'core',
+    tags: ['landscape', 'atmospheric', 'minimal'],
+    viewBox: '0 0 120 120',
+    suggestedLayer: 'background',
+    colorZones: [
+      { id: 'body', defaultPaletteSlot: 2 },
+      { id: 'detail', defaultPaletteSlot: 4 },
+      { id: 'glow', defaultPaletteSlot: 2 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          { d: 'M60 5 A55 55 0 1 1 59.99 5 Z', type: 'stroke', zone: 'glow', strokeWidth: 4 },
+          { d: 'M60 10 A50 50 0 1 1 59.99 10 Z', type: 'fill', zone: 'body' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M60 5 A55 55 0 1 1 59.99 5 Z', type: 'stroke', zone: 'glow', strokeWidth: 4 },
+          { d: 'M60 10 A50 50 0 1 1 59.99 10 Z', type: 'fill', zone: 'body' },
+          { d: 'M60 10 A50 50 0 1 1 59.99 10 Z', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M60 5 A55 55 0 1 1 59.99 5 Z', type: 'stroke', zone: 'glow', strokeWidth: 4 },
+          { d: 'M60 10 A50 50 0 1 1 59.99 10 Z', type: 'fill', zone: 'body' },
+          { d: 'M60 10 A50 50 0 1 1 59.99 10 Z', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
+          // Crater suggestions
+          { d: 'M45 45 A8 8 0 1 1 44.99 45 Z', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
+          { d: 'M70 55 A6 6 0 1 1 69.99 55 Z', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
+          { d: 'M55 70 A10 10 0 1 1 54.99 70 Z', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
+          { d: 'M38 62 A4 4 0 1 1 37.99 62 Z', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
+          { d: 'M72 38 A5 5 0 1 1 71.99 38 Z', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'cloud-bank',
+    name: 'Cloud Bank',
+    category: 'landscape',
+    pack: 'core',
+    tags: ['landscape', 'atmospheric', 'organic'],
+    viewBox: '0 0 260 80',
+    suggestedLayer: 'midground',
+    colorZones: [
+      { id: 'body', defaultPaletteSlot: 4 },
+      { id: 'highlight', defaultPaletteSlot: 2 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          { d: 'M0 50 Q30 20 70 25 Q110 10 150 20 Q190 5 230 18 Q260 25 260 50 Q260 70 230 65 Q190 72 150 60 Q110 70 70 62 Q30 68 0 50 Z', type: 'fill', zone: 'body' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M0 50 Q30 20 70 25 Q110 10 150 20 Q190 5 230 18 Q260 25 260 50 Q260 70 230 65 Q190 72 150 60 Q110 70 70 62 Q30 68 0 50 Z', type: 'fill', zone: 'body' },
+          { d: 'M0 50 Q30 20 70 25 Q110 10 150 20 Q190 5 230 18 Q260 25 260 50', type: 'stroke', zone: 'body', strokeWidth: 1.5 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M0 50 Q30 20 70 25 Q110 10 150 20 Q190 5 230 18 Q260 25 260 50 Q260 70 230 65 Q190 72 150 60 Q110 70 70 62 Q30 68 0 50 Z', type: 'fill', zone: 'body' },
+          { d: 'M0 50 Q30 20 70 25 Q110 10 150 20 Q190 5 230 18 Q260 25 260 50', type: 'stroke', zone: 'body', strokeWidth: 1.5 },
+          // Wispy interior lines
+          { d: 'M30 38 Q60 30 90 35 Q120 28 150 33 M50 48 Q80 42 110 46 Q140 40 170 44 Q200 38 230 42', type: 'stroke', zone: 'highlight', strokeWidth: 0.6 },
+          // Bottom wisps
+          { d: 'M20 55 Q50 60 80 55 Q110 62 140 56 M150 58 Q180 64 210 58 Q235 62 250 56', type: 'stroke', zone: 'highlight', strokeWidth: 0.5 },
+        ],
+      },
+    ],
+  },
+
+  // ============================================================
+  //  FLORA (TREES & PLANTS)
+  // ============================================================
+  {
+    id: 'pine-tree',
+    name: 'Pine Tree',
+    category: 'flora',
+    pack: 'core',
+    tags: ['flora', 'organic', 'landscape'],
+    viewBox: '0 0 140 200',
+    suggestedLayer: 'midground',
+    colorZones: [
+      { id: 'trunk', defaultPaletteSlot: 4 },
+      { id: 'foliage', defaultPaletteSlot: 3 },
+      { id: 'detail', defaultPaletteSlot: 0 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          { d: 'M60 200 L60 130 Q58 120 62 110 L78 110 Q82 120 80 130 L80 200 Z', type: 'fill', zone: 'trunk' },
+          { d: 'M30 100 Q15 85 25 65 Q35 50 50 45 Q65 40 70 30 Q75 20 70 10 Q80 15 90 25 Q100 35 110 45 Q125 55 130 75 Q135 95 115 105 Q95 110 80 110 L60 110 Q40 108 30 100 Z', type: 'fill', zone: 'foliage' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          // Trunk
+          { d: 'M60 200 L60 130 Q58 120 62 110 L78 110 Q82 120 80 130 L80 200 Z', type: 'fill', zone: 'trunk' },
+          // Foliage clusters
+          { d: 'M30 100 Q15 85 25 65 Q35 50 50 45 Q65 40 70 30 Q75 20 70 10 Q80 15 90 25 Q100 35 110 45 Q125 55 130 75 Q135 95 115 105 Q95 110 80 110 L60 110 Q40 108 30 100 Z', type: 'fill', zone: 'foliage' },
+          // Outline
+          { d: 'M30 100 Q15 85 25 65 Q35 50 50 45 Q65 40 70 30 Q75 20 70 10 Q80 15 90 25 Q100 35 110 45 Q125 55 130 75 Q135 95 115 105', type: 'stroke', zone: 'detail', strokeWidth: 2 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          // Trunk
+          { d: 'M60 200 L60 130 Q58 120 62 110 L78 110 Q82 120 80 130 L80 200 Z', type: 'fill', zone: 'trunk' },
+          // Foliage clusters
+          { d: 'M30 100 Q15 85 25 65 Q35 50 50 45 Q65 40 70 30 Q75 20 70 10 Q80 15 90 25 Q100 35 110 45 Q125 55 130 75 Q135 95 115 105 Q95 110 80 110 L60 110 Q40 108 30 100 Z', type: 'fill', zone: 'foliage' },
+          // Outline
+          { d: 'M30 100 Q15 85 25 65 Q35 50 50 45 Q65 40 70 30 Q75 20 70 10 Q80 15 90 25 Q100 35 110 45 Q125 55 130 75 Q135 95 115 105', type: 'stroke', zone: 'detail', strokeWidth: 2 },
+          // Bark texture
+          { d: 'M65 130 L65 150 M75 125 L75 145 M68 155 L68 175 M72 170 L72 190', type: 'stroke', zone: 'detail', strokeWidth: 0.8 },
+          // Needle clusters
+          { d: 'M40 85 Q45 75 55 78 M35 70 Q42 62 52 65 M50 55 Q58 48 65 52 M80 55 Q88 48 95 52 M100 65 Q108 58 115 62 M105 80 Q112 72 120 76 M90 90 Q95 82 102 86 M45 92 Q52 85 58 88', type: 'stroke', zone: 'detail', strokeWidth: 1.2 },
+          // Branch suggestions
+          { d: 'M62 110 L45 95 M78 110 L95 95 M65 115 L35 100 M75 115 L105 100', type: 'stroke', zone: 'trunk', strokeWidth: 1.5 },
+        ],
+      },
+    ],
+  },
+
+  {
+    id: 'cherry-branch',
+    name: 'Cherry Blossom',
+    category: 'flora',
+    pack: 'core',
+    tags: ['flora', 'organic', 'seasonal-spring', 'intimate'],
+    viewBox: '0 0 220 180',
+    suggestedLayer: 'foreground',
+    colorZones: [
+      { id: 'branch', defaultPaletteSlot: 4 },
+      { id: 'blossom', defaultPaletteSlot: 1 },
+      { id: 'detail', defaultPaletteSlot: 0 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          // Branch
+          { d: 'M0 140 Q30 130 60 110 Q90 90 120 80 Q150 70 180 50 Q200 40 220 30 Q210 50 190 60 Q170 70 150 85 Q130 100 100 120 Q80 130 50 140 Q25 148 0 145 Z', type: 'fill', zone: 'branch' },
+          // Blossom clusters
+          { d: 'M50 100 A20 20 0 1 1 49.99 100 Z M100 70 A22 22 0 1 1 99.99 70 Z M150 55 A18 18 0 1 1 149.99 55 Z M80 115 A15 15 0 1 1 79.99 115 Z M170 40 A16 16 0 1 1 169.99 40 Z', type: 'fill', zone: 'blossom' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          // Branch
+          { d: 'M0 138 Q30 128 60 110 Q90 92 120 82 Q150 72 180 52 Q200 42 220 32 M120 82 Q115 100 100 115 M60 110 Q55 125 45 135', type: 'stroke', zone: 'branch', strokeWidth: 3 },
+          // Blossom outlines
+          { d: 'M40 95 Q45 82 55 85 Q60 78 65 85 Q70 82 68 92 Q72 98 65 100 Q68 106 58 105 Q52 110 48 103 Q42 106 42 98 Z', type: 'fill', zone: 'blossom' },
+          { d: 'M90 62 Q95 48 107 52 Q112 44 118 52 Q124 48 122 60 Q128 66 120 68 Q124 76 112 74 Q106 80 102 72 Q94 76 94 66 Z', type: 'fill', zone: 'blossom' },
+          { d: 'M140 48 Q144 36 154 39 Q158 32 163 39 Q168 36 166 46 Q172 51 165 53 Q168 60 158 58 Q152 64 149 56 Q142 59 142 50 Z', type: 'fill', zone: 'blossom' },
+          { d: 'M72 108 Q75 98 83 100 Q86 94 90 100 Q94 98 93 106 Q98 110 92 112 Q94 118 86 116 Q82 120 80 114 Q74 116 74 110 Z', type: 'fill', zone: 'blossom' },
+          { d: 'M162 32 Q165 22 173 25 Q176 20 180 25 Q184 22 183 30 Q188 34 182 36 Q184 42 176 40 Q172 44 170 38 Q164 40 164 34 Z', type: 'fill', zone: 'blossom' },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          // Branch with bark detail
+          { d: 'M0 138 Q30 128 60 110 Q90 92 120 82 Q150 72 180 52 Q200 42 220 32 M120 82 Q115 100 100 115 M60 110 Q55 125 45 135', type: 'stroke', zone: 'branch', strokeWidth: 3.5 },
+          // Blossoms (same as shape level)
+          { d: 'M40 95 Q45 82 55 85 Q60 78 65 85 Q70 82 68 92 Q72 98 65 100 Q68 106 58 105 Q52 110 48 103 Q42 106 42 98 Z', type: 'fill', zone: 'blossom' },
+          { d: 'M90 62 Q95 48 107 52 Q112 44 118 52 Q124 48 122 60 Q128 66 120 68 Q124 76 112 74 Q106 80 102 72 Q94 76 94 66 Z', type: 'fill', zone: 'blossom' },
+          { d: 'M140 48 Q144 36 154 39 Q158 32 163 39 Q168 36 166 46 Q172 51 165 53 Q168 60 158 58 Q152 64 149 56 Q142 59 142 50 Z', type: 'fill', zone: 'blossom' },
+          { d: 'M72 108 Q75 98 83 100 Q86 94 90 100 Q94 98 93 106 Q98 110 92 112 Q94 118 86 116 Q82 120 80 114 Q74 116 74 110 Z', type: 'fill', zone: 'blossom' },
+          { d: 'M162 32 Q165 22 173 25 Q176 20 180 25 Q184 22 183 30 Q188 34 182 36 Q184 42 176 40 Q172 44 170 38 Q164 40 164 34 Z', type: 'fill', zone: 'blossom' },
+          // Blossom outlines
+          { d: 'M40 95 Q45 82 55 85 Q60 78 65 85 Q70 82 68 92 Q72 98 65 100 Q68 106 58 105 Q52 110 48 103 Q42 106 42 98 Z', type: 'stroke', zone: 'detail', strokeWidth: 0.8 },
+          { d: 'M90 62 Q95 48 107 52 Q112 44 118 52 Q124 48 122 60 Q128 66 120 68 Q124 76 112 74 Q106 80 102 72 Q94 76 94 66 Z', type: 'stroke', zone: 'detail', strokeWidth: 0.8 },
+          { d: 'M140 48 Q144 36 154 39 Q158 32 163 39 Q168 36 166 46 Q172 51 165 53 Q168 60 158 58 Q152 64 149 56 Q142 59 142 50 Z', type: 'stroke', zone: 'detail', strokeWidth: 0.8 },
+          // Stamen centers
+          { d: 'M55 94 L55 90 M53 93 L50 90 M57 93 L60 90', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
+          { d: 'M108 64 L108 60 M106 63 L103 60 M110 63 L113 60', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
+          { d: 'M153 49 L153 45 M151 48 L148 45 M155 48 L158 45', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
+          // Falling petals
+          { d: 'M35 125 Q38 122 40 125 Q42 128 39 130 Z M125 95 Q128 92 130 95 Q132 98 129 100 Z M185 55 Q188 52 190 55 Q192 58 189 60 Z', type: 'fill', zone: 'blossom' },
+          // Bark texture
+          { d: 'M25 132 L30 128 M70 105 L75 100 M100 88 L105 84 M140 72 L145 68 M175 52 L180 48', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
+        ],
+      },
+    ],
+  },
+
+  // ============================================================
+  //  FAUNA
+  // ============================================================
+  {
+    id: 'crane',
+    name: 'Crane',
+    category: 'fauna',
+    pack: 'core',
+    tags: ['fauna', 'organic', 'water'],
+    viewBox: '0 0 160 200',
+    suggestedLayer: 'foreground',
+    colorZones: [
+      { id: 'body', defaultPaletteSlot: 2 },
+      { id: 'accent', defaultPaletteSlot: 1 },
+      { id: 'detail', defaultPaletteSlot: 0 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          { d: 'M60 10 Q65 5 72 8 L80 8 Q90 10 88 20 L85 35 Q80 45 70 50 Q60 58 55 70 Q50 82 48 95 Q45 110 50 125 Q55 135 65 130 Q80 125 100 110 Q120 95 135 85 Q140 82 140 90 Q138 100 125 110 Q110 120 90 135 Q70 148 55 155 L52 160 Q48 170 45 180 L42 195 L38 195 L38 180 Q36 170 38 160 L40 150 Q30 155 20 152 Q10 148 15 140 Q20 132 35 130 Q42 128 48 120 Q44 105 45 90 Q46 75 50 65 Q55 50 65 40 L70 30 Q75 22 72 15 Q68 12 64 14 Z', type: 'fill', zone: 'body' },
+          { d: 'M55 90 Q60 85 70 88 Q85 92 100 100 Q115 108 125 105 Q130 98 135 90 L140 90 Q138 100 125 110 Q110 118 95 115 Q80 112 65 105 Q55 100 55 90 Z', type: 'fill', zone: 'accent' },
+          { d: 'M68 8 A5 5 0 1 1 76 8 A5 5 0 1 1 68 8 Z', type: 'fill', zone: 'accent' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          // Body
+          { d: 'M55 70 Q50 82 48 95 Q45 110 50 125 Q55 135 65 130 Q80 125 100 110 Q120 95 135 85 Q140 82 140 90 Q138 100 125 110 Q110 120 90 135 Q70 148 55 155 L52 160 Q48 170 45 180 L42 195 L38 195 L38 180 Q36 170 38 160 L40 150 Q30 155 20 152 Q10 148 15 140 Q20 132 35 130 Q42 128 48 120 Q44 105 45 90 Q46 75 50 65 L55 70 Z', type: 'fill', zone: 'body' },
+          // Wing accent
+          { d: 'M55 90 Q60 85 70 88 Q85 92 100 100 Q115 108 125 105 Q130 98 135 90 L140 90 Q138 100 125 110 Q110 118 95 115 Q80 112 65 105 Q55 100 55 90 Z', type: 'fill', zone: 'accent' },
+          // Head/neck
+          { d: 'M60 10 Q65 5 72 8 L80 8 Q90 10 88 20 L85 35 Q80 45 70 50 Q60 58 55 70', type: 'stroke', zone: 'detail', strokeWidth: 2 },
+          // Crown
+          { d: 'M68 8 A5 5 0 1 1 76 8 A5 5 0 1 1 68 8 Z', type: 'fill', zone: 'accent' },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          // Body
+          { d: 'M55 70 Q50 82 48 95 Q45 110 50 125 Q55 135 65 130 Q80 125 100 110 Q120 95 135 85 Q140 82 140 90 Q138 100 125 110 Q110 120 90 135 Q70 148 55 155 L52 160 Q48 170 45 180 L42 195 L38 195 L38 180 Q36 170 38 160 L40 150 Q30 155 20 152 Q10 148 15 140 Q20 132 35 130 Q42 128 48 120 Q44 105 45 90 Q46 75 50 65 L55 70 Z', type: 'fill', zone: 'body' },
+          // Wing accent
+          { d: 'M55 90 Q60 85 70 88 Q85 92 100 100 Q115 108 125 105 Q130 98 135 90 L140 90 Q138 100 125 110 Q110 118 95 115 Q80 112 65 105 Q55 100 55 90 Z', type: 'fill', zone: 'accent' },
+          // Crown
+          { d: 'M68 8 A5 5 0 1 1 76 8 A5 5 0 1 1 68 8 Z', type: 'fill', zone: 'accent' },
+          // Head/neck outline
+          { d: 'M60 10 Q65 5 72 8 L80 8 Q90 10 88 20 L85 35 Q80 45 70 50 Q60 58 55 70', type: 'stroke', zone: 'detail', strokeWidth: 2 },
+          // Eye
+          { d: 'M78 15 A2 2 0 1 1 77.99 15 Z', type: 'fill', zone: 'detail' },
+          // Beak
+          { d: 'M60 10 L48 12 L60 15', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
+          // Feather detail
+          { d: 'M60 95 L70 92 M65 100 L75 97 M70 105 L80 102 M55 82 L65 80 M58 88 L68 85', type: 'stroke', zone: 'detail', strokeWidth: 0.7 },
+          // Wing feather tips
+          { d: 'M100 100 L110 95 M108 104 L118 99 M115 108 L125 103 M122 106 L132 100', type: 'stroke', zone: 'detail', strokeWidth: 0.8 },
+          // Tail feathers
+          { d: 'M25 145 Q30 140 35 142 M20 148 Q25 143 30 145 M30 138 Q35 133 40 135', type: 'stroke', zone: 'detail', strokeWidth: 0.8 },
+          // Leg detail
+          { d: 'M42 195 L38 198 L44 198 M38 195 L34 198 L40 198', type: 'stroke', zone: 'detail', strokeWidth: 1 },
+        ],
+      },
+    ],
+  },
+
+  // ============================================================
+  //  OBJECTS
+  // ============================================================
+  {
+    id: 'torii-gate',
+    name: 'Torii Gate',
+    category: 'objects',
+    pack: 'core',
+    tags: ['structural', 'landscape'],
+    viewBox: '0 0 180 200',
+    suggestedLayer: 'midground',
+    colorZones: [
+      { id: 'body', defaultPaletteSlot: 1 },
+      { id: 'detail', defaultPaletteSlot: 0 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          // Main silhouette
+          { d: 'M5 12 Q90 0 175 12 L175 24 Q90 14 5 24 Z M15 24 L15 30 L30 30 L30 24 Z M150 24 L150 30 L165 30 L165 24 Z M25 30 L25 200 L35 200 L35 30 Z M145 30 L145 200 L155 200 L155 30 Z M20 55 L160 55 L160 65 L20 65 Z', type: 'fill', zone: 'body' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          // Kasagi (top beam with curve)
+          { d: 'M5 12 Q90 0 175 12 L175 24 Q90 14 5 24 Z', type: 'fill', zone: 'body' },
+          // Shimaki (second beam)
+          { d: 'M15 24 L15 30 L165 30 L165 24 Z', type: 'fill', zone: 'body' },
+          // Nuki (crossbeam)
+          { d: 'M20 55 L160 55 L160 65 L20 65 Z', type: 'fill', zone: 'body' },
+          // Hashira (pillars)
+          { d: 'M25 30 L25 200 L35 200 L35 30 Z M145 30 L145 200 L155 200 L155 30 Z', type: 'fill', zone: 'body' },
+          // Outline
+          { d: 'M5 12 Q90 0 175 12 L175 24 Q90 14 5 24 Z M15 24 L165 30 M15 30 L165 24 M20 55 L160 55 M20 65 L160 65 M25 30 L25 200 M35 30 L35 200 M145 30 L145 200 M155 30 L155 200', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M5 12 Q90 0 175 12 L175 24 Q90 14 5 24 Z', type: 'fill', zone: 'body' },
+          { d: 'M15 24 L15 30 L165 30 L165 24 Z', type: 'fill', zone: 'body' },
+          { d: 'M20 55 L160 55 L160 65 L20 65 Z', type: 'fill', zone: 'body' },
+          { d: 'M25 30 L25 200 L35 200 L35 30 Z M145 30 L145 200 L155 200 L155 30 Z', type: 'fill', zone: 'body' },
+          // Full outline
+          { d: 'M5 12 Q90 0 175 12 M5 24 Q90 14 175 24 M5 12 L5 24 M175 12 L175 24 M15 24 L15 30 M165 24 L165 30 M20 55 L160 55 M20 65 L160 65 M25 30 L25 200 M35 30 L35 200 M145 30 L145 200 M155 30 L155 200', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
+          // Wood grain on kasagi
+          { d: 'M20 16 Q60 10 100 13 Q140 10 170 16 M20 20 Q60 15 100 18 Q140 15 170 20', type: 'stroke', zone: 'detail', strokeWidth: 0.5 },
+          // Grain on pillars
+          { d: 'M28 40 L28 60 M32 70 L32 100 M29 110 L29 140 M31 150 L31 180 M148 40 L148 60 M152 70 L152 100 M149 110 L149 140 M151 150 L151 180', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
+          // Nuki (crossbeam) detail
+          { d: 'M25 58 L155 58 M25 62 L155 62', type: 'stroke', zone: 'detail', strokeWidth: 0.4 },
+          // Small decorative elements at pillar-beam joints
+          { d: 'M22 55 L38 55 L38 65 L22 65 Z M142 55 L158 55 L158 65 L142 65 Z', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
+        ],
+      },
+    ],
+  },
+
+  // ── Twisted Pine ──────────────────────────────────────────
+  {
+    id: 'twisted-pine',
+    name: 'Twisted Pine',
+    category: 'flora',
+    pack: 'core',
+    tags: ['flora', 'organic', 'landscape', 'minimal'],
+    viewBox: '0 0 200 220',
+    suggestedLayer: 'midground',
+    colorZones: [
+      { id: 'trunk', defaultPaletteSlot: 4 },
+      { id: 'foliage', defaultPaletteSlot: 3 },
+      { id: 'detail', defaultPaletteSlot: 0 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          // Trunk — gnarled, curving to the right
+          { d: 'M65 220 L62 180 Q55 150 50 120 Q44 90 55 65 Q62 48 75 42 Q85 38 92 42 Q82 48 72 60 Q60 80 62 110 Q64 140 68 170 L72 220 Z', type: 'fill', zone: 'trunk' },
+          // Main foliage cluster (upper right)
+          { d: 'M70 50 Q60 35 65 18 Q72 8 85 5 Q100 2 115 8 Q135 15 150 28 Q165 40 170 55 Q172 68 160 72 Q145 70 125 62 Q105 52 90 48 Q78 46 70 50 Z', type: 'fill', zone: 'foliage' },
+          // Secondary foliage cluster (left)
+          { d: 'M55 72 Q35 60 22 48 Q12 38 15 28 Q20 20 30 22 Q42 25 52 35 Q60 45 62 58 Q62 65 55 72 Z', type: 'fill', zone: 'foliage' },
+          // Small foliage tuft (mid-right)
+          { d: 'M78 80 Q85 68 98 65 Q110 62 118 68 Q122 75 115 80 Q105 82 92 80 Q82 78 78 80 Z', type: 'fill', zone: 'foliage' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M65 220 L62 180 Q55 150 50 120 Q44 90 55 65 Q62 48 75 42 Q85 38 92 42 Q82 48 72 60 Q60 80 62 110 Q64 140 68 170 L72 220 Z', type: 'fill', zone: 'trunk' },
+          { d: 'M70 50 Q60 35 65 18 Q72 8 85 5 Q100 2 115 8 Q135 15 150 28 Q165 40 170 55 Q172 68 160 72 Q145 70 125 62 Q105 52 90 48 Q78 46 70 50 Z', type: 'fill', zone: 'foliage' },
+          { d: 'M55 72 Q35 60 22 48 Q12 38 15 28 Q20 20 30 22 Q42 25 52 35 Q60 45 62 58 Q62 65 55 72 Z', type: 'fill', zone: 'foliage' },
+          { d: 'M78 80 Q85 68 98 65 Q110 62 118 68 Q122 75 115 80 Q105 82 92 80 Q82 78 78 80 Z', type: 'fill', zone: 'foliage' },
+          // Foliage outlines
+          { d: 'M70 50 Q60 35 65 18 Q72 8 85 5 Q100 2 115 8 Q135 15 150 28 Q165 40 170 55 Q172 68 160 72 Q145 70 125 62 Q105 52 90 48 Q78 46 70 50', type: 'stroke', zone: 'detail', strokeWidth: 2 },
+          { d: 'M55 72 Q35 60 22 48 Q12 38 15 28 Q20 20 30 22 Q42 25 52 35 Q60 45 62 58', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
+          // Branches from trunk to foliage
+          { d: 'M60 65 Q50 58 40 52 M72 52 Q80 45 90 42 M66 80 Q75 72 85 68', type: 'stroke', zone: 'trunk', strokeWidth: 2 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M65 220 L62 180 Q55 150 50 120 Q44 90 55 65 Q62 48 75 42 Q85 38 92 42 Q82 48 72 60 Q60 80 62 110 Q64 140 68 170 L72 220 Z', type: 'fill', zone: 'trunk' },
+          { d: 'M70 50 Q60 35 65 18 Q72 8 85 5 Q100 2 115 8 Q135 15 150 28 Q165 40 170 55 Q172 68 160 72 Q145 70 125 62 Q105 52 90 48 Q78 46 70 50 Z', type: 'fill', zone: 'foliage' },
+          { d: 'M55 72 Q35 60 22 48 Q12 38 15 28 Q20 20 30 22 Q42 25 52 35 Q60 45 62 58 Q62 65 55 72 Z', type: 'fill', zone: 'foliage' },
+          { d: 'M78 80 Q85 68 98 65 Q110 62 118 68 Q122 75 115 80 Q105 82 92 80 Q82 78 78 80 Z', type: 'fill', zone: 'foliage' },
+          { d: 'M70 50 Q60 35 65 18 Q72 8 85 5 Q100 2 115 8 Q135 15 150 28 Q165 40 170 55 Q172 68 160 72 Q145 70 125 62 Q105 52 90 48 Q78 46 70 50', type: 'stroke', zone: 'detail', strokeWidth: 2 },
+          { d: 'M55 72 Q35 60 22 48 Q12 38 15 28 Q20 20 30 22 Q42 25 52 35 Q60 45 62 58', type: 'stroke', zone: 'detail', strokeWidth: 1.5 },
+          { d: 'M60 65 Q50 58 40 52 M72 52 Q80 45 90 42 M66 80 Q75 72 85 68', type: 'stroke', zone: 'trunk', strokeWidth: 2 },
+          // Bark texture — gnarled knots and grain
+          { d: 'M58 130 Q55 125 58 120 M62 150 Q60 145 62 140 M60 170 Q57 165 60 160 M64 195 Q62 190 64 185 M56 100 Q53 95 56 90', type: 'stroke', zone: 'detail', strokeWidth: 0.8 },
+          // Needle clusters — main canopy
+          { d: 'M80 18 Q88 10 98 14 M95 20 Q105 14 115 18 M110 28 Q120 22 130 26 M130 38 Q142 32 150 36 M145 50 Q155 44 162 48 M105 45 Q115 38 125 42 M82 35 Q90 28 100 32', type: 'stroke', zone: 'detail', strokeWidth: 1.2 },
+          // Needle clusters — secondary canopy
+          { d: 'M30 30 Q38 22 48 28 M25 40 Q34 34 42 38 M35 50 Q44 44 52 48', type: 'stroke', zone: 'detail', strokeWidth: 1 },
+          // Needle clusters — small tuft
+          { d: 'M85 70 Q92 64 100 68 M95 72 Q102 66 110 70 M100 76 Q108 70 115 74', type: 'stroke', zone: 'detail', strokeWidth: 0.8 },
+          // Root suggestions at base
+          { d: 'M62 218 Q50 215 42 218 M72 218 Q80 215 88 218', type: 'stroke', zone: 'trunk', strokeWidth: 1.5 },
+        ],
+      },
+    ],
+  },
+
+  // ── Weeping Willow ──────────────────────────────────────────
+  {
+    id: 'weeping-willow',
+    name: 'Weeping Willow',
+    category: 'flora',
+    pack: 'core',
+    tags: ['flora', 'organic', 'water', 'landscape'],
+    viewBox: '0 0 200 240',
+    suggestedLayer: 'midground',
+    colorZones: [
+      { id: 'trunk', defaultPaletteSlot: 4 },
+      { id: 'foliage', defaultPaletteSlot: 3 },
+      { id: 'detail', defaultPaletteSlot: 0 },
+    ],
+    carveLevels: [
+      {
+        name: 'block',
+        paths: [
+          // Trunk — straight with slight curve
+          { d: 'M90 240 L88 160 Q86 120 90 80 Q92 60 95 45 L105 45 Q108 60 110 80 Q114 120 112 160 L110 240 Z', type: 'fill', zone: 'trunk' },
+          // Canopy mass — large drooping oval
+          { d: 'M20 100 Q8 70 15 42 Q22 18 50 8 Q70 0 100 0 Q130 0 150 8 Q178 18 185 42 Q192 70 180 100 Q172 130 158 160 Q148 180 140 195 Q130 175 135 150 Q138 125 140 100 Q142 75 130 55 Q120 40 100 38 Q80 40 70 55 Q58 75 60 100 Q62 125 65 150 Q70 175 60 195 Q52 180 42 160 Q28 130 20 100 Z', type: 'fill', zone: 'foliage' },
+        ],
+      },
+      {
+        name: 'shape',
+        paths: [
+          { d: 'M90 240 L88 160 Q86 120 90 80 Q92 60 95 45 L105 45 Q108 60 110 80 Q114 120 112 160 L110 240 Z', type: 'fill', zone: 'trunk' },
+          { d: 'M20 100 Q8 70 15 42 Q22 18 50 8 Q70 0 100 0 Q130 0 150 8 Q178 18 185 42 Q192 70 180 100 Q172 130 158 160 Q148 180 140 195 Q130 175 135 150 Q138 125 140 100 Q142 75 130 55 Q120 40 100 38 Q80 40 70 55 Q58 75 60 100 Q62 125 65 150 Q70 175 60 195 Q52 180 42 160 Q28 130 20 100 Z', type: 'fill', zone: 'foliage' },
+          // Canopy outline
+          { d: 'M20 100 Q8 70 15 42 Q22 18 50 8 Q70 0 100 0 Q130 0 150 8 Q178 18 185 42 Q192 70 180 100', type: 'stroke', zone: 'detail', strokeWidth: 2 },
+          // Main branch structure
+          { d: 'M95 48 Q85 35 70 30 Q55 28 40 35 M105 48 Q115 35 130 30 Q145 28 160 35 M95 55 Q80 48 60 50 M105 55 Q120 48 140 50', type: 'stroke', zone: 'trunk', strokeWidth: 1.8 },
+        ],
+      },
+      {
+        name: 'detail',
+        paths: [
+          { d: 'M90 240 L88 160 Q86 120 90 80 Q92 60 95 45 L105 45 Q108 60 110 80 Q114 120 112 160 L110 240 Z', type: 'fill', zone: 'trunk' },
+          { d: 'M20 100 Q8 70 15 42 Q22 18 50 8 Q70 0 100 0 Q130 0 150 8 Q178 18 185 42 Q192 70 180 100 Q172 130 158 160 Q148 180 140 195 Q130 175 135 150 Q138 125 140 100 Q142 75 130 55 Q120 40 100 38 Q80 40 70 55 Q58 75 60 100 Q62 125 65 150 Q70 175 60 195 Q52 180 42 160 Q28 130 20 100 Z', type: 'fill', zone: 'foliage' },
+          { d: 'M20 100 Q8 70 15 42 Q22 18 50 8 Q70 0 100 0 Q130 0 150 8 Q178 18 185 42 Q192 70 180 100', type: 'stroke', zone: 'detail', strokeWidth: 2 },
+          { d: 'M95 48 Q85 35 70 30 Q55 28 40 35 M105 48 Q115 35 130 30 Q145 28 160 35 M95 55 Q80 48 60 50 M105 55 Q120 48 140 50', type: 'stroke', zone: 'trunk', strokeWidth: 1.8 },
+          // Hanging fronds — left side
+          { d: 'M40 38 Q35 60 30 90 Q25 120 22 150 Q20 175 18 195', type: 'stroke', zone: 'foliage', strokeWidth: 0.8 },
+          { d: 'M50 30 Q45 55 40 85 Q35 115 32 145 Q28 172 26 192', type: 'stroke', zone: 'foliage', strokeWidth: 0.8 },
+          { d: 'M60 28 Q55 52 50 80 Q45 108 42 135 Q38 162 36 185', type: 'stroke', zone: 'foliage', strokeWidth: 0.8 },
+          { d: 'M72 30 Q67 55 62 82 Q58 110 55 140 Q52 165 50 188', type: 'stroke', zone: 'foliage', strokeWidth: 0.8 },
+          { d: 'M80 35 Q76 58 72 85 Q68 112 66 142 Q64 168 62 190', type: 'stroke', zone: 'foliage', strokeWidth: 0.8 },
+          // Hanging fronds — right side
+          { d: 'M120 35 Q124 58 128 85 Q132 112 134 142 Q136 168 138 190', type: 'stroke', zone: 'foliage', strokeWidth: 0.8 },
+          { d: 'M130 30 Q134 55 138 82 Q142 110 145 140 Q148 165 150 188', type: 'stroke', zone: 'foliage', strokeWidth: 0.8 },
+          { d: 'M140 28 Q145 52 150 80 Q155 108 158 135 Q162 162 164 185', type: 'stroke', zone: 'foliage', strokeWidth: 0.8 },
+          { d: 'M150 30 Q155 55 160 85 Q165 115 168 145 Q172 172 174 192', type: 'stroke', zone: 'foliage', strokeWidth: 0.8 },
+          { d: 'M160 38 Q165 60 170 90 Q175 120 178 150 Q180 175 182 195', type: 'stroke', zone: 'foliage', strokeWidth: 0.8 },
+          // Bark texture
+          { d: 'M93 80 L93 100 M107 85 L107 105 M95 120 L95 145 M105 130 L105 155 M94 165 L94 185 M106 170 L106 195', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
+          // Small leaf clusters along fronds
+          { d: 'M28 100 Q32 96 36 100 M22 155 Q26 151 30 155 M45 90 Q49 86 53 90 M40 140 Q44 136 48 140 M55 85 Q59 81 63 85 M165 90 Q169 86 173 90 M172 140 Q176 136 180 140 M155 85 Q159 81 163 85 M148 135 Q152 131 156 135', type: 'stroke', zone: 'detail', strokeWidth: 0.6 },
+          // Root flare at base
+          { d: 'M88 238 Q75 235 65 238 M112 238 Q125 235 135 238', type: 'stroke', zone: 'trunk', strokeWidth: 1.5 },
+        ],
+      },
+    ],
+  },
+
+];
