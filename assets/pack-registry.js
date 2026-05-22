@@ -124,20 +124,20 @@ registerPack({
   elementIds: [
     // --- Landscape elements
     'mountain-distant', 'mountain-near', 'mountain-fuji-peak', 'rolling-hills',
-    'farmland', 'distant-village', 'distant-village-hills', 'stone-path', 'rock-formation',
+    'farmland', 'distant-village-hills', 'stone-path', 'rock-formation',
 
     // --- water and atmospheric elements
-    'tranquil-pond', 'flowing-stream', 'gentle-waves',
-    'shore-waves', 'river-rapids', 'water-ripples', 'waterfall', 
+    'tranquil-pond', 'gentle-waves', 'shore-waves', 'pond-edge','water-ripples',
+    'flowing-stream', 'river-rapids', 'waterfall', 'waterfall-tiered', 'river-rocky',
     'full-moon', 'cloud-bank', 'cloud-wisp', 'rain-curtain', 'snow-fall', 
 
     // --- Structural elements
-    'pagoda', 'pagoda-with-trees', 'tea-house', 'bamboo-fence', 'farmhouse', 'farmhouse-simple',
+    'distant-village', 'pagoda', 'pagoda-with-trees', 'tea-house', 'teahouse-open', 'farmhouse', 'farmhouse-simple',
     'stone-wall', 'castle-wall', 'wooden-dock', 'torii-gate', 'torii-detailed', 'torii-grand',
     'torii-gate', 'wooden-bridge', 'foot-bridge', 'boat-fishing', 
 
      // --- Object elements
-    'asanoha-star', 'paper-lantern', 'lantern-toro', 'lantern-yukimi', 'latern-kasuga', 'koinobori-pole', 'koinobori-higoi',
+    'asanoha-star', 'bamboo-fence', 'paper-lantern', 'lantern-toro', 'lantern-yukimi', 'latern-kasuga', 'koinobori-pole', 'koinobori-higoi',
    'tsukubai', 'shimenawa', 'vessel-tall', 'tsubo-jar',
    
     // --- Flora and fauna elements
