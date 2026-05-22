@@ -3309,7 +3309,7 @@ rebuildElementMap();
 // ============================================================
 //  VERSION
 // ============================================================
-const MOKURI_VERSION = '0.95';
+const MOKURI_VERSION = '0.96';
 
 // ============================================================
 //  FEEDBACK
@@ -12061,9 +12061,9 @@ async function init() {
 
 init();
 
-// Register service worker for offline support (production only)
-// On dev, skip SW to ensure fresh content on every reload
-if ('serviceWorker' in navigator && !MOKURI_IS_DEV) {
+// Register service worker for offline support (skip on localhost/file:// for fresh dev content)
+const _skipSW = location.hostname === '' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+if ('serviceWorker' in navigator && !_skipSW) {
   var _hadController = !!navigator.serviceWorker.controller; // true only on revisit, false on first install
   navigator.serviceWorker.register('./sw.js').then(function(reg) {
     // Force check for SW update on visibility
@@ -12084,8 +12084,8 @@ if ('serviceWorker' in navigator && !MOKURI_IS_DEV) {
   }).catch(() => {});
 }
 
-// Version check — sw.js is the single source of truth (production only).
-if (!MOKURI_IS_DEV) (function() {
+// Version check — sw.js is the single source of truth (skip on localhost/file://).
+if (!_skipSW) (function() {
   var lastCheck = 0;
   function checkVersion() {
     var now = Date.now();
