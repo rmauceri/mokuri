@@ -919,9 +919,9 @@ const MOKURI_GALLERY_PRESETS = [
     {
       "id": 1,
       "defId": "farmland",
-      "x": 302.6289786747101,
-      "y": 292.2621791268653,
-      "scaleX": 2.1823136306943955,
+      "x": 351.1743993121185,
+      "y": 294.93440411608054,
+      "scaleX": 2.5417915161483373,
       "scaleY": 1.6051655558441886,
       "rotation": 0,
       "carveLevel": 2,
@@ -2184,6 +2184,20 @@ const MOKURI_GALLERY_PRESETS = [
       ]
     },
     {
+      "id": 23,
+      "defId": "treeline-mixed",
+      "x": 314.6779351853748,
+      "y": 181.5220267434705,
+      "scaleX": 0.5451411743657227,
+      "scaleY": 0.5451411743657227,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "shadow": 3
+      },
+      "variationSeed": 5733
+    },
+    {
       "id": 2,
       "defId": "full-moon",
       "x": 453.2637242496812,
@@ -2191,7 +2205,7 @@ const MOKURI_GALLERY_PRESETS = [
       "scaleX": 0.6692776214303007,
       "scaleY": 0.6692776214303007,
       "rotation": 0,
-      "carveLevel": 2,
+      "carveLevel": 0,
       "colorOverrides": {
         "glow": "#e8c870"
       },
@@ -2361,21 +2375,11 @@ const MOKURI_GALLERY_PRESETS = [
           "pattern": "diagonal",
           "density": 0.85
         }
-      ]
-    },
-    {
-      "id": 3,
-      "defId": "tea-house",
-      "x": 143.15678838768227,
-      "y": 165.29797000944865,
-      "scaleX": 0.22857379153365173,
-      "scaleY": 0.22857379153365173,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "thatch": "#d4a030"
-      },
-      "variationSeed": 5204
+      ],
+      "zoneBokashi": {
+        "body": "left",
+        "glow": "up"
+      }
     },
     {
       "id": 8,
@@ -2407,31 +2411,17 @@ const MOKURI_GALLERY_PRESETS = [
       "variationSeed": 15232
     },
     {
-      "id": 12,
-      "defId": "fisherman",
-      "x": 182.13443447382787,
-      "y": 306.8029303426967,
-      "scaleX": 0.1872245695397698,
-      "scaleY": 0.1872245695397698,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "skin": 2,
-        "pants": 3,
-        "body": 4
-      },
-      "variationSeed": 7736
-    },
-    {
       "id": 4,
       "defId": "bamboo-fence",
       "x": 249.31328987343045,
-      "y": 229.97030291146604,
+      "y": 233.97030291146604,
       "scaleX": 0.3967952868156483,
       "scaleY": 0.3967952868156483,
       "rotation": 0,
-      "carveLevel": 0,
-      "colorOverrides": {},
+      "carveLevel": 2,
+      "colorOverrides": {
+        "binding": 4
+      },
       "variationSeed": 74330
     },
     {
@@ -2442,8 +2432,10 @@ const MOKURI_GALLERY_PRESETS = [
       "scaleX": -0.3967952868156483,
       "scaleY": 0.3967952868156483,
       "rotation": 0,
-      "carveLevel": 0,
-      "colorOverrides": {},
+      "carveLevel": 2,
+      "colorOverrides": {
+        "binding": 4
+      },
       "variationSeed": 6605,
       "locked": false
     },
@@ -2457,27 +2449,83 @@ const MOKURI_GALLERY_PRESETS = [
       "rotation": 0,
       "carveLevel": 2,
       "colorOverrides": {
-        "body": 2,
         "highlight": 1,
-        "shadow": 1
+        "shadow": 4
       },
       "variationSeed": 79111,
-      "locked": false
+      "locked": false,
+      "zoneBokashi": {
+        "color": "down"
+      }
     },
     {
       "id": 20,
       "defId": "cloud-wisp",
-      "x": 91.84909587003264,
-      "y": 57.45617537862961,
-      "scaleX": -0.11402920710349478,
-      "scaleY": 0.11402920710349478,
+      "x": 112.31441557162756,
+      "y": 58.20285561933095,
+      "scaleX": -0.15666084901911798,
+      "scaleY": 0.11768761102657828,
       "rotation": 0,
       "carveLevel": 2,
-      "colorOverrides": {},
-      "variationSeed": 66179
+      "colorOverrides": {
+        "shadow": 0
+      },
+      "variationSeed": 66179,
+      "zoneBokashi": {
+        "color": "up"
+      }
+    },
+    {
+      "id": 21,
+      "defId": "field-worker-hoe",
+      "x": 509.13994703506347,
+      "y": 225.1183171738308,
+      "scaleX": 0.0893245798667145,
+      "scaleY": 0.0893245798667145,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "hoe": "#d4826a",
+        "clothes": 0,
+        "body": 4,
+        "skin": "#d4a030"
+      },
+      "variationSeed": 67501
+    },
+    {
+      "id": 22,
+      "defId": "farmhouse-simple",
+      "x": 160.21088478074984,
+      "y": 124.63792000336245,
+      "scaleX": 0.28769517745266326,
+      "scaleY": 0.28769517745266326,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "structure": "#C9A84C",
+        "shadows": 0,
+        "detail": 4
+      },
+      "variationSeed": 28799
+    },
+    {
+      "id": 24,
+      "defId": "porter",
+      "x": 119.85950159123423,
+      "y": 312.4242331939957,
+      "scaleX": 0.1820040912910476,
+      "scaleY": 0.1820040912910476,
+      "rotation": 0,
+      "carveLevel": 2,
+      "colorOverrides": {
+        "skin": "#d4a030",
+        "clothes": 3,
+        "accent": "#e8c870"
+      },
+      "variationSeed": 88408
     }
   ],
-  "nextId": 21,
+  "nextId": 26,
   "paletteId": "fuyu",
   "paperW": 600,
   "paperH": 420,
@@ -2499,176 +2547,6 @@ const MOKURI_GALLERY_PRESETS = [
   "compositionName": "Farm and Full Moon"
 },
  
-  // Winter Branches (400×280)
-  {
-  "elements": [
-    {
-      "id": 1,
-      "defId": "bare-branch",
-      "x": 72.04998668493768,
-      "y": 121.47861028811575,
-      "scaleX": 0.17177698193130062,
-      "scaleY": 0.23984152568782735,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "bud": "#f5f0e1",
-        "marking": 2
-      },
-      "variationSeed": 296
-    },
-    {
-      "id": 2,
-      "defId": "bare-branch",
-      "x": 345.1806546412887,
-      "y": 129.5221700534824,
-      "scaleX": -0.14893314288598006,
-      "scaleY": 0.17373273942774933,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "bud": "#f5f0e1",
-        "marking": 2
-      },
-      "variationSeed": 57086,
-      "locked": false
-    },
-    {
-      "id": 3,
-      "defId": "bare-branch",
-      "x": 191.99340990376274,
-      "y": 147.06240558373767,
-      "scaleX": 0.2060217941322178,
-      "scaleY": 0.2060217941322178,
-      "rotation": 16.691137645278303,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "bud": "#f5f0e1",
-        "marking": 2
-      },
-      "variationSeed": 22650,
-      "locked": false
-    },
-    {
-      "id": 6,
-      "defId": "hanko-mokuri",
-      "x": 389.2654257000038,
-      "y": 268.73003144072317,
-      "scaleX": 0.31945954829706125,
-      "scaleY": 0.31945954829706125,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {},
-      "variationSeed": 98717
-    },
-    {
-      "id": 5,
-      "defId": "paper-lantern",
-      "x": 169.34853374851423,
-      "y": 109.79641060079837,
-      "scaleX": 0.059317659207435175,
-      "scaleY": 0.059317659207435175,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "rib": 1,
-        "detail": "#f5f0e1",
-        "body": "#e8c870",
-        "frame": 3,
-        "marking": "#d4826a",
-        "accent": 0
-      },
-      "variationSeed": 31733,
-      "zoneBokashi": {
-        "body": "right"
-      }
-    },
-    {
-      "id": 7,
-      "defId": "paper-lantern",
-      "x": 367.51524871670216,
-      "y": 113.34991450324586,
-      "scaleX": 0.041473722656763884,
-      "scaleY": 0.041473722656763884,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "rib": 1,
-        "detail": "#f5f0e1",
-        "body": "#e8c870",
-        "marking": "#d4826a",
-        "frame": 3,
-        "accent": 0
-      },
-      "variationSeed": 37114,
-      "zoneBokashi": {
-        "body": "right"
-      },
-      "locked": false
-    },
-    {
-      "id": 8,
-      "defId": "paper-lantern",
-      "x": 37.3119501552546,
-      "y": 78.66596065110616,
-      "scaleX": 0.04985562316807337,
-      "scaleY": 0.04985562316807337,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "rib": 1,
-        "detail": "#f5f0e1",
-        "body": "#e8c870",
-        "marking": "#d4826a",
-        "frame": 3,
-        "accent": 0
-      },
-      "variationSeed": 58511,
-      "zoneBokashi": {
-        "body": "right"
-      },
-      "locked": false
-    },
-    {
-      "id": 9,
-      "defId": "rock-formation",
-      "x": 76.61374126148155,
-      "y": 250.37886907346564,
-      "scaleX": 0.17369718393324143,
-      "scaleY": 0.09079234128036091,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "detail": 2,
-        "rock": 0,
-        "moss": 2,
-        "shadow": 1
-      },
-      "variationSeed": 82923
-    }
-  ],
-  "nextId": 10,
-  "paletteId": "fuyu",
-  "paperW": 400,
-  "paperH": 280,
-  "paperType": "gampi",
-  "inkLoad": "standard",
-  "impressions": 1,
-  "background": "night",
-  "foreground": "snow",
-  "horizon": 0.57,
-  "mist": 2,
-  "smoothHorizon": false,
-  "backgroundCarveStrokes": [],
-  "presentationMargin": "narrow",
-  "presentationTitle": "Winter Branches",
-  "presentationEdition": "",
-  "presentationHanko": null,
-  "presentationHankoPos": "bottom-right",
-  "presentationDeckle": true,
-  "compositionName": "Winter Branches"
-},
-
   // Cloud Peak (320×800)
   {
   "elements": [
@@ -2833,157 +2711,6 @@ const MOKURI_GALLERY_PRESETS = [
   "presentationHankoPos": "bottom-right",
   "presentationDeckle": true,
   "compositionName": "Cloud Peak"
-},
-
-  // Sparrows and Wisps (800×320)
-  {
-  "elements": [
-    {
-      "id": 1,
-      "defId": "distant-village",
-      "x": 201.66717391291496,
-      "y": 117.92447100502217,
-      "scaleX": 0.41140250700789704,
-      "scaleY": 0.41140250700789704,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "tree": "#e8c870",
-        "detail": "#c23b22",
-        "roof": "#c23b22",
-        "structure": 1,
-        "details": 0
-      },
-      "variationSeed": 80000
-    },
-    {
-      "id": 2,
-      "defId": "cloud-wisp",
-      "x": 206.0029243588533,
-      "y": 50.78103624944367,
-      "scaleX": -0.2252549127815445,
-      "scaleY": 0.14103042229863183,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "cloud": 1,
-        "detail": 2,
-        "color": 2,
-        "shadow": 1
-      },
-      "variationSeed": 78873,
-      "zoneBokashi": {
-        "cloud": "down"
-      }
-    },
-    {
-      "id": 3,
-      "defId": "cherry-branch",
-      "x": 641.6072858104533,
-      "y": 100.6761659439133,
-      "scaleX": 0.28258373573378354,
-      "scaleY": 0.28258373573378354,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "blossom": "#d4a030",
-        "branch": 3,
-        "detail": 1,
-        "petals": "#c47a90",
-        "centers": "#d4a030",
-        "2nd petals": 2,
-        "buds": 0
-      },
-      "variationSeed": 8598
-    },
-    {
-      "id": 4,
-      "defId": "sparrow",
-      "x": 160.6759773536438,
-      "y": 236.35269291335237,
-      "scaleX": -0.16762898199640192,
-      "scaleY": 0.16762898199640192,
-      "rotation": -9.458250958410446,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "detail": "#c46a20",
-        "body": 4,
-        "accent": 3,
-        "marking": 2,
-        "feathers": 0
-      },
-      "variationSeed": 70098
-    },
-    {
-      "id": 5,
-      "defId": "hanko-mokuri",
-      "x": 774.8862489724844,
-      "y": 296.1237527939734,
-      "scaleX": 0.6178343911553,
-      "scaleY": 0.6178343911553,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {},
-      "variationSeed": 81746
-    },
-    {
-      "id": 6,
-      "defId": "sparrow",
-      "x": 307.82421482768643,
-      "y": 242.8332216543366,
-      "scaleX": 0.14275943566731322,
-      "scaleY": 0.14275943566731322,
-      "rotation": -4.842287462346093,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "detail": "#c46a20",
-        "accent": 3,
-        "marking": 2,
-        "feathers": 0,
-        "body": 4
-      },
-      "variationSeed": 23443,
-      "locked": false
-    },
-    {
-      "id": 7,
-      "defId": "sparrow-alert",
-      "x": 635.8451501429932,
-      "y": 95.04416408484275,
-      "scaleX": 0.1159439663930548,
-      "scaleY": 0.1159439663930548,
-      "rotation": 0,
-      "carveLevel": 2,
-      "colorOverrides": {
-        "detail": "#c46a20",
-        "accent": 3,
-        "body": 4,
-        "marking": 2,
-        "feathers": 0
-      },
-      "variationSeed": 87261
-    }
-  ],
-  "nextId": 8,
-  "paletteId": "fuyu",
-  "paperW": 800,
-  "paperH": 320,
-  "paperType": "hosho",
-  "inkLoad": "light",
-  "impressions": 1,
-  "background": "sakura",
-  "foreground": "water",
-  "horizon": 0.33,
-  "mist": 3,
-  "smoothHorizon": false,
-  "backgroundCarveStrokes": [],
-  "presentationMargin": "narrow",
-  "presentationTitle": "Sparrows and Wisps",
-  "presentationEdition": "",
-  "presentationHanko": null,
-  "presentationHankoPos": "bottom-right",
-  "presentationDeckle": true,
-  "compositionName": "Sparrows and Wisps"
 },
 
 
