@@ -124,7 +124,7 @@ registerPack({
   elementIds: [
     // --- Landscape elements
     'mountain-distant', 'mountain-near', 'mountain-fuji-peak', 'rolling-hills',
-    'farmland', 'distant-village-hills', 'stone-path', 'rock-formation',
+    'farmland', 'terrace','distant-village-hills', 'stone-path', 'rock-formation',
 
     // --- water and atmospheric elements
     'tranquil-pond', 'gentle-waves', 'shore-waves', 'pond-edge','water-ripples',
@@ -133,8 +133,8 @@ registerPack({
 
     // --- Structural elements
     'distant-village', 'pagoda', 'pagoda-with-trees', 'tea-house', 'teahouse-open', 'farmhouse', 'farmhouse-simple',
-    'stone-wall', 'castle-wall', 'wooden-dock', 'torii-gate', 'torii-detailed', 'torii-grand',
-    'torii-gate', 'wooden-bridge', 'foot-bridge', 'boat-fishing', 
+    'stone-wall', 'castle-wall', 'torii-gate', 'torii-detailed', 'torii-grand',
+    'torii-gate', 'wooden-bridge', 'foot-bridge', 'wood-dock', 'boat-fishing', 'sail-boat', 'boat-junk', 
 
      // --- Object elements
     'asanoha-star', 'bamboo-fence', 'paper-lantern', 'lantern-toro', 'lantern-yukimi', 'latern-kasuga', 'koinobori-pole', 'koinobori-higoi',
@@ -151,8 +151,9 @@ registerPack({
     'crane-standing', 'crane-flying', 'crane-landing', 
      
     // --- Figure elements
-    'traveler', 'traveler-standing','two-travelers', 'fisherman', 'fisherman-standing','field-worker', 'field-worker-hoe', 'porter',
-    'boatman', 'boatman-standing', 'seated-figure', 'umbrella-figure', 'woman-umbrella','woman-kimono', 'woman-elegant', 'woman-bundle', 
+    'traveler', 'traveler-standing','two-travelers', 'umbrella-figure', 'fisherman', 'fisherman-standing',
+    'field-worker', 'field-worker-hoe', 'porter', 'boatman', 'boatman-standing', 'seated-figure', 
+    'woman-umbrella','woman-kimono', 'woman-elegant', 'woman-bundle', 
 
    // -- Forms and Hanko elements
     'form-circle','form-oval', 'form-rectangle', 'form-square', 'form-triangle',

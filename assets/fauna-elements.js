@@ -312,7 +312,7 @@ const MOKURI_FAUNA_ELEMENTS = [
 
 {
   id: 'koi-swim',
-  name: 'Koi - Swimming',
+  name: 'Koi Swimming',
   category: 'fauna',
   pack: 'core',
   tags: ['fauna', 'water', 'organic'],
@@ -1028,7 +1028,7 @@ const MOKURI_FAUNA_ELEMENTS = [
   // ============================================================
   {
   id: 'crane-flying',
-  name: 'Crane - Flying',
+  name: 'Crane Flying',
   category: 'fauna',
   pack: 'core',
   tags: ['fauna', 'water', 'organic'],
@@ -1380,7 +1380,7 @@ const MOKURI_FAUNA_ELEMENTS = [
 
 {
   id: 'rabbit-run',
-  name: 'Rabbit - Running',
+  name: 'Rabbit Running',
   category: 'fauna',
   pack: 'core',
   tags: ['fauna', 'organic', 'seasonal-spring'],
@@ -2220,9 +2220,9 @@ const MOKURI_FAUNA_ELEMENTS = [
 
 {
   id: 'swallow-soaring',
-  name: 'Swallow Soaring',
+  name: 'Swallow',
   category: 'fauna',
-  pack: 'kacho-e',
+  pack: 'core',
   tags: ['fauna', 'organic', 'intimate'],
   viewBox: '204.7 38.6 720 783.7',
   suggestedLayer: 'midground',
@@ -2943,7 +2943,7 @@ const MOKURI_FAUNA_ELEMENTS = [
   // ── Leaping Koi ──────────────────────────────────────────
   {
   id: 'koi-leaping',
-  name: 'Koi - Leaping',
+  name: 'Koi Leaping',
   category: 'fauna',
   pack: 'core',
   tags: ['fauna', 'water', 'organic', 'intimate'],
@@ -3252,7 +3252,7 @@ const MOKURI_FAUNA_ELEMENTS = [
   // ── Koi Overhead ──────────────────────────────────────────
  {
   id: 'koi-overhead',
-  name: 'Koi - Overhead',
+  name: 'Koi Overhead',
   category: 'fauna',
   pack: 'core',
   tags: ['fauna', 'water', 'organic', 'intimate'],
