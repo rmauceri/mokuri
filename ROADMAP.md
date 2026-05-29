@@ -452,6 +452,26 @@ Foundation for style packs and first-run experience — data models and registry
 - **Element tap-to-place**: WebKit compositor fires `pointercancel` for both pen and finger drags inside scrollable panels — no JS workaround exists. Implemented tap-to-place for all input types on iOS as a reliable alternative to drag-and-drop.
 - **Windows drag ghost fix**: `setPointerCapture` inside scrollable containers with `touch-action: pan-y` caused browser compositor conflict, breaking mouse/touch ghost feedback. Removed capture, added `@media (pointer: fine)` override for `touch-action: none` on element thumbs.
 
+### Orihon Gallery View (Future Enhancement)
+
+An accordion-style print viewer inspired by the traditional Japanese *orihon* (折本) format — the folded book used for sutra scrolls and woodblock picture books. Rather than a grid or flat slideshow, prints would unfold horizontally panel by panel with a physical fold animation, creating a ceremonial, contemplative browsing experience distinct from anything in conventional creative apps.
+
+**Concept:**
+- Enhancement to the existing Print Gallery, not a replacement — accessible via a toggle or view mode switch
+- Center panel is the current print; adjacent panels partially visible at the fold edges
+- Paging unfolds the next print from the right edge (or folds the previous back from the left), simulating the orihon opening gesture
+- A soft paper-rustle/unfold sound from the audio engine accompanies each turn
+- Ambient soundscape continues underneath
+
+**Implementation tradeoffs to consider:**
+- A true multi-panel simultaneous accordion (all panels physically connected, folding together) is complex geometry — getting the physics feel right requires careful easing and iteration
+- A simplified version — centered panel with fold-out entrance animation, neighbors at reduced scale/depth — delivers ~80% of the beauty at much lower complexity
+- Print PNGs are large; lazy-load adjacent panels only (current ±1) to avoid memory pressure on iPad
+- The "settle" physics (slight overshoot, dampen to rest) is the difference between beautiful and janky — worth a dedicated tuning pass
+
+**Why it fits Mokuri:**
+The existing gallery is functional but utilitarian — a grid of thumbnails. The orihon format would make browsing prints feel like leafing through a folio, matching the meditative register of the rest of the tool. Combined with the ambient soundscape it could be a genuinely distinctive experience.
+
 ### Print Gallery Slide Animation ✅
 
 Contemplative slide transitions when browsing prints — arrows, thumbnails, and swipe gestures all animate with a physical, print-handling feel.
