@@ -480,6 +480,51 @@ Contemplative slide transitions when browsing prints — arrows, thumbnails, and
 - **Swipe tracking**: Finger/pen drag tracks position with proportional scale-down and opacity fade. Threshold-based commit or snap-back with overshoot bounce.
 - **Tunable constants**: `_GSLIDE_OUT`, `_GSLIDE_PAUSE`, `_GSLIDE_IN` at top of function for easy timing adjustments.
 
+---
+
+## Audio Engine — Improvements & Gaps
+
+### Atmosphere Coverage Gaps (Bug Fixes)
+
+The audio engine's `setAmbienceForAtmosphere(sky, ground)` was written before several atmosphere types were added. The following types fall through to a generic default and should have tailored responses. Requires SW cache version bump alongside the change.
+
+**Sky gaps** (fall through to mid-register default):
+- `warm` — treat like dawn/dusk: warm register, moderate pace, low wind
+- `sakura` — higher register, sparser spacing, softer wind; delicate spring character
+- `haze` — similar to overcast but more sparse and muted; even quieter wind
+
+**Ground gaps** (only `snow` and `water` are explicitly handled):
+- `shallows` — should activate water drops like `water`; slightly lighter wind
+- `moss` / `grass` — subtle wind increase, slight organic dampness character; no water drops
+- `sand` — dry, high-frequency wind filter; no water; minimal
+- `stone` — similar to sand; cold, still, minimal
+- `earth` — slight warm wind; dry; no water
+
+All are low-complexity switch-case additions. Test on dev branch before merging — verify each atmosphere combination sounds intentional, not jarring.
+
+---
+
+### Composition-Aware Audio (Future Enhancement)
+
+Currently the soundscape responds only to atmosphere (sky/ground) settings — not to the content of the composition itself. Lightweight improvements that wouldn't add meaningful complexity:
+
+**Fauna/flora layer:**
+- Scan placed elements for category tags at composition load and on element add/remove
+- If `fauna` elements present: occasional soft bird chirp or insect sound (procedural, pentatonic-aligned) layered over the ambient chimes
+- If `flora` heavy (e.g. bamboo, sakura, maple): shift chime character slightly — shorter decay, denser spacing, more wind
+
+**Implementation notes:**
+- Read `STATE.elements` categories at ambient start and on element placement/deletion
+- No need for real-time continuous scanning — recompute on composition change events
+- Keep sounds subtle: they should feel discovered, not announced
+- Bird chirps: short FM synthesis burst (sine carrier, sine modulator, fast envelope); 2-3 pitches from the current scale pool
+- Insect texture: very short noise burst through a high bandpass (4–8kHz), extremely low volume
+
+**Why keep it limited:**
+The soundscape's strength is that it's ambient — felt, not heard. Adding too many reactive layers risks making it feel like a video game rather than a meditative environment. The fauna/flora addition is the one tier that feels thematically grounded without crossing that line.
+
+---
+
 #### Memory Bounds
 Carve stroke arrays are unbounded. Heavy sessions could grow to MB, bloating undo snapshots and localStorage.
 
