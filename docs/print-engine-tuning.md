@@ -112,6 +112,7 @@ Key settings: `saturation: 0.68`, `wobbleScale: 3.5`, `edgeWeight: 3.8`, `grainO
 ### What Doesn't Work
 
 - **Brush variation creates diagonal vignettes** — at higher values, the randomized opacity variation produces visible diagonal banding that looks like a digital artifact, not a hand-printed effect. All three profiles now have brush variation set to 0.
+- **Brush variation is per-element, not per-block** — In real mokuhanga, the brush inks an entire woodblock at once (which may contain multiple carved subjects). Applying variation per-element creates artificial boundaries between adjacent elements that wouldn't exist in a real print. The solution is to group elements by depth layer (foreground/midground/background) and apply a coherent brush pattern across each layer as a unit. Each element already carries a `suggestedLayer` property that maps to this concept.
 - **Wood grain competes with paper texture** — when both are visible, the print looks "doubly textured" in an unnatural way. Sōsaku pushes grain; Ukiyo-e minimizes it. Shin-hanga uses moderate grain only in ink areas.
 - **High perturbation on small elements** — Forge elements are often physically small on the page. Perturbation that looks organic on a large landscape element makes a small bird look drunk. The engine scales perturbation by element size, but aggressive profiles still need care.
 - **Dry brush at any visible level looks fake** — the current implementation produces streaks that don't match how real dry-brush marks look in mokuhanga (which are fibrous and follow the baren path, not random). Disabled in all profiles pending a better implementation.
@@ -149,9 +150,10 @@ Features:
 - **Profile-aware thumbnails** — gallery thumbnails could hint at which profile was used.
 
 ### Medium-term
-- **Spatially-coherent brush variation** — replace the current random opacity with a baren-path-aware implementation that follows the direction of printing pressure (typically circular from center outward).
-- **Adaptive perturbation by element size** — more aggressive scaling so small elements get less perturbation automatically.
-- **Bokashi in print output** — the per-zone gradient bokashi currently renders in the SVG; the print engine could enhance it with paper-absorption characteristics.
+- **Layer-based brush variation** — In real mokuhanga, the brush applies ink to an entire block, not individual elements. Currently brush variation is per-element, which creates unrealistic boundaries between adjacent elements. The fix: group elements by their depth layer (foreground/midground/background — already present as `suggestedLayer` on each element definition) and apply a single coherent brush variation pattern across all elements in the same layer. This simulates how a printer inks one block containing multiple carved subjects at once. The baren pressure pattern should also follow this grouping.
+- **Spatially-coherent brush variation** — Replace the current random opacity with a baren-path-aware implementation that follows the direction of printing pressure (typically circular from center outward).
+- **Adaptive perturbation by element size** — More aggressive scaling so small elements get less perturbation automatically.
+- **Bokashi in print output** — The per-zone gradient bokashi currently renders in the SVG; the print engine could enhance it with paper-absorption characteristics.
 
 ### Longer-term
 - **Registration marks** — visual guides showing block alignment for multi-color printing authenticity.
