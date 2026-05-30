@@ -151,6 +151,8 @@ Features:
 
 ### Medium-term
 - **Layer-based brush variation** — In real mokuhanga, the brush applies ink to an entire block, not individual elements. Currently brush variation is per-element, which creates unrealistic boundaries between adjacent elements. The fix: group elements by their depth layer (foreground/midground/background — already present as `suggestedLayer` on each element definition) and apply a single coherent brush variation pattern across all elements in the same layer. This simulates how a printer inks one block containing multiple carved subjects at once. The baren pressure pattern should also follow this grouping.
+  
+  **Complexity note:** `suggestedLayer` alone isn't sufficient for determining block grouping. In real printmaking, what shares a block depends on occlusion relationships (z-order) and shared color — not just the inherent "type" of the subject. A crane (foreground-suggested) placed behind a tree by the user is effectively on a different block. The real block-layer calculation likely needs to consider: (1) `suggestedLayer` as a starting heuristic, (2) actual z-order in the composition, and (3) potentially color zone overlap. This makes it a composition-aware runtime calculation, not a static element property.
 - **Spatially-coherent brush variation** — Replace the current random opacity with a baren-path-aware implementation that follows the direction of printing pressure (typically circular from center outward).
 - **Adaptive perturbation by element size** — More aggressive scaling so small elements get less perturbation automatically.
 - **Bokashi in print output** — The per-zone gradient bokashi currently renders in the SVG; the print engine could enhance it with paper-absorption characteristics.
