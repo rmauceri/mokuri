@@ -23,15 +23,17 @@ This document captures the learnings, current state, design principles, and futu
 The print engine processes in this order:
 
 1. **Paper texture** — Washi fibers, tonal warmth patches. Varies by paper type (Hosho, Kozo, Torinoko, Gampi, Unryu, Kakishibu).
-2. **SVG render with feTurbulence** — wobble filter on all elements (reduced for hanko). Organic edge displacement.
-3. **Path perturbation** — Seeded coordinate noise per element instance. Amount scales by carve level (block < shape < detail). Deterministic (same seed = same result).
-4. **Ink bleed** — Gaussian blur halo around ink edges. Simulates ink spreading into paper fibers.
-5. **Edge darkening** — Ink pooling at element boundaries. Heavier = more "printed" look.
-6. **Color muting** — Saturation reduction + warm/cool shift. Water-based inks are never as vivid as screen colors.
-7. **Misregistration** — Tiny per-element offset simulating imperfect block alignment in multi-color printing.
-8. **Multi-impression** — 1–3 passes with slight offsets. Builds richer color with edge doubling.
-9. **Multiply composite** — Ink absorbs into paper rather than sitting on top.
-10. **Post-processing** — Color muting → ink absorption variation → baren pressure → wood grain → fine noise.
+2. **Atmosphere layer** — Sky gradients, ground fills, horizon edge (organic wobble or smooth), mist bands. Rendered with wobble filter applied. Sits behind all elements.
+3. **Background carve strokes** — Freeform carve marks on the paper itself, between atmosphere and elements.
+4. **SVG element render with feTurbulence** — Wobble filter on all elements (reduced for hanko). Organic edge displacement.
+5. **Path perturbation** — Seeded coordinate noise per element instance. Amount scales by carve level (block < shape < detail). Deterministic (same seed = same result).
+6. **Ink bleed** — Gaussian blur halo around ink edges. Simulates ink spreading into paper fibers.
+7. **Edge darkening** — Ink pooling at element boundaries. Heavier = more "printed" look.
+8. **Color muting** — Saturation reduction + warm/cool shift. Water-based inks are never as vivid as screen colors.
+9. **Misregistration** — Tiny per-element offset simulating imperfect block alignment in multi-color printing.
+10. **Multi-impression** — 1–3 passes with slight offsets. Builds richer color with edge doubling.
+11. **Multiply composite** — Ink absorbs into paper rather than sitting on top.
+12. **Post-processing** — Color muting → ink absorption variation → baren pressure → wood grain → fine noise.
 
 ---
 
