@@ -3309,7 +3309,7 @@ rebuildElementMap();
 // ============================================================
 //  VERSION
 // ============================================================
-const MOKURI_VERSION = '0.96';
+const MOKURI_VERSION = '0.97';
 
 // ============================================================
 //  FEEDBACK
@@ -6214,6 +6214,8 @@ function applyCompositionData(data) {
   if (hasCustomDefs) buildElementPicker();
   updateToolbarState();
   updateStatus();
+  // Update audio atmosphere for new composition
+  MokuriAudio.setAmbienceForAtmosphere(STATE.background, STATE.foreground);
 }
 
 async function autoSave() {

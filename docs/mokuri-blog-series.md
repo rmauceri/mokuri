@@ -111,6 +111,41 @@ Introduction to Mokuri Studio — what it is, why it exists, and the tradition i
 - Early validation: multiple users independently called out sound without being prompted
 - Connection to the meditative intention — sound as part of the calm, not decoration
 
+### Atmosphere-Reactive Nature Sounds (May 2025)
+
+The ambient soundscape now responds to the composition's atmosphere settings with layered nature sounds:
+
+**Architecture:** Three layers compose the full soundscape:
+1. **Base ambient** — always active (chimes, wind, temple bell, water drops)
+2. **Nature layer** — birds or crickets determined by sky type (time-of-day mapping)
+3. **Wave wash** — ocean or shore lapping determined by ground type
+
+**Sky → Nature Sound (time-of-day logic):**
+- Dawn, Day, Warm, Sakura → bird song (diurnal)
+- Night, Dusk, Sunset, Indigo → cricket chirps (nocturnal/crepuscular)
+- Overcast, Haze, None → base ambient only (ambiguous time, minimal)
+
+**Ground → Density + Waves:**
+- Grass, Moss, Earth → full density (natural habitat)
+- Water → deep wave wash (slow 6-12s ocean swells) + water drops
+- Shallows → shallow wave wash (quicker 3-6s shore lapping) + water drops
+- Sand, Stone → sparse nature sounds (arid environment)
+- Snow → very sparse (winter hush, near-silence)
+- None → moderate default density
+
+**Synthesis approach:**
+- **Birds:** 3 voice types (songbird 2800Hz, warbler 2000Hz, finch 3200Hz), each with 3 call patterns (single chirp, double-note, short trill). Frequency sweeps + vibrato for organic quality. Randomized 4-14s intervals between calls.
+- **Crickets:** Short "cri-cri-cri" bursts (2-5 rapid pulses per chirp) at 4200-5500Hz. Triangle wave + bandpass filter for soft, non-metallic tone. 3-10s between chirp bursts.
+- **Waves:** Filtered noise with breathing dynamics — rise, hold, recede, pause. Deep water uses lowpass at 350Hz; shallows uses bandpass at 800Hz. Filter frequency shifts each cycle for variety.
+
+**Design decisions:**
+- Time-of-day mapping (not seasonal) because atmosphere types already encode temporal information — birds in daylight, crickets at dusk/night feels universally natural
+- Density modulation via ground type adds subtle environmental storytelling without being obvious
+- All sounds fade in/out smoothly (2s) when atmosphere changes or compositions are loaded
+- Composition loading now triggers audio atmosphere update (previously it didn't)
+
+**Dev testing hook:** `MokuriAudio._devNature('cycle')` rotates through all sounds in the console for tuning.
+
 ---
 
 ## Post 5 — *The Forge: How Elements Are Made*

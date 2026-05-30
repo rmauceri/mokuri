@@ -35,6 +35,20 @@ const MokuriAudio = (() => {
   let windFilter = null;
   let windGain = null;
 
+  // Nature sounds state
+  let birdTimeouts = [];
+  let cricketNodes = [];
+  let cricketGain = null;
+  let natureActive = null; // 'birds' | 'crickets' | null
+  let natureDensity = 1.0; // 0-1 modulated by ground type
+
+  // Wave wash state
+  let waveTimeout = null;
+  let waveNoise = null;
+  let waveFilter = null;
+  let waveGain = null;
+  let waveType = null; // 'deep' | 'shallow' | null
+
   // Atmosphere state (affects chime register, spacing, wind character)
   let atmo = {
     sky: 'none', foreground: 'none',
@@ -185,6 +199,343 @@ const MokuriAudio = (() => {
     }, interval * 1000);
   }
 
+  // --- Wave Wash (ocean/shore lapping) ---
+
+  function startWaves(type) {
+    stopWaves();
+    waveType = type; // 'deep' or 'shallow'
+    if (!ctx || !ambientDryGain) return;
+
+    // Noise source for wave texture
+    const bufLen = ctx.sampleRate * 6;
+    const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < bufLen; i++) d[i] = Math.random() * 2 - 1;
+
+    waveNoise = ctx.createBufferSource();
+    waveNoise.buffer = buf;
+    waveNoise.loop = true;
+
+    // Filter: deep water = low rumble, shallows = higher fizz
+    waveFilter = ctx.createBiquadFilter();
+    if (type === 'deep') {
+      waveFilter.type = 'lowpass';
+      waveFilter.frequency.value = 350;
+      waveFilter.Q.value = 0.5;
+    } else {
+      waveFilter.type = 'bandpass';
+      waveFilter.frequency.value = 800;
+      waveFilter.Q.value = 0.4;
+    }
+
+    waveGain = ctx.createGain();
+    waveGain.gain.value = 0.001; // start silent
+
+    waveNoise.connect(waveFilter);
+    waveFilter.connect(waveGain);
+    waveGain.connect(ambientDryGain);
+    waveGain.connect(ambientWetGain);
+    waveNoise.start();
+
+    scheduleWaveBreath();
+  }
+
+  function scheduleWaveBreath() {
+    if (!ambientRunning || !waveType || !waveGain) return;
+    if (ctx && ctx.state === 'suspended') {
+      waveTimeout = setTimeout(scheduleWaveBreath, 1000);
+      return;
+    }
+
+    // Wave swell: rise and recede
+    const isDeep = (waveType === 'deep');
+    const duration = isDeep
+      ? (6 + Math.random() * 6)    // deep: 6-12s long slow swells
+      : (3 + Math.random() * 3);   // shallows: 3-6s quicker lapping
+    const peak = isDeep
+      ? (0.028 + Math.random() * 0.012)  // deep: louder, broader
+      : (0.018 + Math.random() * 0.008); // shallows: lighter
+
+    const now = ctx.currentTime;
+    const riseTime = duration * (0.3 + Math.random() * 0.15);
+    const holdTime = duration * 0.15;
+    const fallTime = duration - riseTime - holdTime;
+
+    waveGain.gain.setValueAtTime(waveGain.gain.value, now);
+    waveGain.gain.linearRampToValueAtTime(peak, now + riseTime);
+    waveGain.gain.setValueAtTime(peak, now + riseTime + holdTime);
+    waveGain.gain.linearRampToValueAtTime(0.002, now + duration);
+
+    // Shift filter slightly on each swell for variety
+    if (waveFilter) {
+      const freqShift = isDeep
+        ? 300 + Math.random() * 150
+        : 700 + Math.random() * 300;
+      waveFilter.frequency.setValueAtTime(waveFilter.frequency.value, now);
+      waveFilter.frequency.linearRampToValueAtTime(freqShift, now + riseTime);
+      waveFilter.frequency.linearRampToValueAtTime(
+        isDeep ? 350 : 800, now + duration
+      );
+    }
+
+    // Gap between swells
+    const gap = isDeep
+      ? (1.5 + Math.random() * 2.5)   // deep: longer pauses
+      : (0.5 + Math.random() * 1.5);  // shallows: closer together
+    waveTimeout = setTimeout(scheduleWaveBreath, (duration + gap) * 1000);
+  }
+
+  function stopWaves() {
+    clearTimeout(waveTimeout);
+    waveTimeout = null;
+    if (waveNoise) {
+      try { waveNoise.stop(); } catch (e) {}
+      try { waveNoise.disconnect(); } catch (e) {}
+      waveNoise = null;
+    }
+    if (waveFilter) {
+      try { waveFilter.disconnect(); } catch (e) {}
+      waveFilter = null;
+    }
+    if (waveGain) {
+      try { waveGain.disconnect(); } catch (e) {}
+      waveGain = null;
+    }
+    waveType = null;
+  }
+
+  // --- Nature Sounds: Birds ---
+  // Bird voices: short frequency-swept chirps with variation
+  const BIRD_VOICES = [
+    { baseFreq: 2800, range: 400, type: 'songbird' },   // high songbird
+    { baseFreq: 2000, range: 300, type: 'warbler' },    // mid warbler
+    { baseFreq: 3200, range: 500, type: 'finch' },      // bright finch
+  ];
+
+  function playBirdCall(voiceIdx) {
+    if (!ctx || !ambientRunning || ctx.state === 'suspended') return;
+    const voice = BIRD_VOICES[voiceIdx % BIRD_VOICES.length];
+    const now = ctx.currentTime;
+    // Choose call pattern: single chirp, double-note, or short trill
+    const pattern = Math.random();
+
+    if (pattern < 0.4) {
+      // Single chirp — quick frequency sweep up
+      playBirdChirp(now, voice.baseFreq + (Math.random() - 0.5) * voice.range, 0.08 + Math.random() * 0.04);
+    } else if (pattern < 0.75) {
+      // Double-note — two chirps close together
+      const f1 = voice.baseFreq + (Math.random() - 0.5) * voice.range;
+      const f2 = f1 * (1.05 + Math.random() * 0.15); // second note slightly higher
+      playBirdChirp(now, f1, 0.06);
+      playBirdChirp(now + 0.12, f2, 0.07);
+    } else {
+      // Short trill — 3-5 rapid notes descending
+      const noteCount = 3 + Math.floor(Math.random() * 3);
+      const startFreq = voice.baseFreq + voice.range * 0.5;
+      for (let i = 0; i < noteCount; i++) {
+        const f = startFreq * (1 - i * 0.04) + (Math.random() - 0.5) * 80;
+        playBirdChirp(now + i * 0.065, f, 0.04 + Math.random() * 0.02);
+      }
+    }
+  }
+
+  function playBirdChirp(startTime, freq, duration) {
+    if (!ctx || !ambientDryGain) return;
+    const osc = ctx.createOscillator();
+    osc.type = Math.random() < 0.7 ? 'sine' : 'triangle';
+    // Frequency sweep (birds glide pitch)
+    const sweepDir = Math.random() < 0.6 ? 1.15 : 0.88;
+    osc.frequency.setValueAtTime(freq, startTime);
+    osc.frequency.exponentialRampToValueAtTime(freq * sweepDir, startTime + duration);
+
+    // Subtle vibrato
+    const vibrato = ctx.createOscillator();
+    vibrato.frequency.value = 25 + Math.random() * 15;
+    const vibGain = ctx.createGain();
+    vibGain.gain.value = freq * 0.02;
+    vibrato.connect(vibGain);
+    vibGain.connect(osc.frequency);
+
+    const g = ctx.createGain();
+    const vol = (0.03 + Math.random() * 0.02) * natureDensity;
+    g.gain.setValueAtTime(0, startTime);
+    g.gain.linearRampToValueAtTime(vol, startTime + duration * 0.15);
+    g.gain.setValueAtTime(vol, startTime + duration * 0.6);
+    g.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+
+    osc.connect(g);
+    g.connect(ambientDryGain);
+    g.connect(ambientWetGain);
+    osc.start(startTime);
+    osc.stop(startTime + duration + 0.01);
+    vibrato.start(startTime);
+    vibrato.stop(startTime + duration + 0.01);
+  }
+
+  function scheduleBird(voiceIdx) {
+    if (!ambientRunning || natureActive !== 'birds') return;
+    // Randomized interval: 4-14 seconds, modulated by density
+    const baseInterval = 4 + Math.random() * 10;
+    const interval = baseInterval / Math.max(natureDensity, 0.3);
+    const timeout = setTimeout(() => {
+      playBirdCall(voiceIdx);
+      scheduleBird(voiceIdx);
+    }, interval * 1000);
+    birdTimeouts.push(timeout);
+  }
+
+  function startBirds() {
+    stopNatureSounds();
+    natureActive = 'birds';
+    // Start 2-3 independent bird voices with staggered entry
+    const voiceCount = natureDensity > 0.5 ? 3 : 2;
+    for (let i = 0; i < voiceCount; i++) {
+      const delay = setTimeout(() => scheduleBird(i), (1000 + Math.random() * 3000));
+      birdTimeouts.push(delay);
+    }
+  }
+
+  // --- Nature Sounds: Crickets ---
+  // Crickets: amplitude-modulated sine tones with rhythmic pulsing
+
+  function startCrickets() {
+    stopNatureSounds();
+    natureActive = 'crickets';
+    if (!ctx || !ambientDryGain) return;
+
+    // Schedule 1-2 cricket voices that chirp intermittently
+    const voiceCount = natureDensity > 0.5 ? 2 : 1;
+    for (let i = 0; i < voiceCount; i++) {
+      const delay = setTimeout(() => scheduleCricketChirp(i), 1500 + Math.random() * 2000);
+      birdTimeouts.push(delay);
+    }
+  }
+
+  function scheduleCricketChirp(voiceIdx) {
+    if (!ambientRunning || natureActive !== 'crickets') return;
+    // Interval between chirp bursts: 3-10 seconds, modulated by density
+    const baseInterval = 3 + Math.random() * 7;
+    const interval = baseInterval / Math.max(natureDensity, 0.3);
+    const timeout = setTimeout(() => {
+      playCricketChirp(voiceIdx);
+      scheduleCricketChirp(voiceIdx);
+    }, interval * 1000);
+    birdTimeouts.push(timeout);
+  }
+
+  function playCricketChirp(voiceIdx) {
+    if (!ctx || !ambientRunning || ctx.state === 'suspended' || !ambientDryGain) return;
+    const now = ctx.currentTime;
+    // Each cricket has a characteristic frequency
+    const baseFreq = 4200 + voiceIdx * 600 + (Math.random() - 0.5) * 150;
+
+    // Chirp pattern: 2-5 rapid short pulses (like "cri-cri-cri")
+    const pulseCount = 2 + Math.floor(Math.random() * 4);
+    const pulseGap = 0.08 + Math.random() * 0.04; // gap between pulses
+    const pulseDur = 0.04 + Math.random() * 0.02; // each pulse duration
+
+    for (let i = 0; i < pulseCount; i++) {
+      const t = now + i * (pulseDur + pulseGap);
+      playSingleCricketPulse(t, baseFreq, pulseDur);
+    }
+  }
+
+  function playSingleCricketPulse(startTime, freq, duration) {
+    if (!ctx || !ambientDryGain) return;
+    const osc = ctx.createOscillator();
+    // Triangle wave is softer/less metallic than sine at high freq
+    osc.type = 'triangle';
+    // Slight pitch variation per pulse
+    const f = freq * (1 + (Math.random() - 0.5) * 0.03);
+    osc.frequency.setValueAtTime(f, startTime);
+    // Tiny downward sweep within each pulse (natural cricket sound)
+    osc.frequency.exponentialRampToValueAtTime(f * 0.97, startTime + duration);
+
+    const g = ctx.createGain();
+    const vol = (0.025 + Math.random() * 0.015) * natureDensity;
+    // Sharp attack, quick decay — percussive chirp
+    g.gain.setValueAtTime(0, startTime);
+    g.gain.linearRampToValueAtTime(vol, startTime + 0.005);
+    g.gain.setValueAtTime(vol, startTime + duration * 0.6);
+    g.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+
+    // Gentle bandpass to remove harshness
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = freq;
+    filter.Q.value = 2.5;
+
+    osc.connect(filter);
+    filter.connect(g);
+    g.connect(ambientDryGain);
+    g.connect(ambientWetGain);
+    osc.start(startTime);
+    osc.stop(startTime + duration + 0.01);
+  }
+
+  function stopNatureSounds() {
+    // Clear bird timeouts
+    birdTimeouts.forEach(t => clearTimeout(t));
+    birdTimeouts = [];
+
+    // Stop cricket oscillators
+    cricketNodes.forEach(n => {
+      try { n.stop && n.stop(); } catch (e) {}
+      try { n.disconnect(); } catch (e) {}
+    });
+    cricketNodes = [];
+
+    // Fade out cricket gain if it exists
+    if (cricketGain) {
+      try {
+        if (ctx) {
+          const now = ctx.currentTime;
+          cricketGain.gain.setValueAtTime(cricketGain.gain.value, now);
+          cricketGain.gain.linearRampToValueAtTime(0, now + 1.5);
+          setTimeout(() => {
+            try { cricketGain.disconnect(); } catch (e) {}
+            cricketGain = null;
+          }, 2000);
+        } else {
+          cricketGain.disconnect();
+          cricketGain = null;
+        }
+      } catch (e) { cricketGain = null; }
+    }
+
+    natureActive = null;
+  }
+
+  // Determine which nature sound based on sky type
+  function getNatureType(sky) {
+    switch (sky) {
+      case 'dawn': case 'day': case 'warm': case 'sakura':
+        return 'birds';
+      case 'night': case 'dusk': case 'akane': case 'aizuri':
+        return 'crickets';
+      default: // 'overcast', 'haze', 'none'
+        return null;
+    }
+  }
+
+  // Determine density modulation from ground type
+  function getNatureDensity(ground) {
+    switch (ground) {
+      case 'grass': case 'moss': case 'earth':
+        return 1.0;   // full — natural habitat
+      case 'water': case 'shallows':
+        return 0.7;   // moderate
+      case 'none':
+        return 0.8;   // reasonable default
+      case 'sand': case 'stone':
+        return 0.4;   // sparse — arid/rocky
+      case 'snow':
+        return 0.15;  // very sparse — winter hush
+      default:
+        return 0.8;
+    }
+  }
+
   function scheduleWindBreath() {
     if (!ambientRunning || !windGain) return;
     // If context is suspended, retry shortly rather than bail — prevents wind going permanently silent
@@ -277,6 +628,17 @@ const MokuriAudio = (() => {
 
     // Water drops if atmosphere calls for it
     if (atmo.waterActive) scheduleWater();
+
+    // Wave wash if water/shallows ground
+    const initWaveType = atmo.foreground === 'water' ? 'deep'
+      : atmo.foreground === 'shallows' ? 'shallow' : null;
+    if (initWaveType) startWaves(initWaveType);
+
+    // Nature sounds if atmosphere calls for it
+    const natureType = getNatureType(atmo.sky);
+    natureDensity = getNatureDensity(atmo.foreground);
+    if (natureType === 'birds') startBirds();
+    else if (natureType === 'crickets') startCrickets();
   }
 
   function stopAmbient() {
@@ -289,6 +651,10 @@ const MokuriAudio = (() => {
     clearTimeout(waterTimeout);
     clearTimeout(windBreathTimeout);
     chimeTimeout = bellTimeout = waterTimeout = windBreathTimeout = null;
+
+    // Stop nature sounds and waves
+    stopNatureSounds();
+    stopWaves();
 
     // Fade out
     const now = ctx.currentTime;
@@ -372,7 +738,7 @@ const MokuriAudio = (() => {
 
     // Ground influence
     const wasWater = atmo.waterActive;
-    atmo.waterActive = (atmo.foreground === 'water');
+    atmo.waterActive = (atmo.foreground === 'water' || atmo.foreground === 'shallows');
 
     if (atmo.foreground === 'snow') {
       // Crystalline: shift to higher notes, sparser
@@ -380,7 +746,7 @@ const MokuriAudio = (() => {
       atmo.chimeMin += 2; atmo.chimeMax += 3;
       atmo.chimeVol = 0.06;
       atmo.windBase += 200; atmo.windQ = 0.5; atmo.windVol = 0.015;
-    } else if (atmo.foreground === 'water') {
+    } else if (atmo.foreground === 'water' || atmo.foreground === 'shallows') {
       atmo.windBase += 80; atmo.windVol += 0.01;
     }
 
@@ -399,6 +765,23 @@ const MokuriAudio = (() => {
     } else if (!atmo.waterActive && wasWater) {
       clearTimeout(waterTimeout);
       waterTimeout = null;
+    }
+
+    // Start/stop wave wash
+    const newWaveType = atmo.foreground === 'water' ? 'deep'
+      : atmo.foreground === 'shallows' ? 'shallow' : null;
+    if (ambientRunning && newWaveType !== waveType) {
+      if (newWaveType) startWaves(newWaveType);
+      else stopWaves();
+    }
+
+    // Nature sounds (birds or crickets based on sky, density from ground)
+    const newNature = getNatureType(atmo.sky);
+    natureDensity = getNatureDensity(atmo.foreground);
+    if (ambientRunning && newNature !== natureActive) {
+      if (newNature === 'birds') startBirds();
+      else if (newNature === 'crickets') startCrickets();
+      else stopNatureSounds();
     }
   }
 
@@ -915,6 +1298,52 @@ const MokuriAudio = (() => {
     });
   }
 
+  // --- Dev Testing: Nature Sounds ---
+  // Call MokuriAudio._devNature('birds'), _devNature('crickets'), _devNature('off')
+  // or _devNature('cycle') to rotate through them
+  // Also _devNature('chirp') for a single bird call, _devNature('density', 0.5) to adjust
+  function _devNature(cmd, val) {
+    if (!ensureContext()) return 'no audio context';
+    if (!ambientRunning) {
+      // Need ambient running for gain nodes
+      startAmbient();
+    }
+    switch (cmd) {
+      case 'birds':
+        natureDensity = val || 1.0;
+        startBirds();
+        return 'birds started (density: ' + natureDensity + ')';
+      case 'crickets':
+        natureDensity = val || 1.0;
+        startCrickets();
+        return 'crickets started (density: ' + natureDensity + ')';
+      case 'waves':
+        startWaves(val || 'deep');
+        return 'waves started (' + (val || 'deep') + ')';
+      case 'shallows':
+        startWaves('shallow');
+        return 'shallows waves started';
+      case 'off':
+        stopNatureSounds();
+        stopWaves();
+        return 'nature sounds + waves stopped';
+      case 'cycle':
+        if (natureActive === null && !waveType) { startBirds(); return 'birds'; }
+        if (natureActive === 'birds') { startCrickets(); return 'crickets'; }
+        if (natureActive === 'crickets') { stopNatureSounds(); startWaves('deep'); return 'waves (deep)'; }
+        if (waveType === 'deep') { stopWaves(); startWaves('shallow'); return 'waves (shallow)'; }
+        stopNatureSounds(); stopWaves(); return 'off';
+      case 'chirp':
+        playBirdCall(val || 0);
+        return 'single bird call (voice ' + (val || 0) + ')';
+      case 'density':
+        natureDensity = val || 0.8;
+        return 'density set to ' + natureDensity;
+      default:
+        return 'commands: birds, crickets, waves, shallows, off, cycle, chirp, density';
+    }
+  }
+
   // Public API
   return {
     get prefs() { return prefs; },
@@ -943,5 +1372,6 @@ const MokuriAudio = (() => {
     playSwipe,
     playFreHint,
     playFreCelebration,
+    _devNature,
   };
 })();
