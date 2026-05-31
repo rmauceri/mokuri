@@ -142,26 +142,103 @@ Features:
 
 ---
 
-## Future Direction
+## Print Engine 2.0 Vision
+
+The goal: **every creative choice the user makes should have meaningful impact on the final print.** Paper, ink, profile, composition — these should interact the way real mokuhanga materials interact, so that prints feel genuinely different from each other, not just filtered versions of the same digital rendering.
+
+### Core Principle
+
+In real mokuhanga, the printed image emerges from the interaction of materials — paper absorbs ink differently, moisture controls flow, the baren distributes pressure unevenly, and the wood grain resists the gouge in specific directions. These are not defects to be hidden but the source of the print's character. Print Engine 2.0 should model these interactions, not just simulate their surface appearance.
+
+### The Big Four (highest impact)
+
+#### 1. Paper-Influenced Ink Behavior
+
+Currently paper affects only visual texture (fibers, base color). Ink rendering is identical across all six papers. This is the most significant gap — paper choice should be *felt* in the print quality.
+
+| Paper | Real behavior | Engine effect |
+|-------|--------------|---------------|
+| Hosho | Smooth, sized, ink sits cleanly | Sharp edges, high saturation, minimal bleed |
+| Kozo | Absorbent, fibrous | Softer edges, ink pulled into fibers, slightly muted |
+| Torinoko | Warm, lightly sized | Ink sits on surface more, warm color temperature |
+| Gampi | Ultra-smooth, sized | Sharpest edges, most saturated, cleanest prints |
+| Unryu | Dramatic fibers disrupt ink | Ink bleed follows fiber direction, uneven absorption |
+| Kakishibu | Tanned, partially resistant | Uneven absorption, ink pools in untreated areas |
+
+Implementation: extend `PAPER_TYPES` with `bleedRadius`, `saturationMul`, `edgeSharpness`, `impressionFalloff`, `fiberBleedDirection`. Wire into SVG filter generation and post-processing. Honor the existing `inkOpacity` value (currently defined but unused).
+
+#### 2. Moisture / Sizing (integrated into profiles)
+
+In real mokuhanga, paper is dampened before printing. Moisture level is one of the printer's primary controls — it determines how ink flows, bleeds, and saturates. Rather than exposing this as a separate slider, moisture behavior is *encoded into the three style profiles* as a coherent package:
+
+| Profile | Moisture | Rationale | Rendering effect |
+|---------|----------|-----------|-----------------|
+| 浮世絵 Ukiyo-e | Medium, controlled | Commercial printers needed consistency across hundreds of impressions | Moderate bleed, strong saturation, clean edges |
+| 新版画 Shin-hanga | High, deliberate | Watanabe's printers used generous dampening for soft bokashi and atmospheric depth | More bleed, softer edges, colors interact at boundaries |
+| 創作版画 Sōsaku-hanga | Low / variable | Artist-printers experimented with drier paper for raw textural effects | Minimal bleed, uneven absorption, paper texture visible through ink |
+
+Implementation: moisture becomes a set of derived parameters (`bleedRadius`, `absorptionRate`, `edgeSoftness`) that differ per profile. The user picks "Shin-hanga" and gets correct moisture behavior implicitly — no need to understand the underlying physics.
+
+#### 3. Color Overprinting / Transparency
+
+In real mokuhanga, colors are printed sequentially — lightest to darkest, one block per color pass. Where two color areas overlap, the earlier pigment shows through the later layer. Mokuri currently renders all elements simultaneously with no color interaction at overlaps.
+
+This matters most where:
+- A foreground element crosses a midground element (e.g., branch over mountain)
+- Atmosphere gradients underlie element zones
+- Multiple impressions build color density
+
+Implementation direction: model z-order as print-order, apply transparency/blending at overlap regions based on pigment opacity (first pass more transparent, later passes more opaque). Could use the block-layer grouping concept from #4.
+
+#### 4. Layer-Based Brush Variation
+
+In real mokuhanga, the brush applies ink to an entire block, not individual elements. Currently brush variation is per-element, which creates unrealistic boundaries between adjacent elements. The fix: group elements by depth layer and apply a single coherent brush variation pattern across all elements in the same layer.
+
+**Complexity:** `suggestedLayer` alone isn't sufficient. What shares a block depends on z-order, color proximity, and occlusion — not just element type. A composition-aware runtime calculation is needed.
+
+This also connects to moisture: brush ink distribution is affected by how wet the paper is, how much pigment the brush carries, and how the baren distributes pressure. All four of the Big Four interact with each other.
+
+### Supporting Improvements
+
+These are lower-impact individually but contribute to the overall quality:
+
+- **Consistent grain direction** — Wood grain is currently random. Real blocks have directional grain that interacts coherently with carved areas. A per-composition grain angle would unify texture.
+- **Baren type as material choice** — Disk baren (circular marks), ball baren (broader pressure), flat baren (even). Could sit alongside paper/ink as a Print Studio material choice.
+- **Adaptive perturbation** — More aggressive size-scaling so small elements get less wobble automatically.
+- **Luminance bokashi** — Radial fade for light-emitting elements (lanterns, moon, water reflections). Essential for Tsukiyo pack, useful for Core.
+- **Spatially-coherent brush** — Replace random opacity with baren-path-aware pressure distribution (circular from center outward).
+- **Bokashi + paper interaction** — Per-zone gradient bokashi enhanced with paper-absorption characteristics in the print output.
+- **Block wear / edition** — Progressive edge softening across prints in an edition. Connects to presentation layer edition numbering.
+
+### Workspace-to-Print Fidelity
+
+A cross-cutting concern: how close is the workspace preview to the final print? Currently they're very different experiences. Options:
+- "Soft proof" mode in the workspace showing approximate ink/paper effects
+- Progressive rendering (quick preview → full quality on demand)
+- Profile-aware thumbnails in the gallery
+
+### Performance
+
+- **Web Worker threading** — offload rendering for non-blocking print pulls on large compositions
+- **Canvas resolution optimization** — ensure output holds up at high-res export
+- **Caching** — paper texture and noise can be pre-computed and cached per paper type
+
+### Priority Order
+
+1. Paper-influenced ink behavior + moisture-in-profiles (these are tightly coupled)
+2. Layer-based brush variation (fixes the worst current artifact)
+3. Color overprinting (makes compositions feel layered, not flat)
+4. Supporting improvements (grain, baren, perturbation, luminance bokashi)
+5. Performance + workspace fidelity
+
+---
+
+## Future Direction (pre-2.0)
 
 ### Near-term
 - **Profile user choice** — expose the 3 profiles in the Print Studio panel for production users (currently dev-only). This is the next step once values are fully dialed in.
 - **Per-profile icon/visual identity** — help users understand the aesthetic difference without pulling a print.
 - **Profile-aware thumbnails** — gallery thumbnails could hint at which profile was used.
-
-### Medium-term
-- **Luminance bokashi** — A new bokashi type (radial or soft-edge) for elements that emit or reflect light: lanterns, moon, water reflections, glowing windows. Currently bokashi is directional (up/down/left/right linear gradient). A radial luminance bokashi would fade ink from a center point outward, letting paper show through at the center — simulating how reserve printing creates glow in real mokuhanga (areas are printed lightly or left unprinted to let paper luminance show through). This would benefit Core elements (stone lanterns, moon, water) and is essential for future Tsukiyo (night scene) compositions. Could be implemented as a per-zone property alongside the existing directional bokashi, rendered as a radial gradient in both workspace SVG and print engine output.
-- **Layer-based brush variation** — In real mokuhanga, the brush applies ink to an entire block, not individual elements. Currently brush variation is per-element, which creates unrealistic boundaries between adjacent elements. The fix: group elements by their depth layer (foreground/midground/background — already present as `suggestedLayer` on each element definition) and apply a single coherent brush variation pattern across all elements in the same layer. This simulates how a printer inks one block containing multiple carved subjects at once. The baren pressure pattern should also follow this grouping.
-  
-  **Complexity note:** `suggestedLayer` alone isn't sufficient for determining block grouping. In real printmaking, what shares a block depends on occlusion relationships (z-order) and shared color — not just the inherent "type" of the subject. A crane (foreground-suggested) placed behind a tree by the user is effectively on a different block. The real block-layer calculation likely needs to consider: (1) `suggestedLayer` as a starting heuristic, (2) actual z-order in the composition, and (3) potentially color zone overlap. This makes it a composition-aware runtime calculation, not a static element property.
-- **Spatially-coherent brush variation** — Replace the current random opacity with a baren-path-aware implementation that follows the direction of printing pressure (typically circular from center outward).
-- **Adaptive perturbation by element size** — More aggressive scaling so small elements get less perturbation automatically.
-- **Bokashi in print output** — The per-zone gradient bokashi currently renders in the SVG; the print engine could enhance it with paper-absorption characteristics.
-
-### Longer-term
-- **Registration marks** — visual guides showing block alignment for multi-color printing authenticity.
-- **Print engine threading** — offload rendering to a Web Worker for non-blocking print pulls on large compositions.
-- **Advanced dry brush** — simulate real baren-path fibrous marks rather than random opacity variation.
 
 ---
 
