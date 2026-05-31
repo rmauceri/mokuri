@@ -488,7 +488,8 @@ const PrintEngine = (() => {
 
       // Render fill paths: dark edge behind (ink pooling) + semi-transparent ink
       // Hanko 'char' zone: paper-colored carved character — no ink edge, full opacity
-      const renderFills = (fillPaths) => {
+      // skipEdge: at block level, no edge stroke (flat silhouettes don't pool at edges)
+      const renderFills = (fillPaths, skipEdge) => {
         fillPaths.forEach(p => {
           if (p.type !== 'fill') return;
           const col = zoneColor(p.zone);
@@ -496,7 +497,7 @@ const PrintEngine = (() => {
           const pd = perturb(p.d);
           const isCharZone = isHanko && p.zone === 'char';
           const fr = p.fillRule ? ` fill-rule="${p.fillRule}"` : '';
-          if (!isCharZone) {
+          if (!isCharZone && !skipEdge) {
             svgContent += `<path d="${pd}" fill="none" stroke="${darken(col, 0.35)}" stroke-width="${edgeWeight}" stroke-linejoin="round" stroke-opacity="${edgeOpacity.toFixed(2)}"/>`;
           }
           svgContent += `<path d="${pd}" fill="${fill}"${fr} fill-opacity="${isCharZone ? '0.95' : inkOpacity.toFixed(2)}" stroke="none"/>`;
@@ -504,7 +505,7 @@ const PrintEngine = (() => {
       };
 
       if (isBlock) {
-        renderFills(blockPaths);
+        renderFills(blockPaths, true);
       } else {
         renderFills(blockPaths);
         overlayPaths.forEach(p => {
@@ -521,7 +522,7 @@ const PrintEngine = (() => {
             }
           } else if (p.type === 'stroke') {
             // Hanko strokes are carved-away lines — reveal paper, not ink
-            const strokeCol = isHanko ? (atmosphere.paperBase || '#f5f0e6') : darken(col, 0.45);
+            const strokeCol = isHanko ? (atmosphere.paperBase || '#f5f0e6') : darken(col, 0.30);
             const strokeOpac = isHanko ? '0.95' : '0.85';
             svgContent += `<path d="${pd}" fill="none" stroke="${strokeCol}" stroke-width="${p.strokeWidth || 1.5}" stroke-opacity="${strokeOpac}" stroke-linecap="round" stroke-linejoin="round"/>`;
           }

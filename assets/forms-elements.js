@@ -29,7 +29,7 @@ const MOKURI_FORMS_ELEMENTS = [
         name: 'shape',
         paths: [
           { d: 'M60 10 C87 10 110 33 110 60 C110 87 87 110 60 110 C33 110 10 87 10 60 C10 33 33 10 60 10 Z', type: 'fill', zone: 'body' },
-          { d: 'M60 10 C87 10 110 33 110 60 C110 87 87 110 60 110 C33 110 10 87 10 60 C10 33 33 10 60 10 Z', type: 'stroke', zone: 'body', strokeWidth: 1.8 },
+          { d: 'M60 10 C87 10 110 33 110 60 C110 87 87 110 60 110 C33 110 10 87 10 60 C10 33 33 10 60 10 Z', type: 'stroke', zone: 'body', strokeWidth: 0.8 },
         ],
       },
     ],
@@ -57,7 +57,7 @@ const MOKURI_FORMS_ELEMENTS = [
         name: 'shape',
         paths: [
           { d: 'M80 10 C120 10 150 28 150 50 C150 72 120 90 80 90 C40 90 10 72 10 50 C10 28 40 10 80 10 Z', type: 'fill', zone: 'body' },
-          { d: 'M80 10 C120 10 150 28 150 50 C150 72 120 90 80 90 C40 90 10 72 10 50 C10 28 40 10 80 10 Z', type: 'stroke', zone: 'body', strokeWidth: 1.8 },
+          { d: 'M80 10 C120 10 150 28 150 50 C150 72 120 90 80 90 C40 90 10 72 10 50 C10 28 40 10 80 10 Z', type: 'stroke', zone: 'body', strokeWidth: 0.8 },
         ],
       },
     ],
@@ -85,7 +85,7 @@ const MOKURI_FORMS_ELEMENTS = [
         name: 'shape',
         paths: [
           { d: 'M15 15 L125 15 L125 85 L15 85 Z', type: 'fill', zone: 'body' },
-          { d: 'M15 15 L125 15 L125 85 L15 85 Z', type: 'stroke', zone: 'body', strokeWidth: 2.0 },
+          { d: 'M15 15 L125 15 L125 85 L15 85 Z', type: 'stroke', zone: 'body', strokeWidth: 1.0 },
         ],
       },
     ],
@@ -113,7 +113,7 @@ const MOKURI_FORMS_ELEMENTS = [
         name: 'shape',
         paths: [
           { d: 'M15 15 L105 15 L105 105 L15 105 Z', type: 'fill', zone: 'body' },
-          { d: 'M15 15 L105 15 L105 105 L15 105 Z', type: 'stroke', zone: 'body', strokeWidth: 2.0 },
+          { d: 'M15 15 L105 15 L105 105 L15 105 Z', type: 'stroke', zone: 'body', strokeWidth: 1.0 },
         ],
       },
     ],
@@ -141,7 +141,7 @@ const MOKURI_FORMS_ELEMENTS = [
         name: 'shape',
         paths: [
           { d: 'M60 10 L110 100 L10 100 Z', type: 'fill', zone: 'body' },
-          { d: 'M60 10 L110 100 L10 100 Z', type: 'stroke', zone: 'body', strokeWidth: 2.0 },
+          { d: 'M60 10 L110 100 L10 100 Z', type: 'stroke', zone: 'body', strokeWidth: 1.0 },
         ],
       },
     ],
@@ -169,7 +169,7 @@ const MOKURI_FORMS_ELEMENTS = [
         name: 'shape',
         paths: [
           { d: 'M60 10 L110 70 L60 130 L10 70 Z', type: 'fill', zone: 'body' },
-          { d: 'M60 10 L110 70 L60 130 L10 70 Z', type: 'stroke', zone: 'body', strokeWidth: 2.0 },
+          { d: 'M60 10 L110 70 L60 130 L10 70 Z', type: 'stroke', zone: 'body', strokeWidth: 1.0 },
         ],
       },
     ],
@@ -197,7 +197,7 @@ const MOKURI_FORMS_ELEMENTS = [
         name: 'shape',
         paths: [
           { d: 'M15 130 L15 55 C15 25 35 10 60 10 C85 10 105 25 105 55 L105 130 Z', type: 'fill', zone: 'body' },
-          { d: 'M15 130 L15 55 C15 25 35 10 60 10 C85 10 105 25 105 55 L105 130 Z', type: 'stroke', zone: 'body', strokeWidth: 1.8 },
+          { d: 'M15 130 L15 55 C15 25 35 10 60 10 C85 10 105 25 105 55 L105 130 Z', type: 'stroke', zone: 'body', strokeWidth: 0.8 },
         ],
       },
     ],
@@ -225,7 +225,7 @@ const MOKURI_FORMS_ELEMENTS = [
         name: 'shape',
         paths: [
           { d: 'M60 8 L108 30 L108 78 L60 100 L12 78 L12 30 Z', type: 'fill', zone: 'body' },
-          { d: 'M60 8 L108 30 L108 78 L60 100 L12 78 L12 30 Z', type: 'stroke', zone: 'body', strokeWidth: 2.0 },
+          { d: 'M60 8 L108 30 L108 78 L60 100 L12 78 L12 30 Z', type: 'stroke', zone: 'body', strokeWidth: 1.0 },
         ],
       },
     ],
@@ -255,7 +255,7 @@ const MOKURI_FORMS_ELEMENTS = [
         name: 'shape',
         paths: [
           { d: 'M50 10 C80 30 95 70 90 110 C85 135 65 150 50 150 C35 150 15 135 10 110 C5 70 20 30 50 10 Z', type: 'fill', zone: 'body' },
-          { d: 'M50 10 C80 30 95 70 90 110 C85 135 65 150 50 150 C35 150 15 135 10 110 C5 70 20 30 50 10 Z', type: 'stroke', zone: 'body', strokeWidth: 1.8 },
+          { d: 'M50 10 C80 30 95 70 90 110 C85 135 65 150 50 150 C35 150 15 135 10 110 C5 70 20 30 50 10 Z', type: 'stroke', zone: 'body', strokeWidth: 0.8 },
         ],
       },
     ],
@@ -283,7 +283,7 @@ const MOKURI_FORMS_ELEMENTS = [
         name: 'shape',
         paths: [
           { d: 'M30 70 C10 70 5 55 15 45 C10 30 25 20 40 25 C45 10 65 8 75 20 C85 10 105 10 110 25 C130 15 150 25 145 45 C160 48 165 65 150 72 C150 80 130 82 120 78 C110 88 85 90 75 80 C60 90 40 85 30 70 Z', type: 'fill', zone: 'body' },
-          { d: 'M30 70 C10 70 5 55 15 45 C10 30 25 20 40 25 C45 10 65 8 75 20 C85 10 105 10 110 25 C130 15 150 25 145 45 C160 48 165 65 150 72 C150 80 130 82 120 78 C110 88 85 90 75 80 C60 90 40 85 30 70 Z', type: 'stroke', zone: 'body', strokeWidth: 1.8 },
+          { d: 'M30 70 C10 70 5 55 15 45 C10 30 25 20 40 25 C45 10 65 8 75 20 C85 10 105 10 110 25 C130 15 150 25 145 45 C160 48 165 65 150 72 C150 80 130 82 120 78 C110 88 85 90 75 80 C60 90 40 85 30 70 Z', type: 'stroke', zone: 'body', strokeWidth: 0.8 },
         ],
       },
     ],
@@ -295,7 +295,7 @@ const MOKURI_FORMS_ELEMENTS = [
     category: 'basic forms',
     pack: 'core',
     tags: ['geometric', 'organic', 'water', 'minimal'],
-    viewBox: '0 0 200 80',
+    viewBox: '0 0 200 100',
     suggestedLayer: 'midground',
     colorZones: [
       { id: 'body', defaultPaletteSlot: 0 },
@@ -311,7 +311,7 @@ const MOKURI_FORMS_ELEMENTS = [
         name: 'shape',
         paths: [
           { d: 'M0 45 Q25 15 50 40 Q75 65 100 40 Q125 15 150 40 Q175 65 200 40 L200 70 Q175 95 150 70 Q125 45 100 70 Q75 95 50 70 Q25 45 0 70 Z', type: 'fill', zone: 'body' },
-          { d: 'M0 45 Q25 15 50 40 Q75 65 100 40 Q125 15 150 40 Q175 65 200 40 L200 70 Q175 95 150 70 Q125 45 100 70 Q75 95 50 70 Q25 45 0 70 Z', type: 'stroke', zone: 'body', strokeWidth: 1.8 },
+          { d: 'M0 45 Q25 15 50 40 Q75 65 100 40 Q125 15 150 40 Q175 65 200 40 L200 70 Q175 95 150 70 Q125 45 100 70 Q75 95 50 70 Q25 45 0 70 Z', type: 'stroke', zone: 'body', strokeWidth: 0.8 },
         ],
       },
     ],
@@ -339,7 +339,7 @@ const MOKURI_FORMS_ELEMENTS = [
         name: 'shape',
         paths: [
           { d: 'M65 12 C95 15 120 35 118 58 C116 78 98 98 70 98 C42 98 15 82 12 58 C9 34 35 9 65 12 Z', type: 'fill', zone: 'body' },
-          { d: 'M65 12 C95 15 120 35 118 58 C116 78 98 98 70 98 C42 98 15 82 12 58 C9 34 35 9 65 12 Z', type: 'stroke', zone: 'body', strokeWidth: 1.8 },
+          { d: 'M65 12 C95 15 120 35 118 58 C116 78 98 98 70 98 C42 98 15 82 12 58 C9 34 35 9 65 12 Z', type: 'stroke', zone: 'body', strokeWidth: 0.8 },
         ],
       },
     ],
