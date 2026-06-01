@@ -4790,6 +4790,26 @@ function rerenderAll() {
   updateStatus();
 }
 
+// Targeted re-render: only rebuild a single element's SVG (used after carve strokes)
+function rerenderElement(elementId) {
+  const elIdx = STATE.elements.findIndex(e => e.id === elementId);
+  if (elIdx === -1) return;
+  const el = STATE.elements[elIdx];
+  const oldG = compLayer.querySelector(`g[data-id="${elementId}"]`);
+  const newG = renderElementSvg(el, elIdx);
+  if (!newG) return;
+  if (STATE.carveFocus) {
+    newG.classList.add('comp-layer-el');
+    if (el.id !== STATE.carveFocus) newG.classList.add('dimmed');
+  }
+  if (oldG) {
+    compLayer.replaceChild(newG, oldG);
+  } else {
+    compLayer.appendChild(newG);
+  }
+  updateSelection();
+}
+
 function renderGuides() {
   const layer = $('guide-layer');
   while (layer.firstChild) layer.removeChild(layer.firstChild);
@@ -6216,6 +6236,13 @@ function applyCompositionData(data) {
   updateStatus();
   // Update audio atmosphere for new composition
   MokuriAudio.setAmbienceForAtmosphere(STATE.background, STATE.foreground);
+}
+
+// Debounced autoSave for rapid-fire mutations (carve strokes, nudges)
+let _autoSaveTimer = null;
+function debouncedAutoSave() {
+  if (_autoSaveTimer) clearTimeout(_autoSaveTimer);
+  _autoSaveTimer = setTimeout(() => { _autoSaveTimer = null; autoSave(); }, 800);
 }
 
 async function autoSave() {
@@ -8730,17 +8757,17 @@ function quickStrokeUndo() {
     const el = STATE.elements.find(e => e.id === STATE.carveFocus);
     if (el && el.carveStrokes && el.carveStrokes.length) {
       STATE.strokeRedoBuffer.push({ type: 'element', elementId: el.id, stroke: el.carveStrokes.pop() });
-      rerenderAll();
+      rerenderElement(el.id);
     }
   } else if (primarySelectedId()) {
     const el = STATE.elements.find(e => e.id === primarySelectedId());
     if (el && el.carveStrokes && el.carveStrokes.length) {
       STATE.strokeRedoBuffer.push({ type: 'element', elementId: el.id, stroke: el.carveStrokes.pop() });
-      rerenderAll();
+      rerenderElement(el.id);
     }
   } else if (STATE.backgroundCarveStrokes.length) {
     STATE.strokeRedoBuffer.push({ type: 'background', stroke: STATE.backgroundCarveStrokes.pop() });
-    rerenderAll();
+    renderBackgroundCarveStrokes();
   }
 }
 
@@ -8753,11 +8780,11 @@ function quickStrokeRedo() {
     if (el) {
       if (!el.carveStrokes) el.carveStrokes = [];
       el.carveStrokes.push(item.stroke);
-      rerenderAll();
+      rerenderElement(el.id);
     }
   } else if (item.type === 'background') {
     STATE.backgroundCarveStrokes.push(item.stroke);
-    rerenderAll();
+    renderBackgroundCarveStrokes();
   }
 }
 
@@ -10753,7 +10780,7 @@ function setupInteraction() {
           });
         });
         el.carveStrokes.splice(bestIdx, 1);
-        rerenderAll();
+        rerenderElement(el.id);
         return;
       }
       if (gEl) {
@@ -10772,7 +10799,7 @@ function setupInteraction() {
           });
         });
         el.carveStrokes.splice(bestIdx, 1);
-        rerenderAll();
+        rerenderElement(el.id);
         return;
       }
       // No element hit — erase background strokes (if on paper), or pan (if off paper)
@@ -10790,7 +10817,7 @@ function setupInteraction() {
         });
         pushUndo();
         STATE.backgroundCarveStrokes.splice(bestIdx, 1);
-        rerenderAll();
+        renderBackgroundCarveStrokes();
         return;
       }
       if (!onPaper) {
@@ -11019,7 +11046,13 @@ function setupInteraction() {
           STATE.carving.smoothTiltY += ((evt.tiltY || 0) - STATE.carving.smoothTiltY) * tAlpha;
           STATE.carving.points.push({ x: STATE.carving.smoothX, y: STATE.carving.smoothY, pressure: STATE.carving.smoothP, tilt, tiltX: STATE.carving.smoothTiltX, tiltY: STATE.carving.smoothTiltY });
         }
-        renderBgCarvePreview(STATE.carving.points);
+        // Throttle preview to display refresh rate
+        if (!STATE.carving._rafPending) {
+          STATE.carving._rafPending = true;
+          requestAnimationFrame(() => {
+            if (STATE.carving) { STATE.carving._rafPending = false; renderBgCarvePreview(STATE.carving.points); }
+          });
+        }
         return;
       }
       const el = STATE.elements.find(el => el.id === STATE.carving.elementId);
@@ -11036,7 +11069,17 @@ function setupInteraction() {
         STATE.carving.smoothTiltY += ((evt.tiltY || 0) - STATE.carving.smoothTiltY) * tAlpha;
         STATE.carving.points.push({ x: STATE.carving.smoothX, y: STATE.carving.smoothY, pressure: STATE.carving.smoothP, tilt, tiltX: STATE.carving.smoothTiltX, tiltY: STATE.carving.smoothTiltY });
       }
-      renderCarvePreview(el, STATE.carving.points);
+      // Throttle preview to display refresh rate
+      if (!STATE.carving._rafPending) {
+        STATE.carving._rafPending = true;
+        requestAnimationFrame(() => {
+          if (STATE.carving) {
+            STATE.carving._rafPending = false;
+            const carveEl = STATE.elements.find(e => e.id === STATE.carving.elementId);
+            if (carveEl) renderCarvePreview(carveEl, STATE.carving.points);
+          }
+        });
+      }
       return;
     }
 
@@ -11227,8 +11270,8 @@ function setupInteraction() {
           const strokeData = { points: simplified, tool: STATE.carveTool };
           if (STATE.carveTool === 'pattern') { strokeData.pattern = STATE.activePattern; strokeData.density = STATE.patternDensity; strokeData.rotation = STATE.patternRotation; strokeData.pressure = STATE.pressureCurve ?? 50; }
           STATE.backgroundCarveStrokes.push(strokeData);
-          rerenderAll();
-          autoSave();
+          renderBackgroundCarveStrokes();
+          debouncedAutoSave();
           MokuriAudio.playCarveEnd();
         } else {
           STATE.undoStack.pop();
@@ -11245,8 +11288,8 @@ function setupInteraction() {
         const strokeData = { points: simplified, tool: STATE.carveTool };
         if (STATE.carveTool === 'pattern') { strokeData.pattern = STATE.activePattern; strokeData.density = STATE.patternDensity; strokeData.rotation = STATE.patternRotation; strokeData.pressure = STATE.pressureCurve ?? 50; }
         el.carveStrokes.push(strokeData);
-        rerenderAll();
-        autoSave();
+        rerenderElement(el.id);
+        debouncedAutoSave();
         MokuriAudio.playCarveEnd();
         freAdvance('carve-detail');
         if (STATE.carveTool === 'pattern') freAdvance('carve-pattern');
