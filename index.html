@@ -1760,7 +1760,7 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
 .carve-studio.open .carve-studio-inner { opacity: 1; }
 
 /* Gouge tool buttons */
-.cs-tool-row { display: flex; gap: 6px; }
+.cs-tool-row { display: flex; gap: 4px; }
 .cs-tool-cell { flex: 1; text-align: center; }
 .cs-tool-btn {
   width: 100%;
@@ -1777,6 +1777,7 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
   transition: border-color 0.15s, background 0.15s, color 0.15s;
 }
 .cs-tool-btn:hover { border-color: var(--accent); }
+.cs-tool-btn:disabled { opacity: 0.35; cursor: default; pointer-events: none; }
 .cs-tool-btn.active { border-color: var(--accent); background: var(--accent); color: #fff; }
 .cs-tool-name { font-size: 9px; color: var(--text-muted); margin-top: 2px; }
 
@@ -2856,6 +2857,10 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
             <div class="cs-tool-cell">
               <button class="cs-tool-btn" data-tool="pattern" title="Pattern tool (P/4)">⊞</button>
               <div class="cs-tool-name">Pattern</div>
+            </div>
+            <div class="cs-tool-cell">
+              <button class="cs-tool-btn" data-tool="uncarve" title="Uncarve — remove strokes (E/5)">▮</button>
+              <div class="cs-tool-name">Uncarve</div>
             </div>
           </div>
         </div>
@@ -8832,12 +8837,12 @@ function setMode(mode) {
   // Status hints — studio panels provide their own context
   let hint;
   if (STATE.carveFocus) {
-    hint = mode === 'carve' ? 'Carve Focus — draw to carve · E to erase · Esc to exit'
-         : mode === 'erase' ? 'Carve Focus — click stroke to erase · V to carve · Esc to exit'
+    hint = mode === 'carve' ? 'Carve Focus — draw to carve · E to uncarve · Esc to exit'
+         : mode === 'erase' ? 'Carve Focus — click stroke to remove · V to carve · Esc to exit'
          : 'Carve Focus — Esc to exit';
   } else if (STATE.carveStudioOpen) {
     hint = mode === 'carve' ? 'Carving Workbench — draw on elements to carve · select tools and patterns'
-         : mode === 'erase' ? 'Carving Workbench — click near a stroke to erase · V to carve'
+         : mode === 'erase' ? 'Uncarve — click near a stroke to remove it'
          : 'Carving Workbench — V to start carving · Esc to close';
   } else if (STATE.inkStudioOpen) {
     hint = 'Inking Workbench — choose palette and adjust element colors';
@@ -8845,7 +8850,7 @@ function setMode(mode) {
     hint = 'Ink preview — click element zones to change colors · I to open Inking Workbench';
   } else {
     hint = mode === 'carve' ? 'Draw on elements or paper to carve · Alt+click to pan'
-         : mode === 'erase' ? 'Click near a carve stroke to remove it'
+         : mode === 'erase' ? 'Uncarve — click near a stroke to remove it'
          : 'Place elements · V to Carve · I for Ink · P to Print';
   }
   $('status-hint').textContent = hint;
@@ -9310,23 +9315,35 @@ function refreshPatternSwatches() {
 }
 
 function buildCarveStudioUI() {
-  // Tool buttons — sync active state with STATE.carveTool
+  // Tool buttons — sync active state with STATE.carveTool / erase mode
   const toolRow = $('cs-tool-row');
   if (toolRow) {
+    const inErase = STATE.mode === 'erase';
     toolRow.querySelectorAll('.cs-tool-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.tool === STATE.carveTool);
+      if (btn.dataset.tool === 'uncarve') {
+        btn.classList.toggle('active', inErase);
+        // Disable uncarve when no strokes available to erase
+        const el = (STATE.selectedIds.size === 1) ? STATE.elements.find(e => e.id === primarySelectedId()) : null;
+        const hasStrokes = el
+          ? (el.carveStrokes && el.carveStrokes.length > 0)
+          : (STATE.backgroundCarveStrokes && STATE.backgroundCarveStrokes.length > 0);
+        btn.disabled = !hasStrokes;
+      } else {
+        btn.classList.toggle('active', !inErase && btn.dataset.tool === STATE.carveTool);
+      }
     });
   }
 
   const isPatternTool = STATE.carveTool === 'pattern';
+  const inEraseMode = STATE.mode === 'erase';
 
-  // Context-sensitive sections: Pattern+Density for pattern tool only; Pressure always visible
+  // Context-sensitive sections: hide all tool options when in uncarve/erase mode
   const pressSec = $('cs-pressure-section');
   const patSec = $('cs-pattern-section');
   const toneSec = $('cs-tone-section');
-  if (pressSec) pressSec.style.display = '';
-  if (patSec)   patSec.style.display   = isPatternTool ? '' : 'none';
-  if (toneSec)  toneSec.style.display   = isPatternTool ? '' : 'none';
+  if (pressSec) pressSec.style.display = inEraseMode ? 'none' : '';
+  if (patSec)   patSec.style.display   = (!inEraseMode && isPatternTool) ? '' : 'none';
+  if (toneSec)  toneSec.style.display   = (!inEraseMode && isPatternTool) ? '' : 'none';
 
   // Pressure slider
   const pressSlider = $('cs-pressure-slider');
@@ -10890,6 +10907,8 @@ function setupInteraction() {
         });
         el.carveStrokes.splice(bestIdx, 1);
         rerenderElement(el.id);
+        if (!el.carveStrokes.length) setMode('carve');
+        if (STATE.carveStudioOpen) buildCarveStudioUI();
         return;
       }
       if (gEl) {
@@ -10909,6 +10928,8 @@ function setupInteraction() {
         });
         el.carveStrokes.splice(bestIdx, 1);
         rerenderElement(el.id);
+        if (!el.carveStrokes.length) setMode('carve');
+        if (STATE.carveStudioOpen) buildCarveStudioUI();
         return;
       }
       // No element hit — erase background strokes (if on paper), or pan (if off paper)
@@ -10927,6 +10948,8 @@ function setupInteraction() {
         pushUndo();
         STATE.backgroundCarveStrokes.splice(bestIdx, 1);
         renderBackgroundCarveStrokes();
+        if (!STATE.backgroundCarveStrokes.length) setMode('carve');
+        if (STATE.carveStudioOpen) buildCarveStudioUI();
         return;
       }
       if (!onPaper) {
@@ -11382,6 +11405,7 @@ function setupInteraction() {
           renderBackgroundCarveStrokes();
           debouncedAutoSave();
           MokuriAudio.playCarveEnd();
+          if (STATE.carveStudioOpen) buildCarveStudioUI();
         } else {
           STATE.undoStack.pop();
         }
@@ -11559,7 +11583,12 @@ function setupKeyboard() {
       else openCarveStudio();
       e.preventDefault();
     }
-    if (e.key === 'e' && !e.ctrlKey && !e.metaKey) { setMode(STATE.mode === 'erase' ? 'select' : 'erase'); e.preventDefault(); }
+    if (e.key === 'e' && !e.ctrlKey && !e.metaKey) {
+      if (STATE.mode === 'erase') { setMode('carve'); }
+      else { setMode('erase'); if (!STATE.carveStudioOpen) openCarveStudio(); }
+      if (STATE.carveStudioOpen) buildCarveStudioUI();
+      e.preventDefault();
+    }
     if (e.key === 'i' && !e.ctrlKey && !e.metaKey) {
       if (STATE.inkStudioOpen) closeInkStudio();
       else openInkStudio();
@@ -11655,11 +11684,12 @@ function setupKeyboard() {
     }
 
     // Tool shortcuts in carve mode
-    if (STATE.mode === 'carve') {
-      if (e.key === '1') { STATE.carveTool = 'fine'; updateToolButtons(); updateToolCursorClass(); if (STATE.carveStudioOpen) buildCarveStudioUI(); }
-      if (e.key === '2') { STATE.carveTool = 'vgouge'; updateToolButtons(); updateToolCursorClass(); if (STATE.carveStudioOpen) buildCarveStudioUI(); }
-      if (e.key === '3') { STATE.carveTool = 'ugouge'; updateToolButtons(); updateToolCursorClass(); if (STATE.carveStudioOpen) buildCarveStudioUI(); }
-      if (e.key === '4') { STATE.carveTool = 'pattern'; updateToolButtons(); updateToolCursorClass(); if (STATE.carveStudioOpen) buildCarveStudioUI(); }
+    if (STATE.mode === 'carve' || STATE.mode === 'erase') {
+      if (e.key === '1') { STATE.carveTool = 'fine'; setMode('carve'); updateToolButtons(); updateToolCursorClass(); if (STATE.carveStudioOpen) buildCarveStudioUI(); }
+      if (e.key === '2') { STATE.carveTool = 'vgouge'; setMode('carve'); updateToolButtons(); updateToolCursorClass(); if (STATE.carveStudioOpen) buildCarveStudioUI(); }
+      if (e.key === '3') { STATE.carveTool = 'ugouge'; setMode('carve'); updateToolButtons(); updateToolCursorClass(); if (STATE.carveStudioOpen) buildCarveStudioUI(); }
+      if (e.key === '4') { STATE.carveTool = 'pattern'; setMode('carve'); updateToolButtons(); updateToolCursorClass(); if (STATE.carveStudioOpen) buildCarveStudioUI(); }
+      if (e.key === '5') { setMode('erase'); updateToolButtons(); updateToolCursorClass(); if (STATE.carveStudioOpen) buildCarveStudioUI(); }
     }
 
     // Quick stroke undo/redo (Z / Shift+Z in carve mode, without Ctrl)
@@ -11701,7 +11731,16 @@ function setupKeyboard() {
 function updateToolButtons() {
   // Sync carve studio tool button active states
   const toolRow = $('cs-tool-row');
-  if (toolRow) toolRow.querySelectorAll('.cs-tool-btn').forEach(b => b.classList.toggle('active', b.dataset.tool === STATE.carveTool));
+  if (toolRow) {
+    const inErase = STATE.mode === 'erase';
+    toolRow.querySelectorAll('.cs-tool-btn').forEach(b => {
+      if (b.dataset.tool === 'uncarve') {
+        b.classList.toggle('active', inErase);
+      } else {
+        b.classList.toggle('active', !inErase && b.dataset.tool === STATE.carveTool);
+      }
+    });
+  }
 }
 
 // ============================================================
@@ -11789,8 +11828,15 @@ function setupToolbar() {
   $('cs-tool-row').addEventListener('click', (e) => {
     const btn = e.target.closest('.cs-tool-btn');
     if (!btn) return;
-    STATE.carveTool = btn.dataset.tool;
-    // Rebuild UI to update context-sensitive pattern chips and tone slider
+    const tool = btn.dataset.tool;
+    if (tool === 'uncarve') {
+      // Switch to erase mode (same as E key)
+      setMode('erase');
+    } else {
+      // Switch to carve mode with selected tool
+      STATE.carveTool = tool;
+      if (STATE.mode !== 'carve') setMode('carve');
+    }
     buildCarveStudioUI();
     updateToolCursorClass();
   });
