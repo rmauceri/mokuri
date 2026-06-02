@@ -5486,7 +5486,20 @@ function undo() {
     STATE.elements = snap.elements;
     STATE.backgroundCarveStrokes = snap.bgStrokes || [];
   }
-  deselectAll();
+  // In carve focus, preserve selection on the focused element
+  if (STATE.carveFocus) {
+    const focusEl = STATE.elements.find(e => e.id === STATE.carveFocus);
+    if (focusEl) {
+      STATE.selectedIds.clear();
+      STATE.selectedIds.add(focusEl.id);
+      refreshSelectionUI();
+    } else {
+      exitCarveFocus();
+      deselectAll();
+    }
+  } else {
+    deselectAll();
+  }
   rerenderAll();
   updateToolbarState();
   autoSave();
@@ -5506,7 +5519,20 @@ function redo() {
     STATE.elements = snap.elements;
     STATE.backgroundCarveStrokes = snap.bgStrokes || [];
   }
-  deselectAll();
+  // In carve focus, preserve selection on the focused element
+  if (STATE.carveFocus) {
+    const focusEl = STATE.elements.find(e => e.id === STATE.carveFocus);
+    if (focusEl) {
+      STATE.selectedIds.clear();
+      STATE.selectedIds.add(focusEl.id);
+      refreshSelectionUI();
+    } else {
+      exitCarveFocus();
+      deselectAll();
+    }
+  } else {
+    deselectAll();
+  }
   rerenderAll();
   updateToolbarState();
   autoSave();
