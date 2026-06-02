@@ -9463,20 +9463,21 @@ function buildCarveStudioUI() {
         }
         actionRow.appendChild(focusBtn);
 
-        if (el.carveStrokes && el.carveStrokes.length) {
-          const clearBtn = document.createElement('button');
-          clearBtn.className = 'cs-action-btn';
-          clearBtn.textContent = '🗑 Clear';
-          clearBtn.title = 'Clear all carve strokes on this element';
-          clearBtn.addEventListener('click', () => {
-            pushUndo();
-            el.carveStrokes = [];
-            rerenderAll();
-            buildCarveStudioUI();
-            autoSave();
-          });
-          actionRow.appendChild(clearBtn);
-        }
+        const clearBtn = document.createElement('button');
+        const hasStrokes = el.carveStrokes && el.carveStrokes.length;
+        clearBtn.className = 'cs-action-btn' + (hasStrokes ? '' : ' disabled');
+        clearBtn.textContent = '🗑 Clear';
+        clearBtn.title = 'Clear all carve strokes on this element';
+        clearBtn.disabled = !hasStrokes;
+        clearBtn.addEventListener('click', () => {
+          if (!el.carveStrokes || !el.carveStrokes.length) return;
+          pushUndo();
+          el.carveStrokes = [];
+          rerenderAll();
+          buildCarveStudioUI();
+          autoSave();
+        });
+        actionRow.appendChild(clearBtn);
         elContent.appendChild(actionRow);
       }
     }
@@ -11396,6 +11397,7 @@ function setupInteraction() {
         if (STATE.carveTool === 'pattern') { strokeData.pattern = STATE.activePattern; strokeData.density = STATE.patternDensity; strokeData.rotation = STATE.patternRotation; strokeData.pressure = STATE.pressureCurve ?? 50; }
         el.carveStrokes.push(strokeData);
         rerenderElement(el.id);
+        if (STATE.carveStudioOpen) buildCarveStudioUI();
         debouncedAutoSave();
         MokuriAudio.playCarveEnd();
         freAdvance('carve-detail');
