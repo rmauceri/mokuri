@@ -8679,21 +8679,23 @@ function renderCarvePreview(el, points) {
     path.setAttribute('stroke-width', w.toFixed(1));
     path.setAttribute('stroke-opacity', '0.2');
   } else {
-    // Fine/V/U gouge: variable-width centerline stroke
-    // Compute average width from recent pressure for responsive feedback
-    const lastPt = points[points.length - 1];
-    const p = lastPt.pressure !== undefined ? lastPt.pressure : 0.5;
-    const pw = _pc.wBase + Math.pow(Math.max(0, p), _pc.wPow) * _pc.wMul;
-    const w = tool.width * (tool.profile[0] ? tool.profile[0].w : 1) * pw;
-    const opacity = _pc.oBase + Math.pow(Math.max(0, p), _pc.oPow) * _pc.oMul;
-
-    const d = pointsToD(points);
-    path.setAttribute('d', d);
-    path.setAttribute('fill', 'none');
-    path.setAttribute('fill-opacity', '0');
-    path.setAttribute('stroke', PAPER_COLOR);
-    path.setAttribute('stroke-width', Math.max(0.5, w).toFixed(2));
-    path.setAttribute('stroke-opacity', Math.min(1, opacity).toFixed(2));
+    // Fine/V/U gouge: single variable-width ribbon for pressure-responsive preview
+    const outerW = tool.profile[0] ? tool.profile[0].w : 1;
+    const widths = points.map(pt => {
+      const p = pt.pressure !== undefined ? pt.pressure : 0.5;
+      const pw = _pc.wBase + Math.pow(Math.max(0, p), _pc.wPow) * _pc.wMul;
+      return Math.max(0.3, tool.width * outerW * pw);
+    });
+    const ribbonD = computeRibbonD(points, widths, 0);
+    if (ribbonD) {
+      path.setAttribute('d', ribbonD);
+      path.setAttribute('fill', PAPER_COLOR);
+      const lastPt = points[points.length - 1];
+      const p = lastPt.pressure !== undefined ? lastPt.pressure : 0.5;
+      const opacity = _pc.oBase + Math.pow(Math.max(0, p), _pc.oPow) * _pc.oMul;
+      path.setAttribute('fill-opacity', Math.min(1, opacity).toFixed(2));
+      path.setAttribute('stroke', 'none');
+    }
   }
 }
 
@@ -8739,19 +8741,22 @@ function renderBgCarvePreview(points) {
     path.setAttribute('stroke-width', w.toFixed(1));
     path.setAttribute('stroke-opacity', '0.2');
   } else {
-    const lastPt = points[points.length - 1];
-    const p = lastPt.pressure !== undefined ? lastPt.pressure : 0.5;
-    const pw = _pc.wBase + Math.pow(Math.max(0, p), _pc.wPow) * _pc.wMul;
-    const w = tool.width * (tool.profile[0] ? tool.profile[0].w : 1) * pw;
-    const opacity = _pc.oBase + Math.pow(Math.max(0, p), _pc.oPow) * _pc.oMul;
-
-    const d = pointsToD(points);
-    path.setAttribute('d', d);
-    path.setAttribute('fill', 'none');
-    path.setAttribute('fill-opacity', '0');
-    path.setAttribute('stroke', PAPER_COLOR);
-    path.setAttribute('stroke-width', Math.max(0.5, w).toFixed(2));
-    path.setAttribute('stroke-opacity', Math.min(1, opacity).toFixed(2));
+    const outerW = tool.profile[0] ? tool.profile[0].w : 1;
+    const widths = points.map(pt => {
+      const p = pt.pressure !== undefined ? pt.pressure : 0.5;
+      const pw = _pc.wBase + Math.pow(Math.max(0, p), _pc.wPow) * _pc.wMul;
+      return Math.max(0.3, tool.width * outerW * pw);
+    });
+    const ribbonD = computeRibbonD(points, widths, 0);
+    if (ribbonD) {
+      path.setAttribute('d', ribbonD);
+      path.setAttribute('fill', PAPER_COLOR);
+      const lastPt = points[points.length - 1];
+      const p = lastPt.pressure !== undefined ? lastPt.pressure : 0.5;
+      const opacity = _pc.oBase + Math.pow(Math.max(0, p), _pc.oPow) * _pc.oMul;
+      path.setAttribute('fill-opacity', Math.min(1, opacity).toFixed(2));
+      path.setAttribute('stroke', 'none');
+    }
   }
 }
 
