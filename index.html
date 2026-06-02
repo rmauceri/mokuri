@@ -8630,9 +8630,10 @@ function buildPaletteUI() {
 //  CARVE STROKE HELPERS
 // ============================================================
 
-// Live preview while drawing a carve stroke
+// Live preview while drawing a carve stroke — fast simplified rendering
+// Uses a single variable-width stroke instead of full multi-layer ribbon computation.
+// Full fidelity renders on pen-up via rerenderElement.
 function renderCarvePreview(el, points) {
-  clearCarvePreview();
   if (points.length < 2) return;
   const def = getElementDef(el.defId);
   if (!def) return;
@@ -8640,23 +8641,60 @@ function renderCarvePreview(el, points) {
   const offX = -vb[2] / 2 - vb[0];
   const offY = -vb[3] / 2 - vb[1];
 
-  const fakeStroke = { points, tool: STATE.carveTool };
-  const items = carveStrokeRenderData(fakeStroke, PAPER_COLOR, CARVED_STROKE);
+  const tool = CARVE_TOOLS[STATE.carveTool];
+  const _pc = getPressureCurve(STATE.pressureCurve);
+  const isPattern = STATE.carveTool === 'pattern';
 
-  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-  g.id = 'carve-preview';
-  g.setAttribute('transform', `translate(${el.x}, ${el.y}) rotate(${el.rotation}) scale(${el.scaleX}, ${el.scaleY})`);
-  const inner = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-  inner.setAttribute('transform', `translate(${offX}, ${offY})`);
+  // Reuse existing preview group if possible (avoid DOM create/destroy per frame)
+  let g = document.getElementById('carve-preview');
+  let path;
+  if (!g) {
+    g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.id = 'carve-preview';
+    g.setAttribute('transform', `translate(${el.x}, ${el.y}) rotate(${el.rotation}) scale(${el.scaleX}, ${el.scaleY})`);
+    const inner = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    inner.setAttribute('transform', `translate(${offX}, ${offY})`);
+    path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.id = 'carve-preview-path';
+    path.setAttribute('stroke-linecap', 'round');
+    path.setAttribute('stroke-linejoin', 'round');
+    inner.appendChild(path);
+    g.appendChild(inner);
+    compLayer.appendChild(g);
+  } else {
+    path = document.getElementById('carve-preview-path');
+  }
 
-  items.forEach(item => {
-    const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    applyStrokeItem(p, item);
-    inner.appendChild(p);
-  });
+  if (isPattern) {
+    // Pattern tool: semi-transparent wide stroke (cheap centerline)
+    const lastPt = points[points.length - 1];
+    const p = lastPt.pressure !== undefined ? lastPt.pressure : 0.5;
+    const pw = 0.8 + 0.4 * p;
+    const w = Math.max(2, tool.width * pw);
+    const d = pointsToD(points);
+    path.setAttribute('d', d);
+    path.setAttribute('fill', 'none');
+    path.setAttribute('fill-opacity', '0');
+    path.setAttribute('stroke', CARVED_STROKE);
+    path.setAttribute('stroke-width', w.toFixed(1));
+    path.setAttribute('stroke-opacity', '0.2');
+  } else {
+    // Fine/V/U gouge: variable-width centerline stroke
+    // Compute average width from recent pressure for responsive feedback
+    const lastPt = points[points.length - 1];
+    const p = lastPt.pressure !== undefined ? lastPt.pressure : 0.5;
+    const pw = _pc.wBase + Math.pow(Math.max(0, p), _pc.wPow) * _pc.wMul;
+    const w = tool.width * (tool.profile[0] ? tool.profile[0].w : 1) * pw;
+    const opacity = _pc.oBase + Math.pow(Math.max(0, p), _pc.oPow) * _pc.oMul;
 
-  g.appendChild(inner);
-  compLayer.appendChild(g);
+    const d = pointsToD(points);
+    path.setAttribute('d', d);
+    path.setAttribute('fill', 'none');
+    path.setAttribute('fill-opacity', '0');
+    path.setAttribute('stroke', PAPER_COLOR);
+    path.setAttribute('stroke-width', Math.max(0.5, w).toFixed(2));
+    path.setAttribute('stroke-opacity', Math.min(1, opacity).toFixed(2));
+  }
 }
 
 function clearCarvePreview() {
@@ -8664,19 +8702,57 @@ function clearCarvePreview() {
   if (prev) prev.remove();
 }
 
-// Background carve stroke preview (renders directly in bg-carve-layer space)
+// Background carve stroke preview — fast simplified rendering
 function renderBgCarvePreview(points) {
-  clearBgCarvePreview();
-  const fakeStroke = { points, tool: STATE.carveTool };
-  const items = carveStrokeRenderData(fakeStroke, PAPER_COLOR, CARVED_STROKE);
-  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-  g.id = 'bg-carve-preview';
-  items.forEach(item => {
-    const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    applyStrokeItem(p, item);
-    g.appendChild(p);
-  });
-  $('bg-carve-layer').appendChild(g);
+  if (points.length < 2) return;
+
+  const tool = CARVE_TOOLS[STATE.carveTool];
+  const _pc = getPressureCurve(STATE.pressureCurve);
+  const isPattern = STATE.carveTool === 'pattern';
+
+  // Reuse existing preview element
+  let g = document.getElementById('bg-carve-preview');
+  let path;
+  if (!g) {
+    g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.id = 'bg-carve-preview';
+    path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.id = 'bg-carve-preview-path';
+    path.setAttribute('stroke-linecap', 'round');
+    path.setAttribute('stroke-linejoin', 'round');
+    g.appendChild(path);
+    $('bg-carve-layer').appendChild(g);
+  } else {
+    path = document.getElementById('bg-carve-preview-path');
+  }
+
+  if (isPattern) {
+    const lastPt = points[points.length - 1];
+    const p = lastPt.pressure !== undefined ? lastPt.pressure : 0.5;
+    const pw = 0.8 + 0.4 * p;
+    const w = Math.max(2, tool.width * pw);
+    const d = pointsToD(points);
+    path.setAttribute('d', d);
+    path.setAttribute('fill', 'none');
+    path.setAttribute('fill-opacity', '0');
+    path.setAttribute('stroke', CARVED_STROKE);
+    path.setAttribute('stroke-width', w.toFixed(1));
+    path.setAttribute('stroke-opacity', '0.2');
+  } else {
+    const lastPt = points[points.length - 1];
+    const p = lastPt.pressure !== undefined ? lastPt.pressure : 0.5;
+    const pw = _pc.wBase + Math.pow(Math.max(0, p), _pc.wPow) * _pc.wMul;
+    const w = tool.width * (tool.profile[0] ? tool.profile[0].w : 1) * pw;
+    const opacity = _pc.oBase + Math.pow(Math.max(0, p), _pc.oPow) * _pc.oMul;
+
+    const d = pointsToD(points);
+    path.setAttribute('d', d);
+    path.setAttribute('fill', 'none');
+    path.setAttribute('fill-opacity', '0');
+    path.setAttribute('stroke', PAPER_COLOR);
+    path.setAttribute('stroke-width', Math.max(0.5, w).toFixed(2));
+    path.setAttribute('stroke-opacity', Math.min(1, opacity).toFixed(2));
+  }
 }
 
 function clearBgCarvePreview() {
