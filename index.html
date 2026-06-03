@@ -4127,13 +4127,14 @@ function carveStrokeRenderData(stroke, paperColor, grooveColor, opts) {
 
   // Compute per-point widths for a given layer width multiplier
   // In print mode, edge noise scales inversely with pressure (shallow cuts → rougher edges)
+  // Print minimum of 1.0 SVG unit (= 2px at scale=2) prevents sub-pixel ribbon fragmentation on WebKit.
   function computeWidths(layerW) {
     return pts.map((pt, i) => {
       const p = pt.pressure !== undefined ? pt.pressure : 0.5;
       const pw = pressureWidth(p);
       const noiseScale = forPrint ? 0.1 + 0.18 * (1 - p) : 0.1;
       const noise = Math.cos(seed + i * 7.3 + layerW * 13.1) * noiseScale;
-      return Math.max(0.15, baseW * layerW * taperAt(i) * pw * (1 + noise));
+      return Math.max(forPrint ? 1.0 : 0.15, baseW * layerW * taperAt(i) * pw * (1 + noise));
     });
   }
 
@@ -4175,9 +4176,10 @@ function carveStrokeRenderData(stroke, paperColor, grooveColor, opts) {
 
     // 3G — Fiber ghosts: residual ink in shallow cuts
     // Discrete filled segments along centerline (avoids stroke-dasharray cross-platform issues)
+    // In print mode, skip if dots would be sub-pixel (< 1.0 SVG unit) — unreliable on WebKit.
     const fiberIntensity = Math.max(0, 1 - avgP / 0.65);
-    if (fiberIntensity > 0.05) {
-      const fiberW = Math.max(0.3, baseW * 0.25 * fiberIntensity);
+    const fiberW = Math.max(0.3, baseW * 0.25 * fiberIntensity);
+    if (fiberIntensity > 0.05 && (!forPrint || fiberW >= 1.0)) {
       const fiberA = Math.min(0.28, fiberIntensity * 0.32);
       const dashLen = fiberW * 1.5;
       const gapLen = fiberW * 3;
@@ -4253,7 +4255,8 @@ function carveStrokeRenderData(stroke, paperColor, grooveColor, opts) {
       const sfWidths = computeWidths(shallowFiberW);
       const sfD = computeRibbonD(pts, sfWidths, tiltS * 1.4);
       if (sfD) {
-        const sfW = Math.max(0.2, baseW * 0.15);
+        // In print mode, ensure dots are at least 1.0 SVG unit to render reliably on WebKit
+        const sfW = Math.max(forPrint ? 1.0 : 0.2, baseW * 0.15);
         const sfDashLen = sfW * 0.8;
         const sfGapLen = sfW * 4;
         const sfCycle = sfDashLen + sfGapLen;
