@@ -6343,7 +6343,8 @@ function applyCompositionData(data) {
   STATE.mist = data.mist || 0;
   STATE.smoothHorizon = data.smoothHorizon || false;
   STATE.backgroundCarveStrokes = data.backgroundCarveStrokes || [];
-  markBgCarveDirty(); = data.presentationMargin || 'standard';
+  markBgCarveDirty();
+  STATE.presentationMargin = data.presentationMargin || 'standard';
   STATE.presentationTitle = data.presentationTitle || '';
   STATE.presentationEdition = data.presentationEdition || '';
   STATE.presentationHanko = data.presentationHanko || null;
