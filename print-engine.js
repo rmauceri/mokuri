@@ -245,10 +245,10 @@ const PrintEngine = (() => {
 
     // Helper: generate SVG pattern def for freehand pattern strokes in print output
     const _printPatDefs = new Set();
-    function getStrokePatternFill(stroke, elKey) {
+    function getStrokePatternFill(stroke, elKey, densityScale) {
       if (stroke.tool !== 'pattern' || !stroke.pattern) return null;
       const patId = stroke.pattern;
-      const density = stroke.density || 0.5;
+      const density = (stroke.density || 0.5) * (densityScale || 1);
       const rotation = stroke.rotation || 0;
       const press = stroke.pressure !== undefined ? stroke.pressure : 50;
       const patternOpacity = (0.4 + 0.5 * (press / 100)).toFixed(2);
@@ -560,9 +560,11 @@ const PrintEngine = (() => {
 
       // Custom carve strokes
       if (el.carveStrokes && el.carveStrokes.length) {
+        // Scale pattern density for element-local coords to match visual size on paper
+        const elDensityScale = Math.max(vb[2], vb[3]) / Math.max(paperW, paperH);
         el.carveStrokes.forEach(stroke => {
           if (stroke.points.length < 2) return;
-          const spFill = getStrokePatternFill(stroke, el.id);
+          const spFill = getStrokePatternFill(stroke, el.id, elDensityScale);
           const items = (typeof carveStrokeRenderData === 'function')
             ? carveStrokeRenderData(stroke, paperBase, 'rgba(0,0,0,0)', { forPrint: true })
             : [];

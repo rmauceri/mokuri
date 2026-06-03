@@ -4784,13 +4784,20 @@ function renderElementSvg(el, layerIndex) {
 
   // Render custom carve strokes via shared helper
   if (el.carveStrokes && el.carveStrokes.length) {
+    // Scale pattern density for element-local coordinate space so visual density
+    // matches background carving (element viewBox is smaller than paper dimensions)
+    const elScale = Math.max(vb[2], vb[3]) / Math.max(STATE.paperW, STATE.paperH);
+
     el.carveStrokes.forEach(stroke => {
       // Per-stroke pattern fill for freehand pattern tool strokes
       let strokePatFill = null;
       if (stroke.tool === 'pattern' && stroke.pattern) {
        // In ink mode, pattern reveals paper; in carve mode, shows as dark groove marks
        const patStrokeColor = inkMode ? PAPER_COLOR : CARVED_STROKE;
-       strokePatFill = createStrokePatternDef(stroke, el.id, gradDefs, PAPER_COLOR, patStrokeColor);
+       // Adjust density so tile size in element-local coords matches visual size on paper
+       const scaledDensity = (stroke.density || 0.5) * elScale;
+       const scaledStroke = Object.assign({}, stroke, { density: scaledDensity });
+       strokePatFill = createStrokePatternDef(scaledStroke, el.id, gradDefs, PAPER_COLOR, patStrokeColor);
        if (strokePatFill) hasGrads = true;
      }
      carveStrokeRenderData(stroke, PAPER_COLOR, CARVED_STROKE).forEach(item => {
