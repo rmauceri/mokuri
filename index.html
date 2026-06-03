@@ -4175,11 +4175,12 @@ function carveStrokeRenderData(stroke, paperColor, grooveColor, opts) {
     const inkColor = '#3a3228';
 
     // 3G — Fiber ghosts: residual ink in shallow cuts
-    // Discrete filled segments along centerline (avoids stroke-dasharray cross-platform issues)
-    // In print mode, skip if dots would be sub-pixel (< 1.0 SVG unit) — unreliable on WebKit.
+    // Discrete filled dots — suppressed in print mode entirely due to WebKit SVG-to-Canvas
+    // rasterization differences that make the dots visible as render artifacts on light backgrounds.
+    // The effect is only reliable on-screen (workspace carve/ink preview).
     const fiberIntensity = Math.max(0, 1 - avgP / 0.65);
     const fiberW = Math.max(0.3, baseW * 0.25 * fiberIntensity);
-    if (fiberIntensity > 0.05 && (!forPrint || fiberW >= 1.0)) {
+    if (!forPrint && fiberIntensity > 0.05) {
       const fiberA = Math.min(0.28, fiberIntensity * 0.32);
       const dashLen = fiberW * 1.5;
       const gapLen = fiberW * 3;
@@ -4249,45 +4250,46 @@ function carveStrokeRenderData(stroke, paperColor, grooveColor, opts) {
       if (featherD) {
         data.push({ d: featherD, a: 0.14, c: paperColor, fill: true });
       }
-      // Thin dark fiber marks along the shallow edge (rough wall catches ink)
-      // Discrete filled dots along ribbon path (avoids stroke-dasharray cross-platform issues)
-      const shallowFiberW = (tool.profile[0] ? tool.profile[0].w : 1) + 0.3;
-      const sfWidths = computeWidths(shallowFiberW);
-      const sfD = computeRibbonD(pts, sfWidths, tiltS * 1.4);
-      if (sfD) {
-        // In print mode, ensure dots are at least 1.0 SVG unit to render reliably on WebKit
-        const sfW = Math.max(forPrint ? 1.0 : 0.2, baseW * 0.15);
-        const sfDashLen = sfW * 0.8;
-        const sfGapLen = sfW * 4;
-        const sfCycle = sfDashLen + sfGapLen;
-        let sfSegD = '';
-        let sfDist = 0;
-        for (let i = 0; i < pts.length - 1; i++) {
-          const dx = pts[i + 1].x - pts[i].x;
-          const dy = pts[i + 1].y - pts[i].y;
-          const segLen = Math.hypot(dx, dy);
-          if (segLen < 0.01) continue;
-          const nx = dx / segLen, ny = dy / segLen;
-          let t = 0;
-          while (t < segLen) {
-            const posInCycle = sfDist % sfCycle;
-            if (posInCycle < sfDashLen) {
-              const cx = pts[i].x + nx * t;
-              const cy = pts[i].y + ny * t;
-              const r = sfW * 0.5;
-              sfSegD += `M${(cx - r).toFixed(1)} ${cy.toFixed(1)}a${r.toFixed(1)} ${(r * 0.6).toFixed(1)} 0 1 0 ${(r * 2).toFixed(1)} 0a${r.toFixed(1)} ${(r * 0.6).toFixed(1)} 0 1 0 ${(-r * 2).toFixed(1)} 0`;
-              const remaining = Math.max(sfDashLen - posInCycle, sfCycle * 0.01);
-              t += remaining;
-              sfDist += remaining;
-            } else {
-              const remaining = Math.max(sfCycle - posInCycle, sfCycle * 0.01);
-              t += remaining;
-              sfDist += remaining;
+      // Thin dark fiber marks along the shallow edge — suppressed in print mode (same WebKit
+      // dot-artifact issue as 3G fiber ghosts; tilt feather ribbon above is sufficient for print).
+      if (!forPrint) {
+        const shallowFiberW = (tool.profile[0] ? tool.profile[0].w : 1) + 0.3;
+        const sfWidths = computeWidths(shallowFiberW);
+        const sfD = computeRibbonD(pts, sfWidths, tiltS * 1.4);
+        if (sfD) {
+          const sfW = Math.max(0.2, baseW * 0.15);
+          const sfDashLen = sfW * 0.8;
+          const sfGapLen = sfW * 4;
+          const sfCycle = sfDashLen + sfGapLen;
+          let sfSegD = '';
+          let sfDist = 0;
+          for (let i = 0; i < pts.length - 1; i++) {
+            const dx = pts[i + 1].x - pts[i].x;
+            const dy = pts[i + 1].y - pts[i].y;
+            const segLen = Math.hypot(dx, dy);
+            if (segLen < 0.01) continue;
+            const nx = dx / segLen, ny = dy / segLen;
+            let t = 0;
+            while (t < segLen) {
+              const posInCycle = sfDist % sfCycle;
+              if (posInCycle < sfDashLen) {
+                const cx = pts[i].x + nx * t;
+                const cy = pts[i].y + ny * t;
+                const r = sfW * 0.5;
+                sfSegD += `M${(cx - r).toFixed(1)} ${cy.toFixed(1)}a${r.toFixed(1)} ${(r * 0.6).toFixed(1)} 0 1 0 ${(r * 2).toFixed(1)} 0a${r.toFixed(1)} ${(r * 0.6).toFixed(1)} 0 1 0 ${(-r * 2).toFixed(1)} 0`;
+                const remaining = Math.max(sfDashLen - posInCycle, sfCycle * 0.01);
+                t += remaining;
+                sfDist += remaining;
+              } else {
+                const remaining = Math.max(sfCycle - posInCycle, sfCycle * 0.01);
+                t += remaining;
+                sfDist += remaining;
+              }
             }
           }
-        }
-        if (sfSegD) {
-          data.push({ d: sfSegD, a: 0.08, c: inkColor, fill: true });
+          if (sfSegD) {
+            data.push({ d: sfSegD, a: 0.08, c: inkColor, fill: true });
+          }
         }
       }
     }
