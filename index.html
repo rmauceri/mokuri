@@ -4921,12 +4921,24 @@ function renderGuides() {
   });
 }
 
+// Dirty flag for bg-carve-layer: only rebuild when strokes or viewMode actually changed.
+// Move/resize operations don't touch background strokes, so the layer is cached.
+let _bgCarveLayerDirty = true;
+let _bgCarveLayerViewMode = null;
+
+function markBgCarveDirty() { _bgCarveLayerDirty = true; }
+
 function renderBackgroundCarveStrokes() {
+  const inkMode = STATE.viewMode === 'ink';
+  // Skip rebuild if nothing changed
+  if (!_bgCarveLayerDirty && _bgCarveLayerViewMode === STATE.viewMode) return;
+  _bgCarveLayerDirty = false;
+  _bgCarveLayerViewMode = STATE.viewMode;
+
   const layer = $('bg-carve-layer');
   while (layer.firstChild) layer.removeChild(layer.firstChild);
   if (!STATE.backgroundCarveStrokes || !STATE.backgroundCarveStrokes.length) return;
 
-  const inkMode = STATE.viewMode === 'ink';
   const paperColor = inkMode ? PAPER_COLOR : PAPER_COLOR;
   const grooveColor = inkMode ? 'rgba(0,0,0,0)' : CARVED_STROKE;
 
@@ -5555,6 +5567,7 @@ function undo() {
   } else {
     STATE.elements = snap.elements;
     STATE.backgroundCarveStrokes = snap.bgStrokes || [];
+    markBgCarveDirty();
   }
   // In carve focus, preserve selection on the focused element
   if (STATE.carveFocus) {
@@ -5588,6 +5601,7 @@ function redo() {
   } else {
     STATE.elements = snap.elements;
     STATE.backgroundCarveStrokes = snap.bgStrokes || [];
+    markBgCarveDirty();
   }
   // In carve focus, preserve selection on the focused element
   if (STATE.carveFocus) {
@@ -6314,7 +6328,7 @@ function applyCompositionData(data) {
   STATE.mist = data.mist || 0;
   STATE.smoothHorizon = data.smoothHorizon || false;
   STATE.backgroundCarveStrokes = data.backgroundCarveStrokes || [];
-  STATE.presentationMargin = data.presentationMargin || 'standard';
+  markBgCarveDirty(); = data.presentationMargin || 'standard';
   STATE.presentationTitle = data.presentationTitle || '';
   STATE.presentationEdition = data.presentationEdition || '';
   STATE.presentationHanko = data.presentationHanko || null;
@@ -6506,7 +6520,7 @@ async function newComposition(paperW, paperH, presetId) {
     STATE.horizon = 0.62;
     STATE.mist = 0;
     STATE.backgroundCarveStrokes = [];
-    STATE.paperType = 'kozo';
+    markBgCarveDirty();
     STATE.inkLoad = 'standard';
     STATE.impressions = 1;
     STATE.undoStack = [];
@@ -8944,6 +8958,7 @@ function quickStrokeUndo() {
     }
   } else if (STATE.backgroundCarveStrokes.length) {
     STATE.strokeRedoBuffer.push({ type: 'background', stroke: STATE.backgroundCarveStrokes.pop() });
+    markBgCarveDirty();
     renderBackgroundCarveStrokes();
   }
 }
@@ -8961,6 +8976,7 @@ function quickStrokeRedo() {
     }
   } else if (item.type === 'background') {
     STATE.backgroundCarveStrokes.push(item.stroke);
+    markBgCarveDirty();
     renderBackgroundCarveStrokes();
   }
 }
@@ -11011,6 +11027,7 @@ function setupInteraction() {
         });
         pushUndo();
         STATE.backgroundCarveStrokes.splice(bestIdx, 1);
+        markBgCarveDirty();
         renderBackgroundCarveStrokes();
         if (!STATE.backgroundCarveStrokes.length) setMode('carve');
         if (STATE.carveStudioOpen) buildCarveStudioUI();
@@ -11466,6 +11483,7 @@ function setupInteraction() {
           const strokeData = { points: simplified, tool: STATE.carveTool };
           if (STATE.carveTool === 'pattern') { strokeData.pattern = STATE.activePattern; strokeData.density = STATE.patternDensity; strokeData.rotation = STATE.patternRotation; strokeData.pressure = STATE.pressureCurve ?? 50; }
           STATE.backgroundCarveStrokes.push(strokeData);
+          markBgCarveDirty();
           renderBackgroundCarveStrokes();
           debouncedAutoSave();
           MokuriAudio.playCarveEnd();
