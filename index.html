@@ -10891,7 +10891,7 @@ function setupInteraction() {
     // During print preview, never interact with elements — any drag is a pan
     if (STATE.printPreview) {
       if (e.button === 0 || e.button === 1) {
-        STATE.dragging = { type: 'pan', startX: e.clientX, startY: e.clientY, origVBx: STATE.viewBox.x, origVBy: STATE.viewBox.y };
+        STATE.dragging = { type: 'pan', startX: e.clientX, startY: e.clientY, origVBx: STATE.viewBox.x, origVBy: STATE.viewBox.y, wsRect: ws.getBoundingClientRect() };
         ws.setPointerCapture(e.pointerId);
         ws.style.cursor = 'grabbing';
       }
@@ -10900,7 +10900,7 @@ function setupInteraction() {
 
     if (e.button === 1 || (e.button === 0 && e.altKey)) {
       // Middle click or alt+click: pan (always available)
-      STATE.dragging = { type: 'pan', startX: e.clientX, startY: e.clientY, origVBx: STATE.viewBox.x, origVBy: STATE.viewBox.y };
+      STATE.dragging = { type: 'pan', startX: e.clientX, startY: e.clientY, origVBx: STATE.viewBox.x, origVBy: STATE.viewBox.y, wsRect: ws.getBoundingClientRect() };
       ws.setPointerCapture(e.pointerId);
       ws.style.cursor = 'grabbing';
       return;
@@ -10976,7 +10976,7 @@ function setupInteraction() {
         return;
       }
       // Outside paper — start pan
-      STATE.dragging = { type: 'pan', startX: e.clientX, startY: e.clientY, origVBx: STATE.viewBox.x, origVBy: STATE.viewBox.y };
+      STATE.dragging = { type: 'pan', startX: e.clientX, startY: e.clientY, origVBx: STATE.viewBox.x, origVBy: STATE.viewBox.y, wsRect: ws.getBoundingClientRect() };
       ws.setPointerCapture(e.pointerId);
       ws.style.cursor = 'grabbing';
       return;
@@ -11050,7 +11050,7 @@ function setupInteraction() {
         return;
       }
       if (!onPaper) {
-        STATE.dragging = { type: 'pan', startX: e.clientX, startY: e.clientY, origVBx: STATE.viewBox.x, origVBy: STATE.viewBox.y };
+        STATE.dragging = { type: 'pan', startX: e.clientX, startY: e.clientY, origVBx: STATE.viewBox.x, origVBy: STATE.viewBox.y, wsRect: ws.getBoundingClientRect() };
         ws.setPointerCapture(e.pointerId);
         ws.style.cursor = 'grabbing';
       }
@@ -11221,7 +11221,7 @@ function setupInteraction() {
 
     // Start pan (but not in carve focus mode — keep viewport locked on element)
     if (STATE.carveFocus) return;
-    STATE.dragging = { type: 'pan', startX: e.clientX, startY: e.clientY, origVBx: STATE.viewBox.x, origVBy: STATE.viewBox.y };
+    STATE.dragging = { type: 'pan', startX: e.clientX, startY: e.clientY, origVBx: STATE.viewBox.x, origVBy: STATE.viewBox.y, wsRect: ws.getBoundingClientRect() };
     ws.setPointerCapture(e.pointerId);
     ws.style.cursor = 'grabbing';
   });
@@ -11364,12 +11364,14 @@ function setupInteraction() {
     const d = STATE.dragging;
 
     if (d.type === 'pan') {
-      const rect = ws.getBoundingClientRect();
-      const dx = (e.clientX - d.startX) / rect.width * STATE.viewBox.w;
-      const dy = (e.clientY - d.startY) / rect.height * STATE.viewBox.h;
+      const dx = (e.clientX - d.startX) / d.wsRect.width * STATE.viewBox.w;
+      const dy = (e.clientY - d.startY) / d.wsRect.height * STATE.viewBox.h;
       STATE.viewBox.x = d.origVBx - dx;
       STATE.viewBox.y = d.origVBy - dy;
-      updateViewBox();
+      if (!_dragRafPending) {
+        _dragRafPending = true;
+        requestAnimationFrame(() => { _dragRafPending = false; updateViewBox(); });
+      }
       return;
     }
 
