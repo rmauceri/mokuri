@@ -4788,21 +4788,23 @@ function renderElementSvg(el, layerIndex) {
       // Per-stroke pattern fill for freehand pattern tool strokes
       let strokePatFill = null;
       if (stroke.tool === 'pattern' && stroke.pattern) {
-        strokePatFill = createStrokePatternDef(stroke, el.id, gradDefs, PAPER_COLOR, CARVED_STROKE);
-        if (strokePatFill) hasGrads = true;
-      }
-      carveStrokeRenderData(stroke, PAPER_COLOR, CARVED_STROKE).forEach(item => {
-        let color = item.c;
-        if (stroke.tool === 'pattern' && strokePatFill && item.fill) {
-          color = strokePatFill;
-        } else if (!inkMode && item.c === PAPER_COLOR && carvePatternFill !== PAPER_COLOR) {
-          color = carvePatternFill;
-        }
-        const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        applyStrokeItem(p, item, color);
-        inner.appendChild(p);
-      });
-    });
+       // In ink mode, pattern reveals paper; in carve mode, shows as dark groove marks
+       const patStrokeColor = inkMode ? PAPER_COLOR : CARVED_STROKE;
+       strokePatFill = createStrokePatternDef(stroke, el.id, gradDefs, PAPER_COLOR, patStrokeColor);
+       if (strokePatFill) hasGrads = true;
+     }
+     carveStrokeRenderData(stroke, PAPER_COLOR, CARVED_STROKE).forEach(item => {
+       let color = item.c;
+       if (stroke.tool === 'pattern' && strokePatFill && item.fill) {
+         color = strokePatFill;
+       } else if (!inkMode && item.c === PAPER_COLOR && carvePatternFill !== PAPER_COLOR) {
+         color = carvePatternFill;
+       }
+       const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+       applyStrokeItem(p, item, color);
+       inner.appendChild(p);
+     });
+   });
   }
 
   if (hasGrads) g.insertBefore(gradDefs, g.firstChild);
@@ -4934,15 +4936,18 @@ function renderBackgroundCarveStrokes() {
         bgDefs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
         layer.appendChild(bgDefs);
       }
-      strokePatFill = createStrokePatternDef(stroke, 'bg', bgDefs, paperColor, grooveColor !== 'rgba(0,0,0,0)' ? grooveColor : CARVED_STROKE);
+      // In ink mode, pattern reveals paper; in carve mode, shows as dark groove marks
+      const patStrokeColor = inkMode ? PAPER_COLOR : CARVED_STROKE;
+      strokePatFill = createStrokePatternDef(stroke, 'bg', bgDefs, paperColor, patStrokeColor);
     }
 
     const items = carveStrokeRenderData(stroke, paperColor, grooveColor);
     items.forEach(item => {
-      if (inkMode && item.c === 'rgba(0,0,0,0)') return;
       let color;
       if (stroke.tool === 'pattern' && strokePatFill && item.fill) {
         color = strokePatFill;
+      } else if (inkMode && item.c === 'rgba(0,0,0,0)') {
+        return;
       }
       const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       applyStrokeItem(p, item, color);
