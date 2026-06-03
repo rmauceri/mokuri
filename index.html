@@ -4784,9 +4784,9 @@ function renderElementSvg(el, layerIndex) {
 
   // Render custom carve strokes via shared helper
   if (el.carveStrokes && el.carveStrokes.length) {
-    // Scale pattern density for element-local coordinate space so visual density
-    // matches background carving (element viewBox is smaller than paper dimensions)
-    const elScale = Math.max(STATE.paperW, STATE.paperH) / Math.max(vb[2], vb[3]);
+    // Scale pattern density to compensate for element's display scale so visual density
+    // matches background carving (pattern tiles stretch with element transform)
+    const elScale = Math.max(Math.abs(el.scaleX), Math.abs(el.scaleY));
 
     el.carveStrokes.forEach(stroke => {
       // Per-stroke pattern fill for freehand pattern tool strokes
