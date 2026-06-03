@@ -3315,7 +3315,7 @@ rebuildElementMap();
 // ============================================================
 //  VERSION
 // ============================================================
-const MOKURI_VERSION = '0.98';
+const MOKURI_VERSION = '0.99';
 
 // ============================================================
 //  FEEDBACK
@@ -4200,11 +4200,11 @@ function carveStrokeRenderData(stroke, paperColor, grooveColor, opts) {
             const cy = pts[i].y + ny * t;
             const r = fiberW * 0.5;
             segD += `M${(cx - r).toFixed(1)} ${cy.toFixed(1)}a${r.toFixed(1)} ${(r * 0.6).toFixed(1)} 0 1 0 ${(r * 2).toFixed(1)} 0a${r.toFixed(1)} ${(r * 0.6).toFixed(1)} 0 1 0 ${(-r * 2).toFixed(1)} 0`;
-            const remaining = dashLen - posInCycle;
+            const remaining = Math.max(dashLen - posInCycle, cycle * 0.01);
             t += remaining;
             dist += remaining;
           } else {
-            const remaining = cycle - posInCycle;
+            const remaining = Math.max(cycle - posInCycle, cycle * 0.01);
             t += remaining;
             dist += remaining;
           }
@@ -4273,11 +4273,11 @@ function carveStrokeRenderData(stroke, paperColor, grooveColor, opts) {
               const cy = pts[i].y + ny * t;
               const r = sfW * 0.5;
               sfSegD += `M${(cx - r).toFixed(1)} ${cy.toFixed(1)}a${r.toFixed(1)} ${(r * 0.6).toFixed(1)} 0 1 0 ${(r * 2).toFixed(1)} 0a${r.toFixed(1)} ${(r * 0.6).toFixed(1)} 0 1 0 ${(-r * 2).toFixed(1)} 0`;
-              const remaining = sfDashLen - posInCycle;
+              const remaining = Math.max(sfDashLen - posInCycle, sfCycle * 0.01);
               t += remaining;
               sfDist += remaining;
             } else {
-              const remaining = sfCycle - posInCycle;
+              const remaining = Math.max(sfCycle - posInCycle, sfCycle * 0.01);
               t += remaining;
               sfDist += remaining;
             }
