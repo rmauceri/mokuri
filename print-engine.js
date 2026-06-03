@@ -561,7 +561,7 @@ const PrintEngine = (() => {
       // Custom carve strokes
       if (el.carveStrokes && el.carveStrokes.length) {
         // Scale pattern density for element-local coords to match visual size on paper
-        const elDensityScale = Math.max(vb[2], vb[3]) / Math.max(paperW, paperH);
+        const elDensityScale = Math.max(paperW, paperH) / Math.max(vb[2], vb[3]);
         el.carveStrokes.forEach(stroke => {
           if (stroke.points.length < 2) return;
           const spFill = getStrokePatternFill(stroke, el.id, elDensityScale);
