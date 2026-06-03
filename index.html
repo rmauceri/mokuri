@@ -4174,19 +4174,46 @@ function carveStrokeRenderData(stroke, paperColor, grooveColor, opts) {
     const inkColor = '#3a3228';
 
     // 3G — Fiber ghosts: residual ink in shallow cuts
-    // Dashed center-line in ink color; intensity inversely proportional to pressure
+    // Discrete filled segments along centerline (avoids stroke-dasharray cross-platform issues)
     const fiberIntensity = Math.max(0, 1 - avgP / 0.65);
     if (fiberIntensity > 0.05) {
-      const centerD = pointsToD(pts);
       const fiberW = Math.max(0.3, baseW * 0.25 * fiberIntensity);
-      data.push({
-        d: centerD,
-        a: Math.min(0.28, fiberIntensity * 0.32),
-        c: inkColor,
-        fill: false,
-        w: fiberW,
-        dashArray: `${(fiberW * 1.5).toFixed(1)} ${(fiberW * 3).toFixed(1)}`,
-      });
+      const fiberA = Math.min(0.28, fiberIntensity * 0.32);
+      const dashLen = fiberW * 1.5;
+      const gapLen = fiberW * 3;
+      const cycle = dashLen + gapLen;
+      // Walk along the polyline and emit filled rounded-rect segments
+      let segD = '';
+      let dist = 0;
+      for (let i = 0; i < pts.length - 1; i++) {
+        const dx = pts[i + 1].x - pts[i].x;
+        const dy = pts[i + 1].y - pts[i].y;
+        const segLen = Math.hypot(dx, dy);
+        if (segLen < 0.01) continue;
+        const nx = dx / segLen, ny = dy / segLen;
+        let t = 0;
+        while (t < segLen) {
+          const posInCycle = dist % cycle;
+          if (posInCycle < dashLen) {
+            // We're in a dash segment — emit a small ellipse
+            const cx = pts[i].x + nx * t;
+            const cy = pts[i].y + ny * t;
+            const r = fiberW * 0.5;
+            segD += `M${(cx - r).toFixed(1)} ${cy.toFixed(1)}a${r.toFixed(1)} ${(r * 0.6).toFixed(1)} 0 1 0 ${(r * 2).toFixed(1)} 0a${r.toFixed(1)} ${(r * 0.6).toFixed(1)} 0 1 0 ${(-r * 2).toFixed(1)} 0`;
+            const remaining = dashLen - posInCycle;
+            t += remaining;
+            dist += remaining;
+          } else {
+            const remaining = cycle - posInCycle;
+            t += remaining;
+            dist += remaining;
+          }
+        }
+        dist += 0; // dist already advanced by t increments above
+      }
+      if (segD) {
+        data.push({ d: segD, a: fiberA, c: inkColor, fill: true });
+      }
     }
 
     // 3G — Ink edge pooling: dark outline at groove boundary on deep cuts
@@ -4221,19 +4248,44 @@ function carveStrokeRenderData(stroke, paperColor, grooveColor, opts) {
         data.push({ d: featherD, a: 0.14, c: paperColor, fill: true });
       }
       // Thin dark fiber marks along the shallow edge (rough wall catches ink)
+      // Discrete filled dots along ribbon path (avoids stroke-dasharray cross-platform issues)
       const shallowFiberW = (tool.profile[0] ? tool.profile[0].w : 1) + 0.3;
       const sfWidths = computeWidths(shallowFiberW);
       const sfD = computeRibbonD(pts, sfWidths, tiltS * 1.4);
       if (sfD) {
         const sfW = Math.max(0.2, baseW * 0.15);
-        data.push({
-          d: sfD,
-          a: 0.08,
-          c: inkColor,
-          fill: false,
-          w: sfW,
-          dashArray: `${(sfW * 0.8).toFixed(1)} ${(sfW * 4).toFixed(1)}`,
-        });
+        const sfDashLen = sfW * 0.8;
+        const sfGapLen = sfW * 4;
+        const sfCycle = sfDashLen + sfGapLen;
+        let sfSegD = '';
+        let sfDist = 0;
+        for (let i = 0; i < pts.length - 1; i++) {
+          const dx = pts[i + 1].x - pts[i].x;
+          const dy = pts[i + 1].y - pts[i].y;
+          const segLen = Math.hypot(dx, dy);
+          if (segLen < 0.01) continue;
+          const nx = dx / segLen, ny = dy / segLen;
+          let t = 0;
+          while (t < segLen) {
+            const posInCycle = sfDist % sfCycle;
+            if (posInCycle < sfDashLen) {
+              const cx = pts[i].x + nx * t;
+              const cy = pts[i].y + ny * t;
+              const r = sfW * 0.5;
+              sfSegD += `M${(cx - r).toFixed(1)} ${cy.toFixed(1)}a${r.toFixed(1)} ${(r * 0.6).toFixed(1)} 0 1 0 ${(r * 2).toFixed(1)} 0a${r.toFixed(1)} ${(r * 0.6).toFixed(1)} 0 1 0 ${(-r * 2).toFixed(1)} 0`;
+              const remaining = sfDashLen - posInCycle;
+              t += remaining;
+              sfDist += remaining;
+            } else {
+              const remaining = sfCycle - posInCycle;
+              t += remaining;
+              sfDist += remaining;
+            }
+          }
+        }
+        if (sfSegD) {
+          data.push({ d: sfSegD, a: 0.08, c: inkColor, fill: true });
+        }
       }
     }
   }
