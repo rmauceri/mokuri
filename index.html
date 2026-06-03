@@ -4857,6 +4857,21 @@ function rerenderAll() {
   updateStatus();
 }
 
+// Drag render optimization: during move/rotate only the outer <g> transform changes.
+// No need to rebuild inner SVG paths/gradients — just patch the attribute.
+let _dragRafPending = false;
+function rerenderTransformOnly(elementIds) {
+  const ids = Array.isArray(elementIds) ? elementIds : [elementIds];
+  ids.forEach(id => {
+    const el = STATE.elements.find(e => e.id === id);
+    if (!el) return;
+    const g = compLayer.querySelector(`g[data-id="${id}"]`);
+    if (!g) return;
+    g.setAttribute('transform', `translate(${el.x}, ${el.y}) rotate(${el.rotation}) scale(${el.scaleX}, ${el.scaleY})`);
+  });
+  updateSelection();
+}
+
 // Targeted re-render: only rebuild a single element's SVG (used after carve strokes)
 function rerenderElement(elementId) {
   const elIdx = STATE.elements.findIndex(e => e.id === elementId);
@@ -11373,7 +11388,11 @@ function setupInteraction() {
         const el = STATE.elements.find(el => el.id === op.id);
         if (el) { el.x = op.x + deltaX; el.y = op.y + deltaY; }
       });
-      rerenderAll();
+      if (!_dragRafPending) {
+        _dragRafPending = true;
+        const ids = d.origPositions.map(op => op.id);
+        requestAnimationFrame(() => { _dragRafPending = false; rerenderTransformOnly(ids); });
+      }
       return;
     }
 
@@ -11382,7 +11401,11 @@ function setupInteraction() {
       if (el) {
         const angle = Math.atan2(pt.y - d.centerY, pt.x - d.centerX) * 180 / Math.PI;
         el.rotation = d.origRotation + (angle - d.startAngle);
-        rerenderAll();
+        if (!_dragRafPending) {
+          _dragRafPending = true;
+          const id = d.elementId;
+          requestAnimationFrame(() => { _dragRafPending = false; rerenderTransformOnly(id); });
+        }
       }
       return;
     }
@@ -11428,7 +11451,11 @@ function setupInteraction() {
           el.x = d.anchorWorldX + cosR * cLX;
           el.y = d.anchorWorldY + sinR * cLX;
         }
-        rerenderAll();
+        if (!_dragRafPending) {
+          _dragRafPending = true;
+          const id = d.elementId;
+          requestAnimationFrame(() => { _dragRafPending = false; rerenderElement(id); });
+        }
       }
       return;
     }
@@ -11446,7 +11473,11 @@ function setupInteraction() {
         el.x = d.anchorX + (orig.x - d.anchorX) * f;
         el.y = d.anchorY + (orig.y - d.anchorY) * f;
       });
-      rerenderAll();
+      if (!_dragRafPending) {
+        _dragRafPending = true;
+        const ids = d.origElements.map(o => o.id);
+        requestAnimationFrame(() => { _dragRafPending = false; ids.forEach(id => rerenderElement(id)); });
+      }
       return;
     }
   });
@@ -11545,6 +11576,7 @@ function setupInteraction() {
       freAdvance('resize');
     }
     STATE.dragging = null;
+    _dragRafPending = false;
     ws.style.cursor = '';  // Clear inline cursor — let CSS classes control it
   });
 
