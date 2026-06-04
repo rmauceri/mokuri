@@ -83,6 +83,19 @@ Introduction to Mokuri Studio — what it is, why it exists, and the tradition i
 
 ---
 
+## Post 2.5 — *Carving Improved* (published Jun 4, 2026)
+**Theme:** Carving updates based on early user feedback — a release post framed around craft honesty.
+
+- Traditional mokuhanga context: carving is deliberate, slow, meditative; artists refill mistakes with material
+- **Uncarve tool** — surfaced from keyboard-only ('E') to visible Carving Workbench button; stroke to heal a cut
+- **Variable-width preview** — gouge tools show pressure-sensitive ribbon in real time; fast simplified pass during stroke, full-quality on release
+- **Pattern carving consistency** — same visual scale on elements and background; correct behavior in ink mode and across platforms (iPad rendering artifact fixed)
+- **Focus/undo cleanup** — selection preserved during undo in carve focus; Focus and Clear buttons always visible
+- Closing: carving right is genuinely hard — not just technically, but knowing what "right" means; explicit ask to readers with real carving experience
+- Image: *Night Sailing* — stars cut into sky (fine gouge), wave highlights (V gouge); caption calls out the hand carving explicitly
+
+---
+
 ## Post 3 — *The Print Engine*
 **Theme:** The core spirit of Mokuri is the final print — making something digital feel handmade, textured, and alive.
 
