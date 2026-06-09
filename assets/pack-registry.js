@@ -146,7 +146,7 @@ registerPack({
     'wisteria-vine', 'ginko-branch', 'bamboo-grove', 'susuki-grass', 'lotus-cluster', 'iris-cluster', 'chrysanthemum',
 
     'koi', 'koi-swim', 'koi-leaping', 'koi-overhead',
-    'turtle', 'rabbit', 'rabbit-run', 'frog', 'frog-leaping', 'dragonfly', 'butterfly',
+    'turtle', 'rabbit', 'rabbit-laying', 'rabbit-run', 'frog', 'frog-leaping', 'dragonfly', 'butterfly',
     'swallow-soaring', 'sparrow', 'sparrow-alert', 
     'crane-standing', 'crane-flying', 'crane-landing', 
      
