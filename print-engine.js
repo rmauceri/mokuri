@@ -206,16 +206,17 @@ const PrintEngine = (() => {
   //  RENDER COLORED SVG — organic edges, ink pooling, misregistration
   // ============================================================
 
-  async function renderColoredSvg(elements, palette, paperW, paperH, scale, inkLoad, impOffset, atmosphere, backgroundCarveStrokes, paperBase) {
+  async function renderColoredSvg(elements, palette, paperW, paperH, scale, inkLoad, impOffset, atmosphere, backgroundCarveStrokes, paperBase, paperType) {
     inkLoad = inkLoad || { opacityMul: 1.0, edgeMul: 1.0, turbScale: 3.5, misreg: 3 };
     impOffset = impOffset || { x: 0, y: 0 };
     atmosphere = atmosphere || {};
     paperBase = paperBase || '#f5f0e6';
+    paperType = paperType || {};
     const w = paperW * scale;
     const h = paperH * scale;
     const seed = Math.floor(Math.random() * 10000);
-    const inkOpacity = Math.min(1, 0.92 * inkLoad.opacityMul);
-    const edgeWeight = T('edgeWeight') * inkLoad.edgeMul;
+    const inkOpacity = Math.min(1, (paperType.inkOpacity || 0.92) * inkLoad.opacityMul);
+    const edgeWeight = T('edgeWeight') * inkLoad.edgeMul * (paperType.edgeSharpness || 1.0);
     const edgeOpacity = Math.min(0.7, T('edgeOpacity') * inkLoad.edgeMul);
 
     // feTurbulence makes every edge slightly wobbly/hand-carved
@@ -600,9 +601,11 @@ const PrintEngine = (() => {
   //  INK BLEED — soft halo simulating water-based ink feathering
   // ============================================================
 
-  function applyInkBleed(ctx, w, h, paperBase) {
-    const radius = T('bleedRadius');
-    const opacity = T('bleedOpacity');
+  function applyInkBleed(ctx, w, h, paperBase, paperType) {
+    paperType = paperType || {};
+    const bleedMul = paperType.bleedMul || 1.0;
+    const radius = T('bleedRadius') * bleedMul;
+    const opacity = T('bleedOpacity') * bleedMul;
     if (radius <= 0 || opacity <= 0) return;
 
     // Create blurred copy of current canvas
@@ -714,11 +717,12 @@ const PrintEngine = (() => {
   // ============================================================
 
   // Warm desaturation — ink absorbed into washi
-  function applyColorMuting(ctx, w, h) {
+  function applyColorMuting(ctx, w, h, paperType) {
+    paperType = paperType || {};
     const d = ctx.getImageData(0, 0, w, h);
     const px = d.data;
-    const s = T('saturation');
-    const warm = T('warmShift');
+    const s = T('saturation') * (paperType.saturationMul || 1.0);
+    const warm = T('warmShift') * (paperType.warmthMul || 1.0);
     const cool = T('coolShift');
     for (let i = 0; i < px.length; i += 4) {
       const avg = (px[i] + px[i + 1] + px[i + 2]) / 3;
@@ -803,22 +807,26 @@ const PrintEngine = (() => {
     ctx.putImageData(d, 0, 0);
   }
 
-  // Ink absorption variation — uneven density within inked areas
-  // Creates lighter patches where paper absorbed more ink (drier spots)
-  function applyInkAbsorption(ctx, w, h, paperBase) {
+  // Ink absorption variation — uneven density within inked areas.
+  // Simulates ink sinking unevenly into paper fibers. More visible on absorbent
+  // papers (Kozo, Unryu) and in lightly-inked areas (washes). Heavy ink overwhelms
+  // the effect; sized papers (Gampi) show almost none.
+  function applyInkAbsorption(ctx, w, h, paperBase, paperType) {
     paperBase = paperBase || PAPER_BASE;
+    paperType = paperType || {};
+    const absRate = paperType.absorptionRate || 1.0;
     const d = ctx.getImageData(0, 0, w, h);
     const px = d.data;
 
     // Generate absorption map: random patches of lighter ink
-    const patchCount = Math.floor(w * h / 8000);
+    const patchCount = Math.floor(w * h / 8000 * absRate);
     const patches = [];
     for (let i = 0; i < patchCount; i++) {
       patches.push({
         x: Math.random() * w,
         y: Math.random() * h,
         r: 15 + Math.random() * 40,
-        strength: 0.03 + Math.random() * 0.06,
+        strength: (0.02 + Math.random() * 0.03) * absRate,
       });
     }
 
@@ -843,8 +851,14 @@ const PrintEngine = (() => {
         }
 
         if (lighten > 0) {
-          // Lighten toward paper base (simulates ink thinning)
-          const blend = Math.min(lighten, 0.15);
+          // Modulate by ink density: lighter ink shows more absorption,
+          // heavy saturated ink overwhelms the effect
+          const lum = (px[i] + px[i + 1] + px[i + 2]) / 3;
+          const paperLum = (paperBase.r + paperBase.g + paperBase.b) / 3;
+          const inkDepth = 1 - (lum / paperLum); // 0 = near paper, 1 = fully dark
+          const densityFactor = 1 - inkDepth * 0.7; // heavy ink reduces effect by up to 70%
+
+          const blend = Math.min(lighten * densityFactor, 0.12);
           px[i]     = Math.round(px[i] + (paperBase.r - px[i]) * blend);
           px[i + 1] = Math.round(px[i + 1] + (paperBase.g - px[i + 1]) * blend);
           px[i + 2] = Math.round(px[i + 2] + (paperBase.b - px[i + 2]) * blend);
@@ -951,7 +965,7 @@ const PrintEngine = (() => {
       };
       const impOpacity = impressions === 1 ? 1.0 : (imp === 0 ? 0.92 : 0.35);
 
-      const svgStr = await renderColoredSvg(elements, palette, paperW, paperH, scale, inkLoad, impOffset, atmosphere, bgStrokes, paperType.base);
+      const svgStr = await renderColoredSvg(elements, palette, paperW, paperH, scale, inkLoad, impOffset, atmosphere, bgStrokes, paperType.base, paperType);
 
       // Signal phase transition once — no longer needed (single-phase prep)
       // _aligningSignalled kept as no-op for future use
@@ -971,10 +985,10 @@ const PrintEngine = (() => {
 
     // Step 3 — Post-processing (intensity scaled by paper type)
     const paperBase = paperBaseFromType(paperType);
-    applyInkBleed(ctx, w, h, paperBase);
+    applyInkBleed(ctx, w, h, paperBase, paperType);
     applyBrushVariation(ctx, w, h, paperBase);
-    applyColorMuting(ctx, w, h);
-    applyInkAbsorption(ctx, w, h, paperBase);
+    applyColorMuting(ctx, w, h, paperType);
+    applyInkAbsorption(ctx, w, h, paperBase, paperType);
     applyBarenPressure(ctx, w, h, paperType.barenIntensity, paperBase);
     applyWoodGrain(ctx, w, h);
     applyFineNoise(ctx, w, h, paperType.noiseAmt);
