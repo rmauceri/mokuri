@@ -376,3 +376,42 @@ The code is reverted to the natural asymmetric behavior. The irregular edge appe
 - `print-engine.js` line ~360: atmosphere group wrapped in `filter="url(#wobble)"`
 - `print-engine.js` line ~1190: `applyBlockEdge()` — no-op placeholder
 - `print-engine.js` line ~1200: `applyOrganicEdge()` — subtle paper-color fade at edges
+
+---
+
+## Known Issue: Print Interior vs. Margin Color Mismatch
+
+### Problem
+
+Even with no atmosphere and no elements, the print interior (the `paperW × paperH` area where ink is applied) looks subtly different from the paper margins around it. This is most visible with sparse compositions — a single element on open paper, or a white/near-white zone color.
+
+### Root Cause
+
+Post-processing (color muting, ink absorption, baren pressure, wood grain, fine noise) runs on the **print canvas** before the presentation wrapper is applied. When `applyPresentation()` builds the final output, it draws a fresh paper texture on the full paper + margin area, then composites the post-processed print canvas on top with `multiply` blend.
+
+The margins therefore receive only raw paper texture. The print interior receives paper texture *plus* all post-processing passes. Even in areas with no ink (open paper, white zones), post-processing subtly warms, mutes, and adds absorption variation to those pixels — diverging from the fresh margin paper.
+
+### Why It's There
+
+This is structural: post-processing was designed to run on the ink rendering canvas, not the final presentation. Applying it to the full presentation canvas (margins and all) would require restructuring the pipeline order.
+
+### Reasonable Arguments for Current Behavior
+
+- In real mokuhanga, the printed area *does* look different from the raw paper outside the print — the baren pressure, moisture from the ink, and pigment residue all affect the paper surface even in uncarved areas.
+- The effect is subtle and generally desirable: the print area reads as "the block was pressed here," which is correct.
+- For most compositions (rich atmosphere, multiple elements), the difference is imperceptible.
+
+### When It Becomes Noticeable
+
+- **Sparse compositions** — single element on open paper with no atmosphere
+- **White / near-white zone colors** — white renders as paper showing through (multiply × white = paper), so the warm post-processing on "white" zones is the raw paper, post-processed, against unprocessed margin paper
+- **Kakishibu paper** — dark base makes the mismatch more visible
+
+### Possible Fix
+
+Run the full post-processing pass on the final presentation canvas (after compositing the print) rather than on the raw print canvas. Would require:
+1. Moving `applyColorMuting`, `applyInkAbsorption`, `applyBarenPressure`, `applyWoodGrain`, `applyFineNoise` from `print()` to `applyPresentation()`
+2. Ensuring the presentation canvas context has `willReadFrequently: true`
+3. Adjusting any baren pressure logic that skips paper-colored pixels (the margin paper would also pass through it)
+
+Low priority — only worth addressing if sparse / minimalist compositions become a meaningful use case.
