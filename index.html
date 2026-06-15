@@ -2972,7 +2972,7 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
 
         <div class="ps-presentation-section">
           <div class="ps-section-label">Edition</div>
-          <input type="text" class="ps-text-input" id="ps-edition-input" placeholder="e.g. 3/20 or AP" maxlength="12">
+          <input type="text" class="ps-text-input" id="ps-edition-input" placeholder="e.g. 3/20 or AP" maxlength="60">
         </div>
 
         <div class="ps-actions">
@@ -3315,7 +3315,7 @@ rebuildElementMap();
 // ============================================================
 //  VERSION
 // ============================================================
-const MOKURI_VERSION = '0.99';
+const MOKURI_VERSION = '1.00';
 
 // ============================================================
 //  FEEDBACK
@@ -3601,32 +3601,38 @@ const PAPER_TYPES = {
     name: 'Hosho', desc: 'Smooth, bright, precise',
     base: '#faf6ee', fiberDensity: 0.3, fiberOpacity: 0.04,
     warmPatches: 6, inkOpacity: 0.93, barenIntensity: 0.7, noiseAmt: 5,
+    bleedMul: 0.5, saturationMul: 1.05, edgeSharpness: 1.2, absorptionRate: 0.8, warmthMul: 0.8,
   },
   kozo: {
     name: 'Kozo', desc: 'Fibrous, warm, organic',
     base: '#f5f0e6', fiberDensity: 1.0, fiberOpacity: 0.08,
     warmPatches: 15, inkOpacity: 0.92, barenIntensity: 1.0, noiseAmt: 7,
+    bleedMul: 1.3, saturationMul: 0.92, edgeSharpness: 0.7, absorptionRate: 1.4, warmthMul: 1.2,
   },
   torinoko: {
     name: 'Torinoko', desc: 'Warm cream, elegant',
     base: '#f0e6d0', fiberDensity: 0.2, fiberOpacity: 0.03,
     warmPatches: 20, inkOpacity: 0.95, barenIntensity: 0.5, noiseAmt: 4,
+    bleedMul: 0.7, saturationMul: 1.0, edgeSharpness: 1.0, absorptionRate: 0.8, warmthMul: 1.4,
   },
   gampi: {
     name: 'Gampi', desc: 'Silky, luminous, cool',
     base: '#f2f0ec', fiberDensity: 0.1, fiberOpacity: 0.02,
     warmPatches: 4, inkOpacity: 0.96, barenIntensity: 0.35, noiseAmt: 3,
+    bleedMul: 0.3, saturationMul: 1.1, edgeSharpness: 1.5, absorptionRate: 0.65, warmthMul: 0.7,
   },
   unryu: {
     name: 'Unryu', desc: 'Cloud dragon, dramatic fibers',
     base: '#f3ede1', fiberDensity: 1.8, fiberOpacity: 0.12,
     warmPatches: 10, inkOpacity: 0.89, barenIntensity: 1.15, noiseAmt: 8,
     longFibers: 40, longFiberLen: 250,
+    bleedMul: 1.5, saturationMul: 0.88, edgeSharpness: 0.5, absorptionRate: 1.6, warmthMul: 1.0,
   },
   kakishibu: {
     name: 'Kakishibu', desc: 'Persimmon-tanned, warm brown',
     base: '#b8916a', fiberDensity: 0.5, fiberOpacity: 0.07,
     warmPatches: 12, inkOpacity: 0.90, barenIntensity: 0.8, noiseAmt: 6,
+    bleedMul: 0.9, saturationMul: 0.85, edgeSharpness: 0.8, absorptionRate: 1.2, warmthMul: 1.6,
   },
 };
 
@@ -9692,7 +9698,7 @@ function buildInkStudioUI() {
         // Divider between pack palettes and core
         if (showGrouped && i === packEntries.length && packEntries.length > 0) {
           const sep = document.createElement('div');
-          sep.style.cssText = 'width:100%; height:1px; background:var(--panel-border); margin:4px 0;';
+          sep.style.cssText = 'grid-column:1/-1; height:1px; background:var(--panel-border); margin:4px 0;';
           chipContainer.appendChild(sep);
         }
         const chip = document.createElement('div');

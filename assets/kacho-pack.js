@@ -9,13 +9,25 @@ const MOKURI_KACHOE_PALETTES = {
     name: 'Haru 春',
     nameJa: '春',
     pack: 'kacho-e',
-    colors: ['#FFB3D9', '#A8D5A8', '#B3D9FF', '#FFB3C6', '#D4E8A8']
+    colors: ['#A0785A', '#D4A8A0', '#7A9A6B', '#E8D4B0', '#8B6A7A']
   },
   natsu: {
     name: 'Natsu 夏',
     nameJa: '夏',
     pack: 'kacho-e',
     colors: ['#1A365D', '#E88BA8', '#2D6A4F', '#4A90E2', '#D4A574']
+  },
+  aki: {
+    name: 'Aki 秋',
+    nameJa: '秋',
+    pack: 'kacho-e',
+    colors: ['#8B4A2A', '#C4862A', '#4A5A30', '#D4603A', '#E8C878']
+  },
+  kan: {
+    name: 'Kan 寒',
+    nameJa: '寒',
+    pack: 'kacho-e',
+    colors: ['#4A5560', '#A8B8C4', '#7A6048', '#D8D4CC', '#6A7A7A']
   }
 };
 
@@ -28,13 +40,14 @@ registerPack({
   name: 'Kacho-e Collection',
   nameJa: '花鳥画',
   icon: '花',
-  description: 'Birds and flowers in the intimate kacho-e tradition',
-  affinity: ['fauna', 'flora', 'water', 'organic', 'intimate'],
-  elementIds: ['rabbit-run', 'rabbit-laying', 'rabbit-leaping', 'bushwarbler-flight', 'swallow-flight', 'kingfisher-crouch', 
-    'kingfisher-sitting', 'heron-wading', 'heron-hunting', 'heron-detailed-standing', 'koi-above', 'koi-goldfish', 
-    'dragonfly-perched', 'butterfly-resting', 'wisteria-vine-knotted', 'lilypad-pair', 'lilypad-single', 'egret-hunting', 
+  description: 'Birds, flowers, and insects in the intimate Kacho-e tradition',
+  affinity: ['fauna', 'flora', 'intimate'],
+  elementIds: ['bushwarbler-flight', 'swallow-flight', 'kingfisher-crouch', 'kingfisher-sitting', 'heron-wading', 
+    'heron-hunting', 'heron-detailed-standing', 'egret-hunting', 'koi-above', 'koi-goldfish', 
+    'dragonfly-perched', 'butterfly-resting', 'cicada', 'cicada-top', 'cricket', 'cricket-chirping', 'cricket-leaping', 'beetle', 'beetle-top',
+    'wisteria-vine-knotted', 'morning-glory', 'morning-glory-vine', 'peony', 'peony-open', 'iris-three', 'lilypad-pair', 'lilypad-single', 
     'susuki-grass-swept', 'matsu-branch', 'lotus-cluster-tall'],
-  paletteIds: ['haru', 'natsu'],
+  paletteIds: ['haru', 'natsu', 'aki', 'kan'],
   presetIds: null,
   atmospherePresets: [
     { id: 'ke-spring-air', name: 'Spring Air', nameJa: '春風', background: 'sakura', foreground: 'none', horizon: 0.80, mist: 0, smoothHorizon: false },

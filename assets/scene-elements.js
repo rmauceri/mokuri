@@ -2527,7 +2527,7 @@ const MOKURI_SCENE_ELEMENTS = [
   id: 'maple-branch',
   name: 'Maple Branch',
   category: 'flora',
-  tags: ['flora', 'seasonal-autumn', 'organic'],
+  tags: ['flora', 'seasonal-autumn', 'organic', 'intimate'],
   viewBox: '89.4 145 1146.8 481.2',
   suggestedLayer: 'midground',
   carveLevelMode: 'delta',

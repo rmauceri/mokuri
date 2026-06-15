@@ -162,10 +162,77 @@ Currently paper affects only visual texture (fibers, base color). Ink rendering 
 | Kozo | Absorbent, fibrous | Softer edges, ink pulled into fibers, slightly muted |
 | Torinoko | Warm, lightly sized | Ink sits on surface more, warm color temperature |
 | Gampi | Ultra-smooth, sized | Sharpest edges, most saturated, cleanest prints |
-| Unryu | Dramatic fibers disrupt ink | Ink bleed follows fiber direction, uneven absorption |
-| Kakishibu | Tanned, partially resistant | Uneven absorption, ink pools in untreated areas |
+| Unryu | Dramatic fibers disrupt ink | High isotropic bleed, most muted, softest edges |
+| Kakishibu | Tanned, partially resistant | Uneven absorption, strong warmth, subdued ink |
 
-Implementation: extend `PAPER_TYPES` with `bleedRadius`, `saturationMul`, `edgeSharpness`, `impressionFalloff`, `fiberBleedDirection`. Wire into SVG filter generation and post-processing. Honor the existing `inkOpacity` value (currently defined but unused).
+##### Implementation Plan (v1)
+
+**Scope:** Uniform canvas-wide post-processing. Elements, atmosphere (sky/ground/mist), and carve stroke boundaries all respond to paper properties through the same pipeline — no per-element branching needed. Carve strokes create ink-to-paper boundaries; paper-influenced bleed/edge sharpness naturally affects those boundaries at zero additional cost.
+
+**New PAPER_TYPES properties** (added to each paper definition in index.html):
+
+| Property | Purpose | Range |
+|----------|---------|-------|
+| `bleedMul` | Multiplier on ink bleed radius and opacity | 0.3–1.5 |
+| `saturationMul` | Multiplier on color saturation retention | 0.85–1.1 |
+| `edgeSharpness` | Multiplier on edge darkening weight | 0.5–1.5 |
+| `absorptionRate` | Scales absorption patch density and strength | 0.4–1.6 |
+| `warmthMul` | Multiplier on warm color shift in muting | 0.7–1.6 |
+
+Proposed values (start conservative, tune by eye):
+
+| Paper | bleedMul | saturationMul | edgeSharpness | absorptionRate | warmthMul |
+|-------|----------|---------------|---------------|----------------|-----------|
+| Hosho | 0.5 | 1.05 | 1.2 | 0.6 | 0.8 |
+| Kozo | 1.3 | 0.92 | 0.7 | 1.4 | 1.2 |
+| Torinoko | 0.7 | 1.0 | 1.0 | 0.8 | 1.4 |
+| Gampi | 0.3 | 1.1 | 1.5 | 0.4 | 0.7 |
+| Unryu | 1.5 | 0.88 | 0.5 | 1.6 | 1.0 |
+| Kakishibu | 0.9 | 0.85 | 0.8 | 1.2 | 1.6 |
+
+Kozo (the default paper) has multipliers closest to current behavior to minimize surprise for existing compositions.
+
+**Code changes required:**
+
+1. **Fix unused `inkOpacity`** — Replace hardcoded `0.92 * inkLoad.opacityMul` with `paperType.inkOpacity * inkLoad.opacityMul`. Paper's `inkOpacity` becomes the base, ink load multiplies on top.
+
+2. **`applyInkBleed`** — Scale blur radius and composite opacity by `paperType.bleedMul`.
+
+3. **`applyColorMuting`** — Scale saturation factor by `paperType.saturationMul`, warm shift by `paperType.warmthMul`.
+
+4. **`applyInkAbsorption`** — Scale patch count and per-patch strength by `paperType.absorptionRate`.
+
+5. **Edge darkening (in SVG render)** — Scale `edgeWeight` by `paperType.edgeSharpness`.
+
+6. **Wobble reduction for sized papers** — Slight wobble reduction when `edgeSharpness > 1.0` (reinforces "clean print" feel for Gampi/Hosho).
+
+**Explicitly deferred (not v1):**
+
+- **Directional fiber bleed** — CSS `blur()` is isotropic only. Anisotropic blur requires stretch-blur-unstretch or two-pass convolution. Adds complexity for uncertain visual payoff. Unryu and Kozo both have fiber orientation but we model this as higher isotropic bleed for v1. Revisit if uniform bleed doesn't capture enough of the fibrous character.
+- **Carve stroke seepage** — Ink actively creeping into carved grooves on absorbent papers. Distinct from edge bleed at carved boundaries (which v1 gets for free). Would require modifying `carveStrokeRenderData()` which is performance-sensitive.
+- **Impression-specific paper behavior** — e.g., second impression on absorbent paper sits differently. The baren/impression system needs broader rethinking before adding paper interaction to it.
+- **Print style profiles in the multiplier chain** — Paper × ink load are the two creative knobs for now. If profiles are exposed later, they layer on top. Paper alone should produce satisfying differentiation without profiles.
+
+##### Evaluation Tests
+
+1. **Same composition, six papers** — Pull identical print on all six. Gampi should look noticeably sharper/more saturated than Kozo; Unryu should be softest; Kakishibu warmest.
+
+2. **Detail element test** — Highly-carved element (level 2, many fine strokes). On Gampi: strokes crisp and readable. On Kozo/Unryu: strokes soften slightly. Validates `edgeSharpness` magnitude.
+
+3. **Bokashi gradient test** — Element with directional bokashi. On absorbent papers: transition more diffuse. On sized papers: transition stays crisp. Watch for absorption patches disrupting gradients too aggressively.
+
+4. **Light ink + absorbent paper (Unryu)** — Should produce the most "washed out" result. Validates multipliers compound correctly without clipping.
+
+5. **Heavy ink + sized paper (Gampi)** — Should produce the richest, cleanest result. Validates multipliers don't stack above 1.0.
+
+6. **Background carve strokes** — Carve lines on paper background should show edge behavior matching the paper (crisp on Gampi, soft on Kozo).
+
+##### Design Decisions
+
+- **No user toggle** — Paper influence is always on. If you pick a paper, you get its character. This is how materials work.
+- **Atmosphere included** — Sky/ground/mist are "the uncarved block being printed." They receive the same paper treatment as elements for consistency.
+- **No backward-compatibility versioning** — User base is small enough that changed appearance of existing compositions is acceptable.
+- **Tuning approach** — Start with conservative multiplier ranges. Widen only when visual difference isn't perceptible enough. Easier to increase contrast than to walk it back.
 
 #### 2. Moisture / Sizing (integrated into profiles)
 
@@ -248,3 +315,64 @@ A cross-cutting concern: how close is the workspace preview to the final print? 
 - `index.html` ~line 12125 — Print Tuning Console UI, profiles, slider builders
 - `index.html` ~line 10200 — `pullPrint()` function that invokes the engine
 - `ROADMAP.md` — Brief mention under "Print Engine" future section
+
+---
+
+## Known Issue: Asymmetric Block Edge (feDisplacementMap Boundary Artifact)
+
+### Problem
+
+The print's irregular "block edge" — where ink meets paper at the print boundary — only appears on the **top and right** edges. The bottom and left edges are clean/straight. This is visible on rectangular paper; on square paper, the effect is barely detectable at all.
+
+The irregular edge looks authentic and desirable (natural ink-meets-paper feel), but the asymmetry is a cosmetic bug.
+
+### Root Cause
+
+The irregular edge is a **side effect** of the SVG `feDisplacementMap` filter ("wobble") applied to the atmosphere layer. Here's the chain:
+
+1. The atmosphere (sky/ground gradients) is rendered as SVG paths filling the full viewport: `(0, 0)` to `(paperW, paperH)`.
+2. The wobble filter (`feDisplacementMap` driven by `feTurbulence`) displaces every pixel by a random offset.
+3. At content boundaries, if the displacement lookup points **outside** the `SourceGraphic`, the result is transparent — creating visible gaps that read as the irregular print edge.
+4. **Chromium handles this asymmetrically.** At some viewport/content boundaries (top, right) it produces transparent pixels; at others (bottom, left) it clamps to the nearest source pixel. This is implementation-specific behavior — the SVG spec leaves out-of-bounds lookup undefined.
+
+The effect varies by paper aspect ratio because `feTurbulence` pattern distribution interacts differently with the bounding box dimensions. The irregular edge appears on both square and rectangular paper, but only on the top and right sides.
+
+### What Was Tried (and failed)
+
+| Approach | Result |
+|----------|--------|
+| **Pad atmosphere paths** beyond viewport by `wobble` amount | Eliminates irregular edge on ALL sides (including the desirable top/right). No asymmetry, but no edge at all. |
+| **Expand SVG viewport** with atmosphere at original coords (edges interior to viewport) | No change — filter SourceGraphic is bounded by element bbox, not viewport. |
+| **Paper-colored frame** (even-odd path) with dedicated lower-frequency wobble filter on top | No visible effect — same asymmetric behavior persists. |
+| **Canvas-based alternatives**: random polygon paths, sine-wave noise, pixel-level displacement | All produce a "digital" look — triangle cuts, sinusoidal patterns, or shallow uniform notches. None match the organic quality of feTurbulence. |
+
+### Why It's Hard
+
+- The `feDisplacementMap` boundary behavior is **browser-specific** and not configurable via SVG attributes.
+- The authentic look comes specifically from `feTurbulence` at content boundaries — replicating it in Canvas loses the organic character.
+- SVG `<mask>` and `<clipPath>` elements don't accept filters on their children in Chromium, ruling out a filtered-mask approach.
+- The filter operates on the element's **rendered bounding box**, not the SVG viewport, so viewport expansion has no effect.
+
+### Possible Future Approaches
+
+1. **WebGL/OffscreenCanvas post-processing**: Render the SVG at print size, then apply a custom displacement shader to all 4 edges in a separate pass. Could use the same turbulence algorithm as feTurbulence but with controlled boundary handling.
+
+2. **Two-pass SVG trick**: Render atmosphere twice — once with wobble (for interior texture) and once without. Composite them so only the edge area uses the wobble pass. Would require careful masking that may hit the same browser limitations.
+
+3. **Canvas `getImageData` + custom displacement**: After SVG render, read a band of pixels at each print edge and apply displacement using a pre-generated noise texture. The displacement would be the feTurbulence output (extractable via a separate SVG render), applied manually. This avoids Canvas path-drawing and works at the pixel level.
+
+4. **Accept the asymmetry**: In real mokuhanga, the baren direction and print-pulling angle naturally create directional edge character. Two rough edges / two clean edges has physical precedent. Document it as intentional.
+
+5. **Firefox rendering**: Test whether Firefox handles feDisplacementMap boundaries differently. If it produces symmetric edges, could detect browser and adjust approach.
+
+### Current State
+
+The code is reverted to the natural asymmetric behavior. The irregular edge appears on top and right (caused by atmosphere content touching viewport boundary + Chromium's directional clamping). `applyBlockEdge()` in `print-engine.js` is a no-op placeholder. The `applyOrganicEdge()` function provides a subtle fade at all 4 edges (unrelated to this issue).
+
+### Key Code Locations
+
+- `print-engine.js` line ~230: wobble filter definition (`feDisplacementMap`, scale, turbulence params)
+- `print-engine.js` line ~270: atmosphere layer paths (sky/ground filling viewport exactly)
+- `print-engine.js` line ~360: atmosphere group wrapped in `filter="url(#wobble)"`
+- `print-engine.js` line ~1190: `applyBlockEdge()` — no-op placeholder
+- `print-engine.js` line ~1200: `applyOrganicEdge()` — subtle paper-color fade at edges
