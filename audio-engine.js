@@ -1185,7 +1185,8 @@ const MokuriAudio = (() => {
   function loadPrefs() {
     try {
       const raw = localStorage.getItem('mokuri-audio');
-      if (raw) Object.assign(prefs, JSON.parse(raw));
+      if (raw) Object.assign(prefs, JSON.parse(raw)); // user has touched audio — respect saved prefs
+      else prefs.ambientOn = true;                    // audio never touched — default ambient on
     } catch (e) {}
   }
 
