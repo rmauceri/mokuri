@@ -3315,7 +3315,7 @@ rebuildElementMap();
 // ============================================================
 //  VERSION
 // ============================================================
-const MOKURI_VERSION = '1.01';
+const MOKURI_VERSION = '1.02';
 
 // ============================================================
 //  FEEDBACK
@@ -12405,7 +12405,12 @@ if ('serviceWorker' in navigator && !_skipSW) {
       if (!newSW) return;
       newSW.addEventListener('statechange', function() {
         if (newSW.state === 'activated' && _hadController) {
-          // New SW active (update, not first install) — reload to pick up new assets
+          // New SW active (update, not first install) — reload to pick up new assets.
+          // Loop guard: skip if we auto-reloaded very recently, so a misbehaving
+          // update cycle can never trap the user in an endless reload.
+          var lastReload = parseInt(sessionStorage.getItem('mokuri-last-reload') || '0', 10);
+          if (Date.now() - lastReload < 20000) return;
+          try { sessionStorage.setItem('mokuri-last-reload', String(Date.now())); } catch (e) {}
           window.location.reload();
         }
       });
@@ -12421,19 +12426,33 @@ if (!_skipSW) (function() {
     if (now - lastCheck < 30000) return; // At most every 30s
     lastCheck = now;
     fetch('./sw.js?_=' + now, { cache: 'no-store' }).then(function(r) {
+      // Ignore auth redirects (e.g. Vercel SSO) and error pages — they are not sw.js.
+      if (r.redirected || !r.ok) return null;
       return r.text();
     }).then(function(text) {
+      if (!text) return;
       var m = text.match(/CACHE_NAME\s*=\s*'mokuri-v(\d+)'/);
       if (!m) return;
       var remote = parseInt(m[1]);
       if (!('caches' in window)) return;
       caches.keys().then(function(keys) {
-        var cacheKey = keys.find(function(k) { return /^mokuri-v\d+$/.test(k); });
-        var local = cacheKey ? parseInt(cacheKey.replace('mokuri-v', '')) : 0;
+        // Use the highest installed cache version; old and new caches can briefly
+        // coexist during an update, and reading the lower one caused a reload loop.
+        var local = keys.reduce(function(mx, k) {
+          var mm = /^mokuri-v(\d+)$/.exec(k);
+          return mm ? Math.max(mx, parseInt(mm[1])) : mx;
+        }, 0);
         if (local > 0 && remote > local) {
           console.log('Mokuri update available: v' + remote + ' (installed: v' + local + ')');
-          return Promise.all(keys.map(function(k) { return caches.delete(k); }))
-            .then(function() { window.location.reload(); });
+          // Let the service worker fetch & activate the new version. Its activate
+          // handler cleans old caches; the updatefound→activated path above performs
+          // a single clean reload. We no longer delete caches + reload here, which
+          // raced the SW lifecycle and could loop.
+          if (navigator.serviceWorker) {
+            navigator.serviceWorker.getRegistration()
+              .then(function(reg) { if (reg) reg.update(); })
+              .catch(function() {});
+          }
         }
       });
     }).catch(function() {});
