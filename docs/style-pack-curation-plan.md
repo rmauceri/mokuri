@@ -8,170 +8,213 @@
 
 Kacho-e and Ikebana are implemented and available for testing in the dev
 experience, but neither is ready for production release. The Active Style
-infrastructure works; the remaining problem is curation.
+infrastructure works. The remaining work is to define a clear, intentional
+Featured library for each style and present it in a useful order.
 
-The current tag-overlap algorithm is too simple to represent the creative
-grammar of both styles:
+The current tag-overlap algorithm does not provide enough control:
 
-- **Kacho-e is under-selected.** Its current affinity finds birds, animals, and
-  plants, but omits much of the habitat, weather, season, and poetic setting
-  that historically accompanies those subjects.
-- **Ikebana is over-selected.** Generic tags such as `organic`, `minimal`, and
-  `structural` admit unrelated fauna, figures, landscapes, and basic forms.
+- **Kacho-e is under-selected.** It finds fauna and flora but misses much of the
+  habitat, water, weather, and seasonal setting appropriate to the tradition.
+- **Ikebana is over-selected.** Broad tags such as `organic`, `minimal`, and
+  `structural` admit unrelated landscapes, fauna, figures, and basic forms.
 
-This plan defines the desired creative scope, recommended element sets,
-ordering, data-model changes, implementation sequence, release criteria, and
-curation questions that require a product decision.
+Adding weighted affinity rules and a larger role-tag taxonomy would make the
+result more configurable, but not necessarily easier to understand or
+maintain. Mokuri's element library is finite, curated, and visual. Membership
+in a style's Featured library should therefore be an explicit product and
+creative decision.
 
-## Release Status Clarification
+This plan replaces automatic affinity-based release curation with
+manifest-defined picker sections containing ordered element IDs.
+
+## Release Status
 
 The Kacho-e and Ikebana source files are present in the repository and loaded by
-the application, including on `main`. They are not, however, exposed in the
-production experience:
+the application, including on `main`. They are not exposed in production:
 
 - The style selector is hidden unless the dev-style flag is enabled.
 - Production forces `STATE.activeStyle` to Core Mokuri.
 - The production element picker filters out non-Core pack elements.
 
-The correct product status is therefore **implemented but not released**.
+The correct status is **implemented but not released**.
 
-## Shared Curation Principles
+## Goals
 
-### 1. A style is a creative grammar, not a file ownership boundary
+1. Give Kacho-e and Ikebana clear, appropriate Featured categories.
+2. Combine each pack's strongest elements with explicitly selected Core
+   companions.
+3. Make Featured membership and ordering deterministic.
+4. Keep every allowed element available under **All Elements**.
+5. Allow each pack to be reviewed and released independently.
+6. Keep the implementation small enough to understand directly from the pack
+   manifest.
 
-The pack's own elements provide its distinctive vocabulary, but Core elements
-may be equally important to the style. Selection should answer:
+## Non-Goals
 
-> Does this element help the artist make work in this tradition?
+- Kacho-e must not reference Ikebana-owned elements.
+- Ikebana must not reference Kacho-e-owned elements.
+- Enabling one style must not automatically enable another.
+- Tags will not determine production Featured membership for these packs.
+- This work will not introduce weighted affinity scoring.
+- This work will not create a generalized dependency or deferred-loading
+  system.
+- This work will not redefine the global category of each element.
+- This work will not hide non-Featured elements from All Elements.
 
-It should not answer only:
+## Curation Principles
 
-> Was this element authored in this pack's JavaScript file?
+### 1. A style is a creative grammar, not a file boundary
 
-### 2. Nothing is prohibited; Featured is deliberately selective
+Pack-owned elements provide the distinctive vocabulary, but selected Core
+elements may be equally important. Selection should answer:
+
+> Does this specific element help the artist make work in this tradition?
+
+It should not be inferred only from where the element is defined or which broad
+descriptive tags it carries.
+
+### 2. Featured is selective; All Elements remains complete
 
 The Active Style principle remains:
 
 > Nothing hidden, just prioritized.
 
-Elements outside the style's curated vocabulary remain available under **All
-Elements**. Featured should be small enough to communicate intent and broad
-enough to support varied compositions.
+Only reviewed elements belong in Featured. Pack-owned elements are not
+automatically entitled to Featured placement: weaker, redundant, or specialized
+variants may remain under All Elements.
 
-### 3. Generic descriptive tags must not qualify an element by themselves
+### 3. Explicit membership is intentional maintenance
 
-Tags such as `organic`, `minimal`, `structural`, and `intimate` are useful for
-ranking. They are too broad to establish style membership.
+When a new Core element is added, it should not silently appear in either style
+because its tags overlap. Adding it to a style should require:
 
-Every featured Core companion should have at least one tag representing a
-meaningful role in that style.
+1. Visual review at all carve levels.
+2. Confirmation that its scale and visual mass fit the style.
+3. An explicit manifest change placing it in a section and display position.
 
-### 4. Ordering is part of the creative guidance
+This maintenance cost is desirable because it preserves creative intent.
 
-Falling back to category size produces unstable, unintuitive ordering. Each
-style should define:
+### 4. Ordering is part of the guidance
+
+The picker should quietly teach the style. Each manifest defines:
 
 - Section order
+- Element membership
 - Element order within each section
-- Which variants are prominent
-- Which secondary material belongs only under All Elements
+- Which variants are primary
+- Which variants remain under All Elements
 
-The picker should quietly teach the style's compositional vocabulary.
+Source-file order, affinity score, and category population must not affect the
+Featured presentation.
 
-### 5. Use a hybrid selection model
+### 5. Existing tags remain descriptive metadata
 
-Pure tag affinity is scalable but imprecise. Pure companion lists are precise
-but require maintenance. Use both:
+Existing tags may continue to support diagnostics, future search, or
+experimental pack discovery. They are not the release authority for Kacho-e or
+Ikebana.
 
-- **Role-based affinity rules** select the normal case.
-- **Explicit includes** admit historically appropriate exceptions.
-- **Explicit excludes** remove misleading matches or inferior variants.
+## Deterministic Manifest Model
 
-## Recommended Affinity Model
-
-Replace the flat tag list and fixed "two overlaps" rule with a backward-
-compatible rule object.
+Add an optional `pickerSections` field to a pack manifest:
 
 ```js
-affinityRules: {
-  requiredAny: [],
-  weightedTags: {},
-  minScore: 1,
-  excludeTags: [],
-  includeIds: [],
-  excludeIds: [],
-}
+pickerSections: [
+  {
+    id: 'birds',
+    label: 'Birds',
+    elementIds: [
+      'bushwarbler-flight',
+      'swallow-flight',
+      'kingfisher-crouch',
+      'heron-wading',
+      'sparrow',
+      'crane-standing',
+    ],
+  },
+  {
+    id: 'flowers-branches',
+    label: 'Flowers & Branches',
+    elementIds: [
+      'peony',
+      'morning-glory',
+      'matsu-branch',
+      'cherry-branch',
+      'ume-blossom',
+      'iris-cluster',
+    ],
+  },
+]
 ```
 
-Suggested behavior:
+### Selection behavior
 
-1. Pack-owned elements are included unless explicitly excluded.
-2. A Core candidate must match at least one `requiredAny` tag.
-3. Its score is the sum of matching `weightedTags`.
-4. It is featured when its score meets `minScore`.
-5. `includeIds` overrides tag qualification.
-6. `excludeIds` wins over every automatic rule.
-7. Results use the pack's picker section and element ordering, not score order,
-   after qualification.
+For a pack with `pickerSections`:
 
-The current `affinity: [...]` format can remain supported until every pack has
-migrated.
+1. Render sections in manifest order.
+2. Render elements in each section's `elementIds` order.
+3. Permit references only to:
+   - Elements owned by the active pack
+   - Elements owned by Core
+   - Custom user elements, using the existing custom-element behavior
+4. Ignore and warn about missing element IDs.
+5. Ignore and warn about IDs owned by another expansion pack.
+6. Ignore and warn about duplicate IDs; the first declaration wins.
+7. Place all other allowed elements under **All Elements**.
+8. Render All Elements using the existing global categories.
 
-## Recommended Role Tags
+For a pack without `pickerSections`, preserve the current affinity behavior as a
+backward-compatible fallback:
 
-Add a small set of reusable tags that describe compositional function:
+```js
+if (pack.pickerSections) {
+  return getCuratedPackElements(pack, allElements);
+}
 
-| Tag | Meaning |
-|-----|---------|
-| `habitat` | A localized natural setting that supports a subject |
-| `seasonal-setting` | Weather, sky, or environmental material conveying season |
-| `branch` | A cut or branch-scale linear botanical element |
-| `flower` | A bloom or floral mass suitable as a focal subject |
-| `foliage` | Leaves, grasses, shoots, or secondary botanical material |
-| `arrangement-support` | Kenzan, exposed water, pods, or other arrangement mechanics |
-| `display-accent` | A restrained object that stages an arrangement |
+return getAffinityElements(pack.id, allElements);
+```
 
-Existing tags such as `fauna`, `flora`, `water`, `intimate`, `minimal`, and
-`structural` remain useful as secondary ranking signals.
+No `requiredAny`, `weightedTags`, `minScore`, include/exclude rule engine, or
+new qualification taxonomy is required.
 
----
+### Ownership validation
 
-# Kacho-e
+The manifest's existing `elementIds` remains the declaration of pack ownership.
+`pickerSections` controls presentation, not ownership.
 
-## Creative Definition
+An element referenced by a section is valid when:
+
+```js
+element.pack === 'core' || element.pack === activePack.id
+```
+
+Elements with no `pack` field may be treated as Core for compatibility until
+all definitions are normalized.
+
+## Kacho-e
+
+### Creative definition
 
 > **Close observation of living nature, shaped by season, habitat, weather,
 > and poetic association.**
 
-The style should not be limited to isolated fauna and flora. Kacho-e commonly
-places birds, fish, insects, and animals in relationship with branches, water,
-rocks, fields, shorelines, moonlight, rain, snow, and other seasonal signs.
+Kacho-e should not be limited to isolated fauna and flora. Birds, fish,
+insects, and selected small animals may be paired with flowers, branches,
+water, rocks, moonlight, rain, snow, and other seasonal signs.
 
-The primary living subject should still dominate. Supporting material should
-create context without turning the composition into a broad landscape or genre
-scene.
+The living subject should remain dominant. Supporting material should provide
+context without turning the composition into a broad landscape or genre scene.
 
-## Current State
+### Recommended Featured sections
 
-- 30 pack-owned elements
-- 18 automatically selected Core companions
-- Current affinity: `['fauna', 'flora', 'intimate']`
-- Current Featured content contains only fauna and flora
-- No declared `categoryOrder`
-- Categories therefore fall back to population size
-- Element order is inherited indirectly from `elementIds`
+Use four sections for the initial release. This is enough structure to
+communicate the style without producing an overly fragmented picker on phones
+and tablets.
 
-The narrowed affinity successfully prevents figures and structures from
-polluting Featured, but it omits legitimate habitat and atmospheric supports.
+#### 1. Living Subjects
 
-## Recommended Creative Roles
+Purpose: the primary observed subject.
 
-### Living Subjects
-
-Birds, fish, insects, amphibians, reptiles, and small animals that can carry the
-composition.
-
-Current pack strengths:
+Pack candidates:
 
 - Bush warbler
 - Swallow
@@ -181,7 +224,7 @@ Current pack strengths:
 - Dragonfly and butterfly
 - Cicada, cricket, and beetle
 
-Core candidates for review:
+Core candidates requiring visual and variant review:
 
 - `koi`
 - `koi-leaping`
@@ -200,15 +243,24 @@ Core candidates for review:
 - `crane-flying`
 - `crane-landing`
 
-Not every pose needs to be Featured. Variant selection should favor visual
-quality and compositional usefulness over completeness.
+Not every pose should be Featured. Select the strongest and most compositionally
+useful variants; keep secondary poses under All Elements.
 
-### Botanical Companions
+#### 2. Flowers & Branches
 
-Flowers, branches, grasses, and aquatic plants that pair with living subjects
-or establish season.
+Purpose: botanical subjects and seasonal pairings.
 
-Strong existing Core companions:
+Pack candidates:
+
+- Peony variants
+- Morning glory variants
+- Wisteria
+- Iris
+- Lilypad and lotus variants
+- Susuki
+- Pine branch
+
+Core candidates:
 
 - `cherry-branch`
 - `sakura-blossom`
@@ -222,20 +274,15 @@ Strong existing Core companions:
 - `susuki-grass`
 - `lotus-cluster`
 
-Candidates requiring scale/quality review:
+Full trees, groves, and treelines should remain under All Elements unless an
+actual preset demonstrates that they can stay subordinate to the living
+subject.
 
-- `wisteria-vine`
-- `twisted-pine`
-- `bamboo-grove`
-- `treeline-pines`
-- `treeline-mixed`
+#### 3. Water & Habitat
 
-Full trees and treelines should qualify only if they can remain subordinate to
-the living subject.
+Purpose: localized natural context that supports close observation.
 
-### Habitat Supports
-
-These broaden the creative space without overwhelming it:
+Core candidates:
 
 - `tranquil-pond`
 - `pond-edge`
@@ -246,173 +293,72 @@ These broaden the creative space without overwhelming it:
 - `river-rocky`
 - `rock-formation`
 
-Candidates should be tagged `habitat` and reviewed for whether their default
-scale and visual mass support close observation.
+Large waterfalls, oceans, mountains, villages, and broad terrain should not be
+Featured in the initial release.
 
-Large waterfalls, oceans, mountains, villages, and broad terrain should remain
-under All Elements unless a specific composition proves they belong.
+#### 4. Season & Weather
 
-### Seasonal and Poetic Setting
+Purpose: poetic atmosphere and seasonal context.
 
-Strong candidates:
+Core candidates:
 
 - `full-moon`
 - `cloud-wisp`
 - `rain-curtain`
 - `snow-fall`
 
-Possible candidates:
+`cloud-bank`, `farmland`, and `terrace` should remain under All Elements unless
+composition testing establishes a clear need.
 
-- `cloud-bank`
-- `farmland`
-- `terrace`
-
-The last two are historically plausible settings for birds but may pull the
-composition toward landscape. They should require explicit curation rather than
-automatic selection.
-
-### Human-Made Setting
-
-Architecture and objects should not qualify automatically. Garden lanterns,
-bridges, fences, boats, and paths can support some Kacho-e-adjacent scenes, but
-they shift the emphasis toward designed landscape or genre imagery.
-
-Recommendation:
-
-- Keep them in All Elements by default.
-- Add only proven exceptions through `includeIds`.
-- Do not add `structural` or `objects` to Kacho-e affinity.
-
-## Proposed Kacho-e Affinity
-
-```js
-affinityRules: {
-  requiredAny: ['fauna', 'flora', 'habitat', 'seasonal-setting'],
-  weightedTags: {
-    fauna: 4,
-    flora: 3,
-    habitat: 3,
-    'seasonal-setting': 3,
-    intimate: 2,
-    water: 1,
-    atmospheric: 1,
-    minimal: 1,
-  },
-  minScore: 3,
-  excludeTags: ['figure', 'vessel', 'signing'],
-  includeIds: [
-    'full-moon',
-    'rain-curtain',
-    'snow-fall',
-    'cloud-wisp',
-  ],
-  excludeIds: [],
-}
-```
-
-This is a starting policy, not final tuning. A habitat or seasonal-setting tag
-must be assigned deliberately; generic `water` or `atmospheric` tags should not
-qualify an element alone.
-
-## Proposed Picker Sections
+### Initial Kacho-e picker shape
 
 ```js
 pickerSections: [
-  { id: 'birds', label: 'Birds', role: 'kacho-bird' },
-  { id: 'water-life', label: 'Fish & Water Life', role: 'kacho-water-life' },
-  { id: 'insects', label: 'Insects', role: 'kacho-insect' },
-  { id: 'animals', label: 'Animals', role: 'kacho-animal' },
-  { id: 'flowers', label: 'Flowers & Branches', tags: ['flower', 'branch'] },
-  { id: 'habitat', label: 'Habitat', tags: ['habitat'] },
-  { id: 'season', label: 'Season & Weather', tags: ['seasonal-setting'] },
+  { id: 'subjects', label: 'Living Subjects', elementIds: [] },
+  { id: 'botanical', label: 'Flowers & Branches', elementIds: [] },
+  { id: 'habitat', label: 'Water & Habitat', elementIds: [] },
+  { id: 'season', label: 'Season & Weather', elementIds: [] },
 ]
 ```
 
-This may require subject-role tags or an explicit section-to-element mapping.
-The current single `fauna` category cannot distinguish birds, fish, insects,
-and other animals.
+The final ID lists must be filled only after the visual inventory review.
 
-If new tags feel excessive, define section membership explicitly in the pack
-manifest instead.
+### Kacho-e presets
 
-## Recommended Element Order
-
-Within each section:
-
-1. Strongest, most versatile element
-2. Alternate poses
-3. Specialized or dramatic poses
-4. Secondary Core companions
-
-Example fauna progression:
-
-1. Birds: bush warbler, swallow, kingfisher, heron, egret, sparrow, crane
-2. Water life: koi, frog, turtle
-3. Insects: dragonfly, butterfly, cicada, cricket, beetle
-4. Other animals: rabbit and future subjects
-
-This is preferable to preserving source-file order.
-
-## Kacho-e Presets to Create
-
-Create at least three curated compositions before release:
+Create at least three compositions before release:
 
 1. **Heron at Pond Edge** — heron, lotus or iris, pond edge, restrained water
 2. **Autumn Insects** — cricket or beetle, susuki, warm seasonal atmosphere
-3. **Moonlit Branch** — bird or cicada, pine/maple branch, moon, open paper
+3. **Moonlit Branch** — bird or cicada, pine or maple branch, moon, open paper
 4. Optional: **Koi and Rain** — koi, water ripples, rain curtain, minimal flora
 
-Presets should demonstrate that habitat and atmosphere are supporting actors,
-not the subject.
+The presets should verify that habitat and atmosphere remain supporting actors.
 
-## Kacho-e Data Cleanup
+### Kacho-e cleanup
 
-- Add a deliberate category/section order.
-- Review all 30 pack elements for final quality and redundant variants.
-- Review the 18 current Core companions individually.
-- Correct stale affinity examples in `docs/kachoe_style_pack.md`.
-- Correct tag typo `initimate` on `wisteria-vine`.
-- Confirm whether the displayed name should use `Kacho-e` or `Kachō-e`.
-- Verify palette ordering and whether all four palettes are release-ready.
+- Normalize all `pack: 'kacho_e'` values to `pack: 'kacho-e'`.
+- Correct `initimate` on `wisteria-vine`.
+- Review all 30 pack-owned elements and select primary variants.
+- Review proposed Core companions at all carve levels and in print output.
+- Confirm whether the displayed name should be `Kacho-e` or `Kachō-e`.
+- Review the four palettes and their order.
+- Update stale counts and affinity descriptions in related documentation.
 
-## Kacho-e Questions for Curation
+## Ikebana
 
-1. Should frogs, turtles, and rabbits be Featured, or should the style remain
-   centered on birds, fish, insects, and flowers?
-2. Which Core crane and koi variants are strong enough to show alongside the
-   pack-authored versions?
-3. Should farmland or terraces appear as habitat, or do they make the style
-   feel too much like landscape?
-4. Are garden objects such as lanterns ever appropriate in Featured, or only
-   under All Elements?
-5. Should sections be Birds / Water Life / Insects / Animals, or should all
-   living subjects remain in one Fauna section?
-6. Should pack-owned variants all appear, or should weaker/redundant variants
-   be demoted to All Elements?
-7. What should the first visible category be: Birds or Flowers & Branches?
-8. Are the existing Spring Air, Pond Edge, Morning Haze, and Empty Space
-   atmosphere presets the right release set?
-9. Which three compositions best communicate the breadth of Kacho-e for the
-   Workshop?
-
----
-
-# Ikebana
-
-## Name and Scope
+### Name and scope
 
 The user-facing style is **Ikebana**, not Moribana.
 
-Moribana was the original inspiration for the library, but it is one subset of
-the broader art form. The pack should support the visual vocabulary of ikebana
-as represented through mokuhanga:
+Moribana was the original inspiration, but the pack should support a broader
+arrangement vocabulary:
 
-- Shallow-vessel Moribana
-- Upright and slanting arrangements
-- Tall-vessel and Nageire-like arrangements
-- Restrained Chabana-like arrangements
-- Formal seasonal branch compositions
-- Arrangements situated in a minimal display environment
+- Shallow-vessel arrangements
+- Upright and slanting forms
+- Tall-vessel arrangements
+- Restrained seasonal arrangements
+- Formal branch compositions
+- Arrangements presented in a minimal display environment
 
 Recommended description:
 
@@ -420,36 +366,19 @@ Recommended description:
 > balance, asymmetry, and empty space, inspired by the way Japanese prints
 > capture the art of arrangement.**
 
-## Current State
-
-- Internal ID: `moribana`
-- User-facing selector already displays `Ikebana`
-- 19 pack-owned elements
-- 38 automatically selected Core companions
-- Current affinity:
-  `['flora', 'vessel', 'minimal', 'structural', 'organic', 'intimate']`
-- Current category order: `objects`, then `flora`
-
-The current affinity admits unrelated material because:
-
-- `organic + intimate` selects fauna and a figure.
-- `organic + minimal` selects landscape and basic forms.
-- `structural + minimal` selects fences and forms.
-- `flora + organic` selects full trees, treelines, and landscape-scale plants.
-
-## Creative Definition
+### Creative definition
 
 > **The deliberate arrangement of natural materials, where vessel, structural
 > line, floral mass, supporting foliage, and empty space form one composition.**
 
-An element should be featured because it serves an arrangement role, not merely
-because it is natural or visually minimal.
+An element should be Featured because it serves an arrangement role, not merely
+because it is organic or visually minimal.
 
-## Recommended Creative Roles
+### Recommended Featured sections
 
-### Vessels
+#### 1. Vessels
 
-Current pack elements:
+Pack candidates:
 
 - `vessel-suiban`
 - `vessel-oval`
@@ -462,24 +391,19 @@ Core candidates:
 - `vessel-tall`
 - `tsubo-jar`
 
-Review every vessel for:
+Review every vessel for a clear stem opening, distinct silhouette, appropriate
+default scale, and useful glaze color zones.
 
-- Clear opening where stems can visually enter
-- Useful aspect ratio
-- Appropriate default scale
-- Distinct silhouette from other vessels
-- Color zones that support glaze variation without overpowering the plants
+#### 2. Branches & Line
 
-### Branches and Structural Line
-
-Pack-owned:
+Pack candidates:
 
 - `branch-ume-crooked`
 - `matsu-branch-upright`
 - `bamboo-branch`
 - `bamboo-shoots`
 
-Strong Core companions:
+Core candidates:
 
 - `cherry-branch`
 - `pine-bough`
@@ -487,18 +411,13 @@ Strong Core companions:
 - `maple-branch`
 - `ginko-branch`
 
-Candidates requiring review:
+Full trees, groves, and landscape-scale plants should remain under All
+Elements. `twisted-pine`, `weeping-willow`, and `wisteria-vine` may be reviewed
+but should not be included automatically.
 
-- `twisted-pine`
-- `weeping-willow`
-- `wisteria-vine`
+#### 3. Flowers & Foliage
 
-Full trees and groves should not qualify automatically. They may depict the
-right plant but at the wrong compositional scale.
-
-### Focal Flowers
-
-Pack-owned:
+Pack candidates:
 
 - `blossum-kiku`
 - `blossum-ran`
@@ -507,157 +426,47 @@ Pack-owned:
 - `blossum-chrysanthemum`
 - `tsubaki-single`
 - `tsubaki-cluster`
+- `lotus-pod`
 
-Strong Core companions:
+Core candidates:
 
 - `chrysanthemum`
 - `iris-cluster`
 - `sakura-blossom`
 - `ume-blossom`
-
-Cross-pack candidates:
-
-- `peony`
-- `peony-open`
-- `morning-glory`
-- `morning-glory-vine`
-- `wisteria-vine-knotted`
-- `lotus-cluster-tall`
-
-The current affinity implementation explicitly skips elements owned by other
-packs. A policy decision is required before Ikebana can feature Kacho-e floral
-material.
-
-Options:
-
-1. Promote broadly useful flowers to Core.
-2. Permit explicit cross-pack references.
-3. Show cross-pack companions only when both packs are enabled.
-4. Duplicate elements between manifests while retaining one source definition.
-
-Recommendation: permit explicit cross-pack references in `includeIds`, but load
-the owning pack automatically when needed. Do not duplicate definitions.
-
-### Foliage and Secondary Material
-
-Strong candidates:
-
 - `susuki-grass`
 - `lotus-cluster`
-- `lotus-pod`
-- `bamboo-shoots`
-- Leaf-bearing branch elements already selected above
 
-The future `foliage` tag should distinguish supporting plant material from
-focal flowers and full landscape flora.
+Kacho-e flowers are not candidates. If a botanical element is broadly useful
+enough for both packs, it should be evaluated for promotion to Core in a
+separate change rather than referenced across expansion packs.
 
-### Arrangement Supports
+#### 4. Supports & Display
 
-The original design included a kenzan, but the current production Moribana
-element library and manifest do not contain one. A kenzan exists only in the
-archived element file.
+Purpose: arrangement mechanics and optional restrained presentation context.
 
-Recommendation:
+- Restore or rebuild `kenzan`.
+- Review `lantern-small` and `lantern-round`.
+- Keep lanterns under All Elements unless composition presets demonstrate that
+  they improve the arrangement without competing with it.
 
-- Review the archived kenzan.
-- Restore it if its quality meets the current Element Guide.
-- Otherwise rebuild it.
-- Tag it `arrangement-support`, `structural`, and `minimal`.
-
-Other possible support material:
-
-- Exposed vessel water
-- Lotus pods
-- Fallen petals or a single fallen blossom
-- A future branch rest or simple stand, if historically appropriate
-
-### Display Accents
-
-Current pack-owned:
-
-- `lantern-small`
-- `lantern-round`
-
-These are not arrangement materials. They can help stage an arrangement as
-depicted in a print, but they should not sit alongside vessels and flowers as
-equal primary choices.
-
-Recommendation:
-
-- Place them in a final **Display Accents** section.
-- Consider demoting them to All Elements until presets prove their value.
-- Do not allow `display-accent` to qualify an element for other styles without
-  explicit selection.
-
-## Proposed Ikebana Affinity
-
-```js
-affinityRules: {
-  requiredAny: [
-    'vessel',
-    'branch',
-    'flower',
-    'foliage',
-    'arrangement-support',
-  ],
-  weightedTags: {
-    vessel: 5,
-    branch: 5,
-    flower: 4,
-    foliage: 3,
-    'arrangement-support': 4,
-    intimate: 1,
-    structural: 1,
-    minimal: 1,
-    'seasonal-spring': 1,
-    'seasonal-autumn': 1,
-    'seasonal-winter': 1,
-  },
-  minScore: 3,
-  excludeTags: ['fauna', 'figure', 'landscape', 'atmospheric', 'signing'],
-  includeIds: [
-    'vessel-tall',
-    'tsubo-jar',
-  ],
-  excludeIds: [],
-}
-```
-
-Important:
-
-- `organic` is not a qualification or scoring tag.
-- `minimal` and `structural` improve ordering but cannot qualify an element.
-- Full-tree or landscape-scale elements should be explicitly excluded if role
-  tagging alone does not remove them.
-
-## Proposed Picker Sections
+### Initial Ikebana picker shape
 
 ```js
 pickerSections: [
-  { id: 'vessels', label: 'Vessels', tags: ['vessel'] },
-  { id: 'line', label: 'Branches & Line', tags: ['branch'] },
-  { id: 'flowers', label: 'Focal Flowers', tags: ['flower'] },
-  { id: 'foliage', label: 'Foliage & Accents', tags: ['foliage'] },
-  {
-    id: 'supports',
-    label: 'Arrangement Supports',
-    tags: ['arrangement-support'],
-  },
-  { id: 'display', label: 'Display Accents', tags: ['display-accent'] },
+  { id: 'vessels', label: 'Vessels', elementIds: [] },
+  { id: 'line', label: 'Branches & Line', elementIds: [] },
+  { id: 'flowers', label: 'Flowers & Foliage', elementIds: [] },
+  { id: 'supports', label: 'Supports & Display', elementIds: [] },
 ]
 ```
 
-This ordering reflects the act of composing an arrangement:
+The first visible section should be Vessels because it gives the composition an
+anchor and matches the current creation workflow.
 
-1. Choose an anchor
-2. Establish structural line
-3. Add focal mass
-4. Balance with secondary material
-5. Add mechanics or display context only when useful
+### Ikebana presets
 
-## Ikebana Presets to Create
-
-Create at least four compositions representing the broader scope:
+Create at least four compositions:
 
 1. **Basic Upright** — shallow vessel, tall primary branch, shorter secondary
    line, one focal flower
@@ -665,230 +474,209 @@ Create at least four compositions representing the broader scope:
    asymmetric vessel placement
 3. **Tall Vessel** — tsubo or bamboo vessel with a long descending or rising
    line
-4. **Seasonal Restraint** — bare branch and narcissus, extensive empty space
-5. Optional: **Display Niche** — arrangement plus one carefully selected
-   display accent
+4. **Seasonal Restraint** — bare branch and narcissus with extensive empty
+   space
+5. Optional: **Display Niche** — arrangement plus one approved display accent
 
 At least one preset should use no flowers, demonstrating that line and negative
-space can carry an arrangement.
+space can carry the arrangement.
 
-## Ikebana Atmosphere Direction
+### Ikebana atmosphere direction
 
-The current presets are:
+Clean Paper should remain the release default.
 
-- Clean Paper
-- Warm Studio
-- Cool Studio
-- Display Niche
+The current Display Niche preset uses night plus water, which reads more like
+an outdoor landscape than a tokonoma or interior display. Warm Studio, Cool
+Studio, and Display Niche should be judged with complete arrangements rather
+than as isolated gradients. Redesign or remove any preset that introduces a
+ground plane competing with the arrangement.
 
-Review concerns:
-
-- `Display Niche` currently uses night plus water, which may read as an outdoor
-  landscape rather than a tokonoma or interior display.
-- Foregrounds such as sand, stone, and water may imply ground planes rather
-  than a neutral display surface.
-- Smooth horizons help, but a dedicated neutral interior/display treatment may
-  eventually be more appropriate.
-
-For release, Clean Paper should remain the default. Other presets should be
-tested with actual arrangements rather than judged in isolation.
-
-## Ikebana Data Cleanup
+### Ikebana cleanup
 
 - Change all user-facing references from Moribana to Ikebana.
 - Decide whether to migrate the internal ID from `moribana` to `ikebana`.
-- Review and correct `blossum-*` ID misspellings before release.
-- Add arrangement-role tags to pack and selected Core elements.
-- Remove generic automatic matches from Featured.
+- If renamed, read the existing `mokuri-activeStyle` value through a
+  compatibility alias.
+- Correct `blossum-*` ID misspellings before release, with save/import
+  migration if those IDs have escaped into compositions.
 - Restore or rebuild the kenzan.
-- Decide the role of the two lanterns.
 - Review vessel openings and default scale relationships.
 - Review redundant chrysanthemum and camellia variants.
-- Resolve cross-pack floral reuse.
-- Update `docs/moribana_style_pack.md` to describe the broader Ikebana scope or
-  replace it with an Ikebana document while retaining historical design notes.
+- Decide whether the lanterns remain under All Elements.
+- Update or replace `docs/moribana_style_pack.md` to reflect the broader scope.
 
-## Ikebana Questions for Curation
+## Preset Identity Fix
 
-1. Should the internal ID be renamed from `moribana` to `ikebana` before
-   release?
-2. Which ikebana modes should the first release explicitly represent:
-   Moribana, upright/slanting forms, tall-vessel arrangements, Chabana, or all
-   of these?
-3. Should Kacho-e flowers be available when only Ikebana is enabled?
-4. Should broadly useful flowers be promoted to Core instead of referenced
-   across packs?
-5. Should `lantern-small` and `lantern-round` remain Featured, move to Display
-   Accents, or move to All Elements?
-6. Should the archived kenzan be restored or replaced with a new element?
-7. Are full-tree elements ever appropriate, or should the picker require
-   branch-scale material?
-8. Are `vessel-tall` and `tsubo-jar` visually strong enough to join the
-   pack-authored vessels?
-9. Which duplicate flower variants should be primary, secondary, or hidden
-   under All Elements?
-10. Does the Display Niche atmosphere feel like an interior arrangement, or
-    should it be redesigned?
-11. Should the first visible section be Vessels or Branches & Line?
-12. Which four presets best communicate the breadth of Ikebana?
+Pack journeys currently use numeric `startingPreset` indexes into the global
+gallery preset array. Kacho-e defines an empty preset array while its journeys
+reference indexes `0` and `1`; Ikebana also references numeric indexes without
+declaring pack presets. These indexes can resolve to unrelated Core presets.
 
----
+Before adding pack presets:
 
-# Shared Implementation Plan
+1. Give every gallery preset a stable ID.
+2. Replace `startingPreset` with `startingPresetId`.
+3. Resolve a journey's preset by ID.
+4. Warn and continue with a blank composition when an ID is missing.
+5. Migrate Core journeys at the same time so only one lookup system remains.
 
-## Phase 1: Curated Inventory
+## Implementation Plan
 
-1. Review every pack-owned element in the dev picker.
-2. Mark each as:
-   - Release Featured
-   - Secondary / All Elements
-   - Revise
-   - Remove
-3. Review every proposed Core companion using the same labels.
-4. Record preferred variant order.
-5. Correct IDs and obvious tag errors before adding new behavior.
+### Phase 1: Curated inventory
 
-Deliverable: approved element and ordering tables for both packs.
+Review pack-owned elements and proposed Core companions in the dev experience.
+For each element, record:
 
-## Phase 2: Affinity Schema
+- Featured
+- Secondary / All Elements
+- Revise
+- Remove
+- Section
+- Preferred display position
 
-1. Add backward-compatible `affinityRules` support to `pack-registry.js`.
-2. Preserve the current flat `affinity` behavior for packs not migrated.
-3. Implement required tags, weighted scores, include/exclude IDs, and exclude
-   tags.
-4. Add a dev diagnostic that reports why each element was featured:
-   - Pack-owned
-   - Required role match
-   - Weighted score
-   - Explicit include
-5. Add duplicate-ID and missing-reference warnings.
+Review criteria:
 
-Deliverable: predictable, explainable Featured membership.
+- Visual quality at block, shape, and detail carve levels
+- Final print quality
+- Distinctiveness from nearby variants
+- Default scale and visual mass
+- Usefulness in more than one composition
+- Whether it communicates the style without explanation
 
-## Phase 3: Role Tags
+**Deliverable:** approved, ordered section tables for each pack.
 
-1. Add shared role tags to the taxonomy.
-2. Apply them only to reviewed elements.
-3. Run the element validator.
-4. Correct the `initimate` typo and any other tag spelling inconsistencies.
-5. Avoid mass-tagging all flora or all water elements.
+Do not implement automatic selection rules before this inventory is approved.
 
-Deliverable: role tags that encode actual compositional use.
+### Phase 2: Data cleanup and stable preset IDs
 
-## Phase 4: Picker Sections and Stable Ordering
+1. Normalize pack IDs and tag spelling.
+2. Remove duplicate manifest references, including the duplicate Core
+   `torii-gate` entry.
+3. Resolve pack naming and element ID migrations.
+4. Add stable preset IDs and migrate journey references.
+5. Update stale documentation counts.
 
-1. Add optional `pickerSections` to pack manifests.
-2. Allow section membership through tags or explicit element IDs.
-3. Make section order stable and manifest-defined.
-4. Make element order stable and manifest-defined.
-5. Keep All Elements as the final accordion.
-6. Define behavior for elements matching multiple sections.
+**Deliverable:** consistent data suitable for deterministic lookup.
 
-Recommended rule: first declared matching section wins.
+### Phase 3: Manifest-defined picker sections
 
-Deliverable: style pickers that teach each style's creative grammar.
+1. Add optional `pickerSections` support.
+2. Render sections and elements in manifest order.
+3. Validate missing, duplicate, and cross-pack references.
+4. Preserve current affinity behavior only as a fallback for manifests without
+   explicit sections.
+5. Preserve All Elements as the final accordion.
+6. Keep custom user elements available using the current behavior.
 
-## Phase 5: Pack Manifest Curation
+**Deliverable:** predictable Featured libraries with no affinity tuning.
 
-### Kacho-e
+### Phase 4: Pack manifest curation
 
-- Add habitat and seasonal supports.
-- Select the strongest Core animal variants.
-- Add section ordering.
-- Update atmosphere/palette ordering if needed.
+Populate the approved ID lists:
 
-### Ikebana
+- Four Kacho-e sections
+- Four Ikebana sections
+- Selected primary variants only
+- Explicit Core companions only
+- No cross-expansion-pack references
 
-- Rename user-facing metadata.
-- Tighten affinity around arrangement roles.
-- Resolve internal ID and cross-pack decisions.
-- Restore/rebuild kenzan.
-- Reclassify lanterns.
-- Add section ordering.
+**Deliverable:** final dev manifests.
 
-Deliverable: final dev manifests.
-
-## Phase 6: Curated Composition Presets
+### Phase 5: Curated composition presets
 
 1. Create at least three Kacho-e presets.
 2. Create at least four Ikebana presets.
-3. Test every preset on phone, tablet, and desktop.
-4. Confirm all referenced elements load when the associated pack is enabled.
-5. Use presets to validate scale relationships and ordering.
+3. Test each preset on phone, tablet, and desktop.
+4. Use the presets to revise scale, ordering, atmosphere, and element choices.
+5. Confirm journeys resolve the intended preset IDs.
 
-Deliverable: production-quality starting points for each style.
+**Deliverable:** production-quality starting points and validated inventories.
 
-## Phase 7: Independent Pack Enablement
+### Phase 6: Independent enablement
 
-Replace the binary `mokuri-dev-styles` flag with the planned
-`mokuri-enabled-packs` set:
+After curation is stable, replace the binary `mokuri-dev-styles` flag with an
+enabled-pack set:
 
 - Enable Kacho-e and Ikebana independently.
-- Show only Core plus enabled pack chips.
+- Show Core plus enabled style chips.
 - Filter elements and palettes to enabled packs.
-- Handle saved compositions containing elements from a disabled pack.
-- Prepare this mechanism for deferred pack loading.
+- Keep saved compositions containing disabled elements loadable.
+- Do not automatically enable packs because of element references.
 
-This is important for testing one pack without the other and for eventually
-releasing packs independently.
+Independent enablement is a release mechanism and should not be coupled to
+picker curation.
 
-## Phase 8: Validation and Release Review
+### Phase 7: Release review
 
 For each pack:
 
-1. Verify no missing element IDs.
-2. Verify no duplicate IDs.
-3. Verify every element has valid role tags.
-4. Verify Featured contains no accidental categories.
-5. Verify All Elements still exposes the complete allowed library.
-6. Verify palette switching and atmosphere presets.
-7. Verify saved compositions reopen correctly.
-8. Verify imported `.mokuri` files containing pack elements.
-9. Verify thumbnails and picker scrolling on low-memory iPad.
-10. Verify first-run journeys and style switching.
-11. Bump app and service-worker versions.
-12. Enable the pack on production only after explicit approval.
+1. Verify every section reference exists.
+2. Verify every reference belongs to Core or the active pack.
+3. Verify no duplicate IDs appear in Featured.
+4. Verify weaker variants remain reachable under All Elements.
+5. Verify palettes and atmosphere presets with complete compositions.
+6. Verify saved and imported compositions reopen correctly.
+7. Verify picker scrolling and thumbnails on low-memory iPad.
+8. Verify first-run journeys and style switching.
+9. Bump app and service-worker versions.
+10. Enable the pack on production only after explicit visual approval.
 
-# Shared Questions Requiring Decisions
+## Recommended Release Sequence
 
-1. Is a hybrid tag-plus-explicit-override model acceptable, or should the system
-   remain purely tag-driven?
-2. Should picker sections be implemented now, or should the first release use
-   existing categories with only stable category ordering?
-3. Can one pack explicitly feature elements owned by another pack?
-4. If cross-pack reuse is allowed, should the owning pack load automatically?
-5. Should generally useful pack elements be promoted to Core?
-6. Should weaker variants remain under All Elements or be removed entirely?
-7. Should custom elements always remain Featured, as they do today?
-8. Should affinity diagnostics be visible in a dev UI or only the console?
-9. Should Kacho-e and Ikebana release together or independently?
-10. Is a curated preset set required for release, or can element curation ship
-    first?
+Release **Kacho-e first**.
 
-# Recommended Decision Order
+Kacho-e already has a coherent subject vocabulary. Its remaining work is
+primarily variant selection, habitat expansion, ordering, and presets.
 
-Resolve decisions in this sequence:
+Ikebana requires deeper content decisions:
 
-1. Confirm pack scope and naming.
-2. Approve pack-owned element inventory.
-3. Approve Core and cross-pack companions.
-4. Decide role tags versus explicit section lists.
-5. Approve section and element ordering.
-6. Implement affinity and picker support.
-7. Curate presets.
-8. Test each pack independently.
-9. Release only after a final visual review.
+- Vessel quality and scale review
+- Primary flower and branch selection
+- Kenzan restoration or replacement
+- Lantern disposition
+- Interior atmosphere review
+- Moribana-to-Ikebana naming and compatibility work
 
-# Recommended First Implementation Slice
+The packs should not be required to release together.
 
-The smallest useful implementation session would:
+## Decisions Required Before Implementation
 
-1. Rename Ikebana user-facing metadata.
-2. Add role tags (`habitat`, `seasonal-setting`, `branch`, `flower`, `foliage`,
-   `arrangement-support`, `display-accent`).
-3. Add `affinityRules` with include/exclude overrides.
-4. Curate membership without changing picker layout.
-5. Compare before/after Featured inventories.
+### Shared
 
-Picker sections and presets can then follow as a second slice once the element
-membership is approved.
+1. Approve explicit `pickerSections` as the authority for Featured membership.
+2. Approve four initial sections per pack.
+3. Confirm that All Elements remains the destination for secondary variants.
+4. Decide whether custom elements appear above or within All Elements.
+
+### Kacho-e
+
+1. Select the primary Kacho-e-owned variants.
+2. Select the strongest Core fauna variants.
+3. Decide whether frog, turtle, and rabbit belong in Living Subjects.
+4. Approve the Water & Habitat candidate list.
+5. Approve the Season & Weather candidate list.
+6. Confirm the displayed romanization.
+
+### Ikebana
+
+1. Decide whether to rename the internal ID before release.
+2. Select the primary vessel, flower, and branch variants.
+3. Decide whether `vessel-tall` and `tsubo-jar` meet the quality bar.
+4. Decide whether to restore or rebuild the kenzan.
+5. Decide whether either lantern belongs in Featured.
+6. Approve the revised atmosphere set.
+
+## Recommended First Implementation Slice
+
+The smallest useful implementation session is:
+
+1. Complete and approve the Kacho-e inventory.
+2. Normalize the known Kacho-e pack and tag typos.
+3. Add `pickerSections` support with validation.
+4. Populate the four Kacho-e sections.
+5. Compare the old and new Featured inventories.
+6. Test the picker on desktop, phone, and iPad.
+
+This validates the deterministic model with the more release-ready pack before
+applying it to Ikebana. Presets, stable journey preset IDs, and independent pack
+enablement should follow as separate, bounded changes.
