@@ -1,5 +1,14 @@
 # Mokuri — Plan
 
+> **September 16, 2026 update:** The Active Style infrastructure below is
+> implemented, but its automatic affinity-based Featured curation is being
+> replaced by explicit, manifest-defined Creative Style sections. Styles are
+> now planned as built-in parts of Mokuri for all users, not independently
+> enabled add-ons. The current Core style will be presented as
+> **Fūkei-ga (風景画)**. See
+> [`style-pack-curation-plan.md`](style-pack-curation-plan.md) for the current
+> product and implementation direction.
+
 ## Active: Style Pack Experience (Active Style Model)
 
 ### Problem

@@ -1,15 +1,27 @@
-# Kacho-e and Ikebana Style Pack Curation Plan
+# Mokuri Creative Style Curation Plan
 
-**Status:** Proposed for review  
-**Date:** September 8, 2026  
-**Target:** Dev-only refinement before either style is enabled on `mokuri.art`
+**Status:** Revised proposal for review
+**Date:** September 16, 2026
+**Target:** Curate and release built-in Creative Styles to all Mokuri users
 
 ## Purpose
 
+Mokuri's element collections were originally framed as optional Style Packs
+that might be enabled or acquired independently. The product direction has
+changed: these collections should become built-in **Creative Styles** within
+Mokuri. Each style is a different way of composing with the shared element
+library, palettes, atmosphere, presets, and guidance.
+
+The existing Core collection becomes the first named Creative Style:
+
+> **Fūkei-ga (風景画)** — landscape pictures shaped by terrain, water,
+> atmosphere, architecture, and human scale.
+
 Kacho-e and Ikebana are implemented and available for testing in the dev
-experience, but neither is ready for production release. The Active Style
-infrastructure works. The remaining work is to define a clear, intentional
-Featured library for each style and present it in a useful order.
+experience, but neither is ready for production release. Tsukiyo and Machi
+remain designed future styles. The Active Style infrastructure works. The
+remaining work is to define a clear, intentional Featured library for each
+style and present it in a useful order.
 
 The current tag-overlap algorithm does not provide enough control:
 
@@ -25,53 +37,107 @@ in a style's Featured library should therefore be an explicit product and
 creative decision.
 
 This plan replaces automatic affinity-based release curation with
-manifest-defined picker sections containing ordered element IDs.
+manifest-defined picker sections containing ordered element IDs. It also
+separates three concepts that were previously conflated:
+
+1. **Ownership** — where an element is defined and maintained.
+2. **Presentation** — which Creative Styles feature that element and where.
+3. **Release status** — whether a Creative Style is available in production.
+
+An element is defined once, but may be explicitly Featured in more than one
+released Creative Style when it serves each style's creative grammar.
+
+## Product Model
+
+Mokuri is one product with a growing set of built-in Creative Styles:
+
+- **Fūkei-ga (風景画)** — landscapes and broad scenes; the current Core
+  collection and the first Creative Style.
+- **Kacho-e (花鳥画)** — close observation of birds, flowers, insects, and
+  localized habitat.
+- **Ikebana (生け花)** — arrangements structured through vessel, line, floral
+  mass, balance, and empty space.
+- **Tsukiyo (月夜)** — nocturnal scenes structured by darkness and selective
+  light.
+- **Machi (街)** — built places, architecture, weather, and human scale.
+
+Once released, a Creative Style is available to every user. Styles may be
+released one at a time, but they are not optional add-ons, purchases, or
+user-enabled packages.
+
+The selector changes the studio's creative emphasis, not the user's
+entitlements. It controls:
+
+- Featured picker sections and ordering
+- Suggested palettes
+- Atmosphere presets
+- Starting compositions
+- Creative prompts and guided journeys
+
+It does not prohibit the use of elements associated with another released
+style.
 
 ## Release Status
 
 The Kacho-e and Ikebana source files are present in the repository and loaded by
-the application, including on `main`. They are not exposed in production:
+the application, including on `main`. They are not yet exposed in production:
 
 - The style selector is hidden unless the dev-style flag is enabled.
-- Production forces `STATE.activeStyle` to Core Mokuri.
-- The production element picker filters out non-Core pack elements.
+- Production forces `STATE.activeStyle` to the current Core collection, which
+  will be renamed Fūkei-ga in the user interface.
+- The production element picker filters out elements belonging only to
+  unreleased styles.
 
 The correct status is **implemented but not released**.
 
+Release should be controlled by a developer-owned list of released styles, not
+by user preferences:
+
+```js
+const RELEASED_STYLE_IDS = ['core']; // User-facing label: Fūkei-ga
+```
+
+Dev may expose unreleased styles for testing. Production should show every
+style in `RELEASED_STYLE_IDS` to every user.
+
 ## Goals
 
-1. Give Kacho-e and Ikebana clear, appropriate Featured categories.
-2. Combine each pack's strongest elements with explicitly selected Core
-   companions.
-3. Make Featured membership and ordering deterministic.
-4. Keep every allowed element available under **All Elements**.
-5. Allow each pack to be reviewed and released independently.
-6. Keep the implementation small enough to understand directly from the pack
+1. Establish Fūkei-ga as the user-facing name of the current Core style.
+2. Give Kacho-e and Ikebana clear, appropriate Featured categories.
+3. Combine each style's strongest owned elements with explicitly selected
+   companions from the released Mokuri library.
+4. Make Featured membership and ordering deterministic.
+5. Keep every released element available under **All Elements**.
+6. Allow each Creative Style to be reviewed and released independently to all
+   users.
+7. Keep the implementation small enough to understand directly from the style
    manifest.
 
 ## Non-Goals
 
-- Kacho-e must not reference Ikebana-owned elements.
-- Ikebana must not reference Kacho-e-owned elements.
-- Enabling one style must not automatically enable another.
-- Tags will not determine production Featured membership for these packs.
+- Creative Styles will not be sold, installed, or enabled independently by
+  users.
+- Unreleased style content must not leak into a released style.
+- Tags will not determine production Featured membership for these styles.
 - This work will not introduce weighted affinity scoring.
 - This work will not create a generalized dependency or deferred-loading
   system.
 - This work will not redefine the global category of each element.
 - This work will not hide non-Featured elements from All Elements.
+- This work will not duplicate an element merely because more than one style
+  features it.
 
 ## Curation Principles
 
-### 1. A style is a creative grammar, not a file boundary
+### 1. A style is a creative grammar, not a file or entitlement boundary
 
-Pack-owned elements provide the distinctive vocabulary, but selected Core
-elements may be equally important. Selection should answer:
+Style-owned elements provide distinctive vocabulary, but elements maintained
+elsewhere may be equally important. Selection should answer:
 
 > Does this specific element help the artist make work in this tradition?
 
-It should not be inferred only from where the element is defined or which broad
-descriptive tags it carries.
+It should not be inferred only from where the element is defined, whether its
+style shipped first, or which broad descriptive tags it carries.
 
 ### 2. Featured is selective; All Elements remains complete
 
@@ -79,14 +145,19 @@ The Active Style principle remains:
 
 > Nothing hidden, just prioritized.
 
-Only reviewed elements belong in Featured. Pack-owned elements are not
+Only reviewed elements belong in Featured. Style-owned elements are not
 automatically entitled to Featured placement: weaker, redundant, or specialized
 variants may remain under All Elements.
 
+All Elements means the complete **released** Mokuri library. Switching Creative
+Styles changes prioritization and guidance, not access. Elements belonging only
+to unreleased styles remain dev-only.
+
 ### 3. Explicit membership is intentional maintenance
 
-When a new Core element is added, it should not silently appear in either style
-because its tags overlap. Adding it to a style should require:
+When a new element is added to any collection, it should not silently appear in
+other Creative Styles because its tags overlap. Adding it to a style should
+require:
 
 1. Visual review at all carve levels.
 2. Confirmation that its scale and visual mass fit the style.
@@ -110,12 +181,35 @@ Featured presentation.
 ### 5. Existing tags remain descriptive metadata
 
 Existing tags may continue to support diagnostics, future search, or
-experimental pack discovery. They are not the release authority for Kacho-e or
-Ikebana.
+experimental style discovery. They are not the release authority for Kacho-e,
+Ikebana, or future Creative Styles.
+
+### 6. Ownership and presentation are separate
+
+The manifest's existing `elementIds` declares which style owns and maintains an
+element. `pickerSections` declares where the element is Featured.
+
+A released style may explicitly feature:
+
+- Elements it owns
+- Elements owned by Fūkei-ga/Core
+- Elements owned by another released Creative Style
+
+Cross-style reuse must be deliberate and visually reviewed. It must never occur
+automatically through tags. If the owning style is not released, its elements
+cannot appear in a production style unless the element is deliberately moved
+to the shared Fūkei-ga/Core collection.
+
+### 7. Fūkei-ga is a style, not a fallback
+
+The current internal ID `core` may remain for compatibility, but the user-facing
+name should be **Fūkei-ga**. It receives the same intentional treatment as every
+other Creative Style: its own Featured ordering, palettes, atmosphere presets,
+starting compositions, and guidance.
 
 ## Deterministic Manifest Model
 
-Add an optional `pickerSections` field to a pack manifest:
+Add an optional `pickerSections` field to a Creative Style manifest:
 
 ```js
 pickerSections: [
@@ -148,21 +242,22 @@ pickerSections: [
 
 ### Selection behavior
 
-For a pack with `pickerSections`:
+For a Creative Style with `pickerSections`:
 
 1. Render sections in manifest order.
 2. Render elements in each section's `elementIds` order.
-3. Permit references only to:
-   - Elements owned by the active pack
-   - Elements owned by Core
-   - Custom user elements, using the existing custom-element behavior
-4. Ignore and warn about missing element IDs.
-5. Ignore and warn about IDs owned by another expansion pack.
-6. Ignore and warn about duplicate IDs; the first declaration wins.
-7. Place all other allowed elements under **All Elements**.
-8. Render All Elements using the existing global categories.
+3. Permit references to elements belonging to any released Creative Style.
+4. In dev, permit references to the active unreleased style for testing.
+5. Ignore and warn about missing element IDs.
+6. Ignore and warn about references to elements that would leak from an
+   unreleased style into a released production style.
+7. Ignore and warn about duplicate IDs; the first declaration wins.
+8. Place all other released elements under **All Elements**.
+9. Render All Elements using the existing global categories.
+10. Preserve the existing generated custom-hanko behavior outside
+    Creative Style curation.
 
-For a pack without `pickerSections`, preserve the current affinity behavior as a
+For a style without `pickerSections`, preserve the current affinity behavior as a
 backward-compatible fallback:
 
 ```js
@@ -176,19 +271,67 @@ return getAffinityElements(pack.id, allElements);
 No `requiredAny`, `weightedTags`, `minScore`, include/exclude rule engine, or
 new qualification taxonomy is required.
 
-### Ownership validation
+### Ownership and release validation
 
-The manifest's existing `elementIds` remains the declaration of pack ownership.
-`pickerSections` controls presentation, not ownership.
+The manifest's existing `elementIds` remains the declaration of ownership.
+`pickerSections` controls presentation, not ownership or release state.
 
-An element referenced by a section is valid when:
+An element referenced by a production section is valid when its owning style is
+released:
 
 ```js
-element.pack === 'core' || element.pack === activePack.id
+isStyleReleased(element.pack || 'core')
 ```
 
-Elements with no `pack` field may be treated as Core for compatibility until
+Elements with no `pack` field may be treated as Core/Fūkei-ga for compatibility until
 all definitions are normalized.
+
+The application should validate release state separately from section
+membership. This allows Kacho-e to feature an Ikebana-owned botanical after
+Ikebana is released, while preventing that element from leaking into production
+before its owning style is approved.
+
+## Fūkei-ga
+
+### Creative definition
+
+> **Landscape pictures composed through terrain, water, atmosphere,
+> architecture, seasonal change, and human scale.**
+
+Fūkei-ga is not a generic bucket for everything Mokuri shipped first. It is the
+landscape-centered Creative Style from which the broader product grew. Its
+Featured presentation should help artists build scenes with depth, weather,
+place, and a deliberate relationship between human-made structures and nature.
+
+### Transition from Core
+
+- Keep the internal ID `core` for save compatibility and to avoid unnecessary
+  migration risk.
+- Change the user-facing style name from Core Collection to
+  **Fūkei-ga 風景画**.
+- Use **Fūkei-ga** in compact UI and **Fūkei-ga 風景画** where the interface has
+  room for both the romanized and Japanese name.
+- Retain the existing Core element ownership model unless a later curation pass
+  deliberately reassigns an element.
+- Treat Fūkei-ga palettes, atmosphere presets, gallery presets, prompts, and
+  journeys as the first complete Creative Style experience.
+- Review its Featured ordering after Kacho-e proves the deterministic section
+  model; the Fūkei-ga rename should not block Kacho-e curation.
+
+### Likely Featured structure
+
+Fūkei-ga already declares an intentional category order. Its first curated
+section pass may remain close to that vocabulary:
+
+1. Land & Water
+2. Trees & Flora
+3. Structures & Paths
+4. Weather & Atmosphere
+5. Figures & Animals
+
+Exact membership and ordering should be reviewed separately. The immediate
+goal is to establish the name and product model, not expand the initial
+Kacho-e implementation slice.
 
 ## Kacho-e
 
@@ -214,7 +357,7 @@ and tablets.
 
 Purpose: the primary observed subject.
 
-Pack candidates:
+Style-owned candidates:
 
 - Bush warbler
 - Swallow
@@ -224,7 +367,7 @@ Pack candidates:
 - Dragonfly and butterfly
 - Cicada, cricket, and beetle
 
-Core candidates requiring visual and variant review:
+Fūkei-ga/Core candidates requiring visual and variant review:
 
 - `koi`
 - `koi-leaping`
@@ -250,7 +393,7 @@ useful variants; keep secondary poses under All Elements.
 
 Purpose: botanical subjects and seasonal pairings.
 
-Pack candidates:
+Style-owned candidates:
 
 - Peony variants
 - Morning glory variants
@@ -260,7 +403,7 @@ Pack candidates:
 - Susuki
 - Pine branch
 
-Core candidates:
+Fūkei-ga/Core candidates:
 
 - `cherry-branch`
 - `sakura-blossom`
@@ -282,7 +425,7 @@ subject.
 
 Purpose: localized natural context that supports close observation.
 
-Core candidates:
+Fūkei-ga/Core candidates:
 
 - `tranquil-pond`
 - `pond-edge`
@@ -300,7 +443,7 @@ Featured in the initial release.
 
 Purpose: poetic atmosphere and seasonal context.
 
-Core candidates:
+Fūkei-ga/Core candidates:
 
 - `full-moon`
 - `cloud-wisp`
@@ -338,8 +481,9 @@ The presets should verify that habitat and atmosphere remain supporting actors.
 
 - Normalize all `pack: 'kacho_e'` values to `pack: 'kacho-e'`.
 - Correct `initimate` on `wisteria-vine`.
-- Review all 30 pack-owned elements and select primary variants.
-- Review proposed Core companions at all carve levels and in print output.
+- Review all 30 style-owned elements and select primary variants.
+- Review proposed Fūkei-ga/Core companions at all carve levels and in print
+  output.
 - Confirm whether the displayed name should be `Kacho-e` or `Kachō-e`.
 - Review the four palettes and their order.
 - Update stale counts and affinity descriptions in related documentation.
@@ -378,7 +522,7 @@ because it is organic or visually minimal.
 
 #### 1. Vessels
 
-Pack candidates:
+Style-owned candidates:
 
 - `vessel-suiban`
 - `vessel-oval`
@@ -386,7 +530,7 @@ Pack candidates:
 - `vessel-bamboo`
 - `vessel-tsubo`
 
-Core candidates:
+Fūkei-ga/Core candidates:
 
 - `vessel-tall`
 - `tsubo-jar`
@@ -396,14 +540,14 @@ default scale, and useful glaze color zones.
 
 #### 2. Branches & Line
 
-Pack candidates:
+Style-owned candidates:
 
 - `branch-ume-crooked`
 - `matsu-branch-upright`
 - `bamboo-branch`
 - `bamboo-shoots`
 
-Core candidates:
+Fūkei-ga/Core candidates:
 
 - `cherry-branch`
 - `pine-bough`
@@ -417,7 +561,7 @@ but should not be included automatically.
 
 #### 3. Flowers & Foliage
 
-Pack candidates:
+Style-owned candidates:
 
 - `blossum-kiku`
 - `blossum-ran`
@@ -428,7 +572,7 @@ Pack candidates:
 - `tsubaki-cluster`
 - `lotus-pod`
 
-Core candidates:
+Fūkei-ga/Core candidates:
 
 - `chrysanthemum`
 - `iris-cluster`
@@ -437,9 +581,11 @@ Core candidates:
 - `susuki-grass`
 - `lotus-cluster`
 
-Kacho-e flowers are not candidates. If a botanical element is broadly useful
-enough for both packs, it should be evaluated for promotion to Core in a
-separate change rather than referenced across expansion packs.
+Kacho-e flowers may become candidates after Kacho-e is released. Cross-style
+reuse should be based on arrangement role and visual quality, not file
+ownership. Before Kacho-e is released, Ikebana must not depend on its elements
+for a production release; broadly shared essentials may instead be deliberately
+moved to Fūkei-ga/Core.
 
 #### 4. Supports & Display
 
@@ -507,24 +653,27 @@ ground plane competing with the arrangement.
 
 ## Preset Identity Fix
 
-Pack journeys currently use numeric `startingPreset` indexes into the global
+Style journeys currently use numeric `startingPreset` indexes into the global
 gallery preset array. Kacho-e defines an empty preset array while its journeys
 reference indexes `0` and `1`; Ikebana also references numeric indexes without
-declaring pack presets. These indexes can resolve to unrelated Core presets.
+declaring style presets. These indexes can resolve to unrelated Fūkei-ga/Core
+presets.
 
-Before adding pack presets:
+Before adding Creative Style presets:
 
 1. Give every gallery preset a stable ID.
 2. Replace `startingPreset` with `startingPresetId`.
 3. Resolve a journey's preset by ID.
 4. Warn and continue with a blank composition when an ID is missing.
-5. Migrate Core journeys at the same time so only one lookup system remains.
+5. Migrate Fūkei-ga/Core journeys at the same time so only one lookup system
+   remains.
 
 ## Implementation Plan
 
 ### Phase 1: Curated inventory
 
-Review pack-owned elements and proposed Core companions in the dev experience.
+Review style-owned elements and proposed companions from the released Mokuri
+library in the dev experience.
 For each element, record:
 
 - Featured
@@ -543,16 +692,16 @@ Review criteria:
 - Usefulness in more than one composition
 - Whether it communicates the style without explanation
 
-**Deliverable:** approved, ordered section tables for each pack.
+**Deliverable:** approved, ordered section tables for each Creative Style.
 
 Do not implement automatic selection rules before this inventory is approved.
 
 ### Phase 2: Data cleanup and stable preset IDs
 
-1. Normalize pack IDs and tag spelling.
-2. Remove duplicate manifest references, including the duplicate Core
+1. Normalize ownership IDs and tag spelling.
+2. Remove duplicate manifest references, including the duplicate Fūkei-ga/Core
    `torii-gate` entry.
-3. Resolve pack naming and element ID migrations.
+3. Resolve Creative Style naming and element ID migrations.
 4. Add stable preset IDs and migrate journey references.
 5. Update stale documentation counts.
 
@@ -562,23 +711,27 @@ Do not implement automatic selection rules before this inventory is approved.
 
 1. Add optional `pickerSections` support.
 2. Render sections and elements in manifest order.
-3. Validate missing, duplicate, and cross-pack references.
-4. Preserve current affinity behavior only as a fallback for manifests without
+3. Validate missing and duplicate references.
+4. Validate that production sections reference only elements owned by released
+   Creative Styles.
+5. Preserve current affinity behavior only as a fallback for manifests without
    explicit sections.
-5. Preserve All Elements as the final accordion.
-6. Keep custom user elements available using the current behavior.
+6. Preserve All Elements as the final accordion containing the complete
+   released library.
+7. Preserve generated custom hanko behavior outside Creative Style curation.
 
 **Deliverable:** predictable Featured libraries with no affinity tuning.
 
-### Phase 4: Pack manifest curation
+### Phase 4: Creative Style manifest curation
 
 Populate the approved ID lists:
 
+- Fūkei-ga user-facing identity and intentional ordering
 - Four Kacho-e sections
 - Four Ikebana sections
 - Selected primary variants only
-- Explicit Core companions only
-- No cross-expansion-pack references
+- Explicitly reviewed companions from released styles
+- No automatic cross-style inclusion
 
 **Deliverable:** final dev manifests.
 
@@ -592,26 +745,29 @@ Populate the approved ID lists:
 
 **Deliverable:** production-quality starting points and validated inventories.
 
-### Phase 6: Independent enablement
+### Phase 6: Built-in style release control
 
-After curation is stable, replace the binary `mokuri-dev-styles` flag with an
-enabled-pack set:
+After curation is stable, replace the binary `mokuri-dev-styles` flag with a
+developer-owned released-style list:
 
-- Enable Kacho-e and Ikebana independently.
-- Show Core plus enabled style chips.
-- Filter elements and palettes to enabled packs.
-- Keep saved compositions containing disabled elements loadable.
-- Do not automatically enable packs because of element references.
+- Show Fūkei-ga plus every released Creative Style to every user.
+- Allow dev to expose unreleased styles for review.
+- Filter production elements and palettes by the release state of their owning
+  style.
+- Make **All Elements** include all elements from all released styles.
+- Keep saved compositions containing unreleased or retired elements loadable
+  when their definitions are available.
+- Do not expose user-facing install, purchase, enable, or disable controls.
 
-Independent enablement is a release mechanism and should not be coupled to
-picker curation.
+Release control is a product rollout mechanism, not an entitlement system, and
+should not be coupled to picker curation.
 
 ### Phase 7: Release review
 
-For each pack:
+For each Creative Style:
 
 1. Verify every section reference exists.
-2. Verify every reference belongs to Core or the active pack.
+2. Verify every referenced element's owning style is released.
 3. Verify no duplicate IDs appear in Featured.
 4. Verify weaker variants remain reachable under All Elements.
 5. Verify palettes and atmosphere presets with complete compositions.
@@ -619,11 +775,13 @@ For each pack:
 7. Verify picker scrolling and thumbnails on low-memory iPad.
 8. Verify first-run journeys and style switching.
 9. Bump app and service-worker versions.
-10. Enable the pack on production only after explicit visual approval.
+10. Add the style to the production release list only after explicit visual
+    approval.
 
 ## Recommended Release Sequence
 
-Release **Kacho-e first**.
+Fūkei-ga is the first Creative Style and remains available throughout the
+transition. Release **Kacho-e next**.
 
 Kacho-e already has a coherent subject vocabulary. Its remaining work is
 primarily variant selection, habitat expansion, ordering, and presets.
@@ -637,21 +795,36 @@ Ikebana requires deeper content decisions:
 - Interior atmosphere review
 - Moribana-to-Ikebana naming and compatibility work
 
-The packs should not be required to release together.
+Creative Styles should not be required to release together. Each is added to
+the built-in product for all users when ready.
 
-## Decisions Required Before Implementation
+## Decisions Remaining Before Implementation
 
 ### Shared
 
+The following direction is settled:
+
+- **Creative Styles** is the user-facing product concept.
+- **Fūkei-ga (風景画)** is the user-facing name of the current Core style.
+- The internal ID remains `core` for compatibility.
+- Released Creative Styles are built into Mokuri for every user.
+- All Elements contains the complete released library.
+
+Remaining shared decisions:
+
 1. Approve explicit `pickerSections` as the authority for Featured membership.
-2. Approve four initial sections per pack.
-3. Confirm that All Elements remains the destination for secondary variants.
-4. Decide whether custom elements appear above or within All Elements.
+2. Approve four initial sections for Kacho-e and Ikebana.
+3. Confirm that All Elements remains
+   the destination for secondary variants.
+4. Approve explicit cross-style reuse when both owning and presenting styles
+   are released.
+5. Confirm that generated custom hanko remains outside Creative Style
+   curation.
 
 ### Kacho-e
 
 1. Select the primary Kacho-e-owned variants.
-2. Select the strongest Core fauna variants.
+2. Select the strongest Fūkei-ga/Core fauna variants.
 3. Decide whether frog, turtle, and rabbit belong in Living Subjects.
 4. Approve the Water & Habitat candidate list.
 5. Approve the Season & Weather candidate list.
@@ -678,5 +851,5 @@ The smallest useful implementation session is:
 6. Test the picker on desktop, phone, and iPad.
 
 This validates the deterministic model with the more release-ready pack before
-applying it to Ikebana. Presets, stable journey preset IDs, and independent pack
-enablement should follow as separate, bounded changes.
+applying it to Ikebana. Presets, stable journey preset IDs, and built-in style
+release control should follow as separate, bounded changes.
