@@ -1,650 +1,735 @@
-# Tsukiyo Style Pack — Design Document
+# Tsukiyo — Nocturne Creative Lens
 
-## 月夜 — "Moonlit Night"
+**Status:** Reframed proposal for future implementation
+**Date:** September 17, 2026
+**Japanese:** 月夜 — "Moonlit Night"
 
-### Vision
+## Decision Summary
 
-Tsukiyo shifts Mokuri's creative mode from **"compose a scene"** to **"compose a mood."** Inspired by the night scene tradition across ukiyo-e (Hiroshige's meisho), shin-hanga (Hasui Kawase's moonlit landscapes), and the lunar poetics of Yoshitoshi's *One Hundred Aspects of the Moon*, this pack introduces nocturnal compositions where darkness is an active element, light sources create drama, and silence has visual weight.
+Tsukiyo remains a valuable creative direction for Mokuri, but it should not be
+implemented as a peer element-based Creative Style like Fūkei-ga or Kacho-e.
 
-Where Core Mokuri celebrates the breadth of landscape, Tsukiyo celebrates the **transformation of familiar scenes by night** — a temple at dusk is architecture, but the same temple under moonlight is poetry. The pack's elements, palettes, and atmosphere presets work together to make darkness feel rich, not empty.
+The earlier proposal treated night as a subject domain and defined ten
+Tsukiyo-owned elements. Exploratory image generation showed that this was the
+wrong abstraction:
 
-### Key Characteristics
+- Trees, gates, grasses, lanterns, foxes, and owls overlap heavily with the
+  existing Fūkei-ga and Kacho-e vocabulary.
+- Stars, fireflies, glow, and reflections lose their meaning when enlarged or
+  detached from the atmosphere that makes them visible.
+- A movable moon reflection is not naturally related to the moon, water, or
+  viewpoint that should produce it.
+- The strongest existing Mokuri nocturnes already use the current element
+  library. Their nocturnal character comes from palette, atmosphere, bokashi,
+  silhouette, scale, and selective light.
 
-- **Darkness as positive space** — large dark areas are compositional features, not absence
-- **Selective luminance** — moon glow, lantern warmth, and reflected light draw the eye
-- **Sparse compositions** — night scenes typically use fewer elements (3–6), each with purpose
-- **Silhouette and bokashi** — elements read as dark shapes against graduated sky, or as lit objects against deep backgrounds
-- **Emotional register** — contemplative, mysterious, serene; the mood of *yūgen* (幽玄, profound mystery)
-- **Heavy ink, dark paper** — best results with heavy ink load on Kakishibu or Kozo paper
+The revised direction is:
 
-### Artistic Tradition
+> **Tsukiyo is Mokuri's nocturne lens: a way of transforming compositions
+> through darkness, moonlight, restricted color, atmosphere, and silence.**
 
-Night scenes appear across centuries of Japanese printmaking. These are Tsukiyo's primary references:
+Tsukiyo should initially expand Mokuri's atmosphere and palette systems, then
+use named presets, guidance, materials, audio, and a very small number of
+supporting elements. It should transform Fūkei-ga, Kacho-e, and potentially
+future Creative Styles rather than own a separate general-purpose library.
 
-**Hiroshige — *One Hundred Famous Views of Edo* (1856–58)**
-The 100 Views series includes ~15 nocturnal or twilight prints. Key references for Tsukiyo:
-- **Fox Fires at Ōji** (#118) — The series' most famous night scene and Tsukiyo's signature inspiration. Deep indigo sky, full moon, kitsune gathering beneath an ancient tree with supernatural foxfire lights. Compositionally: a massive vertical tree as central axis, warm foxfire dots against cool night, vast dark space with rhythmic small figures. Directly inspires our Kitsune element and the warm-vs-cool tension at the heart of Tsukiyo palettes.
-- **Saruwaka-chō by Night** (#90) — Theatre district at twilight, full moon illuminating a receding street with tiny figures. Demonstrates how a single light source (moon) can structure an entire composition through shadow and reflection.
-- **Fireworks at Ryōgoku** (#98) — Summer night festival on the Sumida River, fireworks bursting against dark sky. Demonstrates warm light explosions against deep blue-black — the extreme version of Tsukiyo's light-source drama.
-- **Moon Pine, Ueno** (#89) — Gnarled pine silhouetted against moonlit sky. The pine frames a view of the landscape beyond — directly inspires our Kodama (ancient tree) as a framing/silhouette element.
-- **Suijin Shrine and Massaki** (#35) — Moon reflecting on the Sumida River, shrine architecture in silhouette. Reference for our Tsuki Reflection element.
-
-**Hasui Kawase — Shin-hanga Night Prints (1920s–50s)**
-Hasui perfected the atmospheric night landscape. His techniques map directly to Mokuri's print engine:
-- **Bokashi layering for depth in darkness** — Hasui's printers used graduated inking to create smooth tonal transitions in dark areas, avoiding flat black. Multiple passes (sometimes 15–20 color blocks per print) built rich, complex darks. → Maps to Mokuri's multiple baren passes + ink absorption variation.
-- **Reserve printing for luminance** — Areas meant to glow (windows, reflections, moon) were printed lightly or left unprinted, letting paper show through. → Maps to Mokuri's carving system: carved areas reveal paper through ink. High carve levels on light-source zones = luminance.
-- **Cool/warm contrast** — Deep indigo and blue-gray for night, with tiny warm orange/yellow accents for lanterns and lit windows. The emotional power comes from the ratio — vast cool darkness with minimal warm light. → Directly encoded in Tsukiyo's palettes (slots 0–2 cool, slot 3 warm, used sparingly).
-- **Water reflections via bokashi** — Moonlight on water rendered as vertical bokashi fade, not literal mirror image. → Maps to our Tsuki Reflection element + per-zone bokashi.
-- Key prints: *Moonlit Night, Miyajima* (torii in water under moon), *Starlit Night, Miyajima* (starfield over shrine), *Magome at Night* (snow village with lit windows).
-
-**Koitsu Tsuchiya (1870–1949)**
-Vivid night streetscapes — more saturated and dramatically lit than Hasui. Warm amber/orange lantern light dominates over cool moonlight. The Yomichi (夜道) palette draws directly from Koitsu's color world.
-
-**Yoshitoshi — *One Hundred Aspects of the Moon* (1885–92)**
-100 prints unified by the moon motif across myth, history, and folklore. Shows the range of what "moonlit" can mean — from subtle atmospheric presence to dramatic full-moon compositions. Demonstrates that night scenes carry emotional and narrative weight beyond landscape.
-
-### What Makes Great Night Prints (Design Principles for Tsukiyo)
-
-From studying these masters, the principles that should guide Tsukiyo element design and compositions:
-
-1. **Darkness is not empty** — Large dark areas in great night prints have tonal variation, subtle texture, and visual weight. In Mokuri: heavy ink + Kakishibu paper + ink absorption variation achieves this.
-2. **Light sources earn their place** — Every light element (lantern, moon, firefly) is a compositional decision. Sparse use of warm light against vast cool dark creates the emotional impact.
-3. **Silhouettes tell stories** — At night, elements are known by their outline. Block-level carve (silhouette only) is *the correct aesthetic* for many night elements, not a starting point to carve past.
-4. **Bokashi is essential** — Graduated tonal transitions (sky gradients, glow fades, water reflections) are the primary technique that separates a night print from a dark print.
-5. **Scale contrast creates depth** — Small, bright elements (distant lit window, single lantern) against large dark masses (mountain, sky, tree) create dramatic depth.
-6. **Less is more** — Night scenes typically have fewer elements than daytime. The darkness itself is a compositional element that needs space.
+No Tsukiyo application implementation has begun. The generated PNG candidates
+under `dev/generated/tsukiyo/` are research material, not an approved element
+backlog.
 
 ---
 
-## Existing Mokuri Elements — Crossover Companions
+## Why the Original Model Changed
 
-Tsukiyo benefits enormously from Core elements. Night transforms familiar subjects — a pine tree becomes a silhouette, a torii gate becomes a threshold between worlds. The affinity system should surface these naturally.
+### Night is a treatment across traditions
 
-### High-Affinity Companions
+Moonlit and nocturnal prints appear across Japanese print traditions:
 
-| Element | Source | Why It Works for Tsukiyo |
-|---------|--------|--------------------------|
-| **full-moon** | elements.js | The literal subject of the pack. Moon + night background = anchor for every composition. |
-| **cloud-bank** | elements.js | Clouds drifting across the moon is a classic motif. Low carve level = dark mass. |
-| **cloud-wisp** | scene-elements.js | Thin atmospheric clouds streaking across night sky. |
-| **pine-tree** | elements.js | Silhouetted against moonlit sky — iconic Hasui composition. |
-| **twisted-pine** | elements.js | More dramatic silhouette — angular branches against night. |
-| **torii-gate** | elements.js | Moonlit shrine entrance — spiritual and compositional anchor. |
-| **pagoda** | scene-elements.js | Multi-story silhouette against night sky. Classic meisho subject. |
-| **tea-house** | scene-elements.js | Warm interior glow against dark exterior. |
-| **wooden-bridge** | scene-elements.js | Bridge over moonlit water — depth and reflection. |
-| **paper-lantern** | extended-elements.js | Light source. Warm glow in dark scenes. |
-| **lantern-kasuga-premium** | extended-elements.js | Stone lantern as compositional anchor. |
-| **rain-curtain** | scene-elements.js | Rain at night — classic shin-hanga subject. |
-| **snow-fall** | scene-elements.js | Snow under moonlight — Hasui's specialty. |
-| **bare-branch** | extended-elements.js | Winter night silhouette — stark and dramatic. |
-| **umbrella-figure** | figures-elements.js | Solitary figure in night rain — deeply evocative. |
-| **traveler** | figures-elements.js | Lone figure on a moonlit road. |
-| **fishing-boat** | extended-elements.js | Boat on moonlit water — classic night subject. |
-| **tranquil-pond** | elements.js | Still water for moon reflections. |
+- Hiroshige used night in landscapes, famous-place views, seasonal scenes, and
+  bird-and-flower compositions.
+- Hasui Kawase used moonlight, snow, rain, water, and artificial light to
+  transform the modern landscape tradition.
+- Yoshitoshi used the moon to connect historical, literary, supernatural, and
+  figure subjects in *One Hundred Aspects of the Moon*.
+- Koitsu and Kiyochika explored stronger artificial illumination, urban
+  darkness, reflections, and dramatic light-and-shadow relationships.
 
-### Moderate-Affinity Companions
+These works do not share a unique inventory of "night objects." They share a
+way of organizing luminance, color, atmosphere, scale, and attention.
 
-| Element | Source | How It Supports Tsukiyo |
-|---------|--------|--------------------------|
-| **bamboo-grove** | scene-elements.js | Dense silhouette with moonlight filtering through gaps. |
-| **mountain-distant** | elements.js | Dark mountain mass against indigo sky. |
-| **stone-path** | scene-elements.js | Moonlit path leading into darkness. |
-| **susuki-grass** | extended-elements.js | Autumn moon over susuki grass — *tsukimi* tradition. |
-| **maple-branch** | scene-elements.js | Autumn night — colored leaves by moonlight. |
-| **distant-village** | scene-elements.js | Tiny lit windows in distant darkness. |
-| **water-ripples** | scene-elements.js | Moon reflection breaking on water surface. |
-| **koi** / **koi-leaping** | fauna-elements.js | Fish in moonlit pond — visible by moonlight. |
-| **crane-standing** | fauna-elements.js | Solitary crane in moonlit shallows. |
+### The element experiment exposed the mismatch
 
-### Design Implication
+The original proposal called for:
 
-The affinity tag system means we don't need to duplicate these elements. Tsukiyo's `affinity: ['landscape', 'atmospheric', 'structural', 'water', 'minimal']` will automatically surface the right companions. The pack's own elements provide what Core lacks: night-specific subjects that don't make sense in daytime scenes.
+1. Chōchin Row
+2. Tōrō Lit
+3. Hotaru
+4. Fukurō
+5. Kitsune
+6. Kodama
+7. Tsuki Reflection
+8. Hoshi
+9. Yūkaku Gate
+10. Suzumushi
 
----
+Three generated candidates for each subject produced a mixed set:
 
-## New Elements (10)
+- The owl, fox, trees, grasses, and gates could become usable elements after
+  curation, but they are not uniquely nocturnal.
+- The trees, grasses, gates, and lanterns were close to existing Fūkei-ga/Core
+  material.
+- The owl belongs naturally with Kacho-e's living subjects.
+- The fox can support both intimate nature and landscape compositions without
+  becoming Tsukiyo-owned.
+- Star fields became decorative patterns rather than convincing atmosphere.
+- Enlarged fireflies became illustrated insects rather than small points of
+  light in darkness.
+- Reflections became detached graphic objects rather than consequences of
+  moonlight on water.
 
-### Quality Bar — Inspired by Hiroshige and Hasui
-
-The 100 Views of Edo and Hasui's shin-hanga set a high bar for what Tsukiyo should feel like. Key implications for element design:
-
-- **Silhouettes must be immediately readable** — At block level (carve 0), every element should be recognizable by outline alone. Night scenes depend on silhouette clarity more than any other genre. Test every element against a dark background at block level.
-- **Detail emerges through carving, not color** — In night prints, color range is compressed (mostly dark). The carving system carries more weight than color zones. Shape-level and detail-level carving should reveal texture and character that the dark palette can't convey through color alone.
-- **Glow zones need bokashi to work** — The `glow` zone on light-source elements (chōchin, tōrō, hotaru) is designed for bokashi fade. Without bokashi applied, these elements will look flat. The journey system should guide users to discover bokashi on their first Tsukiyo composition.
-- **Organic hand-drawn quality is critical** — Following Hiroshige's calligraphic line quality, all paths should use Q-curves with organic variation. No geometric precision. The slight irregularity of hand-carved blocks is what makes mokuhanga feel alive.
-- **ViewBox sizes should encourage proper scale relationships** — A lit stone lantern should feel substantial but not dominate like a pagoda. The ancient tree should feel *massive*. ViewBox proportions guide initial placement scale.
-
-### Light Sources (3) — *The Pack's Most Distinctive Contribution*
-
-Night scenes need light sources. These elements create the warm-vs-cool tension that defines moonlit prints.
-
-#### 1. Chōchin Row (提灯列) — Paper Lantern String
-
-A row of 3–4 paper lanterns on a horizontal cord, each with a warm glow halo. Festival or shrine approach lighting.
-
-- **ViewBox**: ~220×80 (wide, horizontal string)
-- **ColorZones** (3): `lantern` (paper body — warm white/cream), `frame` (bamboo ribs and cord), `glow` (halo around each lantern)
-- **Suggested Layer**: midground
-- **Tags**: `atmospheric`, `structural`, `minimal`
-- **Carve Levels**:
-  - Block: 3–4 lantern body fills (rounded rectangles), cord fill (thin horizontal band), glow fills (larger soft ovals behind each lantern)
-  - Shape: + bamboo rib strokes (vertical on each lantern), cord sag curve stroke, top/bottom ring strokes
-  - Detail: + kanji character strokes on lanterns, cord knot marks, glow gradient strokes (radiating lines)
-- **Design Notes**: The glow zone is key — with bokashi (radial direction), it can fade from warm yellow at center to transparent at edges, creating the illusion of cast light. Lanterns should diminish slightly in size toward one end (perspective). This is the pack's signature "place-making" element.
-
-#### 2. Tōrō Lit (灯籠明) — Lit Stone Lantern
-
-A stone lantern with its fire window actively glowing. Distinct from Core's unlit kasuga/yukimi/oribe lanterns — this one has visible flame and cast light.
-
-- **ViewBox**: ~80×160 (tall, narrow)
-- **ColorZones** (3): `stone` (body and cap), `fire` (flame window — warm orange/yellow), `glow` (cast light on surrounding area)
-- **Suggested Layer**: foreground
-- **Tags**: `structural`, `atmospheric`, `landscape`
-- **Carve Levels**:
-  - Block: lantern body fill (stacked geometric shapes — cap, fire box, pillar, base), fire window fill, glow fill (larger area around fire box)
-  - Shape: + cap edge strokes, fire box window frame strokes, pillar contour, base detail
-  - Detail: + flame flicker strokes inside window, stone texture marks, moss strokes on base, light ray strokes emanating from window
-- **Design Notes**: The fire zone in warm orange against surrounding cool stone creates the warm/cool tension central to night prints. The glow zone with downward bokashi suggests light falling on the ground. Deliberately different silhouette from the Core lanterns.
-
-#### 3. Hotaru (蛍) — Firefly Cluster
-
-A loose scatter of 5–7 fireflies, each a tiny body with a luminous tail. Organic, floating arrangement.
-
-- **ViewBox**: ~160×120 (loose scatter)
-- **ColorZones** (3): `body` (tiny dark insect bodies), `light` (bioluminescent glow spots), `trail` (faint glow trails)
-- **Suggested Layer**: foreground
-- **Tags**: `fauna`, `atmospheric`, `intimate`, `organic`
-- **Carve Levels**:
-  - Block: 5–7 small glow spot fills (irregularly spaced), small body dot fills
-  - Shape: + body detail strokes (tiny wing marks), glow halo strokes (soft rings around each light)
-  - Detail: + trailing path strokes (dotted/dashed flight paths), leg detail, antenna strokes
-- **Design Notes**: Fireflies are the quintessential summer night element. The glow spots should be irregularly spaced to feel natural, not grid-like. At block level they're just warm dots floating in space — simple but evocative. The trail zone adds movement when carved to detail. Works beautifully over dark backgrounds and near water.
-
-### Night Nature (3) — *Dark-Adapted Subjects*
-
-These are subjects that belong specifically to night — they don't work in daylight compositions.
-
-#### 4. Fukurō (梟) — Owl
-
-A round-bodied owl perched on a branch stub, with large forward-facing eyes. Compact, recognizable silhouette.
-
-- **ViewBox**: ~100×120
-- **ColorZones** (3): `body` (feathered body and wings), `face` (facial disc and eyes), `perch` (branch stub)
-- **Suggested Layer**: foreground
-- **Tags**: `fauna`, `organic`, `intimate`
-- **Carve Levels**:
-  - Block: body silhouette fill (rounded owl shape with ear tufts), face disc fill, branch stub fill
-  - Shape: + wing edge strokes, large eye circle strokes (distinctive owl feature), beak stroke, branch bark contour
-  - Detail: + feather barb strokes (layered V-marks on breast), pupil detail, ear tuft texture, bark texture strokes, talon marks
-- **Design Notes**: The owl's silhouette is unmistakable — round body, ear tufts, forward-facing flat face. The facial disc zone allows a lighter color that catches moonlight. At block level it reads as a dark round shape on a branch — at detail level, the feather texture and piercing eyes emerge. Traditional subject in Japanese art symbolizing wisdom and night.
-
-#### 5. Kitsune (狐) — Fox
-
-A seated fox in profile, bushy tail curled around body. Alert, ears forward, nose slightly raised — as if sensing moonlight.
-
-- **ViewBox**: ~140×120
-- **ColorZones** (3): `body` (main fur), `chest` (lighter belly/chest patch), `detail` (ear tips, nose, tail tip — dark accents)
-- **Suggested Layer**: foreground
-- **Tags**: `fauna`, `organic`, `landscape`
-- **Carve Levels**:
-  - Block: body silhouette fill (seated profile with tail), chest patch fill, dark accent fills (ear tips, nose)
-  - Shape: + body contour stroke, ear detail strokes, leg division, tail curl contour, eye
-  - Detail: + fur texture strokes (short directional marks along body), whisker strokes, tail fur texture, paw detail
-- **Design Notes**: Foxes (*kitsune*) are deeply embedded in Japanese folklore — they're shapeshifters, tricksters, and messengers of Inari. The seated profile silhouette is clean and reads well at small scale. The bushy tail is the signature feature. The chest zone in a lighter tone creates the classic fox coloring. Perfect companion to fireflies and moonlit shrines.
-
-#### 6. Kodama (古樹) — Ancient Gnarled Tree
-
-A massive, ancient tree trunk with minimal foliage — mostly bare limbs twisting against the sky. Ghost-tree silhouette.
-
-- **ViewBox**: ~180×200 (tall, dominant)
-- **ColorZones** (3): `trunk` (massive main trunk and limbs), `bark` (textured bark areas), `moss` (hanging moss or lichen patches)
-- **Suggested Layer**: midground
-- **Tags**: `flora`, `organic`, `landscape`, `minimal`
-- **Carve Levels**:
-  - Block: massive trunk fill (thick, twisted form), 3–4 major limb fills branching asymmetrically
-  - Shape: + bark plate boundary strokes, hollow/knot hole strokes, branch taper contours, moss patch fills
-  - Detail: + deep bark fissure strokes (following form), fine branch tips (reaching, claw-like), hanging moss texture, root surface strokes
-- **Design Notes**: Named for tree spirits in Japanese folklore. This is a *presence* element — large, dark, ancient. The twisted silhouette against a moonlit sky is one of the most powerful compositions in night prints. Deliberately much larger and more dramatic than Core's pine-tree and twisted-pine. The hollow/knot holes add character. Pairs naturally with owl (perch), foxes (shelter), and fireflies (dancing around).
-
-### Atmospheric Elements (2) — *Night-Specific Atmosphere*
-
-#### 7. Tsuki Reflection (月映) — Moon Reflection on Water
-
-A broken, shimmering moon reflection on still water — elongated column of light with ripple distortion.
-
-- **ViewBox**: ~60×180 (tall, narrow — vertical reflection column)
-- **ColorZones** (2): `reflection` (bright reflected moonlight), `ripple` (darker water-distortion bands)
-- **Suggested Layer**: foreground
-- **Tags**: `water`, `atmospheric`, `minimal`, `organic`
-- **Carve Levels**:
-  - Block: single tall oval fill (main reflection column)
-  - Shape: + horizontal ripple break strokes dividing the reflection, tapered top and bottom edges
-  - Detail: + fine sparkle strokes (small bright dashes), subtle wave distortion strokes, edge shimmer marks
-- **Design Notes**: This pairs directly with the Core full-moon — place the moon in the sky and its reflection on the water below. The elongated vertical form creates a strong compositional axis. At block level it's a simple bright column; at detail level, the ripple breaks and sparkle strokes make it feel like moving water. Bokashi from top (bright) to bottom (fading) is essential.
-
-#### 8. Hoshi (星) — Star Field
-
-A scattered pattern of stars — a mix of bright points and faint dots. Not a constellation, but an atmospheric field.
-
-- **ViewBox**: ~200×120 (wide field)
-- **ColorZones** (2): `bright` (larger/brighter stars), `faint` (smaller background stars)
-- **Suggested Layer**: background
-- **Tags**: `atmospheric`, `minimal`, `landscape`
-- **Carve Levels**:
-  - Block: 8–10 larger star dot fills (irregular scatter), 15–20 tiny faint dot fills
-  - Shape: + 4-point twinkle strokes on bright stars (tiny cross shapes), additional faint dots
-  - Detail: + fine twinkle rays (longer crosses on 2–3 brightest stars), subtle haze rings around brightest points
-- **Design Notes**: Stars rarely appear in traditional ukiyo-e (the night sky is usually empty or cloudy), but shin-hanga artists like Hasui included starfields. This is an atmospheric wash element — place it behind everything, at background layer. The two zones allow bright stars and faint background stars to take different palette colors. Works best with no cloud-bank elements competing.
-
-### Composition Anchors (2) — *Scene-Setting Elements*
-
-#### 9. Yūkaku Gate (夕門) — Twilight Gateway
-
-A simple wooden gateway or entrance frame — two posts with a crossbeam, suggesting a threshold between lit and unlit space. Not a torii (sacred) but a worldly entrance.
-
-- **ViewBox**: ~160×180 (tall, framing)
-- **ColorZones** (3): `post` (wooden uprights), `beam` (crossbeam and roof line), `shadow` (cast shadow on ground)
-- **Suggested Layer**: foreground
-- **Tags**: `structural`, `landscape`, `minimal`
-- **Carve Levels**:
-  - Block: two post fills (vertical, slightly tapered), crossbeam fill, small roof line fill, ground shadow fill
-  - Shape: + post contour strokes, beam joint strokes, roof tile suggestion strokes, shadow edge
-  - Detail: + wood grain strokes on posts, weathering marks, roof tile detail, subtle cobblestone marks in shadow area
-- **Design Notes**: This is a framing element — place it in the foreground and compose a night scene *through* it. The gateway creates a sense of entering a nocturnal world. The shadow zone at the base grounds it. Lighter and simpler than Core's pagoda or tea-house — it frames rather than dominates. The threshold metaphor is powerful in Japanese aesthetics.
-
-#### 10. Suzumushi (松虫) — Night Grasses with Crickets
-
-A low cluster of autumn grasses with 1–2 tiny crickets perched on stems. Suggests sound — the singing insects of autumn night.
-
-- **ViewBox**: ~180×90 (wide, low)
-- **ColorZones** (3): `grass` (blade stems and seed heads), `cricket` (tiny insect bodies), `seed` (seed head accents)
-- **Suggested Layer**: foreground
-- **Tags**: `flora`, `fauna`, `organic`, `intimate`, `seasonal-autumn`
-- **Carve Levels**:
-  - Block: grass blade cluster fills (5–7 sweeping arcs), 1–2 tiny cricket body fills, seed head fills
-  - Shape: + individual blade strokes (graceful curves), cricket leg strokes, seed head detail, stem joints
-  - Detail: + fine blade veins, cricket wing detail, seed wisp strokes, wind-bent blade tips
-- **Design Notes**: Autumn moon-viewing (*tsukimi*) traditionally involves listening to singing insects. Susuki grass + crickets = the *sound* of autumn night. This is a foreground grounding element — place it at the bottom of compositions to establish the season and suggest the soundscape. Tiny cricket bodies are almost invisible at block level but emerge at detail. Pairs perfectly with Core's susuki-grass and full-moon.
+The generation quality was not the primary problem. The prompts were trying to
+turn relational atmospheric effects into standalone gallery objects.
 
 ---
 
-## Palettes (3)
+## Product Model: Creative Style × Creative Lens
 
-### 1. Tsukiyo 月夜 — Classic Moonlit
+Mokuri's current Creative Styles define subject vocabulary and compositional
+grammar:
 
-The signature palette. Cool indigo night with warm moonlight accents.
+| Creative Style | Primary grammar |
+|----------------|-----------------|
+| **Fūkei-ga** | Terrain, water, atmosphere, architecture, weather, and human scale |
+| **Kacho-e** | Living subjects, flowers, branches, habitat, and season |
+| **Ikebana** | Vessel, structural line, floral mass, balance, and empty space |
+| **Machi** | Built places, streets, architecture, weather, and human activity |
+
+Tsukiyo is orthogonal to those grammars:
+
+| Creative Lens | Primary transformation |
+|---------------|------------------------|
+| **Tsukiyo** | Darkness, selective luminance, nocturnal atmosphere, compressed color, and quiet |
+
+This allows combinations such as:
+
+- **Fūkei-ga × Tsukiyo** — moonlit waterfalls, snowy villages, shrine paths,
+  dark forests, and boats on still water.
+- **Kacho-e × Tsukiyo** — night ponds, owl and branch compositions, autumn
+  grasses, insects, lotus, and koi under moonlight.
+- **Machi × Tsukiyo** — lantern streets, illuminated windows, bridges,
+  embankments, rain, and reflected city light.
+- **Ikebana × Tsukiyo** — potentially a restrained interior arrangement
+  illuminated from one side, if composition testing demonstrates value.
+
+The term **Creative Lens** is a planning concept, not yet a committed UI label.
+Tsukiyo can first ship through atmosphere presets and guidance without adding a
+second permanent top-level selector.
+
+---
+
+## Canonical Mokuri References
+
+Three prints created with the existing Fūkei-ga/Core library establish a
+stronger design brief than the proposed element inventory.
+
+### Falling Moon
+
+**Archetype:** Moonlit solitude
+**Style relationship:** Fūkei-ga × Tsukiyo
+
+The composition uses a tall vertical sequence:
+
+1. Moon and quiet sky
+2. Distant birds and pine silhouettes
+3. Waterfall and enclosing cliffs
+4. A small seated human figure
+
+Its nocturnal character comes from compressed blue-gray and brown tones, dark
+silhouettes, one restrained warm figure, atmospheric distance, and a muted
+moon. The waterfall functions as a convincing axis of reflected light because
+it belongs physically to the landscape.
+
+### Lantern Glow
+
+**Archetype:** Artificial illumination
+**Style relationship:** Fūkei-ga × Tsukiyo
+
+The stone lantern is an existing subject. The composition becomes nocturnal
+through:
+
+- A single warm luminous center
+- Bokashi in the lantern window and light pools
+- Dark pine silhouettes
+- A subdued sky and ground
+- A large ratio of darkness to warmth
+
+This print suggests that Tsukiyo needs a light-source grammar and better
+atmospheric illumination controls more than it needs additional lantern
+silhouettes.
+
+### Night Pond
+
+**Archetype:** Autumn moon viewing
+**Style relationship:** Kacho-e × Tsukiyo
+
+Koi, lotus, grasses, and small animals remain familiar living subjects. Night
+changes their relationships through subdued water, a small moon, warm autumn
+grass, pale flowers, and a quiet center of ripples.
+
+The composition is relatively rich in elements but still feels quiet. This
+corrects the earlier assumption that nocturnes must always contain only three
+to six elements. **Compositional quiet matters more than literal emptiness.**
+
+The central reflection works because it is embedded in the pond and its ripple
+structure. It is not a detachable reflection object.
+
+These three prints should remain the reference set for evaluating future
+Tsukiyo work.
+
+---
+
+## Nocturne Design Principles
+
+### 1. Darkness has visual weight
+
+Night is not an empty black background. Large dark areas should retain tonal
+variation, print texture, subtle bokashi, and enough differentiation to hold
+the composition together.
+
+### 2. Establish a luminance hierarchy
+
+A nocturne should normally have one primary luminous statement:
+
+- Moon
+- Waterfall
+- Lantern or illuminated window
+- Snow
+- Pale flower
+- Water reflection
+
+Secondary highlights should support that statement rather than compete with
+it.
+
+### 3. Restrict warm color
+
+Warmth becomes meaningful because it is rare. A lantern, window, garment,
+fox, autumn grass, or small architectural surface can become the focal point
+against a much larger cool field.
+
+### 4. Compress color and interior contrast
+
+Familiar elements should lose some internal contrast at night and read more
+strongly as silhouettes or broad tonal masses. Carve level remains an
+expressive choice: block-level simplicity may be the finished nocturnal form,
+not merely a step toward detail.
+
+### 5. Use bokashi as structure
+
+Bokashi should organize the scene rather than decorate it. It can establish:
+
+- A dark zenith and luminous horizon
+- A moonlit wash
+- Lantern illumination
+- Mist depth
+- Snow or water luminosity
+- A transition between visible and obscured forms
+
+### 6. Seek compositional quiet, not an element quota
+
+A composition may be sparse or relatively rich. Quiet can come from:
+
+- Repetition grouped into one mass
+- Restricted palette
+- Low contrast
+- Large uninterrupted fields
+- A clear focal hierarchy
+- Subordinate detail
+
+### 7. Let atmosphere connect the elements
+
+Moonlight, fog, darkness, and reflection should feel continuous across the
+composition. Effects that depend on another subject should not be modeled as
+unrelated movable stickers unless actual use demonstrates that the abstraction
+works.
+
+---
+
+## Primary Product Opportunity: Atmosphere
+
+### Current atmosphere system
+
+Mokuri currently provides:
+
+- Named sky gradients
+- Named ground gradients
+- Horizon position
+- Zero to three mist bands
+- Per-zone directional bokashi
+
+This is enough to establish basic scene conditions, but not enough to shape
+air and illumination with the same nuance available in the element and print
+systems. Mist bands are especially rigid: they vary primarily by count and
+remain visually similar horizontal divisions.
+
+Tsukiyo should use the existing atmosphere system as its main integration
+point. The improvements should benefit every Creative Style rather than being
+locked behind a Tsukiyo mode.
+
+### Organic mist and fog
+
+Replace or evolve the numeric mist-band concept into a small family of
+visually distinct treatments:
+
+| Treatment | Purpose |
+|-----------|---------|
+| **None** | Preserve clean paper and unobscured silhouettes |
+| **Low Fog** | Concentrated around the horizon, valley, or shoreline |
+| **Drifting Mist** | Uneven overlapping forms crossing the composition |
+| **Deep Veil** | Broad translucent coverage that obscures distant elements |
+| **Water Haze** | Thin luminous atmosphere immediately above water |
+
+Useful internal variation may include:
+
+- Amount
+- Vertical position
+- Thickness and spread
+- Opacity
+- Edge softness
+- Organic edge wobble
+- Overlap
+- Procedural seed
+
+The UI should remain compact. Named treatments plus one or two intuitive
+controls such as **Amount** and **Height** are preferable to exposing every
+render parameter.
+
+Existing saved compositions using `mist: 0–3` must remain loadable. A future
+data migration can map the numeric value to an equivalent default treatment.
+
+### Nocturnal illumination fields
+
+Mokuri does not need a physically based lighting engine. A small set of
+woodblock-compatible illumination treatments would provide most of the value:
+
+| Treatment | Purpose |
+|-----------|---------|
+| **Horizon Glow** | Pale bokashi rising from the horizon |
+| **Moon Wash** | Cool restrained illumination across part of the scene |
+| **Lantern Pool** | Low warm illumination beneath or around a light source |
+| **Ambient Darkness** | Deepened edge or upper-sky tone around a focal area |
+| **Water Sheen** | Broken subdued luminance across a water surface |
+
+These treatments should feel printed:
+
+- Flat color and bokashi rather than digital bloom
+- Organic boundaries rather than perfect geometry
+- Restrained opacity
+- Visible relationship to paper and ink
+- Enough variation to avoid a reusable filter appearance
+
+The first implementation should be preset-driven or manually positioned.
+Automatic light projection, element-aware shadows, and physically calculated
+reflections would add substantial complexity and are not required to validate
+the concept.
+
+### Greater sky depth
+
+Existing sky types can gain more expressive variation through:
+
+- Zenith darkness versus horizon luminosity
+- Gradient strength
+- Irregular transition boundaries
+- Optional wash or veil
+- Distinct moonlit, starlit, overcast-night, and twilight recipes
+
+The moon remains an element because its size and placement are compositional.
+The surrounding illumination belongs to atmosphere.
+
+### Water response
+
+Water should initially use atmosphere-level sheen and existing ripple elements.
+A later experiment may derive a broken reflection from the placement of a moon
+or light source, but this should not be a prerequisite for Tsukiyo.
+
+---
+
+## Preset-Led Experience
+
+Atmosphere controls should not turn the Inking Workbench into a technical
+lighting editor. Named presets should provide the expressive starting point,
+with the ordinary controls remaining available for adjustment.
+
+Recommended initial presets:
+
+| Preset | Character | Suggested reference |
+|--------|-----------|---------------------|
+| **Falling Moon** | Cool moon wash, distant mist, dark forest tones | `Falling Moon` |
+| **Lantern Night** | Deep sky, restrained warm light pool, minimal mist | `Lantern Glow` |
+| **Night Pond** | Water haze, subdued surface, autumn warmth, small moon | `Night Pond` |
+| **Frost Silence** | Cold horizon glow, deep veil, almost no warm color | Winter landscape |
+| **Moonlit Lake** | Dark zenith, waterline mist, broken surface sheen | Lake or river scene |
+
+A preset may recommend:
+
+- Sky
+- Ground
+- Horizon
+- Mist treatment
+- Illumination treatment
+- Palette
+- Paper
+- Ink load
+- Impression count
+
+These remain editable recommendations, not locked scene modes.
+
+---
+
+## Palettes
+
+The original Tsukiyo palette direction remains useful. The palettes should
+become normal built-in Mokuri palettes available across released Creative
+Styles. Tsukiyo presets may recommend them but should not own or restrict them.
+
+### Tsukiyo 月夜 — Classic Moonlit
 
 | Slot | Name | Hex | Use |
 |------|------|-----|-----|
 | 0 | Deep indigo | `#0f1428` | Night sky, deep shadows, dominant dark |
-| 1 | Slate blue | `#3a4a6a` | Mid-tone — architecture, distant forms |
-| 2 | Moon silver | `#c8ccd8` | Moonlight, reflections, bright accents |
-| 3 | Warm glow | `#d4a050` | Lantern light, fire, warm counterpoint |
-| 4 | Paper cream | `#e8e0d0` | Highlights, snow, lit surfaces |
+| 1 | Slate blue | `#3a4a6a` | Architecture, forest, and mid-distance |
+| 2 | Moon silver | `#c8ccd8` | Moonlight, water, snow, and pale subjects |
+| 3 | Warm glow | `#d4a050` | Lanterns and restrained warm focus |
+| 4 | Paper cream | `#e8e0d0` | Brightest reserve and lit surfaces |
 
-**Palette logic**: Slots 0–1 are the dominant dark tones (70%+ of most compositions). Slot 2 is moonlight. Slot 3 is the only warm color — used sparingly for light sources. Slot 4 is near-paper for the brightest highlights.
+Slots 0–1 should dominate. Slots 2 and 4 establish luminance. Slot 3 should be
+used sparingly.
 
-### 2. Yomichi 夜道 — Night Road
-
-A warmer, earthier night. Amber lantern light dominates over moonlight. Inspired by Koitsu Tsuchiya's vivid night streetscapes.
-
-| Slot | Name | Hex | Use |
-|------|------|-----|-----|
-| 0 | Black brown | `#1a1410` | Deepest shadows, dark wood |
-| 1 | Warm charcoal | `#4a3a2a` | Architecture, tree trunks, earth tones |
-| 2 | Amber | `#c48a30` | Lantern glow, warm light cast |
-| 3 | Rust orange | `#a05a2a` | Warm mid-tone — lit surfaces, roof tiles |
-| 4 | Pale gold | `#e8d8b0` | Bright lantern paper, lit doorways |
-
-**Palette logic**: This is the "warm night" — dominated by amber and firelight rather than cool moonlight. Creates an intimate, inhabited feeling. Best paired with chōchin-row and lit stone lanterns.
-
-### 3. Shimoyo 霜夜 — Frost Night
-
-A cold, crystalline palette. Winter night — blue-white frost, deep blue-black sky, pale snow.
+### Yomichi 夜道 — Night Road
 
 | Slot | Name | Hex | Use |
 |------|------|-----|-----|
-| 0 | Blue-black | `#0a1020` | Sky, deepest tone |
-| 1 | Frost blue | `#5a6a8a` | Snow shadows, mid-distance |
-| 2 | Ice white | `#d8e0e8` | Snow surfaces, frost highlights |
-| 3 | Pale lavender | `#9a8aaa` | Atmospheric — mist, clouds, distant trees |
-| 4 | Warm amber | `#c49a50` | Tiny warm accents — distant window, lantern |
+| 0 | Black brown | `#1a1410` | Deep shadow and dark wood |
+| 1 | Warm charcoal | `#4a3a2a` | Architecture, trunks, and earth |
+| 2 | Amber | `#c48a30` | Lantern glow and illuminated grass |
+| 3 | Rust orange | `#a05a2a` | Warm surfaces and roof tones |
+| 4 | Pale gold | `#e8d8b0` | Lantern paper and lit openings |
 
-**Palette logic**: Almost entirely cool. The single warm accent (slot 4) used very sparingly — a lit window in a snowy village, one lantern at a shrine. The contrast of tiny warmth in vast cold is emotionally powerful. Best with Kakishibu paper + heavy ink.
+This is an inhabited night dominated by artificial warmth rather than
+moonlight.
 
----
+### Shimoyo 霜夜 — Frost Night
 
-## Atmosphere Presets
+| Slot | Name | Hex | Use |
+|------|------|-----|-----|
+| 0 | Blue-black | `#0a1020` | Sky and deepest tone |
+| 1 | Frost blue | `#5a6a8a` | Snow shadows and mid-distance |
+| 2 | Ice white | `#d8e0e8` | Frost, snow, and moonlit surfaces |
+| 3 | Pale lavender | `#9a8aaa` | Mist, cloud, and distant forms |
+| 4 | Warm amber | `#c49a50` | One small inhabited accent |
 
-Tsukiyo should have named atmosphere combinations suggested in the Inking Workbench. These are recommendations, not locked settings.
+This palette should remain almost entirely cool. Its emotional effect depends
+on using slot 4 very rarely.
 
-| Preset | Background | Foreground | Horizon | Mist | Best With |
-|--------|------------|------------|---------|------|-----------|
-| **Moonlit Lake** | Night | Water | 0.55 | 1 | Moon reflection, bridge, fishing boat |
-| **Shrine Path** | Night | Earth | 0.65 | 0 | Torii, stone lanterns, stone path |
-| **Frost Silence** | Night | Snow | 0.60 | 2 | Snow-fall, bare-branch, pagoda |
-| **Summer Stream** | Dusk | Water | 0.50 | 0 | Fireflies, night grasses, bamboo |
-
----
-
-## Pack Manifest
-
-```javascript
-registerPack({
-  id: 'tsukiyo',
-  name: 'Tsukiyo Collection',
-  nameJa: '月夜',
-  icon: '月',
-  description: 'Moonlit night scenes — lanterns, silhouettes, and nocturnal mystery',
-  affinity: ['landscape', 'atmospheric', 'structural', 'water', 'minimal'],
-
-  elementIds: [
-    'chochin-row', 'toro-lit', 'hotaru',
-    'fukuro', 'kitsune', 'kodama',
-    'tsuki-reflection', 'hoshi',
-    'yukaku-gate', 'suzumushi'
-  ],
-
-  paletteIds: ['tsukiyo', 'yomichi', 'shimoyo'],
-
-  presetIds: null, // gallery presets defined separately
-
-  journeys: [
-    {
-      id: 'first-moonlit',
-      title: 'Your First Moonlit Scene',
-      titleJa: '初月夜',
-      prompt: 'A full moon rises over still water',
-      promptType: 'scene',
-      startingPreset: 0,
-      featureHints: ['place', 'atmosphere-bg', 'palette', 'carve', 'print'],
-      suggestedNext: 'lantern-night',
-    },
-    {
-      id: 'lantern-night',
-      title: 'Lantern Light',
-      titleJa: '灯夜',
-      prompt: 'Warm lanterns guide the way through darkness',
-      promptType: 'scene',
-      startingPreset: 1,
-      featureHints: ['color-zones', 'bokashi', 'carve-level', 'ink-load'],
-      suggestedNext: null,
-    },
-  ],
-
-  prompts: [
-    { id: 'moon-on-water', text: 'A full moon reflected in still water', type: 'scene' },
-    { id: 'shrine-at-night', text: 'A shrine entrance under moonlight', type: 'scene' },
-    { id: 'firefly-stream', text: 'Fireflies over a summer stream', type: 'scene' },
-    { id: 'snow-night', text: 'Snowfall on a silent village', type: 'scene' },
-    { id: 'fox-moonlight', text: 'A fox watches the moon', type: 'scene' },
-    { id: 'night-solitude', text: 'The sound of nothing', type: 'emotion' },
-    { id: 'anticipation-dark', text: 'Something stirs in the dark', type: 'emotion' },
-    { id: 'warm-window', text: 'A single warm light in the distance', type: 'emotion' },
-    { id: 'only-moonlight', text: 'No light source except the moon', type: 'constraint' },
-    { id: 'silhouettes-only', text: 'Everything in silhouette', type: 'constraint' },
-    { id: 'add-darkness', text: 'Turn this scene into night', type: 'transformation' },
-    { id: 'add-light', text: 'Add one source of light', type: 'transformation' },
-  ],
-});
-```
+Palette values must still be tested through the print engine on Hosho, Kozo,
+Kakishibu, and other papers before release.
 
 ---
 
-## Gallery Presets (4)
+## Element Direction
 
-### 1. "Moonlit Shrine" — *First-Journey Preset*
+Tsukiyo does not require a dedicated ten-element file.
 
-Classic Hasui-style composition. Moon over water with shrine silhouette.
+### Recommended Fūkei-ga/Core additions
 
-- **Paper**: Tall Scroll (360×540) on Kakishibu
-- **Palette**: tsukiyo
-- **Atmosphere**: Night background, Water foreground, horizon 0.55, 1 mist band
-- **Elements**: full-moon (upper right), cloud-wisp (drifting across moon), torii-gate (left third, on horizon), tsuki-reflection (below moon, on water), stone-path (foreground), toro-lit (right foreground), hanko
+Moon variants fill a genuine compositional gap and remain useful outside
+Tsukiyo:
 
-### 2. "Lantern Road" — *Second-Journey Preset*
+- Crescent moon
+- Half moon
+- Gibbous moon
 
-Koitsu-style warm night streetscape.
+The existing full moon remains the primary circular moon. Clouds should remain
+separate elements so artists can create partial occlusion without multiplying
+nearly identical moon-and-cloud variants.
 
-- **Paper**: Landscape (540×360) on Kozo
-- **Palette**: yomichi
-- **Atmosphere**: Night background, Earth foreground, horizon 0.62, 0 mist
-- **Elements**: chochin-row (upper area, string across scene), pagoda (left background, small), yukaku-gate (right foreground, framing), toro-lit (left midground), umbrella-figure (center path, small), stone-path (foreground), hanko
+### Recommended Kacho-e or shared additions
 
-### 3. "Frost Silence"
+- **Owl** — a strong Kacho-e living subject with obvious nocturnal use.
+- **Fox** — useful in intimate nature and landscape compositions. It may be
+  owned by Kacho-e or Fūkei-ga and explicitly Featured in both after release
+  review.
 
-Cold winter night — sparse, minimal, mostly empty.
+These elements must meet the normal Mokuri quality bar at block, shape, and
+detail levels. They should not contain baked-in moonlight or night backgrounds.
 
-- **Paper**: Square (420×420) on Hosho
-- **Palette**: shimoyo
-- **Atmosphere**: Night background, Snow foreground, horizon 0.60, 2 mist bands
-- **Elements**: full-moon (upper center-left), bare-branch (right, large silhouette extending from edge), snow-fall (full paper), distant-village (left horizon, very small), hanko
+### Do not treat these as normal standalone elements
 
-### 4. "Fox Fires" — *Homage to Hiroshige #118*
+| Earlier proposal | Revised direction |
+|------------------|------------------|
+| **Hoshi star field** | Atmosphere treatment if needed; not a decorative element pattern |
+| **Tsuki Reflection** | Water sheen or future relational reflection behavior |
+| **Hotaru cluster** | Defer; consider a very sparse procedural overlay only after composition testing |
+| **Chōchin Row** | Review existing lantern vocabulary before adding another variant |
+| **Tōrō Lit** | Improve light-source zones or atmosphere behavior around existing lanterns |
+| **Kodama tree** | Review existing twisted pine, bare branch, and tree silhouettes first |
+| **Yūkaku Gate** | Revisit as part of Machi or a demonstrated Fūkei-ga architectural gap |
+| **Suzumushi grasses** | Existing susuki and Kacho-e insect vocabulary may already cover the need |
 
-Directly inspired by *Fox Fires on New Year's Eve at Ōji*. Supernatural, dramatic.
-
-- **Paper**: Tall Scroll (360×540) on Kakishibu
-- **Palette**: tsukiyo
-- **Atmosphere**: Night background, Snow foreground, horizon 0.50, 0 mist
-- **Elements**: kodama (center, large — the ancient tree as vertical axis), kitsune (lower left, small), kitsune (lower right, small, flipped), full-moon (upper right, small), hotaru (lower center, between foxes — standing in for foxfire), snow-fall (full paper, light), hanko
-
-**Design note**: This preset demonstrates how Tsukiyo elements combine to create a scene with narrative weight. The ancient tree anchors, the foxes create symmetry (like Hiroshige's gathering), and the firefly/foxfire element provides the supernatural warm light against cold night.
-
----
-
-## Perspective Landscape Elements (Core Addition)
-
-### The Depth Problem
-
-Mokuri elements are drawn in neutral flat elevation — they can be scaled, rotated, and positioned but not perspectively distorted. In Hiroshige's *100 Famous Views of Edo*, depth comes from elements **drawn with perspective baked into the artwork** — a stream widening toward the viewer, a path narrowing toward the horizon. These new Core elements bring that compositional vocabulary to Mokuri.
-
-All perspective elements are drawn as seen from slightly above and ahead — wider/larger at the bottom of the viewBox (near), narrower/smaller at the top (far). The perspective is in the SVG paths, not in transforms.
-
-### Design Principles
-
-- **Perspective is in the drawing, not the engine** — these are standard Mokuri elements with standard viewBoxes. The perspective effect is achieved through how the paths are drawn.
-- **Compositionally opinionated** — unlike the neutral side-view flowing-stream, these elements only work when placed to suggest depth. They're designed to create a depth axis through the composition.
-- **Detail follows perspective** — foreground areas have bolder strokes and larger features; background areas have finer, smaller detail. This reinforces the depth illusion at every carve level.
-- **Tall viewBoxes** — perspective elements are typically taller than wide, as the depth axis runs bottom-to-top (near-to-far).
-
-### Elements (4)
-
-#### P1. Receding Stream (遠流) — Perspective River/Stream
-
-A stream seen from above, wide and detailed in the foreground, narrowing and simplifying as it curves toward the horizon.
-
-- **ViewBox**: ~120×200 (tall — depth runs bottom to top)
-- **ColorZones** (3): `water` (main water surface), `bank` (earth/grass edges), `ripple` (surface detail — white water, reflections)
-- **Suggested Layer**: midground
-- **Tags**: `landscape`, `water`, `organic`
-- **Category**: `landscape`
-- **Carve Levels**:
-  - Block: water channel fill (wide at bottom, tapering with a gentle S-curve toward top), bank fills on both sides (converging)
-  - Shape: + bank edge strokes, major current flow lines (wider-spaced near, tighter far), large foreground rock fills in water
-  - Detail: + ripple strokes following current (large near, fine far), small stones in shallows, bank grass tufts, foam marks near rocks
-- **Design Notes**: The S-curve is critical — a straight taper looks mechanical. The stream should meander slightly as it recedes. Bank edges are organic (Q-curves), not straight lines. Foreground ripples are 3-4px strokes; background ripples are 1px. This creates Hiroshige's characteristic "leading the eye" into the distance. The `ripple` zone in a lighter color (slot 2 or 4) catches moonlight in Tsukiyo compositions.
-
-#### P2. Receding Path (遠道) — Perspective Stone Path
-
-A stone-paved path from above, wide in the foreground with large detailed flagstones, narrowing toward a vanishing point with tiny stones.
-
-- **ViewBox**: ~100×200 (tall, narrow)
-- **ColorZones** (3): `stone` (flagstone surfaces), `gap` (dark mortar gaps between stones), `edge` (path border — earth, grass, or moss)
-- **Suggested Layer**: midground
-- **Tags**: `structural`, `landscape`
-- **Category**: `landscape`
-- **Carve Levels**:
-  - Block: path surface fill (wide trapezoid, slightly irregular edges), edge fills on both sides
-  - Shape: + major flagstone division strokes (larger rectangles near, smaller far), edge contour strokes, 1-2 large foreground stone fills
-  - Detail: + individual stone surface texture (fine cracks, weathering), moss in gaps (near stones only), tiny pebble marks at edges, worn-smooth polish marks on foreground stones
-- **Design Notes**: The stone size gradient is the key depth cue — foreground stones ~20px wide, background stones ~4px. Stones should be slightly irregular (not a grid). The path can curve slightly to one side. Edges have organic grass/earth borders, not hard lines. Perfect for "path leading into moonlit darkness" (Tsukiyo) or "stone path to a shrine" (Core).
-
-#### P3. Angled Bridge (斜橋) — Three-Quarter View Bridge
-
-A wooden bridge at 3/4 oblique angle, crossing diagonally from near-right to far-left (or mirrored). Shows both the side railing and the deck surface.
-
-- **ViewBox**: ~200×160
-- **ColorZones** (3): `deck` (bridge deck planks), `rail` (side railing and posts), `support` (underside structure, pilings)
-- **Suggested Layer**: midground
-- **Tags**: `structural`, `landscape`, `water`
-- **Category**: `landscape`
-- **Carve Levels**:
-  - Block: deck surface fill (parallelogram, wider at near end), railing fill (near post taller, far post shorter), support fill (visible pilings at near end)
-  - Shape: + individual plank strokes on deck (wider-spaced near, compressed far), railing post strokes, cross-beam strokes, deck edge contour
-  - Detail: + wood grain on near planks, weathering marks, rope lashing on joints, water line marks on pilings, shadow strokes beneath deck
-- **Design Notes**: The diagonal axis creates a powerful compositional line — the bridge leads the eye from foreground to background. The near end should feel close enough to touch (large posts, visible wood grain). The far end reduces to simple silhouette geometry. Can be flipped horizontally to change the direction of recession. This addresses the flat side-view limitation of Core's wooden-bridge.
-
-#### P4. Receding Fence (遠垣) — Perspective Bamboo Fence/Railing
-
-A bamboo or wooden fence/railing extending from foreground to distance. Posts tall and spaced wide at the near end, short and compressed at the far end.
-
-- **ViewBox**: ~160×180 (tall)
-- **ColorZones** (2): `post` (vertical posts and top rail), `rail` (horizontal connecting rails, lashing)
-- **Suggested Layer**: foreground
-- **Tags**: `structural`, `landscape`, `minimal`
-- **Category**: `landscape`
-- **Carve Levels**:
-  - Block: 5-7 post fills (graduated height — tallest near, shortest far), top rail fill connecting all posts, ground line fill
-  - Shape: + post contour strokes, horizontal rail strokes (2-3 rails visible), lashing marks at joints, ground detail near base
-  - Detail: + bamboo node marks on near posts, fine grain texture, weathering strokes, small vine or moss on near posts, tiny shadow strokes
-- **Design Notes**: This is a foreground framing element — place it at the bottom/side of a composition and look *past* it into the scene. The fence creates Hiroshige's signature "near object frames distant view" composition. Works beautifully in both Tsukiyo (fence railing by moonlit pond) and Core (fence along a garden path). The graduated post height is the primary depth cue. Horizontal rails create converging lines.
-
-### Placement in Element Library
-
-These 4 elements join Core's element library (not pack-specific) since perspective depth benefits all creative contexts. They should be tagged to surface via affinity in landscape-heavy packs (Core, Tsukiyo, eventually Machi).
-
-- Added to `scene-elements.js` (or a new `perspective-elements.js` if the file is getting large)
-- Added to Core pack's `elementIds` in `pack-registry.js`
-- Category: `landscape` for all four
+No generated candidate should be promoted merely because it exists.
 
 ---
 
+## Existing Element Curation
 
+Tsukiyo should feature explicitly reviewed elements from released Creative
+Styles rather than use automatic affinity scoring.
 
-Tsukiyo compositions will push the print engine in specific ways. Some items are "nice to have" enhancements that benefit all packs; none are strict blockers.
+Likely Fūkei-ga companions include:
 
-### Works Well Today
-- **Night background atmosphere**: Already renders deep indigo gradients. Opacity 0.92 at top = very dark.
-- **Heavy ink load**: Increases opacity and edge weight — exactly what night scenes need.
-- **Kakishibu paper**: Dark brown base creates a naturally moody foundation. Ink on dark paper = rich.
-- **Bokashi per zone**: Lantern glow can use bokashi to fade light zones. Moon reflection can fade top-to-bottom.
-- **Procedural variation**: Seeded path perturbation makes repeat lanterns/stars look hand-carved.
-- **Mist bands**: Semi-transparent paper-colored bands create moonlit fog effect over dark atmosphere.
+- Full moon and future moon phases
+- Cloud bank and cloud wisp
+- Pine tree, twisted pine, and bare branch
+- Mountains and cliffs
+- Waterfall, pond, stream, water ripples, and waves
+- Torii, pagoda, tea house, bridge, stone path, and lanterns
+- Rain and snow
+- Boat, traveler, umbrella figure, fisher, and other small staffage
 
-### Potential Enhancements (Future, Not Blocking)
+Likely Kacho-e companions include:
 
-1. **Moonlight wash** — A subtle blue-white overlay on the upper portion of night compositions, simulating scattered moonlight. Could be a new atmosphere option or a post-processing step in the print engine. Affects how elements in the upper half of the composition look slightly luminous.
+- Owl when available
+- Fox when available
+- Crane, heron, sparrow, and other birds
+- Koi, frog, turtle, and insects
+- Lotus, iris, susuki, maple, pine, and bare branches
 
-2. **Ink pooling on large dark areas** — Night scenes have large contiguous dark regions. The print engine's current ink absorption variation helps, but it's subtle. Slightly more pronounced variation in very dark/high-opacity areas would make large night skies feel more hand-printed.
-
-3. **Glow rendering** — The `glow` color zone on lanterns and fireflies renders as a flat color today. A future enhancement could apply a subtle radial gradient or soft-edge rendering to glow zones specifically, making them feel luminous rather than flat. This could work through the existing bokashi system.
-
-4. **Dark paper base awareness** — When using Kakishibu (dark paper), the relationship between ink color and paper base is inverted. Currently the print engine handles this, but very light ink on very dark paper could benefit from slightly reduced perturbation to maintain legibility.
-
-None of these are required for ship. The existing print engine with heavy ink + Kakishibu paper + night atmosphere already produces dramatically different prints from daytime compositions. The enhancements are opportunities to discover as we iterate with real compositions.
-
----
-
-## Audio Considerations
-
-The existing audio engine already adjusts ambience based on atmosphere. Night backgrounds trigger:
-- Lower register chimes
-- Wider spacing (more silence)
-- Reduced wind intensity
-- Occasional water drop sounds
-
-Tsukiyo-specific audio could include:
-- Cricket chirp synthesis (filtered noise bursts) when night grasses element is present
-- Owl hoot (low sine wave with slight pitch bend) as a rare ambient event at night
-- Firefly "sparkle" when placing hotaru element
-
-These are non-blocking polish items. The existing night ambience is already atmospheric.
+Featured membership should follow the explicit `pickerSections` direction in
+`docs/style-pack-curation-plan.md`. A future Lens implementation may define
+recommended elements separately from Creative Style ownership and
+presentation, but it should not restore automatic affinity as the production
+authority.
 
 ---
 
-## Implementation Order
+## Materials and Print Behavior
 
-### Phase 1: Perspective Elements (Core)
-1. Design and implement 4 perspective landscape elements in `scene-elements.js` or `perspective-elements.js`
-2. Add to Core pack elementIds
-3. Test perspective depth compositions — verify the illusion works at various scales and rotations
+Tsukiyo should recommend materials rather than require them:
 
-### Phase 2: Tsukiyo Foundation
-4. Create `assets/tsukiyo-elements.js` with all 10 element definitions
-5. Create `assets/tsukiyo-pack.js` with palettes and pack manifest
-6. Wire into `index.html` (script tags, palette merge)
-7. Bump service worker cache
+- **Ink load:** Standard or Heavy
+- **Papers:** Kozo, Kakishibu, Torinoko, or other papers validated through
+  print testing
+- **Impressions:** Multiple impressions for deep dark fields when appropriate
+- **Carving:** Lower carve levels for silhouettes; selective higher carving
+  for luminous reserve
+- **Bokashi:** Central to sky, fog, water, and light-source treatments
 
-### Phase 3: Element Design Iteration
-8. Test each element at all 3 carve levels — validate accumulation rule
-9. Test elements in night atmosphere — do silhouettes read well?
-10. Test light source elements (chōchin, tōrō, hotaru) with bokashi
-11. Iterate on element design based on visual testing
+Potential print-engine tuning should be evaluated only after the atmosphere
+prototype:
 
-### Phase 4: Compositions
-12. Create 4 gallery presets with curated compositions (using perspective elements where appropriate)
-13. Test full compose → carve → ink → print workflow with Tsukiyo
-14. Verify prints look distinctive on Kakishibu and Kozo papers
+- More visible ink variation in large dark fields
+- Better preservation of pale ink on dark paper
+- Controlled luminance without digital glow
+- Subtle variation across broad bokashi regions
 
-### Phase 5: Polish
-15. Tune palettes based on print output
-16. Add pack to style selector UI and verify affinity surfacing
-17. Update ROADMAP.md and docs/mokuri_style_packs.md
-18. Test on phone, tablet, and desktop
+These are opportunities, not initial blockers.
 
 ---
 
-## Tag Strategy
+## Audio
 
-New tags needed: none. The existing 17-tag vocabulary covers Tsukiyo elements well:
-- `atmospheric` — chōchin-row, tōrō-lit, hotaru, tsuki-reflection, hoshi
-- `fauna` — fukurō, kitsune, suzumushi, hotaru
-- `flora` — kodama, suzumushi
-- `structural` — chōchin-row, tōrō-lit, yūkaku-gate
-- `landscape` — kitsune, kodama, tōrō-lit, hoshi, yūkaku-gate
-- `water` — tsuki-reflection
-- `organic` — fukurō, kitsune, kodama, hotaru, suzumushi
-- `intimate` — hotaru, fukurō, suzumushi
-- `minimal` — tsuki-reflection, hoshi, yūkaku-gate, chōchin-row
+The existing procedural audio already supports the nocturne direction:
 
-### Pack Affinity Tags
-`affinity: ['landscape', 'atmospheric', 'structural', 'water', 'minimal']`
+- Night lowers the chime register.
+- Intervals become wider and quieter.
+- Wind changes character.
+- Dusk and night reduce birds and introduce crickets.
+- Water influences the ambient layer.
 
-This surfaces:
-- All landscape/atmosphere Core elements (mountains, clouds, rain, snow)
-- Structural elements (torii, pagoda, tea-house, bridges, lanterns)
-- Water elements (pond, stream, waves, ripples)
-- Minimal elements (basic forms for abstract night compositions)
+Tsukiyo should initially use this existing atmosphere-reactive behavior. New
+literal owl or firefly sounds are not required and risk making the soundscape
+more illustrative and less meditative.
 
 ---
 
-## Scale Relationships
+## Journeys and Prompts
 
-Night scenes have natural depth layering:
+Recommended journeys:
 
-| Layer | Typical Elements | Relative Scale |
-|-------|-----------------|----------------|
-| Background | hoshi, mountain-distant, full-moon | 0.4–0.8× |
-| Midground | kodama, pagoda, torii-gate, chōchin-row | 0.7–1.2× |
-| Foreground | tōrō-lit, fukurō, kitsune, suzumushi, yukaku-gate | 0.8–1.3× |
-| Atmospheric | cloud-bank, rain-curtain, snow-fall, hotaru | 0.6–1.0× (overlay) |
+### 1. Compose a Moonlit Nocturne
 
-The moon should typically be placed small and high — resist the temptation to make it huge. In traditional prints, the moon is a modest disc that commands attention through brightness contrast, not size. Tsuki-reflection can be taller than the moon itself — reflections elongate on water.
+Reference: `Falling Moon`
+
+Guidance:
+
+1. Choose one primary source of luminance.
+2. Establish a large dark field.
+3. Use silhouettes to structure depth.
+4. Add one restrained warm or human focal point.
+5. Apply mist, bokashi, and material choices.
+
+### 2. Lantern Light
+
+Reference: `Lantern Glow`
+
+Guidance:
+
+1. Place one lantern or illuminated structure.
+2. Restrict warm color to the light source.
+3. Use a lantern pool or related bokashi treatment.
+4. Keep surrounding elements dark and subordinate.
+5. Compare standard and heavy ink.
+
+### 3. Autumn Moon Viewing
+
+Reference: `Night Pond`
+
+Guidance:
+
+1. Begin with a Kacho-e living subject or habitat.
+2. Group repeated flora into a calm mass.
+3. Add a small moon or pale reflective center.
+4. Use water haze and restrained surface contrast.
+5. Preserve quiet even with a richer element count.
+
+Useful prompts:
+
+- A full moon above falling water
+- One warm light in a dark landscape
+- Autumn grasses beside a night pond
+- Snowfall on a silent village
+- A bird on a branch under moonlight
+- No light source except the moon
+- Everything in silhouette
+- Turn this familiar scene into night
+- Add one source of warmth
+- Let darkness occupy most of the paper
 
 ---
 
-## Comparison with Other Packs
+## Non-Goals
 
-| Dimension | Core | Kacho-e | Moribana | **Tsukiyo** |
-|-----------|------|---------|----------|-------------|
-| **Domain** | Broad landscape | Birds & flowers | Ikebana still-life | Night scenes |
-| **Mood** | Varied | Intimate, natural | Contemplative, balanced | Mysterious, serene |
-| **Typical count** | 5–10 elements | 3–5 elements | 3–7 elements | 3–6 elements |
-| **Key feature** | Breadth | Organic curves | Vessels + space | Darkness + light |
-| **Ink load** | Standard | Standard/Light | Light/Standard | **Heavy** |
-| **Best paper** | Kozo | Hosho | Gampi | **Kakishibu** |
-| **Atmosphere** | All | Day/Dawn/Pink | None/Overcast | **Night/Dusk** |
-| **Unique contribution** | Everything | Close-up nature | Container + arrangement | **Light sources + nocturnal fauna** |
-| **Affinity crossover** | N/A (base) | Flora, fauna, water | Flora, minimal, vessel | Landscape, atmospheric, structural |
+- Do not create a ten-element Tsukiyo-owned library.
+- Do not duplicate existing trees, gates, grasses, lanterns, or architecture
+  merely to label them nocturnal.
+- Do not make star fields, generic glow, or moon reflections into ordinary
+  gallery stickers.
+- Do not introduce physically based lighting or automatic cast shadows in the
+  first implementation.
+- Do not require a second top-level mode selector before the preset experience
+  proves useful.
+- Do not hide palettes or atmosphere capabilities from other Creative Styles.
+- Do not define Tsukiyo by a fixed element-count rule.
+- Do not make audio more literal unless user testing identifies a real need.
+
+---
+
+## Implementation Plan
+
+### Phase 1: Atmosphere foundation
+
+1. Audit the current sky, ground, horizon, and mist implementation.
+2. Prototype organic low fog and drifting mist using the existing atmosphere
+   rendering pipeline.
+3. Add enough parameterization for amount, height, organic shape, and seed.
+4. Preserve compatibility with numeric `mist: 0–3` save data.
+5. Verify workspace and final print render the same atmosphere intent.
+
+**Deliverable:** mist and fog that can establish depth without rigid bands.
+
+### Phase 2: Illumination treatments
+
+1. Prototype horizon glow and moon wash.
+2. Prototype a low lantern-light field using flat color and bokashi.
+3. Prototype restrained water sheen.
+4. Avoid element-aware physics in this phase.
+5. Test on light and dark papers with standard and heavy ink.
+
+**Deliverable:** a small reusable vocabulary of printed illumination.
+
+### Phase 3: Palettes and presets
+
+1. Add and tune Tsukiyo, Yomichi, and Shimoyo as built-in palettes.
+2. Create the five initial atmosphere presets.
+3. Rebuild `Falling Moon`, `Lantern Glow`, and `Night Pond` using those presets.
+4. Compare the presets across Fūkei-ga and Kacho-e compositions.
+5. Remove or revise any preset that only works for one composition.
+
+**Deliverable:** a useful nocturne experience without new element ownership.
+
+### Phase 4: Minimal element additions
+
+1. Design crescent, half, and gibbous moon variants for Fūkei-ga/Core.
+2. Develop and review one owl for Kacho-e.
+3. Develop and review one fox for shared Fūkei-ga/Kacho-e presentation.
+4. Test every element at all carve levels and in daylight as well as night.
+5. Do not proceed with other generated candidates without a demonstrated gap.
+
+**Deliverable:** a small set of broadly useful, non-duplicative elements.
+
+### Phase 5: Guidance and presentation
+
+1. Add the three initial journeys.
+2. Add curated gallery compositions based on the canonical references.
+3. Add Tsukiyo prompts and material recommendations.
+4. Confirm the existing audio transitions support each preset.
+5. Test on phone, tablet, desktop, and installed PWA.
+
+**Deliverable:** a complete guided nocturne experience.
+
+### Phase 6: Product-model evaluation
+
+After the preset experience is proven:
+
+1. Decide whether **Creative Lens** should become a user-facing concept.
+2. Decide whether lenses need their own selector or remain named atmosphere
+   collections.
+3. Define how a lens recommends elements without conflicting with explicit
+   Creative Style picker curation.
+4. Evaluate whether future lenses justify the abstraction or whether Tsukiyo
+   should remain a singular named atmosphere suite.
+
+**Deliverable:** a product decision based on actual use rather than speculative
+architecture.
+
+---
+
+## Recommended First Implementation Slice
+
+The smallest meaningful future implementation is:
+
+1. Prototype **Low Fog** and **Drifting Mist**.
+2. Prototype **Moon Wash** and **Lantern Pool**.
+3. Create one provisional Tsukiyo palette and three named presets.
+4. Rebuild the three canonical reference prints.
+5. Compare workspace appearance, print output, performance, and mobile UI.
+6. Decide whether the atmosphere model is expressive enough before adding
+   elements or permanent Lens infrastructure.
+
+This slice tests the central thesis:
+
+> Can richer atmosphere transform existing Mokuri elements into convincing
+> nocturnes?
+
+If the answer is yes, Tsukiyo can grow through atmosphere, palette, guidance,
+and selective additions. If the answer is no, the reference compositions will
+show which specific capability is still missing.
+
+---
+
+## Relationship to the Creative Style Curation Plan
+
+`docs/style-pack-curation-plan.md` currently lists Tsukiyo beside Fūkei-ga,
+Kacho-e, Ikebana, and Machi as a future Creative Style. This document supersedes
+that classification for Tsukiyo.
+
+The broader curation plan remains valid for element-based Creative Styles:
+
+- Explicit Featured sections
+- Separation of ownership, presentation, and release status
+- Complete released library under All Elements
+- Deliberate cross-style reuse
+- Developer-controlled release
+
+A future revision of the broader plan should identify Tsukiyo as an
+atmosphere-led Creative Lens or named nocturne suite rather than an
+element-based Creative Style.
