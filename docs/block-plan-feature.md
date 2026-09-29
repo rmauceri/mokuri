@@ -2,7 +2,118 @@
 
 **Status:** Proposed for implementation
 **Date:** September 15, 2026
+**Updated:** September 29, 2026
 **Initial target:** Dev-only workshop prototype
+
+## Implementation Status
+
+### Phase 0 physical-output spike — implemented; physical validation pending
+
+The first dependency-free development harness is implemented:
+
+- `block-plan-engine.js`
+- `dev/block-plan-harness.html`
+
+The spike currently demonstrates:
+
+- A 9 × 12-inch portrait or 12 × 9-inch landscape block
+- 8 × 10-inch paper positioned from the selected print margins
+- Selectable 5 × 7 and 6 × 6 print areas
+- Balanced print margins with equal left/right margins, top kept close to the
+  side margins where aspect ratios permit, and only a modest bottom bias
+- Kento recalculated from the resulting paper and image placement
+- Aspect-preserved placement of an actual Mokuri Basic Forms composition
+- Exact resolved-color grouping
+- Foreground knockout
+- A normal-reading hanshita master
+- A mirrored carbon/graphite master
+- Shared tentative kagi-kento and hikitsuke geometry
+- One-inch and 25 mm calibration marks
+- 300 DPI PNG generation
+- Orientation-aware US Letter and A4 browser printing
+- Visible Auto, Portrait, and Landscape Block Plan orientation controls
+- Coordinated rotation of block, paper, print area, kento, guides, preview, and
+  export dimensions
+- Live Letter/A4 page-count feedback before opening the browser print dialog
+- Printer-page orientation derived automatically from the physical Block Plan
+- Single-page transfer output when the paper, image, and kento fit at 100%
+- Exact-size tiling only when the transferable crop cannot fit on one page
+
+The harness intentionally remains outside the production application while its
+physical behavior is evaluated.
+
+### Phase 1 production geometry — in progress
+
+The development engine and harness now also support:
+
+- Loading direct composition JSON, gallery-entry JSON, or Mokuri's native
+  `.mokuri` composition and backup files
+- Core, Kacho-e, and Ikebana/Moribana element definitions and palettes
+- Custom element definitions embedded in composition data
+- Saved pressure-curve values for deterministic freehand stroke geometry
+- Element-local Fine, V-gouge, U-gouge, and Pattern stroke subtraction
+- Pattern density and rotation in production masks
+- Explicit raised-surface keep maps
+- Explicit inverse carve-away maps
+- Conservative warnings for very fine printable and carved details
+- Grouped element/zone/type diagnostics instead of listing hundreds of raw SVG
+  paths for complex Forge elements
+- Namespaced SVG masks and patterns so on-screen and browser-print masters
+  cannot resolve one another's hidden resources
+- Element- and color-run knockout masks instead of one mask per SVG path,
+  avoiding quadratic output growth on complex Forge elements
+- Bounded physical-detail measurement so warnings do not dominate generation
+  time on compositions containing hundreds of paths
+- Idle-warmed, cached 300 DPI raster masters for browser printing, preventing
+  Edge print preview from rerasterizing complex SVG knockout masks
+- One coordinated multi-block browser print job, with all ordinary ink blocks
+  selected by default, the optional Atmosphere block initially unselected,
+  and per-block inclusion for partial reprints
+- Aggregate Letter/A4 page counts and ordered per-block page labels
+- Sequential 300 DPI raster preparation with visible block-by-block progress
+  before opening the browser print dialog
+- Mokuri-compatible None, Narrow, Standard, and Wide margin placement using
+  the same geometric-mean proportions as Pull Print
+- Exact-size placement retained as a separate 4 × 6, 5 × 7, or 6 × 6 mode
+- Composition rotation controlled independently from physical block
+  orientation, with as-composed, clockwise, and counterclockwise choices
+- Auto block orientation derived from the composition's effective orientation
+  after any selected rotation
+- Viewing-only preview zoom with Mokuri-style Zoom In, Zoom Out, Fit, keyboard,
+  and cursor-centered mouse-wheel controls; output geometry is unaffected
+- Isolated responsive SVG-document center previews, avoiding both inline-SVG
+  mask conflicts and fixed-surface image resampling artifacts without paying
+  the cost of print-resolution rasterization
+- Read-only grab panning with left or middle mouse drag, a top-centered Fit
+  position, and independently scrolling desktop source, preview, and output
+  panes
+- 8 × 10, 8 × 8, and 7 × 5-inch paper presets
+- 5 × 7, 6 × 6, and 4 × 6-inch compatible print areas
+- Editable Ink and Paper Reveal proposal roles
+- Paper Reveal masks that preserve visual stacking while generating no
+  physical block
+- One authoritative dark-gray Block Surface master using native area edges and
+  native detail strokes, without generated contour expansion
+- Hanshita and Carbon output profiles derived from the same Block Surface
+  geometry, differing only in orientation and production instructions
+- A separate dark-gray Carve Away inverse reference
+- Near-paper color suggestions based on the selected paper type
+- One optional first Atmosphere block containing separate background and
+  foreground fields with their own colors and bokashi instructions
+- A normal-reading Physical Proof composed only from proposed ink blocks
+
+Current spike limitations:
+
+- Kento dimensions are provisional.
+- Legacy element-wide carve-pattern assignments still require review; current
+  freehand Pattern-tool strokes are represented in production masks.
+- Physical-detail analysis currently covers narrow strokes and pattern marks;
+  isolated fill islands and narrow negative gaps are not yet measured.
+- Detailed bokashi guides, mist blocks, background-carve subtraction,
+  key-block proposals, persistence, PDF packaging, and ZIP packaging remain
+  later phases.
+- Exact print scaling, tiled-page assembly, carbon transfer, and face-down
+  hanshita behavior still require manual Edge and workshop testing.
 
 ## Purpose
 
@@ -104,6 +215,52 @@ size.
 Both inches and millimeters should be displayed. Inches are canonical for these
 initial presets; metric values are exact conversions.
 
+### Initial print-area presets
+
+The Phase 0 harness initially exercises two finished print sizes on 8 × 10-inch
+paper:
+
+| Print area | Left/right margins | Top/bottom margins |
+|------------|--------------------|--------------------|
+| 5 × 7 in | 1.5 / 1.5 in | 1.25 / 1.75 in |
+| 6 × 6 in | 1 / 1 in | 1.75 / 2.25 in |
+
+These use the same modest bottom-weighting already present in Mokuri's digital
+print presentation. The print rectangle remains centered on the woodblock, and
+the paper placement is derived from the selected margins.
+
+The development harness also supports a **Mokuri Margins** placement mode using
+the production application's existing None, Narrow, Standard, and Wide
+presets. These presets are proportional rather than fixed-inch measurements:
+the side, top, and bottom values are fractions of the artwork's geometric-mean
+dimension. Block Plan solves that relationship in reverse, finding the largest
+aspect-preserved image whose complete margin wrapper fits the selected physical
+paper. This preserves Mokuri's larger bottom margin while expressing the final
+placement in measurable inches.
+
+The composition's saved `presentationMargin` is selected when a composition is
+loaded. Artists can switch back to **Exact Image Size** when validating a
+specific 4 × 6, 5 × 7, or 6 × 6 production area.
+
+### Composition rotation
+
+Composition rotation is independent from physical Block Plan orientation:
+
+- As composed
+- 90° clockwise
+- 90° counterclockwise
+
+Auto Block Plan orientation follows the effective composition aspect ratio
+after rotation. Explicit Portrait or Landscape selection keeps the physical
+block and paper fixed while rotating and refitting only the composition. This
+avoids the earlier prototype behavior in which every landscape block
+implicitly rotated its artwork.
+
+The right-angle **corner kento** (`kagi-kento`) remains anchored to the
+resulting paper corner. The straight **side kento** (`hikitsuke-kento`) remains
+on the same registered paper edge but shifts laterally with the print area so
+it stays usefully positioned relative to the composition.
+
 ### Preset recommendation
 
 Mokuri should recommend a paper preset from the composition aspect ratio:
@@ -164,8 +321,12 @@ can be regenerated later.
 Mokuri resolves the actual final ink used by every printable zone and proposes:
 
 - One block for each exact resolved ink color
+- An editable Paper Reveal role for regions intended to expose the selected
+  paper rather than print a pale pigment
 - An optional key block containing suitable dark line and detail work
-- Atmosphere reference guides rather than atmosphere blocks
+- Broad physical background and foreground atmosphere proposals, retaining
+  their full raised fields and describing the digital gradients as bokashi
+  instructions
 - No hanko block by default
 
 The proposal is a starting point, not a locked result.
@@ -184,28 +345,29 @@ The artist can:
 - Review bokashi instructions
 - Inspect warnings about physically small details
 
-### Step 4: Registration and transfer preview
+### Step 4: Registration and master preview
 
 The review workspace shows:
 
 - The finished print orientation
 - The mirrored block orientation
-- The selected transfer master orientation
+- The selected Hanshita or Carbon master orientation
 - The paper boundary
 - The image boundary
 - Shared kento geometry
 - Block and paper dimensions
 - Page tiling when required
 
-The first version supports two transfer profiles:
+The first version supports two output profiles derived from the same Block
+Surface geometry:
 
 - **Hanshita:** normal-reading geometry intended to be pasted printed-face-down
   onto the block
 - **Carbon/graphite:** mirrored block geometry intended to be traced directly
   onto the block
 
-Hanshita is the traditional default. Choosing a transfer profile changes only
-the production-master orientation and presentation; it does not change the
+Hanshita is the traditional default. Choosing an output profile changes only
+the production-master orientation and instructions; it does not change the
 underlying block geometry.
 
 ### Step 5: Export
@@ -258,20 +420,19 @@ The artist may:
 This preserves a simple default without assuming that one screen color must
 always equal one physical block.
 
-## Mask and Guide Views
+## Block and Guide Views
 
-Each block should expose three explicit views.
+Each block exposes two geometric views plus the Physical Proof reference.
 
-### 1. Raised surface / keep map
+### 1. Block Surface
 
 Black represents wood that remains raised and receives ink.
 
 White represents wood that does not print.
 
-This is the clearest geometric source for production output. It may be used
-directly for carbon/graphite transfer. A dedicated hanshita master derives from
-the same geometry but uses contours and light keep-area indications so the
-carving information remains legible after the paper is pasted to the block.
+This is the authoritative geometry for production output. Hanshita and
+carbon/graphite masters both derive directly from it. The chosen method changes
+orientation and instructions, not the rendering or block geometry.
 
 ### 2. Carve-away map
 
@@ -279,8 +440,7 @@ Black or hatched material represents wood to remove.
 
 White represents the retained printing surface.
 
-This view is useful as a carving reference but should not be visually
-confusable with the transfer master.
+This view is an inverse carving reference, not a second production geometry.
 
 ### 3. Annotated block guide
 
@@ -425,9 +585,9 @@ element in the production masters exactly as they do in the composition.
 ### Background carving
 
 Background carve strokes affect atmosphere in the digital application.
-Because atmosphere is a guide-only feature in the first Block Plan version,
-background carving should appear on the atmosphere guide rather than creating
-an independent block.
+The first physical atmosphere proposal does not yet subtract those strokes
+from atmosphere blocks. Until that geometry is implemented, the plan must warn
+that background carving remains reference-only.
 
 ### Carve patterns
 
@@ -458,19 +618,48 @@ The export package should also contain a normal-reading and/or clearly oriented
 bokashi guide showing all gradients together. This guide supports brush
 application and comparison with the intended final proof.
 
-### Clean transfer master
+### Block Surface master
 
-The carbon/graphite transfer master remains strictly black and white. The
-hanshita master may use a light, clearly documented tone or hatch to identify
-retained areas. Gradient shading and instructional graphics must not overlap
-geometry intended for transfer in either profile.
+Block Surface is the single production rendering. It uses a dark-gray retained
+area whose native edge is the carve boundary, with native detail strokes shown
+directly. It does not synthesize contours with SVG morphology or outline every
+source fill. Hanshita presents this master in normal reading orientation;
+Carbon mirrors the same master for direct tracing. Carve Away is the inverse
+bench reference. Instructional graphics must not overlap geometry intended for
+transfer in either output profile.
+
+## Paper Reveal
+
+Paper Reveal is ordered negative geometry, not white ink and not a physical
+paper block.
+
+When a proposed exact color is assigned the Paper Reveal role:
+
+- Its records stay in composition order and knock out earlier ink geometry.
+- Later ink geometry may print over it, preserving Mokuri's visual stacking.
+- It receives a normal-reading Paper Mask reference where black means
+  “must remain unprinted.”
+- It is excluded from physical block numbering, transfer masters, raster
+  warmup, page totals, PNG masters, and multi-block print jobs.
+- Near-paper colors are suggested for review but are never converted
+  automatically, because pale pigment may be intentional.
+
+Paper Reveal has visual stacking order but no physical printing order. The
+Physical Proof composites only Ink-role proposals on the selected paper base,
+making the intended exposed-paper regions visible before workshop output.
 
 ## Atmosphere
 
-Sky, ground, mist, and other procedural atmosphere remain **guides only** in
-the first version.
+Background and foreground atmosphere become two disjoint raised fields on one
+optional physical Atmosphere block. This is necessary for Paper Reveal
+geometry to cut openings from a dark wash, as in a pale moon intended to expose
+paper, without requiring separate background and foreground blocks.
 
-An atmosphere guide may show:
+The Atmosphere block is always the first proposed physical block and is
+initially excluded from the print job. The artist may include it when carving
+and selectively inking both fields, or omit it when producing the atmosphere
+by another process. Each digital gradient becomes a separate bokashi inking
+instruction rather than carved tonal relief. An atmosphere guide may show:
 
 - Coverage boundary
 - Horizon location
@@ -480,9 +669,8 @@ An atmosphere guide may show:
 - Relevant background carve marks
 - Relationship to the final proof
 
-This avoids presenting procedural full-page gradients as if they were carved
-tonal relief. Future studio testing may justify converting selected atmosphere
-fields into editable physical blocks.
+Mist remains guide-only. Background carve strokes are not yet subtracted from
+the proposed atmosphere fields and must produce an explicit warning.
 
 ## Key Block
 
@@ -517,10 +705,10 @@ is not part of the initial workshop workflow.
 
 ## Registration System
 
-The first version supports traditional carved kento:
+The first version supports the traditional two-part carved kento system:
 
-- One right-angle **kagi-kento**
-- One straight **hikitsuke-kento**
+- One right-angle **corner kento** (`kagi-kento`)
+- One straight **side kento** (`hikitsuke-kento`)
 - Identical placement and geometry on every block
 
 ### Shared source of truth
@@ -1035,6 +1223,9 @@ per-color masks matching its visible geometry.
 
 - Dedicated review workspace
 - Block list and previews
+- Ink / Paper Reveal role assignment
+- Paper Mask and Physical Proof reference views
+- Physical background and foreground atmosphere proposals
 - Rename and reorder
 - Zone-level merge, split, and reassignment
 - Include and exclude

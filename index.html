@@ -6325,6 +6325,7 @@ function getCompositionData() {
     mist: STATE.mist,
     smoothHorizon: STATE.smoothHorizon,
     backgroundCarveStrokes: STATE.backgroundCarveStrokes,
+    pressureCurve: STATE.pressureCurve,
     presentationMargin: STATE.presentationMargin,
     presentationTitle: STATE.presentationTitle,
     presentationEdition: STATE.presentationEdition,
@@ -6364,6 +6365,7 @@ function applyCompositionData(data) {
   STATE.mist = data.mist || 0;
   STATE.smoothHorizon = data.smoothHorizon || false;
   STATE.backgroundCarveStrokes = data.backgroundCarveStrokes || [];
+  STATE.pressureCurve = data.pressureCurve ?? STATE.pressureCurve ?? 50;
   markBgCarveDirty();
   STATE.presentationMargin = data.presentationMargin || 'standard';
   STATE.presentationTitle = data.presentationTitle || '';
