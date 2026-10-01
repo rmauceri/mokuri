@@ -64,6 +64,30 @@
   const MIN_DETAIL_IN = 1 / 64;
   const MIN_REGION_IN = 1 / 32;
   const MAX_MEASURED_FILL_PATHS = 150;
+  const BLOCK_COLOR_NAMES = [
+    ['Sumi', '#24211e'],
+    ['Charcoal', '#4a4a4a'],
+    ['Ash', '#979792'],
+    ['Cream', '#eee4cf'],
+    ['Indigo', '#1a3a5c'],
+    ['Sky', '#87b8d8'],
+    ['Teal', '#3a7275'],
+    ['Pine', '#31513a'],
+    ['Matcha', '#718452'],
+    ['Ochre', '#c49a2a'],
+    ['Gold', '#dfb84f'],
+    ['Straw', '#e5ca78'],
+    ['Sand', '#d2b77d'],
+    ['Bengara', '#a94331'],
+    ['Persimmon', '#c66a32'],
+    ['Coral', '#d77d68'],
+    ['Beni', '#bd4f60'],
+    ['Rose', '#cc7180'],
+    ['Sakura', '#d7a0ae'],
+    ['Plum', '#76506e'],
+    ['Violet', '#6d6590'],
+    ['Earth', '#795b43'],
+  ];
   const pathBoundsCache = new Map();
   let measurementSvg = null;
   let masterSerial = 0;
@@ -114,6 +138,83 @@
       first[1] - second[1],
       first[2] - second[2]
     );
+  }
+
+  function colorLuminance(color) {
+    const match = /^#([0-9a-f]{6})$/i.exec(normalizeColor(color));
+    if (!match) return 0;
+    const channels = [
+      parseInt(match[1].slice(0, 2), 16),
+      parseInt(match[1].slice(2, 4), 16),
+      parseInt(match[1].slice(4, 6), 16),
+    ].map(value => {
+      const channel = value / 255;
+      return channel <= 0.04045
+        ? channel / 12.92
+        : Math.pow((channel + 0.055) / 1.055, 2.4);
+    });
+    return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+  }
+
+  function blockColorName(color) {
+    return BLOCK_COLOR_NAMES
+      .map(([name, reference]) => ({ name, distance: colorDistance(color, reference) }))
+      .sort((a, b) => a.distance - b.distance)[0].name;
+  }
+
+  function blockSubjectName(blockRecords) {
+    const elementNames = Array.from(new Set(
+      blockRecords
+        .filter(record => record.sourceType !== 'atmosphere')
+        .map(record => record.elementName)
+        .filter(Boolean)
+    ));
+    const onlyStrokes = blockRecords.length
+      && blockRecords.every(record => record.type === 'stroke');
+    if (onlyStrokes) {
+      return elementNames.length === 1
+        ? `${elementNames[0]} Linework`
+        : 'Key Linework';
+    }
+    if (elementNames.length === 1) return elementNames[0];
+    if (elementNames.length === 2) return `${elementNames[0]} & ${elementNames[1]}`;
+    if (elementNames.length > 2) return `${elementNames[0]} + ${elementNames.length - 1} Elements`;
+    return 'Forms';
+  }
+
+  function generateBlockName(block, records) {
+    if (block.isAtmosphere) return 'Atmosphere';
+    const blockRecords = block.recordIds
+      .map(id => records.find(record => record.id === id))
+      .filter(Boolean);
+    return `${block.colorName || blockColorName(block.color)} ${blockSubjectName(blockRecords)}`;
+  }
+
+  function disambiguateBlockColorNames(blocks) {
+    const groups = new Map();
+    blocks
+      .filter(block => !block.isAtmosphere)
+      .forEach(block => {
+        const name = block.colorName;
+        if (!groups.has(name)) groups.set(name, []);
+        groups.get(name).push(block);
+      });
+    groups.forEach(group => {
+      const colors = new Set(group.map(block => normalizeColor(block.color)));
+      if (colors.size < 2) return;
+      const ranked = group.slice().sort((a, b) =>
+        b.luminance - a.luminance || a.sourceOrder - b.sourceOrder
+      );
+      ranked.forEach((block, index) => {
+        if (ranked.length === 2) {
+          block.colorName = `${index === 0 ? 'Light' : 'Deep'} ${block.colorName}`;
+        } else {
+          const position = index / Math.max(1, ranked.length - 1);
+          const qualifier = position < 0.34 ? 'Light' : position > 0.66 ? 'Deep' : 'Mid';
+          block.colorName = `${qualifier} ${block.colorName}`;
+        }
+      });
+    });
   }
 
   function normalizeCompositionData(input) {
@@ -1069,9 +1170,22 @@
     const blocks = Array.from(blockMap.values()).map(block => {
       block.colors = Array.from(block.colors);
       block.sourceTypes = Array.from(block.sourceTypes);
+      block.luminance = block.colors.reduce(
+        (total, color) => total + colorLuminance(color),
+        0
+      ) / Math.max(1, block.colors.length);
+      block.sourceOrder = Math.min(...block.recordIds.map(id =>
+        records.find(record => record.id === id).order
+      ));
+      block.colorName = block.isAtmosphere ? 'Atmosphere' : blockColorName(block.color);
       block.nearPaper = !block.isAtmosphere
         && block.colors.length === 1
         && colorDistance(block.color, paperBase) <= 40;
+      return block;
+    });
+    disambiguateBlockColorNames(blocks);
+    blocks.forEach(block => {
+      block.name = generateBlockName(block, records);
       if (block.nearPaper && block.role === 'ink') {
         warnings.push(
           `${block.name} (${block.color}) is close to ${composition.paperType || 'kozo'} paper ${paperBase}; review whether it should be ink or Paper Reveal`
@@ -1086,7 +1200,17 @@
           warnings.push(`${block.name} is Paper Reveal but has no earlier geometry to knock out`);
         }
       }
-      return block;
+    });
+    blocks.sort((a, b) => {
+      if (a.role !== b.role) return a.role === 'ink' ? -1 : 1;
+      if (a.role === 'paper') return a.sourceOrder - b.sourceOrder;
+      if (a.isAtmosphere !== b.isAtmosphere) return a.isAtmosphere ? -1 : 1;
+      if (b.luminance !== a.luminance) return b.luminance - a.luminance;
+      return a.sourceOrder - b.sourceOrder;
+    });
+    let printOrder = 0;
+    blocks.forEach(block => {
+      block.printOrder = block.role === 'ink' ? ++printOrder : null;
     });
 
     return {

@@ -2,7 +2,7 @@
 
 **Status:** Proposed for implementation
 **Date:** September 15, 2026
-**Updated:** September 29, 2026
+**Updated:** October 1, 2026
 **Initial target:** Dev-only workshop prototype
 
 ## Implementation Status
@@ -97,6 +97,19 @@ The development engine and harness now also support:
 - Hanshita and Carbon output profiles derived from the same Block Surface
   geometry, differing only in orientation and production instructions
 - A separate dark-gray Carve Away inverse reference
+- Provisional subject-aware block names derived from each block's resolved
+  color and contributing element names
+- A fallback color-family classifier with light/deep qualifiers when distinct
+  inks would otherwise receive the same provisional name
+- A proposed physical printing sequence with Atmosphere first, followed by
+  ordinary ink blocks from lightest to darkest
+- A calm Arrange Blocks mode for overriding the proposed printing sequence
+  without confusing structural order with print-job inclusion
+- Reversible whole-block combining for selectively inking multiple colors on
+  one carved block, with segmented swatches and generated subject names
+- Separation of combined blocks back into their original automatic proposals
+- Reset Arrangement restores both the suggested sequence and unmerged block
+  proposal without changing Paper Reveal decisions
 - Near-paper color suggestions based on the selected paper type
 - One optional first Atmosphere block containing separate background and
   foreground fields with their own colors and bokashi instructions
@@ -105,6 +118,16 @@ The development engine and harness now also support:
 Current spike limitations:
 
 - Kento dimensions are provisional.
+- Light-to-dark printing order is currently a relative-luminance heuristic.
+  Pigment opacity, transparency, and intentional overprinting are not yet
+  modeled, so the artist may override the proposed sequence.
+- Block color names are provisional. Mokuri palettes currently name the palette
+  but not their individual color slots, so the harness uses a nearest-family
+  classifier. Authoritative swatch naming is deferred until Block Plan is
+  integrated into Mokuri.
+- Block merges currently persist across layout and output changes within the
+  active harness session, but assignment overrides are not yet serialized into
+  composition data.
 - Legacy element-wide carve-pattern assignments still require review; current
   freehand Pattern-tool strokes are represented in production masks.
 - Physical-detail analysis currently covers narrow strokes and pattern marks;
@@ -398,6 +421,41 @@ values are identical.
 Mokuri should not automatically merge merely similar colors. A subtle
 difference may represent an intentional pigment or printing decision. The
 artist can merge similar colors explicitly in the review workspace.
+
+### Deferred palette swatch names
+
+Mokuri's current palette schema provides a name for each palette and an array
+of five color values, but it does not provide names for the individual color
+slots. The development harness therefore assigns provisional families such as
+Indigo, Bengara, Coral, Straw, or Charcoal by comparing each resolved color to
+a small reference vocabulary. Light, Mid, or Deep qualifiers disambiguate
+distinct inks that still land in the same family.
+
+This classifier is useful for arbitrary literal overrides and imported custom
+colors, but it should not become the authoritative naming system. RGB proximity
+cannot reliably capture the artistic role intended by a palette designer.
+
+Palette-slot naming is deferred until Block Plan is integrated into Mokuri
+because the metadata has broader application:
+
+- Tooltips and accessible labels for swatches in the Ink Workbench
+- Deliberate Block Plan block names
+- Clearer saved color overrides and production manifests
+- Future pigment, transparency, and overprint guidance
+
+The likely production schema is an optional five-entry `colorNames` array
+alongside the existing `colors` array, preserving compatibility with current
+rendering code. Block Plan would resolve names in this order:
+
+1. Explicit active-palette slot name
+2. Known procedural atmosphere name
+3. Nearest-family fallback for literal or custom colors
+4. Light/deep qualifier when distinct resolved inks remain ambiguous
+
+All current production palettes should receive deliberate slot names during
+the Mokuri integration milestone, and future palette definitions should include
+them as normal palette metadata. The external harness will not change Mokuri's
+palette schema or Ink Workbench for this manipulation milestone.
 
 ### Paper-colored and transparent areas
 

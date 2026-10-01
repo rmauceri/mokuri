@@ -141,6 +141,32 @@ button.primary {
   padding: 3px 5px;
 }
 
+.block-order-controls {
+  display: grid;
+  gap: 2px;
+}
+
+.block-order-controls button {
+  width: 20px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  color: var(--muted);
+  background: transparent;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.block-order-controls button:hover:not(:disabled) {
+  color: var(--ink);
+  background: rgba(255,255,255,0.55);
+}
+
+.block-order-controls button:disabled {
+  opacity: 0.25;
+}
+
 .block-card.paper {
   border-color: #a59682;
   background: rgba(255,255,255,0.44);
@@ -216,6 +242,40 @@ button.primary {
 .block-selection-actions button {
   padding: 4px 8px;
   font-size: 11px;
+}
+
+.block-actions {
+  display: grid;
+  gap: 9px;
+  margin-top: 12px;
+}
+
+.block-actions:empty {
+  display: none;
+}
+
+.block-action-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 7px;
+}
+
+.block-action-row select {
+  min-width: 0;
+  width: 100%;
+  padding: 7px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  background: rgba(255,255,255,0.56);
+  font: 12px "Segoe UI", sans-serif;
+}
+
+.block-action-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
 }
 
 .swatch {
@@ -525,11 +585,15 @@ button.primary {
         <div class="block-selection-actions">
           <div class="eyebrow">Block proposals</div>
           <div>
-            <button type="button" id="select-all-blocks">All</button>
-            <button type="button" id="select-no-blocks">None</button>
+            <span id="print-selection-actions">
+              <button type="button" id="select-all-blocks">All</button>
+              <button type="button" id="select-no-blocks">None</button>
+            </span>
+            <button type="button" id="reset-block-plan" hidden>Reset arrangement</button>
+            <button type="button" id="toggle-arrange-blocks">Arrange Blocks</button>
           </div>
         </div>
-        <div class="eyebrow" style="letter-spacing:0;text-transform:none;font-weight:500">
+        <div class="eyebrow" id="block-list-hint" style="letter-spacing:0;text-transform:none;font-weight:500">
           Check ink blocks for the print job. Click the role to switch Ink / Paper Reveal.
         </div>
         <div class="block-list" id="block-list"></div>
@@ -574,6 +638,7 @@ button.primary {
       <div class="section">
         <div class="eyebrow">Selected block</div>
         <ul class="detail-list" id="block-details"></ul>
+        <div class="block-actions" id="block-actions"></div>
       </div>
 
       <div class="section">
@@ -758,12 +823,6 @@ const TEST_COMPOSITION = {
   ],
 };
 
-const blockNames = {
-  '#294a67': 'Indigo Field',
-  '#b94f3b': 'Bengara Forms',
-  '#d1a23a': 'Ochre Form',
-};
-
 let currentComposition = TEST_COMPOSITION;
 let paperPreset = '8x10';
 let printSize = '5x7';
@@ -778,6 +837,9 @@ let masterView = 'keep';
 let showGuides = true;
 let layoutOrientation = 'auto';
 let paperRevealColors = new Set();
+let arrangeBlocks = false;
+let blockOrderKeys = null;
+let mergedBlockGroups = [];
 let previewZoom = 1;
 let previewFitWidth = 540;
 let previewPan = null;
@@ -818,9 +880,17 @@ function selectedBlock() {
 }
 
 function selectedPrintBlocks() {
-  return plan.blocks.filter(block =>
-    block.role === 'ink' && printBlockIds.has(block.id)
-  );
+  return plan.blocks
+    .filter(block =>
+      block.role === 'ink' && printBlockIds.has(block.id)
+    )
+    .sort((a, b) => a.printOrder - b.printOrder);
+}
+
+function blockMemberKeys(block) {
+  return block.memberKeys && block.memberKeys.length
+    ? block.memberKeys.slice()
+    : [block.key];
 }
 
 function blockSwatchBackground(block) {
@@ -883,11 +953,13 @@ function extractCompositionFile(parsed) {
 
 function rebuildPlan(options) {
   const rebuildOptions = options || {};
-  const previousKey = plan && selectedBlock() ? selectedBlock().key : null;
+  const previousSelectedKeys = plan && selectedBlock()
+    ? blockMemberKeys(selectedBlock())
+    : null;
   const previousPrintKeys = !rebuildOptions.resetPrintSelection && plan
     ? plan.blocks
         .filter(block => block.role === 'ink' && printBlockIds.has(block.id))
-        .map(block => block.key)
+        .flatMap(blockMemberKeys)
     : null;
   const sourceWidth = currentComposition.paperW || 420;
   const sourceHeight = currentComposition.paperH || 600;
@@ -912,22 +984,18 @@ function rebuildPlan(options) {
       paperOrientation: resolvedOrientation,
     },
   });
-  if (currentComposition === TEST_COMPOSITION) {
-    plan.blocks.forEach(block => {
-      block.name = blockNames[block.color] || block.name;
-    });
-  } else if (currentComposition.paletteId
+  if (currentComposition !== TEST_COMPOSITION && currentComposition.paletteId
     && !BLOCK_PLAN_PALETTES[currentComposition.paletteId]) {
     plan.warnings.push(
       `Unknown palette "${currentComposition.paletteId}"; using Edo colors`
     );
   }
-  let physicalOrder = 0;
-  plan.blocks.forEach(block => {
-    block.printOrder = block.role === 'ink' ? ++physicalOrder : null;
-  });
-  const matchingBlock = previousKey
-    ? plan.blocks.find(block => block.key === previousKey)
+  applyBlockMerges();
+  applyBlockOrder();
+  const matchingBlock = previousSelectedKeys
+    ? plan.blocks.find(block =>
+        blockMemberKeys(block).some(key => previousSelectedKeys.includes(key))
+      )
     : null;
   selectedBlockId = matchingBlock
     ? matchingBlock.id
@@ -939,10 +1007,158 @@ function rebuildPlan(options) {
           .map(block => block.id)
       : plan.blocks
           .filter(block =>
-            block.role === 'ink' && previousPrintKeys.includes(block.key)
+            block.role === 'ink'
+            && blockMemberKeys(block).some(key => previousPrintKeys.includes(key))
           )
           .map(block => block.id)
   );
+}
+
+function mergedBlockName(blocks) {
+  const elementNames = Array.from(new Set(
+    blocks
+      .flatMap(block => block.recordIds)
+      .map(id => plan.records.find(record => record.id === id))
+      .filter(Boolean)
+      .map(record => record.sourceType === 'atmosphere'
+        ? 'Atmosphere'
+        : record.elementName
+      )
+      .filter(Boolean)
+  ));
+  const subject = elementNames.length === 1
+    ? elementNames[0]
+    : elementNames.length === 2
+      ? `${elementNames[0]} & ${elementNames[1]}`
+      : elementNames.length === 3
+        ? `${elementNames[0]}, ${elementNames[1]} & ${elementNames[2]}`
+        : `${elementNames[0]} + ${elementNames.length - 1} more`;
+  return subject || 'Combined Block';
+}
+
+function applyBlockMerges() {
+  plan.blocks.forEach(block => {
+    block.memberKeys = [block.key];
+  });
+  mergedBlockGroups.forEach(group => {
+    const groupKeys = new Set(group);
+    const constituents = plan.blocks.filter(block =>
+      block.role === 'ink'
+      && blockMemberKeys(block).some(key => groupKeys.has(key))
+    );
+    if (constituents.length < 2) return;
+    const constituentIds = new Set(constituents.map(block => block.id));
+    const insertIndex = Math.min(...constituents.map(block => plan.blocks.indexOf(block)));
+    const memberKeys = Array.from(new Set(constituents.flatMap(blockMemberKeys))).sort();
+    const colors = Array.from(new Set(
+      constituents.flatMap(block => block.colors || [block.color])
+    ));
+    const recordIds = Array.from(new Set(
+      constituents.flatMap(block => block.recordIds)
+    )).sort((a, b) => {
+      const first = plan.records.find(record => record.id === a);
+      const second = plan.records.find(record => record.id === b);
+      return first.order - second.order;
+    });
+    const merged = {
+      id: `merged-${memberKeys.join('-').replace(/[^a-z0-9_-]+/gi, '-')}`,
+      key: `merged:${memberKeys.join('|')}`,
+      memberKeys,
+      name: mergedBlockName(constituents),
+      color: colors[0],
+      colors,
+      order: Math.min(...constituents.map(block => block.order)),
+      recordIds,
+      role: 'ink',
+      defaultPrint: constituents.some(block => block.defaultPrint !== false),
+      isAtmosphere: constituents.some(block => block.isAtmosphere),
+      sourceTypes: Array.from(new Set(constituents.flatMap(block => block.sourceTypes))),
+      bokashi: constituents.flatMap(block => block.bokashi || []),
+      nearPaper: false,
+      luminance: constituents.reduce(
+        (total, block) => total + block.luminance,
+        0
+      ) / constituents.length,
+      sourceOrder: Math.min(...constituents.map(block => block.sourceOrder)),
+      printOrder: null,
+      merged: true,
+    };
+    plan.blocks = plan.blocks.filter(block => !constituentIds.has(block.id));
+    plan.blocks.splice(insertIndex, 0, merged);
+  });
+}
+
+function applyBlockOrder() {
+  if (blockOrderKeys && blockOrderKeys.length) {
+    const positions = new Map(blockOrderKeys.map((key, index) => [key, index]));
+    const inkBlocks = plan.blocks
+      .filter(block => block.role === 'ink')
+      .sort((a, b) => {
+        const aPosition = Math.min(
+          ...blockMemberKeys(a).map(key =>
+            positions.has(key) ? positions.get(key) : Infinity
+          )
+        );
+        const bPosition = Math.min(
+          ...blockMemberKeys(b).map(key =>
+            positions.has(key) ? positions.get(key) : Infinity
+          )
+        );
+        return aPosition - bPosition || a.printOrder - b.printOrder;
+      });
+    const paperBlocks = plan.blocks.filter(block => block.role === 'paper');
+    plan.blocks = inkBlocks.concat(paperBlocks);
+  }
+  let printOrder = 0;
+  plan.blocks.forEach(block => {
+    block.printOrder = block.role === 'ink' ? ++printOrder : null;
+  });
+}
+
+function moveBlock(blockId, direction) {
+  const inkBlocks = plan.blocks.filter(block => block.role === 'ink');
+  const index = inkBlocks.findIndex(block => block.id === blockId);
+  const target = index + direction;
+  if (index < 0 || target < 0 || target >= inkBlocks.length) return;
+  [inkBlocks[index], inkBlocks[target]] = [inkBlocks[target], inkBlocks[index]];
+  blockOrderKeys = inkBlocks.flatMap(blockMemberKeys);
+  applyBlockOrder();
+  render();
+}
+
+function mergeBlocks(sourceId, targetId) {
+  const source = plan.blocks.find(block => block.id === sourceId);
+  const target = plan.blocks.find(block => block.id === targetId);
+  if (!source || !target || source.role !== 'ink' || target.role !== 'ink') return;
+  const memberKeys = Array.from(new Set(
+    blockMemberKeys(source).concat(blockMemberKeys(target))
+  )).sort();
+  mergedBlockGroups = mergedBlockGroups
+    .filter(group => !group.some(key => memberKeys.includes(key)));
+  mergedBlockGroups.push(memberKeys);
+  const selectedMembers = new Set(memberKeys);
+  rebuildPlan();
+  const merged = plan.blocks.find(block =>
+    block.merged
+    && blockMemberKeys(block).every(key => selectedMembers.has(key))
+    && blockMemberKeys(block).length === selectedMembers.size
+  );
+  if (merged) {
+    selectedBlockId = merged.id;
+    printBlockIds.add(merged.id);
+  }
+  render();
+}
+
+function separateBlock(blockId) {
+  const block = plan.blocks.find(item => item.id === blockId);
+  if (!block || !block.merged) return;
+  const members = new Set(blockMemberKeys(block));
+  mergedBlockGroups = mergedBlockGroups.filter(group =>
+    !(group.length === members.size && group.every(key => members.has(key)))
+  );
+  rebuildPlan();
+  render();
 }
 
 function masterSvg(options) {
@@ -995,23 +1211,31 @@ function renderLayoutFacts() {
 }
 
 function renderBlocks() {
+  const inkBlocks = plan.blocks.filter(block => block.role === 'ink');
   byId('block-list').innerHTML = plan.blocks.map(block => `
     <div class="block-card ${block.role}${block.id === selectedBlockId ? ' active' : ''}">
-      <input type="checkbox" data-print-block="${block.id}"
-        aria-label="Include ${htmlEscape(block.name)} in print job"
-        ${printBlockIds.has(block.id) ? 'checked' : ''}
-        ${block.role === 'paper' ? 'disabled' : ''}>
+      ${arrangeBlocks && block.role === 'ink'
+        ? `<span class="block-order-controls">
+            <button type="button" data-move-block="${block.id}" data-direction="-1"
+              title="Print earlier" ${block === inkBlocks[0] ? 'disabled' : ''}>↑</button>
+            <button type="button" data-move-block="${block.id}" data-direction="1"
+              title="Print later" ${block === inkBlocks[inkBlocks.length - 1] ? 'disabled' : ''}>↓</button>
+          </span>`
+        : `<input type="checkbox" data-print-block="${block.id}"
+            aria-label="Include ${htmlEscape(block.name)} in print job"
+            ${printBlockIds.has(block.id) ? 'checked' : ''}
+            ${block.role === 'paper' ? 'disabled' : ''}>`}
       <button type="button" class="block-preview" data-block="${block.id}">
         <span class="swatch" style="background:${blockSwatchBackground(block)}"></span>
         <span>
           <span class="block-name">${block.role === 'ink' ? `${block.printOrder}. ` : ''}${htmlEscape(block.name)}</span>
-          <span class="block-color">${htmlEscape(blockColorLabel(block))}${block.nearPaper ? '<span class="role-hint">near paper</span>' : ''}${block.isAtmosphere ? '<span class="role-hint">optional</span>' : ''}</span>
+          <span class="block-color">${htmlEscape(blockColorLabel(block))}${block.merged ? `<span class="role-hint">${block.colors.length} inks</span>` : ''}${block.nearPaper ? '<span class="role-hint">near paper</span>' : ''}${block.isAtmosphere ? '<span class="role-hint">optional</span>' : ''}</span>
         </span>
         <span class="record-count">${block.recordIds.length} path${block.recordIds.length === 1 ? '' : 's'}</span>
       </button>
       <button type="button" class="block-role ${block.role}" data-block-role="${block.id}"
-        ${block.isAtmosphere ? 'disabled title="Atmosphere remains an ink block; use its checkbox to include it in a print job"' : ''}>
-        ${block.isAtmosphere ? 'Ink' : block.role === 'paper' ? 'Reveal Paper' : 'Print Ink'}
+        ${block.isAtmosphere || block.merged ? `disabled title="${block.merged ? 'Separate this combined block before changing its role' : 'Atmosphere remains an ink block; include it from Review mode'}"` : ''}>
+        ${block.isAtmosphere || block.merged ? 'Ink' : block.role === 'paper' ? 'Reveal Paper' : 'Print Ink'}
       </button>
     </div>
   `).join('');
@@ -1019,6 +1243,11 @@ function renderBlocks() {
     button.addEventListener('click', () => {
       selectedBlockId = button.dataset.block;
       render();
+    });
+  });
+  byId('block-list').querySelectorAll('[data-move-block]').forEach(button => {
+    button.addEventListener('click', () => {
+      moveBlock(button.dataset.moveBlock, Number(button.dataset.direction));
     });
   });
   byId('block-list').querySelectorAll('[data-print-block]').forEach(checkbox => {
@@ -1083,7 +1312,7 @@ function renderDetails() {
     `<li class="detail-summary"><strong>${htmlEscape(block.name)}</strong> — ${htmlEscape(blockColorLabel(block))}</li>`,
     `<li><strong>Role:</strong> ${block.role === 'paper'
       ? 'Paper Reveal — ordered negative geometry, no physical block'
-      : `Ink block ${block.printOrder}${block.isAtmosphere ? ' — optional, excluded from the initial print selection' : ''}`}</li>`,
+      : `Ink block ${block.printOrder}${block.merged ? ` — combined from ${block.memberKeys.length} proposed blocks` : ''}${block.isAtmosphere ? ' — optional, excluded from the initial print selection' : ''}`}</li>`,
     `<li><strong>Source:</strong> ${htmlEscape((block.sourceTypes || ['element']).join(' + '))}</li>`,
     block.nearPaper
       ? `<li>This color is close to the selected ${htmlEscape(currentComposition.paperType || 'kozo')} paper (${htmlEscape(plan.paperBase)}).</li>`
@@ -1099,6 +1328,7 @@ function renderDetails() {
       ? `<li class="detail-more">+ ${remainingGroups} additional grouped region${remainingGroups === 1 ? '' : 's'} omitted</li>`
       : '',
   ].filter(Boolean).join('');
+  renderBlockActions();
 
   if (block.role === 'paper') {
     byId('output-description').textContent =
@@ -1122,6 +1352,46 @@ function renderDetails() {
         ? `<li class="detail-more">+ ${remainingWarnings} additional warning${remainingWarnings === 1 ? '' : 's'} omitted</li>`
         : '')
     : '<li>No production warnings.</li>';
+}
+
+function renderBlockActions() {
+  const container = byId('block-actions');
+  const block = selectedBlock();
+  if (!arrangeBlocks || !block || block.role !== 'ink') {
+    container.innerHTML = '';
+    return;
+  }
+  const candidates = plan.blocks.filter(candidate =>
+    candidate.role === 'ink' && candidate.id !== block.id
+  );
+  container.innerHTML = [
+    '<p class="block-action-note">Combine compatible regions onto one carved block for selective inking. The original colors and composition stacking are preserved.</p>',
+    candidates.length
+      ? `<div class="block-action-row">
+          <select id="merge-block-target" aria-label="Block to combine with">
+            ${candidates.map(candidate =>
+              `<option value="${htmlEscape(candidate.id)}">${candidate.printOrder}. ${htmlEscape(candidate.name)}</option>`
+            ).join('')}
+          </select>
+          <button type="button" id="merge-selected-block" class="primary">Combine</button>
+        </div>`
+      : '',
+    block.merged
+      ? '<button type="button" id="separate-selected-block">Separate combined block</button>'
+      : '',
+  ].filter(Boolean).join('');
+  const mergeButton = byId('merge-selected-block');
+  if (mergeButton) {
+    mergeButton.addEventListener('click', () => {
+      mergeBlocks(block.id, byId('merge-block-target').value);
+    });
+  }
+  const separateButton = byId('separate-selected-block');
+  if (separateButton) {
+    separateButton.addEventListener('click', () => {
+      separateBlock(block.id);
+    });
+  }
 }
 
 function renderPreview() {
@@ -1274,6 +1544,13 @@ function renderToolbar() {
     button.classList.toggle('active', button.dataset.layoutOrientation === layoutOrientation);
   });
   byId('toggle-guides').classList.toggle('active', showGuides);
+  byId('toggle-arrange-blocks').textContent = arrangeBlocks ? 'Done' : 'Arrange Blocks';
+  byId('print-selection-actions').hidden = arrangeBlocks;
+  byId('reset-block-plan').hidden =
+    !arrangeBlocks || (!blockOrderKeys && mergedBlockGroups.length === 0);
+  byId('block-list-hint').textContent = arrangeBlocks
+    ? 'Adjust the proposed printing sequence here. Select a block to combine it with another from the Physical output panel.'
+    : 'Check ink blocks for the print job. Click the role to switch Ink / Paper Reveal.';
   const referenceView = masterView === 'physical-proof' || selectedBlock().role === 'paper';
   byId('download-svg').disabled = referenceView;
   byId('download-png').disabled = referenceView;
@@ -1750,6 +2027,9 @@ byId('composition-file').addEventListener('change', async event => {
     const composition = extracted.composition;
     currentComposition = composition;
     paperRevealColors = new Set();
+    arrangeBlocks = false;
+    blockOrderKeys = null;
+    mergedBlockGroups = [];
     placementMode = 'margin';
     marginPreset = MokuriBlockPlan.MARGIN_PRESETS[composition.presentationMargin]
       ? composition.presentationMargin
@@ -1772,6 +2052,9 @@ byId('composition-file').addEventListener('change', async event => {
   } catch (error) {
     currentComposition = TEST_COMPOSITION;
     paperRevealColors = new Set();
+    arrangeBlocks = false;
+    blockOrderKeys = null;
+    mergedBlockGroups = [];
     placementMode = 'exact';
     marginPreset = 'standard';
     compositionRotation = 0;
@@ -1856,6 +2139,18 @@ byId('select-no-blocks').addEventListener('click', () => {
   renderPrintPlan();
   if (masterView === 'physical-proof') renderPreview();
   schedulePrintRasterWarmup();
+});
+byId('toggle-arrange-blocks').addEventListener('click', () => {
+  arrangeBlocks = !arrangeBlocks;
+  renderBlocks();
+  renderDetails();
+  renderToolbar();
+});
+byId('reset-block-plan').addEventListener('click', () => {
+  blockOrderKeys = null;
+  mergedBlockGroups = [];
+  rebuildPlan();
+  render();
 });
 byId('download-svg').addEventListener('click', downloadSvg);
 byId('download-png').addEventListener('click', downloadPng);
