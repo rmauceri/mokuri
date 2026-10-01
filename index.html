@@ -2377,7 +2377,7 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
   }
   .element-thumb-label { display: none; }
 
-  /* "All Elements" accordion: flows inline */
+  /* "Browse All" accordion: flows inline */
   .all-elements-accordion {
     flex-direction: row;
     align-items: stretch;
@@ -3325,7 +3325,7 @@ rebuildElementMap();
 // ============================================================
 //  VERSION
 // ============================================================
-const MOKURI_VERSION = '1.04';
+const MOKURI_VERSION = '1.05';
 
 // ============================================================
 //  FEEDBACK
@@ -7979,15 +7979,16 @@ function updateStatus() {
 function buildStyleSelector() {
   const container = $('style-selector');
   container.innerHTML = '';
-  const packs = getAllPacks();
-  if (packs.length <= 1 || !MOKURI_IS_DEV || !localStorage.getItem('mokuri-dev-styles')) { container.style.display = 'none'; return; }
+  const devStyles = MOKURI_IS_DEV && !!localStorage.getItem('mokuri-dev-styles');
+  const packs = getAllPacks().filter(pack => isStyleReleased(pack.id) || devStyles);
+  if (packs.length <= 1) { container.style.display = 'none'; return; }
   container.style.display = '';
 
   packs.forEach(pack => {
     const chip = document.createElement('button');
     chip.className = 'style-chip' + (STATE.activeStyle === pack.id ? ' active' : '');
     chip.title = pack.description || pack.name;
-    const displayName = pack.id === 'core' ? 'Mokuri' : pack.id === 'moribana' ? 'Ikebana' : pack.name.replace(' Collection', '');
+    const displayName = pack.shortName || (pack.id === 'moribana' ? 'Ikebana' : pack.name.replace(' Collection', ''));
     chip.innerHTML = '<span class="style-chip-icon">' + (pack.icon || '◆') + '</span>' + displayName;
     chip.addEventListener('click', () => {
       if (STATE.activeStyle === pack.id) return;
@@ -8031,14 +8032,15 @@ function buildElementPicker() {
   _thumbCacheGen++;
   if (_thumbObserver) { _thumbObserver.disconnect(); _thumbObserver = null; }
 
-  // Two-tier: featured (pack + affinity) vs rest
-  // When dev-styles is off, exclude non-core pack elements entirely
+  // Released styles are always available. Dev may additionally expose the
+  // active unreleased style, but never unrelated unreleased or test content.
   const devStyles = MOKURI_IS_DEV && !!localStorage.getItem('mokuri-dev-styles');
-  const sourceElements = devStyles ? MOKURI_ELEMENTS : MOKURI_ELEMENTS.filter(d => !d.pack || d.pack === 'core');
-  const { featured, rest } = getAffinityElements(STATE.activeStyle, sourceElements);
+  const activePackId = STATE.activeStyle || 'core';
+  const sourceElements = getPickerSourceElements(activePackId, MOKURI_ELEMENTS, devStyles);
+  const pickerElements = getPackPickerElements(activePackId, sourceElements);
+  const { sections, featured, all } = pickerElements;
 
   // Get active pack for category ordering
-  const activePackId = STATE.activeStyle || 'core';
   const activePack = typeof getPackById === 'function' ? getPackById(activePackId) : null;
   const categoryOrder = (activePack && activePack.categoryOrder) || [];
 
@@ -8108,15 +8110,34 @@ function buildElementPicker() {
     });
   }
 
-  renderElementGroup(featured, list);
+  if (sections) {
+    sections.forEach(sectionDef => {
+      const section = document.createElement('div');
+      section.className = 'element-category';
 
-  // "All Elements" accordion for the rest
-  if (rest.length > 0) {
+      const label = document.createElement('div');
+      label.className = 'category-label';
+      label.textContent = sectionDef.label;
+      section.appendChild(label);
+
+      const grid = document.createElement('div');
+      grid.className = 'element-grid';
+      sectionDef.elements.forEach(def => grid.appendChild(buildElementThumb(def)));
+      section.appendChild(grid);
+      list.appendChild(section);
+    });
+  } else {
+    renderElementGroup(featured, list);
+  }
+
+  // Browse All is the stable catalog of every element available to this
+  // released style context, including elements also shown in Featured.
+  if (all.length > featured.length) {
     const accordion = document.createElement('div');
     accordion.className = 'element-category all-elements-accordion';
     const toggle = document.createElement('div');
     toggle.className = 'category-label all-elements-toggle';
-    toggle.innerHTML = '<span class="all-elements-chevron">▶</span> All Elements';
+    toggle.innerHTML = '<span class="all-elements-chevron">▶</span> Browse All';
     toggle.style.cursor = 'pointer';
     toggle.style.opacity = '0.6';
     const content = document.createElement('div');
@@ -8129,7 +8150,7 @@ function buildElementPicker() {
     });
     accordion.appendChild(toggle);
     accordion.appendChild(content);
-    renderElementGroup(rest, content);
+    renderElementGroup(all, content);
     list.appendChild(accordion);
   }
   _startThumbObserver();

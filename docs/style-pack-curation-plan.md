@@ -1,7 +1,7 @@
 # Mokuri Creative Style Curation Plan
 
-**Status:** Revised proposal for review
-**Date:** September 16, 2026
+**Status:** Kachō-e curation implementation in progress
+**Date:** October 1, 2026
 **Target:** Curate and release built-in Creative Styles to all Mokuri users
 
 ## Purpose
@@ -46,6 +46,26 @@ separates three concepts that were previously conflated:
 
 An element is defined once, but may be explicitly Featured in more than one
 released Creative Style when it serves each style's creative grammar.
+
+## Confirmed First Milestone
+
+The first implementation milestone establishes the shared curation model and
+the initial Kachō-e inventory:
+
+- Compact style labels are **景 Fūkei-ga** and **花 Kachō-e**.
+- Full names are **Fūkei-ga 風景画** and **Kachō-e 花鳥画**.
+- Internal IDs remain `core` and `kacho-e`.
+- Explicit ordered `pickerSections` control Featured membership.
+- Tags remain descriptive metadata and affinity remains only as a fallback for
+  styles that have not yet been curated.
+- **Browse All** replaces All Elements and contains the complete library
+  available in the active release context, including elements also shown in
+  Featured.
+- Production currently releases only Fūkei-ga. Dev may additionally expose
+  the active unreleased style, but unrelated unreleased styles and the Test
+  Collection must not leak into its picker.
+- Kachō-e remains dev-only. Its existing Haru, Natsu, Aki, and Kan palettes are
+  unchanged pending a separate review.
 
 ## Product Model
 
@@ -107,7 +127,7 @@ style in `RELEASED_STYLE_IDS` to every user.
 3. Combine each style's strongest owned elements with explicitly selected
    companions from the released Mokuri library.
 4. Make Featured membership and ordering deterministic.
-5. Keep every released element available under **All Elements**.
+5. Keep every released element available under **Browse All**.
 6. Allow each Creative Style to be reviewed and released independently to all
    users.
 7. Keep the implementation small enough to understand directly from the style
@@ -123,7 +143,7 @@ style in `RELEASED_STYLE_IDS` to every user.
 - This work will not create a generalized dependency or deferred-loading
   system.
 - This work will not redefine the global category of each element.
-- This work will not hide non-Featured elements from All Elements.
+- This work will not hide non-Featured elements from Browse All.
 - This work will not duplicate an element merely because more than one style
   features it.
 
@@ -139,7 +159,7 @@ elsewhere may be equally important. Selection should answer:
 It should not be inferred only from where the element is defined, whether its
 style shipped first, or which broad descriptive tags it carries.
 
-### 2. Featured is selective; All Elements remains complete
+### 2. Featured is selective; Browse All remains complete
 
 The Active Style principle remains:
 
@@ -147,9 +167,9 @@ The Active Style principle remains:
 
 Only reviewed elements belong in Featured. Style-owned elements are not
 automatically entitled to Featured placement: weaker, redundant, or specialized
-variants may remain under All Elements.
+variants may remain under Browse All.
 
-All Elements means the complete **released** Mokuri library. Switching Creative
+Browse All means the complete **released** Mokuri library. Switching Creative
 Styles changes prioritization and guidance, not access. Elements belonging only
 to unreleased styles remain dev-only.
 
@@ -173,7 +193,7 @@ The picker should quietly teach the style. Each manifest defines:
 - Element membership
 - Element order within each section
 - Which variants are primary
-- Which variants remain under All Elements
+- Which variants remain under Browse All
 
 Source-file order, affinity score, and category population must not affect the
 Featured presentation.
@@ -252,8 +272,9 @@ For a Creative Style with `pickerSections`:
 6. Ignore and warn about references to elements that would leak from an
    unreleased style into a released production style.
 7. Ignore and warn about duplicate IDs; the first declaration wins.
-8. Place all other released elements under **All Elements**.
-9. Render All Elements using the existing global categories.
+8. Place the complete released library under **Browse All**, including
+   elements also presented in Featured.
+9. Render Browse All using the existing global categories.
 10. Preserve the existing generated custom-hanko behavior outside
     Creative Style curation.
 
@@ -387,7 +408,7 @@ Fūkei-ga/Core candidates requiring visual and variant review:
 - `crane-landing`
 
 Not every pose should be Featured. Select the strongest and most compositionally
-useful variants; keep secondary poses under All Elements.
+useful variants; keep secondary poses under Browse All.
 
 #### 2. Flowers & Branches
 
@@ -417,7 +438,7 @@ Fūkei-ga/Core candidates:
 - `susuki-grass`
 - `lotus-cluster`
 
-Full trees, groves, and treelines should remain under All Elements unless an
+Full trees, groves, and treelines should remain under Browse All unless an
 actual preset demonstrates that they can stay subordinate to the living
 subject.
 
@@ -450,21 +471,66 @@ Fūkei-ga/Core candidates:
 - `rain-curtain`
 - `snow-fall`
 
-`cloud-bank`, `farmland`, and `terrace` should remain under All Elements unless
+`cloud-bank`, `farmland`, and `terrace` should remain under Browse All unless
 composition testing establishes a clear need.
 
-### Initial Kacho-e picker shape
+### Confirmed Kachō-e picker inventory
 
 ```js
 pickerSections: [
-  { id: 'subjects', label: 'Living Subjects', elementIds: [] },
-  { id: 'botanical', label: 'Flowers & Branches', elementIds: [] },
-  { id: 'habitat', label: 'Water & Habitat', elementIds: [] },
-  { id: 'season', label: 'Season & Weather', elementIds: [] },
+  {
+    id: 'fauna',
+    label: 'Fauna',
+    elementIds: [
+      'bushwarbler-flight', 'swallow-flight',
+      'kingfisher-crouch', 'kingfisher-sitting',
+      'heron-wading', 'heron-hunting', 'heron-detailed-standing',
+      'egret-hunting', 'sparrow', 'sparrow-alert',
+      'crane-standing', 'crane-flying',
+      'koi-above', 'koi-goldfish', 'koi', 'koi-swim', 'koi-overhead',
+      'dragonfly-perched', 'dragonfly',
+      'butterfly-resting', 'butterfly',
+      'cicada', 'cicada-top',
+      'cricket', 'cricket-chirping', 'cricket-leaping',
+      'beetle', 'beetle-top',
+      'frog', 'frog-leaping', 'turtle', 'rabbit', 'rabbit-laying',
+    ],
+  },
+  {
+    id: 'flowers-branches',
+    label: 'Flowers & Branches',
+    elementIds: [
+      'wisteria-vine-knotted', 'wisteria-vine',
+      'morning-glory', 'morning-glory-vine',
+      'peony', 'peony-open',
+      'iris-three', 'iris-cluster',
+      'lotus-cluster-tall', 'lotus-cluster',
+      'cherry-branch', 'sakura-blossom', 'ume-blossom',
+      'chrysanthemum', 'matsu-branch', 'pine-bough',
+      'bare-branch', 'maple-branch', 'ginko-branch',
+      'susuki-grass-swept', 'susuki-grass',
+    ],
+  },
+  {
+    id: 'water-habitat',
+    label: 'Water & Habitat',
+    elementIds: [
+      'lilypad-pair', 'lilypad-single', 'tranquil-pond', 'pond-edge',
+      'water-ripples', 'gentle-waves', 'flowing-stream', 'rock-formation',
+    ],
+  },
+  {
+    id: 'season-weather',
+    label: 'Season & Weather',
+    elementIds: [
+      'full-moon', 'cloud-wisp', 'rain-curtain', 'snow-fall',
+    ],
+  },
 ]
 ```
 
-The final ID lists must be filled only after the visual inventory review.
+The inventory intentionally excludes unfinished Test Collection exports.
+Secondary or redundant variants remain available in Browse All.
 
 ### Kacho-e presets
 
@@ -477,14 +543,13 @@ Create at least three compositions before release:
 
 The presets should verify that habitat and atmosphere remain supporting actors.
 
-### Kacho-e cleanup
+### Kachō-e cleanup
 
-- Normalize all `pack: 'kacho_e'` values to `pack: 'kacho-e'`.
-- Correct `initimate` on `wisteria-vine`.
-- Review all 30 style-owned elements and select primary variants.
-- Review proposed Fūkei-ga/Core companions at all carve levels and in print
-  output.
-- Confirm whether the displayed name should be `Kacho-e` or `Kachō-e`.
+- [x] Normalize all `pack: 'kacho_e'` values to `pack: 'kacho-e'`.
+- [x] Review all 31 style-owned elements and select primary variants.
+- [x] Review proposed Fūkei-ga/Core companions for the initial Featured set.
+- [x] Confirm the displayed name as `Kachō-e`, compact label `花 Kachō-e`,
+  and full label `Kachō-e 花鳥画`.
 - Review the four palettes and their order.
 - Update stale counts and affinity descriptions in related documentation.
 
@@ -593,7 +658,7 @@ Purpose: arrangement mechanics and optional restrained presentation context.
 
 - Restore or rebuild `kenzan`.
 - Review `lantern-small` and `lantern-round`.
-- Keep lanterns under All Elements unless composition presets demonstrate that
+- Keep lanterns under Browse All unless composition presets demonstrate that
   they improve the arrangement without competing with it.
 
 ### Initial Ikebana picker shape
@@ -648,7 +713,7 @@ ground plane competing with the arrangement.
 - Restore or rebuild the kenzan.
 - Review vessel openings and default scale relationships.
 - Review redundant chrysanthemum and camellia variants.
-- Decide whether the lanterns remain under All Elements.
+- Decide whether the lanterns remain under Browse All.
 - Update or replace `docs/moribana_style_pack.md` to reflect the broader scope.
 
 ## Preset Identity Fix
@@ -677,7 +742,7 @@ library in the dev experience.
 For each element, record:
 
 - Featured
-- Secondary / All Elements
+- Secondary / Browse All
 - Revise
 - Remove
 - Section
@@ -716,7 +781,7 @@ Do not implement automatic selection rules before this inventory is approved.
    Creative Styles.
 5. Preserve current affinity behavior only as a fallback for manifests without
    explicit sections.
-6. Preserve All Elements as the final accordion containing the complete
+6. Preserve Browse All as the final accordion containing the complete
    released library.
 7. Preserve generated custom hanko behavior outside Creative Style curation.
 
@@ -754,7 +819,7 @@ developer-owned released-style list:
 - Allow dev to expose unreleased styles for review.
 - Filter production elements and palettes by the release state of their owning
   style.
-- Make **All Elements** include all elements from all released styles.
+- Make **Browse All** include all elements from all released styles.
 - Keep saved compositions containing unreleased or retired elements loadable
   when their definitions are available.
 - Do not expose user-facing install, purchase, enable, or disable controls.
@@ -769,7 +834,7 @@ For each Creative Style:
 1. Verify every section reference exists.
 2. Verify every referenced element's owning style is released.
 3. Verify no duplicate IDs appear in Featured.
-4. Verify weaker variants remain reachable under All Elements.
+4. Verify weaker variants remain reachable under Browse All.
 5. Verify palettes and atmosphere presets with complete compositions.
 6. Verify saved and imported compositions reopen correctly.
 7. Verify picker scrolling and thumbnails on low-memory iPad.
@@ -798,7 +863,7 @@ Ikebana requires deeper content decisions:
 Creative Styles should not be required to release together. Each is added to
 the built-in product for all users when ready.
 
-## Decisions Remaining Before Implementation
+## Decisions Remaining After the First Milestone
 
 ### Shared
 
@@ -808,27 +873,24 @@ The following direction is settled:
 - **Fūkei-ga (風景画)** is the user-facing name of the current Core style.
 - The internal ID remains `core` for compatibility.
 - Released Creative Styles are built into Mokuri for every user.
-- All Elements contains the complete released library.
+- Browse All contains the complete released library.
+- Explicit `pickerSections` control Featured membership.
+- Secondary variants remain available in Browse All.
+- Cross-style reuse is explicit and limited to released styles.
+- Generated custom hanko remains outside manifest curation.
 
-Remaining shared decisions:
+### Kachō-e
 
-1. Approve explicit `pickerSections` as the authority for Featured membership.
-2. Approve four initial sections for Kacho-e and Ikebana.
-3. Confirm that All Elements remains
-   the destination for secondary variants.
-4. Approve explicit cross-style reuse when both owning and presenting styles
-   are released.
-5. Confirm that generated custom hanko remains outside Creative Style
-   curation.
+The section structure, 66-element inventory, smaller-fauna policy, companion
+elements, displayed romanization, and ownership normalization are confirmed.
 
-### Kacho-e
+Remaining decisions:
 
-1. Select the primary Kacho-e-owned variants.
-2. Select the strongest Fūkei-ga/Core fauna variants.
-3. Decide whether frog, turtle, and rabbit belong in Living Subjects.
-4. Approve the Water & Habitat candidate list.
-5. Approve the Season & Weather candidate list.
-6. Confirm the displayed romanization.
+1. Review the implemented order and thumbnails across screen sizes.
+2. Review the Haru, Natsu, Aki, and Kan palettes.
+3. Define stable preset IDs and release-quality starting compositions.
+4. Review journeys and prompts against the curated picker.
+5. Decide when Kachō-e is ready for production release.
 
 ### Ikebana
 
@@ -843,12 +905,12 @@ Remaining shared decisions:
 
 The smallest useful implementation session is:
 
-1. Complete and approve the Kacho-e inventory.
-2. Normalize the known Kacho-e pack and tag typos.
-3. Add `pickerSections` support with validation.
-4. Populate the four Kacho-e sections.
-5. Compare the old and new Featured inventories.
-6. Test the picker on desktop, phone, and iPad.
+1. [x] Complete and approve the Kachō-e inventory.
+2. [x] Normalize the Kachō-e ownership IDs.
+3. [x] Add `pickerSections` support with validation.
+4. [x] Populate the four Kachō-e sections.
+5. [ ] Compare and visually review the implemented picker.
+6. [ ] Test the picker on desktop, phone, and tablet.
 
 This validates the deterministic model with the more release-ready pack before
 applying it to Ikebana. Presets, stable journey preset IDs, and built-in style

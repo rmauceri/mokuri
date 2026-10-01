@@ -6,6 +6,7 @@
 // calling registerPack() from their own JS files.
 
 const MOKURI_PACKS = [];
+const MOKURI_RELEASED_STYLE_IDS = ['core'];
 
 function registerPack(manifest) {
   if (!manifest || !manifest.id) {
@@ -25,6 +26,25 @@ function getPackById(id) {
 
 function getAllPacks() {
   return MOKURI_PACKS.slice();
+}
+
+function isStyleReleased(id) {
+  return MOKURI_RELEASED_STYLE_IDS.includes(id);
+}
+
+function getPickerSourceElements(packId, allElements, allowActiveUnreleased) {
+  const allowedPackIds = new Set(MOKURI_RELEASED_STYLE_IDS);
+  if (allowActiveUnreleased && packId) allowedPackIds.add(packId);
+
+  // Element IDs must be unique in the picker. When dev content temporarily
+  // duplicates a released ID, preserve the last allowed definition because it
+  // matches getElementDef()'s runtime lookup behavior.
+  const byId = new Map();
+  allElements.forEach(el => {
+    const ownerId = el.pack || 'core';
+    if (allowedPackIds.has(ownerId)) byId.set(el.id, el);
+  });
+  return Array.from(byId.values());
 }
 
 function getPackForElement(defId) {
@@ -54,6 +74,57 @@ function getPackAtmospherePresets(packId) {
 
 function getAllAtmospherePresets() {
   return MOKURI_PACKS.flatMap(p => p.atmospherePresets || []);
+}
+
+function getCuratedPackElements(packId, allElements) {
+  const pack = getPackById(packId);
+  if (!pack || !pack.pickerSections) return null;
+
+  const byId = new Map(allElements.map(el => [el.id, el]));
+  const seen = new Set();
+  const sections = [];
+  const featured = [];
+
+  pack.pickerSections.forEach(section => {
+    const elements = [];
+    (section.elementIds || []).forEach(id => {
+      if (seen.has(id)) {
+        console.warn('Mokuri: duplicate picker element "' + id + '" in style "' + packId + '"');
+        return;
+      }
+      const element = byId.get(id);
+      if (!element) {
+        console.warn('Mokuri: missing picker element "' + id + '" in style "' + packId + '"');
+        return;
+      }
+      seen.add(id);
+      elements.push(element);
+      featured.push(element);
+    });
+    sections.push({
+      id: section.id,
+      label: section.label,
+      elements,
+    });
+  });
+
+  return {
+    sections,
+    featured,
+    all: allElements.slice(),
+  };
+}
+
+function getPackPickerElements(packId, allElements) {
+  const curated = getCuratedPackElements(packId, allElements);
+  if (curated) return curated;
+
+  const affinity = getAffinityElements(packId, allElements);
+  return {
+    sections: null,
+    featured: affinity.featured,
+    all: allElements.slice(),
+  };
 }
 
 /**
@@ -115,9 +186,11 @@ function getAffinityElements(packId, allElements) {
 
 registerPack({
   id: 'core',
-  name: 'Core Collection',
-  nameJa: '基本',
-  icon: '墨',
+  name: 'Fūkei-ga',
+  shortName: 'Fūkei-ga',
+  fullName: 'Fūkei-ga 風景画',
+  nameJa: '風景画',
+  icon: '景',
   description: 'Landscapes, flora, fauna, figures, and essential tools',
   affinity: ['landscape', 'structural', 'atmospheric', 'figure', 'water'],
   categoryOrder: ['landscape', 'structures', 'objects', 'flora', 'fauna', 'figures'],

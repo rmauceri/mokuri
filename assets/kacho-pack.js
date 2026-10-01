@@ -1,9 +1,9 @@
 /**
- * Kacho-e Collection Pack Manifest
- * Birds and flowers in the intimate kacho-e tradition
+ * Kachō-e Creative Style Manifest
+ * Close observation of living nature, habitat, and season
  */
 
-// Define palettes for the Kacho-e collection
+// Define palettes for the Kachō-e style
 const MOKURI_KACHOE_PALETTES = {
   haru: {
     name: 'Haru 春',
@@ -34,19 +34,113 @@ const MOKURI_KACHOE_PALETTES = {
 // Presets: hand-curated by the user (none yet)
 const MOKURI_KACHOE_PRESETS = [];
 
-// Register the Kacho-e pack
+// Register the Kachō-e style
 registerPack({
   id: 'kacho-e',
-  name: 'Kacho-e Collection',
+  name: 'Kachō-e',
+  shortName: 'Kachō-e',
+  fullName: 'Kachō-e 花鳥画',
   nameJa: '花鳥画',
   icon: '花',
-  description: 'Birds, flowers, and insects in the intimate Kacho-e tradition',
+  description: 'Living nature, flowers, habitat, and season in the intimate Kachō-e tradition',
   affinity: ['fauna', 'flora', 'intimate'],
   elementIds: ['bushwarbler-flight', 'swallow-flight', 'kingfisher-crouch', 'kingfisher-sitting', 'heron-wading', 
     'heron-hunting', 'heron-detailed-standing', 'egret-hunting', 'koi-above', 'koi-goldfish', 
     'dragonfly-perched', 'butterfly-resting', 'cicada', 'cicada-top', 'cricket', 'cricket-chirping', 'cricket-leaping', 'beetle', 'beetle-top',
     'wisteria-vine-knotted', 'morning-glory', 'morning-glory-vine', 'peony', 'peony-open', 'iris-three', 'lilypad-pair', 'lilypad-single', 
     'susuki-grass-swept', 'matsu-branch', 'lotus-cluster-tall'],
+  pickerSections: [
+    {
+      id: 'fauna',
+      label: 'Fauna',
+      elementIds: [
+        'bushwarbler-flight',
+        'swallow-flight',
+        'kingfisher-crouch',
+        'kingfisher-sitting',
+        'heron-wading',
+        'heron-hunting',
+        'heron-detailed-standing',
+        'egret-hunting',
+        'sparrow',
+        'sparrow-alert',
+        'crane-standing',
+        'crane-flying',
+        'koi-above',
+        'koi-goldfish',
+        'koi',
+        'koi-swim',
+        'koi-overhead',
+        'dragonfly-perched',
+        'dragonfly',
+        'butterfly-resting',
+        'butterfly',
+        'cicada',
+        'cicada-top',
+        'cricket',
+        'cricket-chirping',
+        'cricket-leaping',
+        'beetle',
+        'beetle-top',
+        'frog',
+        'frog-leaping',
+        'turtle',
+        'rabbit',
+        'rabbit-laying',
+      ],
+    },
+    {
+      id: 'flowers-branches',
+      label: 'Flowers & Branches',
+      elementIds: [
+        'wisteria-vine-knotted',
+        'wisteria-vine',
+        'morning-glory',
+        'morning-glory-vine',
+        'peony',
+        'peony-open',
+        'iris-three',
+        'iris-cluster',
+        'lotus-cluster-tall',
+        'lotus-cluster',
+        'cherry-branch',
+        'sakura-blossom',
+        'ume-blossom',
+        'chrysanthemum',
+        'matsu-branch',
+        'pine-bough',
+        'bare-branch',
+        'maple-branch',
+        'ginko-branch',
+        'susuki-grass-swept',
+        'susuki-grass',
+      ],
+    },
+    {
+      id: 'water-habitat',
+      label: 'Water & Habitat',
+      elementIds: [
+        'lilypad-pair',
+        'lilypad-single',
+        'tranquil-pond',
+        'pond-edge',
+        'water-ripples',
+        'gentle-waves',
+        'flowing-stream',
+        'rock-formation',
+      ],
+    },
+    {
+      id: 'season-weather',
+      label: 'Season & Weather',
+      elementIds: [
+        'full-moon',
+        'cloud-wisp',
+        'rain-curtain',
+        'snow-fall',
+      ],
+    },
+  ],
   paletteIds: ['haru', 'natsu', 'aki', 'kan'],
   presetIds: null,
   atmospherePresets: [
@@ -58,7 +152,7 @@ registerPack({
   journeys: [
     {
       id: 'first-kacho',
-      title: 'Your First Kacho-e',
+      title: 'Your First Kachō-e',
       titleJa: '初花鳥',
       prompt: 'A heron stands in a lotus pond at dawn',
       promptType: 'scene',
