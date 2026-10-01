@@ -239,6 +239,7 @@ pickerSections: [
     elementIds: [
       'bushwarbler-flight',
       'swallow-flight',
+      'swallow-soaring',
       'kingfisher-crouch',
       'heron-wading',
       'sparrow',
@@ -482,7 +483,7 @@ pickerSections: [
     id: 'fauna',
     label: 'Fauna',
     elementIds: [
-      'bushwarbler-flight', 'swallow-flight',
+      'bushwarbler-flight', 'swallow-flight', 'swallow-soaring',
       'kingfisher-crouch', 'kingfisher-sitting',
       'heron-wading', 'heron-hunting', 'heron-detailed-standing',
       'egret-hunting', 'sparrow', 'sparrow-alert',
@@ -881,7 +882,7 @@ The following direction is settled:
 
 ### Kachō-e
 
-The section structure, 66-element inventory, smaller-fauna policy, companion
+The section structure, 67-element inventory, smaller-fauna policy, companion
 elements, displayed romanization, and ownership normalization are confirmed.
 
 Remaining decisions:

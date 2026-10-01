@@ -191,7 +191,7 @@ registerPack({
   fullName: 'Fūkei-ga 風景画',
   nameJa: '風景画',
   icon: '景',
-  description: 'Landscapes, flora, fauna, figures, and essential tools',
+  description: 'Landscapes, nature, architecture, and human life in the ukiyo-e tradition',
   affinity: ['landscape', 'structural', 'atmospheric', 'figure', 'water'],
   categoryOrder: ['landscape', 'structures', 'objects', 'flora', 'fauna', 'figures'],
   elementIds: [

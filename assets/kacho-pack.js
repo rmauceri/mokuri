@@ -56,6 +56,7 @@ registerPack({
       elementIds: [
         'bushwarbler-flight',
         'swallow-flight',
+        'swallow-soaring',
         'kingfisher-crouch',
         'kingfisher-sitting',
         'heron-wading',
