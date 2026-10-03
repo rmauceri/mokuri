@@ -3246,6 +3246,7 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
 <script src="assets/forms-elements.js"></script>
 <script src="assets/figures-elements.js"></script>
 <script src="assets/gallery.js"></script>
+<script src="assets/palette-catalog.js"></script>
 <script src="assets/pack-registry.js"></script>
 <script src="assets/kacho-elements.js"></script>
 <script src="assets/kacho-pack.js"></script>
@@ -3325,7 +3326,7 @@ rebuildElementMap();
 // ============================================================
 //  VERSION
 // ============================================================
-const MOKURI_VERSION = '1.06';
+const MOKURI_VERSION = '1.07';
 
 // ============================================================
 //  FEEDBACK
@@ -3519,18 +3520,7 @@ if (IS_IOS) document.body.classList.add('ios-device');
 // ============================================================
 //  PALETTES (used at print time only)
 // ============================================================
-const PALETTES = {
-  sumi:      { name: 'Sumi 墨',      pack: 'core', colors: ['#1a1a1a', '#3d3d3d', '#6b6b6b', '#9e9e9e', '#c8c8c8'] },
-  edo:       { name: 'Edo',           pack: 'core', colors: ['#1a3a5c', '#c23b22', '#c49a2a', '#5c7a4a', '#2a2a2a'] },
-  hokusai:   { name: 'Hokusai',       pack: 'core', colors: ['#1b3a6b', '#4a90c4', '#f5f0e1', '#8b4513', '#3a3a3a'] },
-  hiroshige: { name: 'Hiroshige',     pack: 'core', colors: ['#1b4872', '#8aafc4', '#b8a89a', '#5a7a6a', '#c07a7a'] },
-  sakura:    { name: 'Sakura 桜',     pack: 'core', colors: ['#c47a90', '#8fb573', '#f5f0e1', '#7a5c47', '#d4a0a0'] },
-  aki:       { name: 'Aki 秋',        pack: 'core', colors: ['#b33a2a', '#d4a030', '#c46a20', '#3a5c3a', '#5c3a2a'] },
-  yoru:      { name: 'Yoru 夜',       pack: 'core', colors: ['#1a1a3a', '#8a8aaa', '#c4b870', '#5a4a6a', '#2a2a4a'] },
-  fuyu:      { name: 'Fuyu 冬',       pack: 'core', colors: ['#4a6a7a', '#a0b8c4', '#e8e4dc', '#6a5a48', '#2a3a3a'] },
-  beni:      { name: 'Beni 紅',       pack: 'core', colors: ['#b83a3a', '#d4826a', '#e8c870', '#f5efe0', '#4a3030'] },
-  matcha:    { name: 'Matcha 抹茶',   pack: 'core', colors: ['#5a7a50', '#8aaa6a', '#c4b090', '#7a6a50', '#2a3028'] },
-};
+const PALETTES = Object.assign({}, MOKURI_CORE_PALETTES);
 
 // Merge expansion pack palettes
 if (typeof MOKURI_KACHOE_PALETTES !== 'undefined') {
@@ -3538,6 +3528,11 @@ if (typeof MOKURI_KACHOE_PALETTES !== 'undefined') {
 }
 if (typeof MOKURI_MORIBANA_PALETTES !== 'undefined') {
   Object.assign(PALETTES, MOKURI_MORIBANA_PALETTES);
+}
+MokuriColorNames.applyToPalettes(PALETTES);
+const missingPaletteColorNames = MokuriColorNames.validatePalettes(PALETTES);
+if (missingPaletteColorNames.length) {
+  console.warn('Mokuri: palette colors missing canonical names', missingPaletteColorNames);
 }
 
 // Color distance helpers for cross-palette accent selection
@@ -3920,7 +3915,7 @@ const SCENE_PRESETS = {
   },
   autumn: {
     name: 'Autumn Crossing',
-    palette: 'aki',
+    palette: 'core-aki',
     paperType: 'kozo',
     background: 'dusk', foreground: 'earth', horizon: 0.52, mist: 1,
     // Thirds: bridge spans lower-third line, crane at left-lower power point, willow at right-third
@@ -9740,10 +9735,11 @@ function buildInkStudioUI() {
 
         const dots = document.createElement('span');
         dots.className = 'is-palette-chip-colors';
-        pal.colors.forEach(c => {
+        pal.colors.forEach((c, colorIndex) => {
           const dot = document.createElement('span');
           dot.className = 'is-palette-chip-dot';
           dot.style.background = c;
+          dot.title = MokuriColorNames.paletteName(pal, colorIndex) || c;
           dots.appendChild(dot);
         });
         chip.appendChild(dots);
@@ -9771,10 +9767,13 @@ function buildInkStudioUI() {
   const swatchRow = $('is-swatch-row');
   if (swatchRow) {
     swatchRow.innerHTML = '';
-    palette.colors.forEach(c => {
+    palette.colors.forEach((c, colorIndex) => {
       const s = document.createElement('div');
       s.className = 'is-swatch';
       s.style.background = c;
+      const colorName = MokuriColorNames.paletteName(palette, colorIndex) || c;
+      s.title = colorName;
+      s.setAttribute('aria-label', colorName);
       swatchRow.appendChild(s);
     });
   }
@@ -9808,6 +9807,9 @@ function buildInkStudioUI() {
       const swatch = document.createElement('div');
       swatch.className = 'is-zone-swatch';
       swatch.style.background = currentColor;
+      const currentColorName = MokuriColorNames.get(currentColor) || currentColor;
+      swatch.title = currentColorName;
+      swatch.setAttribute('aria-label', `${z.id}: ${currentColorName}`);
 
       const name = document.createElement('span');
       name.className = 'is-zone-name';
@@ -9830,7 +9832,9 @@ function buildInkStudioUI() {
           const ps = document.createElement('div');
           ps.className = 'is-pick-swatch' + (typeof rawOverride === 'number' ? (rawOverride === ci ? ' active' : '') : (rawOverride === undefined || rawOverride === null) && ci === z.defaultPaletteSlot % palette.colors.length ? ' active' : '');
           ps.style.background = col;
-          ps.title = `Palette slot ${ci + 1}`;
+          const colorName = MokuriColorNames.paletteName(palette, ci) || `Palette slot ${ci + 1}`;
+          ps.title = colorName;
+          ps.setAttribute('aria-label', colorName);
           ps.addEventListener('click', (e) => {
             e.stopPropagation();
             pushUndo();
@@ -9864,7 +9868,9 @@ function buildInkStudioUI() {
             const as = document.createElement('div');
             as.className = 'is-accent-swatch' + (typeof rawOverride === 'string' && rawOverride === a.color ? ' active' : '');
             as.style.background = a.color;
-            as.title = `${a.from}`;
+            const colorName = MokuriColorNames.get(a.color) || a.color;
+            as.title = `${colorName} · ${a.from}`;
+            as.setAttribute('aria-label', `${colorName} from ${a.from}`);
             as.addEventListener('click', (e) => {
               e.stopPropagation();
               pushUndo();

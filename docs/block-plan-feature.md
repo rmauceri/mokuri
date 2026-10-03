@@ -2,7 +2,7 @@
 
 **Status:** Proposed for implementation
 **Date:** September 15, 2026
-**Updated:** October 1, 2026
+**Updated:** October 3, 2026
 **Initial target:** Dev-only workshop prototype
 
 ## Implementation Status
@@ -96,11 +96,15 @@ The development engine and harness now also support:
   native detail strokes, without generated contour expansion
 - Hanshita and Carbon output profiles derived from the same Block Surface
   geometry, differing only in orientation and production instructions
+- A two-line production footer that separates the tentative-kento warning from
+  block identity and shows the suggested ink swatch with exact hex reference
 - A separate dark-gray Carve Away inverse reference
-- Provisional subject-aware block names derived from each block's resolved
-  color and contributing element names
-- A fallback color-family classifier with light/deep qualifiers when distinct
-  inks would otherwise receive the same provisional name
+- Subject-aware block names derived from each block's resolved color and
+  contributing element names
+- Canonical exact-hex names shared by all current Core, Kachō-e, and Moribana
+  palette tiles
+- A fallback color-family classifier with light/deep qualifiers for arbitrary
+  literal colors that are not present in the canonical catalog
 - A proposed physical printing sequence with Atmosphere first, followed by
   ordinary ink blocks from lightest to darkest
 - A calm Arrange Blocks mode for overriding the proposed printing sequence
@@ -121,10 +125,10 @@ Current spike limitations:
 - Light-to-dark printing order is currently a relative-luminance heuristic.
   Pigment opacity, transparency, and intentional overprinting are not yet
   modeled, so the artist may override the proposed sequence.
-- Block color names are provisional. Mokuri palettes currently name the palette
-  but not their individual color slots, so the harness uses a nearest-family
-  classifier. Authoritative swatch naming is deferred until Block Plan is
-  integrated into Mokuri.
+- The first canonical color-name set is implemented but remains under artistic
+  review in `dev/palette-name-review.html`. The review page links exact hex
+  matches, persists edits locally, and exports only corrections from the
+  initial proposal.
 - Block merges currently persist across layout and output changes within the
   active harness session, but assignment overrides are not yet serialized into
   composition data.
@@ -422,40 +426,60 @@ Mokuri should not automatically merge merely similar colors. A subtle
 difference may represent an intentional pigment or printing decision. The
 artist can merge similar colors explicitly in the review workspace.
 
-### Deferred palette swatch names
+### Canonical palette color names
 
-Mokuri's current palette schema provides a name for each palette and an array
-of five color values, but it does not provide names for the individual color
-slots. The development harness therefore assigns provisional families such as
-Indigo, Bengara, Coral, Straw, or Charcoal by comparing each resolved color to
-a small reference vocabulary. Light, Mid, or Deep qualifiers disambiguate
-distinct inks that still land in the same family.
+Mokuri now maintains one proposed canonical name for each exact color value
+used by the current production palettes. The initial inventory contains 85
+palette tiles representing 80 unique hex colors across Core, Kachō-e, and
+Moribana. Exact hex matches share one name automatically. The initial proposals
+remain subject to artist review before they are treated as final terminology.
 
-This classifier is useful for arbitrary literal overrides and imported custom
-colors, but it should not become the authoritative naming system. RGB proximity
-cannot reliably capture the artistic role intended by a palette designer.
+The naming voice favors distinctive one-word terms drawn from pigments,
+materials, plants, ceramics, and atmosphere. All current canonical names use
+one word, including `Konjo`, `Abyss`, and `Nori` for the final three colors that
+previously required compound labels.
 
-Palette-slot naming is deferred until Block Plan is integrated into Mokuri
-because the metadata has broader application:
+The source of truth is `assets/palette-catalog.js`. It contains the Core palette
+definitions, the canonical exact-hex name catalog, normalization helpers, and
+palette validation. Keeping the names keyed by color rather than duplicating
+five-entry name arrays prevents identical colors from drifting to different
+labels in different styles.
+
+The visual review surface is `dev/palette-name-review.html`. It provides:
+
+- All palettes grouped by Creative Style
+- Large swatches on selectable light or dark surrounds
+- Stable style, palette, and slot references
+- Linked editing for exact duplicate colors
+- A focused list of names that deserve extra artistic review
+- Local review persistence
+- Correction export containing only names changed from the proposal
+
+Canonical swatch metadata has broader application:
 
 - Tooltips and accessible labels for swatches in the Ink Workbench
 - Deliberate Block Plan block names
 - Clearer saved color overrides and production manifests
 - Future pigment, transparency, and overprint guidance
 
-The likely production schema is an optional five-entry `colorNames` array
-alongside the existing `colors` array, preserving compatibility with current
-rendering code. Block Plan would resolve names in this order:
+Runtime palette code derives the effective five slot names from the canonical
+catalog and exposes them as each palette's `colorNames` array without changing
+the existing `colors` arrays. Block Plan resolves names in this order:
 
-1. Explicit active-palette slot name
+1. Canonical exact-hex name
 2. Known procedural atmosphere name
 3. Nearest-family fallback for literal or custom colors
 4. Light/deep qualifier when distinct resolved inks remain ambiguous
 
-All current production palettes should receive deliberate slot names during
-the Mokuri integration milestone, and future palette definitions should include
-them as normal palette metadata. The external harness will not change Mokuri's
-palette schema or Ink Workbench for this manipulation milestone.
+Ink Workbench palette previews, zone swatches, and cross-palette accents expose
+the canonical names through tooltips and accessible labels. New palettes must
+add names for previously unseen hex values; validation reports any missing
+entries. The nearest-family classifier remains deliberately secondary so
+custom literal colors still receive useful Block Plan names.
+
+Palette IDs must also be unique across Creative Styles. The original Core and
+Kachō-e autumn palettes both used `aki`; legacy `aki` remains the Kachō-e ID,
+while the previously shadowed Core palette now uses `core-aki`.
 
 ### Paper-colored and transparent areas
 

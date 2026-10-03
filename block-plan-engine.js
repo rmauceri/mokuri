@@ -157,6 +157,10 @@
   }
 
   function blockColorName(color) {
+    const canonicalName = root.MokuriColorNames
+      ? root.MokuriColorNames.get(color)
+      : null;
+    if (canonicalName) return canonicalName;
     return BLOCK_COLOR_NAMES
       .map(([name, reference]) => ({ name, distance: colorDistance(color, reference) }))
       .sort((a, b) => a.distance - b.distance)[0].name;
@@ -1377,7 +1381,6 @@
     const instruction = isHanshita
       ? 'Paste printed face down'
       : 'Transfer in this orientation';
-    const kentoNote = 'Tentative kento — verify before carving';
     return [
       `<rect x="0.01" y="0.01" width="${round(layout.block.width - 0.02)}" height="${round(layout.block.height - 0.02)}" fill="none" stroke="#8b8174" stroke-width="0.02"/>`,
       `<rect x="${round(paperRect.x)}" y="${round(paperRect.y)}" width="${round(paperRect.width)}" height="${round(paperRect.height)}" fill="none" stroke="#9d9488" stroke-width="0.015" stroke-dasharray="0.09 0.06"/>`,
@@ -1388,7 +1391,32 @@
       '<text x="2.542" y="0.35" text-anchor="middle" font-family="Arial, sans-serif" font-size="0.14">25 mm</text>',
       `<text x="${round(layout.block.width - 0.35)}" y="0.32" text-anchor="end" font-family="Arial, sans-serif" font-size="0.13" font-weight="600">${esc(title)}</text>`,
       `<text x="${round(layout.block.width - 0.35)}" y="0.55" text-anchor="end" font-family="Arial, sans-serif" font-size="0.14">${esc(instruction)}</text>`,
-      `<text x="0.35" y="${round(layout.block.height - 0.22)}" font-family="Arial, sans-serif" font-size="0.13">${esc(kentoNote)}</text>`,
+    ].join('');
+  }
+
+  function blockFooterSvg(plan, block, viewLabel, includeKentoNote) {
+    const layout = plan.layout;
+    const colors = block.colors && block.colors.length
+      ? block.colors
+      : [block.color];
+    const swatchSize = 0.14;
+    const swatchGap = 0.035;
+    const swatchX = 0.35;
+    const identityY = layout.block.height - 0.16;
+    const textX = swatchX + colors.length * (swatchSize + swatchGap) + 0.04;
+    const identity = `${block.name}${viewLabel ? ` — ${viewLabel}` : ''}`;
+    const hexLabel = colors
+      .map(color => normalizeColor(color).toUpperCase())
+      .join(' + ');
+    const swatches = colors.map((color, index) =>
+      `<rect x="${round(swatchX + index * (swatchSize + swatchGap))}" y="${round(identityY - 0.11)}" width="${swatchSize}" height="${swatchSize}" rx="0.025" fill="${esc(color)}" stroke="#4a433b" stroke-width="0.012"/>`
+    ).join('');
+    return [
+      includeKentoNote
+        ? `<text x="0.35" y="${round(layout.block.height - 0.38)}" font-family="Arial, sans-serif" font-size="0.12">Tentative kento — verify before carving</text>`
+        : '',
+      swatches,
+      `<text x="${round(textX)}" y="${round(identityY)}" font-family="Arial, sans-serif" font-size="0.12"><tspan font-weight="700">${esc(identity)}</tspan><tspan fill="#5f574e"> — ${esc(hexLabel)}</tspan></text>`,
     ].join('');
   }
 
@@ -1521,7 +1549,7 @@
       guides,
       artwork,
       kento,
-      `<text x="${round(layout.block.width / 2)}" y="${round(layout.block.height - 0.22)}" text-anchor="middle" font-family="Arial, sans-serif" font-size="0.14">${esc(title)}</text>`,
+      blockFooterSvg(plan, block, viewLabel, opts.guides !== false),
       '</svg>',
     ].join('');
   }

@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mokuri Palette Name Review</title>
+<style>
+  :root {
+    --paper: #f4eddf;
+    --paper-deep: #e7dac5;
+    --ink: #2f2923;
+    --muted: #74695d;
+    --line: #cbbca5;
+    --wood: #8a6645;
+    --wood-dark: #65462f;
+    --panel: rgba(255, 252, 246, 0.88);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    color: var(--ink);
+    background:
+      linear-gradient(135deg, rgba(109, 76, 45, 0.04) 25%, transparent 25%) 0 0 / 18px 18px,
+      linear-gradient(315deg, rgba(109, 76, 45, 0.04) 25%, transparent 25%) 0 0 / 18px 18px,
+      var(--paper);
+    font: 14px/1.45 "Segoe UI", Arial, sans-serif;
+  }
+  button, input { font: inherit; }
+  button {
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 7px 12px;
+    color: var(--ink);
+    background: rgba(255,255,255,0.6);
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--wood); }
+  button.active, button.primary {
+    color: #fff;
+    border-color: var(--wood-dark);
+    background: var(--wood-dark);
+  }
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    padding: 18px 24px 14px;
+    border-bottom: 1px solid var(--line);
+    background: rgba(244, 237, 223, 0.96);
+    backdrop-filter: blur(10px);
+  }
+  h1, h2, p { margin-top: 0; }
+  h1 { margin-bottom: 4px; font: 700 24px Georgia, serif; }
+  h2 { margin-bottom: 4px; font: 700 20px Georgia, serif; }
+  .subhead, .group-note, .tile-meta { color: var(--muted); }
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-top: 14px;
+  }
+  .toolbar-separator {
+    width: 1px;
+    height: 26px;
+    margin: 0 2px;
+    background: var(--line);
+  }
+  .summary {
+    margin-left: auto;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  main {
+    width: min(1440px, 100%);
+    margin: 0 auto;
+    padding: 24px;
+  }
+  .style-group {
+    margin-bottom: 34px;
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--panel);
+    box-shadow: 0 8px 22px rgba(62, 43, 27, 0.06);
+  }
+  .palette-section + .palette-section {
+    margin-top: 22px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(203, 188, 165, 0.7);
+  }
+  .palette-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .palette-heading strong { font-size: 15px; }
+  .palette-ref { color: var(--muted); font-size: 11px; }
+  .tile-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(150px, 1fr));
+    gap: 10px;
+  }
+  .color-tile {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.68);
+  }
+  .swatch-stage {
+    position: relative;
+    display: grid;
+    place-items: center;
+    height: 112px;
+    background: #f7f3ec;
+  }
+  body.dark-stage .swatch-stage { background: #282725; }
+  .swatch {
+    width: 82px;
+    height: 82px;
+    border: 1px solid rgba(0,0,0,0.16);
+    border-radius: 50%;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.14);
+  }
+  .badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 3px 6px;
+    border-radius: 999px;
+    color: #5d452d;
+    background: rgba(247, 235, 205, 0.94);
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .badge.review { left: 8px; right: auto; color: #75472e; background: #f0d7c0; }
+  .tile-body { padding: 10px; }
+  .name-input {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 7px 8px;
+    color: var(--ink);
+    background: #fffdf9;
+    font-weight: 650;
+  }
+  .name-input.changed { border-color: var(--wood); background: #fff7e8; }
+  .tile-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 7px;
+    font: 11px Consolas, monospace;
+  }
+  .tile-reference {
+    margin-top: 5px;
+    color: var(--muted);
+    font-size: 10px;
+    overflow-wrap: anywhere;
+  }
+  .empty {
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--muted);
+  }
+  .toast {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    padding: 10px 14px;
+    border-radius: 9px;
+    color: #fff;
+    background: var(--wood-dark);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: 160ms ease;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  @media (max-width: 960px) {
+    .tile-grid { grid-template-columns: repeat(2, minmax(150px, 1fr)); }
+    .summary { width: 100%; margin-left: 0; }
+  }
+  @media (max-width: 540px) {
+    header, main { padding-left: 12px; padding-right: 12px; }
+    .style-group { padding: 14px; }
+    .tile-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Mokuri Palette Name Review</h1>
+  <p class="subhead">Review the proposed artist-facing name for every current palette color. Exact hex matches are linked automatically.</p>
+  <div class="toolbar" id="toolbar">
+    <button type="button" data-filter="all" class="active">All</button>
+    <button type="button" data-filter="core">Fūkei-ga</button>
+    <button type="button" data-filter="kacho-e">Kachō-e</button>
+    <button type="button" data-filter="moribana">Moribana</button>
+    <button type="button" data-filter="duplicates">Exact matches</button>
+    <button type="button" data-filter="review">Review first</button>
+    <button type="button" data-filter="changed">Changed</button>
+    <span class="toolbar-separator"></span>
+    <button type="button" id="toggle-stage">Dark surround</button>
+    <button type="button" id="copy-corrections" class="primary">Copy corrections</button>
+    <button type="button" id="reset-review">Reset edits</button>
+    <span class="summary" id="summary"></span>
+  </div>
+</header>
+<main id="content"></main>
+<div class="toast" id="toast"></div>
+
+<script src="../assets/palette-catalog.js"></script>
+<script src="../assets/pack-registry.js"></script>
+<script src="../assets/kacho-pack.js"></script>
+<script src="../assets/moribana-pack.js"></script>
+<script>
+'use strict';
+
+const STORAGE_KEY = 'mokuri-palette-name-review';
+const REVIEW_FIRST = new Set([
+  '#1b4872', '#8a8aaa', '#c4b870', '#a0785a', '#d4a8a0',
+  '#e8d4b0', '#d4a574', '#8ba888', '#c23b3b', '#f0e8d8',
+]);
+const GROUPS = [
+  { id: 'core', name: 'Fūkei-ga', note: 'Core landscape and ukiyo-e palettes', palettes: MOKURI_CORE_PALETTES },
+  { id: 'kacho-e', name: 'Kachō-e', note: 'Living nature, habitat, and season', palettes: MOKURI_KACHOE_PALETTES },
+  { id: 'moribana', name: 'Moribana', note: 'Ikebana still-life and ceramic glaze palettes', palettes: MOKURI_MORIBANA_PALETTES },
+];
+
+let activeFilter = 'all';
+let edits = loadEdits();
+const occurrences = buildOccurrences();
+
+function loadEdits() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+  } catch (error) {
+    return {};
+  }
+}
+
+function saveEdits() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(edits));
+}
+
+function buildOccurrences() {
+  const map = new Map();
+  GROUPS.forEach(group => {
+    Object.entries(group.palettes).forEach(([paletteId, palette]) => {
+      palette.colors.forEach((color, index) => {
+        const hex = MokuriColorNames.normalize(color);
+        if (!map.has(hex)) map.set(hex, []);
+        map.get(hex).push({
+          groupId: group.id,
+          groupName: group.name,
+          paletteId,
+          paletteName: palette.name,
+          slot: index + 1,
+        });
+      });
+    });
+  });
+  return map;
+}
+
+function effectiveName(hex) {
+  return Object.prototype.hasOwnProperty.call(edits, hex)
+    ? edits[hex]
+    : MokuriColorNames.get(hex) || '';
+}
+
+function isChanged(hex) {
+  return effectiveName(hex) !== (MokuriColorNames.get(hex) || '');
+}
+
+function tileVisible(groupId, hex) {
+  if (activeFilter === 'all') return true;
+  if (activeFilter === groupId) return true;
+  if (activeFilter === 'duplicates') return occurrences.get(hex).length > 1;
+  if (activeFilter === 'review') return REVIEW_FIRST.has(hex);
+  if (activeFilter === 'changed') return isChanged(hex);
+  return false;
+}
+
+function render() {
+  const content = document.getElementById('content');
+  content.innerHTML = '';
+  let visibleTiles = 0;
+
+  GROUPS.forEach(group => {
+    const visiblePalettes = Object.entries(group.palettes)
+      .map(([paletteId, palette]) => {
+        const colors = palette.colors
+          .map((color, index) => ({ color, index, hex: MokuriColorNames.normalize(color) }))
+          .filter(item => tileVisible(group.id, item.hex));
+        return { paletteId, palette, colors };
+      })
+      .filter(entry => entry.colors.length);
+    if (!visiblePalettes.length) return;
+
+    const section = document.createElement('section');
+    section.className = 'style-group';
+    section.innerHTML = `<h2>${group.name}</h2><p class="group-note">${group.note}</p>`;
+
+    visiblePalettes.forEach(({ paletteId, palette, colors }) => {
+      const paletteSection = document.createElement('div');
+      paletteSection.className = 'palette-section';
+      paletteSection.innerHTML = `
+        <div class="palette-heading">
+          <strong>${palette.name}</strong>
+          <span class="palette-ref">${group.id} / ${paletteId}</span>
+        </div>
+      `;
+      const grid = document.createElement('div');
+      grid.className = 'tile-grid';
+
+      colors.forEach(({ color, index, hex }) => {
+        visibleTiles += 1;
+        const refs = occurrences.get(hex);
+        const duplicate = refs.length > 1;
+        const reference = `${group.id} / ${paletteId} / ${index + 1}`;
+        const tile = document.createElement('article');
+        tile.className = 'color-tile';
+        tile.innerHTML = `
+          <div class="swatch-stage">
+            <span class="swatch" style="background:${color}"></span>
+            ${duplicate ? `<span class="badge" title="${refs.map(ref => `${ref.groupName} / ${ref.paletteName} / ${ref.slot}`).join('\n')}">${refs.length} exact matches</span>` : ''}
+            ${REVIEW_FIRST.has(hex) ? '<span class="badge review">review first</span>' : ''}
+          </div>
+          <div class="tile-body">
+            <input class="name-input${isChanged(hex) ? ' changed' : ''}" data-hex="${hex}" value="${escapeAttribute(effectiveName(hex))}" aria-label="Name for ${hex}">
+            <div class="tile-meta"><span>${hex}</span><span>slot ${index + 1}</span></div>
+            <div class="tile-reference">${reference}</div>
+          </div>
+        `;
+        const input = tile.querySelector('input');
+        input.addEventListener('input', () => updateName(hex, input.value));
+        input.addEventListener('blur', () => render());
+        tile.querySelector('.tile-reference').addEventListener('click', () => copyText(reference, 'Reference copied'));
+        grid.appendChild(tile);
+      });
+
+      paletteSection.appendChild(grid);
+      section.appendChild(paletteSection);
+    });
+
+    content.appendChild(section);
+  });
+
+  if (!visibleTiles) {
+    content.innerHTML = '<div class="empty">No colors match this filter.</div>';
+  }
+  updateSummary(visibleTiles);
+}
+
+function updateName(hex, value) {
+  const proposed = MokuriColorNames.get(hex) || '';
+  const clean = value.trim();
+  if (clean === proposed) {
+    delete edits[hex];
+  } else {
+    edits[hex] = clean;
+  }
+  saveEdits();
+  document.querySelectorAll('.name-input').forEach(input => {
+    if (input.dataset.hex !== hex || input === document.activeElement) return;
+    input.value = value;
+    input.classList.toggle('changed', clean !== proposed);
+  });
+  updateSummary(document.querySelectorAll('.color-tile').length);
+}
+
+function updateSummary(visibleTiles) {
+  const uniqueColors = occurrences.size;
+  const tileCount = Array.from(occurrences.values()).reduce((total, refs) => total + refs.length, 0);
+  document.getElementById('summary').textContent =
+    `${visibleTiles} shown · ${tileCount} tiles · ${uniqueColors} unique colors · ${Object.keys(edits).length} changed`;
+}
+
+function correctionPayload() {
+  return Object.keys(edits).sort().map(hex => ({
+    hex,
+    proposed: MokuriColorNames.get(hex),
+    revised: edits[hex],
+    references: occurrences.get(hex).map(ref =>
+      `${ref.groupId}/${ref.paletteId}/${ref.slot}`
+    ),
+  }));
+}
+
+async function copyText(text, message) {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (error) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    textarea.remove();
+  }
+  showToast(message);
+}
+
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.classList.add('show');
+  clearTimeout(showToast.timer);
+  showToast.timer = setTimeout(() => toast.classList.remove('show'), 1600);
+}
+
+function escapeAttribute(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;');
+}
+
+document.getElementById('toolbar').querySelectorAll('[data-filter]').forEach(button => {
+  button.addEventListener('click', () => {
+    activeFilter = button.dataset.filter;
+    document.querySelectorAll('[data-filter]').forEach(candidate =>
+      candidate.classList.toggle('active', candidate === button)
+    );
+    render();
+  });
+});
+
+document.getElementById('toggle-stage').addEventListener('click', event => {
+  document.body.classList.toggle('dark-stage');
+  event.currentTarget.textContent = document.body.classList.contains('dark-stage')
+    ? 'Light surround'
+    : 'Dark surround';
+});
+
+document.getElementById('copy-corrections').addEventListener('click', () => {
+  copyText(JSON.stringify(correctionPayload(), null, 2), 'Corrections copied');
+});
+
+document.getElementById('reset-review').addEventListener('click', () => {
+  if (!Object.keys(edits).length || confirm('Clear all palette-name edits?')) {
+    edits = {};
+    saveEdits();
+    render();
+  }
+});
+
+render();
+</script>
+</body>
+</html>
