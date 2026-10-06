@@ -1,8 +1,8 @@
 # Mokuri Block Plan
 
-**Status:** Proposed for implementation
+**Status:** Production integration in progress
 **Date:** September 15, 2026
-**Updated:** October 3, 2026
+**Updated:** October 5, 2026
 **Initial target:** Dev-only workshop prototype
 
 ## Implementation Status
@@ -27,7 +27,9 @@ The spike currently demonstrates:
 - Foreground knockout
 - A normal-reading hanshita master
 - A mirrored carbon/graphite master
-- Shared tentative kagi-kento and hikitsuke geometry
+- Shared kagi-kento and hikitsuke geometry
+- Long-edge registration by default: the bottom edge for landscape and square
+  paper, or the right edge for portrait paper
 - One-inch and 25 mm calibration marks
 - 300 DPI PNG generation
 - Orientation-aware US Letter and A4 browser printing
@@ -35,9 +37,13 @@ The spike currently demonstrates:
 - Coordinated rotation of block, paper, print area, kento, guides, preview, and
   export dimensions
 - Live Letter/A4 page-count feedback before opening the browser print dialog
-- Printer-page orientation derived automatically from the physical Block Plan
+- Printer-page orientation matched to the resolved physical Block Orientation
 - Single-page transfer output when the paper, image, and kento fit at 100%
 - Exact-size tiling only when the transferable crop cannot fit on one page
+- Balanced overlapping tiles when a master only slightly exceeds the usable
+  printer area, avoiding a full first page followed by an impractical sliver
+  page. For example, 8 × 8 paper plus its external kento geometry is wider
+  than the 8-inch usable width of Standard-margin US Letter.
 
 The harness intentionally remains outside the production application while its
 physical behavior is evaluated.
@@ -72,6 +78,17 @@ The development engine and harness now also support:
 - Aggregate Letter/A4 page counts and ordered per-block page labels
 - Sequential 300 DPI raster preparation with visible block-by-block progress
   before opening the browser print dialog
+- Browser print pages reproduce the two-line block footer outside the
+  transferable master crop, preserving exact artwork scale while retaining the
+  kento guidance, ink swatches, block name, and hex references
+- Printer-safe browser print layouts with None and Standard ¼-inch output
+  margin presets
+- Reserved portrait annotation bands and a rotated landscape annotation rail,
+  keeping labels, calibration marks, swatches, and block identity inside the
+  selected printer-safe rectangle
+- Transfer-bound raster crops for browser printing that include the physical
+  paper and complete kento construction marks, with no arbitrary external
+  padding or scaling to compensate for annotation space
 - Mokuri-compatible None, Narrow, Standard, and Wide margin placement using
   the same geometric-mean proportions as Pull Print
 - Exact-size placement retained as a separate 4 × 6, 5 × 7, or 6 × 6 mode
@@ -87,8 +104,8 @@ The development engine and harness now also support:
 - Read-only grab panning with left or middle mouse drag, a top-centered Fit
   position, and independently scrolling desktop source, preview, and output
   panes
-- 8 × 10, 8 × 8, and 7 × 5-inch paper presets
-- 5 × 7, 6 × 6, and 4 × 6-inch compatible print areas
+- Production paper choices for 8 × 10, 5 × 7, 4 × 6, 6 × 6, and 8 × 8
+  inches, plus validated Custom dimensions
 - Editable Ink and Paper Reveal proposal roles
 - Paper Reveal masks that preserve visual stacking while generating no
   physical block
@@ -96,8 +113,9 @@ The development engine and harness now also support:
   native detail strokes, without generated contour expansion
 - Hanshita and Carbon output profiles derived from the same Block Surface
   geometry, differing only in orientation and production instructions
-- A two-line production footer that separates the tentative-kento warning from
-  block identity and shows the suggested ink swatch with exact hex reference
+- A two-line production footer that separates the kento carving-practice note
+  from block identity and shows the suggested ink swatch with exact hex
+  reference
 - A separate dark-gray Carve Away inverse reference
 - Subject-aware block names derived from each block's resolved color and
   contributing element names
@@ -121,7 +139,9 @@ The development engine and harness now also support:
 
 Current spike limitations:
 
-- Kento dimensions are provisional.
+- Kento placement is generated consistently across blocks, while final carved
+  notch width and depth remain workshop decisions based on paper and carving
+  practice.
 - Light-to-dark printing order is currently a relative-luminance heuristic.
   Pigment opacity, transparency, and intentional overprinting are not yet
   modeled, so the artist may override the proposed sequence.
@@ -236,8 +256,11 @@ size.
 | Preset | Inches | Metric display | Best fit |
 |--------|--------|----------------|----------|
 | 8 × 10 | 8 × 10 in | 203.2 × 254 mm | Portrait or landscape compositions |
+| 5 × 7 | 5 × 7 in | 127 × 177.8 mm | Medium compositions and common precut paper |
+| 4 × 6 | 4 × 6 in | 101.6 × 152.4 mm | Small studies and postcard-scale work |
+| 6 × 6 | 6 × 6 in | 152.4 × 152.4 mm | Compact square compositions |
 | 8 × 8 | 8 × 8 in | 203.2 × 203.2 mm | Square compositions |
-| 7 × 5 | 7 × 5 in | 177.8 × 127 mm | Smaller landscape or portrait compositions |
+| Custom | User-defined | User-defined | Other paper cut to fit the 9 × 12 block and kento |
 
 Both inches and millimeters should be displayed. Inches are canonical for these
 initial presets; metric values are exact conversions.
@@ -284,9 +307,10 @@ avoids the earlier prototype behavior in which every landscape block
 implicitly rotated its artwork.
 
 The right-angle **corner kento** (`kagi-kento`) remains anchored to the
-resulting paper corner. The straight **side kento** (`hikitsuke-kento`) remains
-on the same registered paper edge but shifts laterally with the print area so
-it stays usefully positioned relative to the composition.
+resulting paper corner. The **side kento** (`hikitsuke-kento`) remains on the
+same registered paper edge but shifts laterally with the print area so it stays
+usefully positioned relative to the composition. Its one-inch edge line has a
+centered 180-degree construction circle drawn outward from the paper.
 
 ### Preset recommendation
 
@@ -294,10 +318,13 @@ Mokuri should recommend a paper preset from the composition aspect ratio:
 
 - Near-square compositions: 8 × 8
 - Medium portrait or landscape compositions: 8 × 10
-- Smaller 7:5 or 5:7 compositions: 7 × 5
+- Medium rectangular compositions: 5 × 7
+- Small rectangular compositions: 4 × 6
+- Compact square compositions: 6 × 6
+- Other proportions: Custom, after physical-fit validation
 
-This is a recommendation only. The artist can choose any of the three presets
-and preview the resulting image placement.
+This is a recommendation only. The artist can choose any preset or enter
+custom dimensions and preview the resulting image placement.
 
 ### Image area
 
@@ -320,25 +347,101 @@ and paper edge is a physical production decision.
 
 ## Entry Point and User Flow
 
-Add **Prepare Physical Blocks** to the Inking Workbench.
+Add **Edit Block Plan** to the Inking Workbench.
 
 The Inking Workbench is the appropriate entry point because block separation
 depends on resolved ink choices, zone overrides, and bokashi decisions. The
-command opens a dedicated Block Plan review workspace rather than downloading
-files immediately.
+command immediately generates or refreshes the automatic proposal and opens a
+dedicated Block Plan review workspace. There is no separate Prepare and Review
+phase because proposal generation is effectively immediate.
 
-### Step 1: Production setup
+The first production integration provides a responsive full-screen workspace
+that follows Mokuri's existing Gallery and workbench adaptation patterns:
 
-The setup screen establishes:
+- Three-column Block Plan, preview, and Physical Output panes in landscape
+- Preview above a compact two-pane control deck when a tablet or window becomes
+  portrait
+- Two internal columns in the portrait Block Plan pane for the block list and
+  selected-block details
+- Two internal columns in portrait Physical Output for Layout and Block
+  Preparation, following the Ink Workbench's compact column treatment
+- Preview-first stacked controls on narrow portrait screens
+- Compact three-column operation retained on short landscape screens
+- Gallery-style navigation with the workspace title at left and Exit at right
+
+The left Block Plan pane contains the scrollable block list and the selected
+block descriptor at its bottom. Block identity, color, source regions, and
+inking notes stay with the block-manipulation surface rather than appearing in
+Physical Output. Fine-detail warnings remain available in the plan data for
+future tooling, but are not shown in the streamlined production workspace
+because they do not currently offer actionable corrections.
+
+Block rows follow the same quiet rounded-rectangle control language as the
+other Mokuri workbenches. Every row uses stable columns for inclusion, color,
+name, and print order. Generated block names remain left-aligned and may use
+two lines; source-color and region metadata stays directly beneath the name.
+
+The Ink Workbench entry and all Block Plan option buttons reuse Mokuri's shared
+panel border, background, text, selection, accent, and radius tokens. Block
+Plan does not introduce a separate brown button palette or pill-shaped control
+language.
+
+The right Physical Output inspector is configuration-only. Its Layout section
+contains, in order, Block Orientation, Print Size, and Margins. Print Size
+offers 8 × 10, 5 × 7, 4 × 6, 6 × 6, 8 × 8, and Custom. Custom accepts inches
+or millimeters through an inline expansion directly below the Print Size row;
+it does not open a modal or change the preview when expanded. The custom size
+becomes active only after Apply Size validates it. The paper must leave enough
+surrounding room for complete kento construction marks. None, Narrow, Standard,
+and Wide composition margins share Mokuri's existing `presentationMargin`
+state and regenerate the plan immediately.
+
+After a section break, Block Preparation contains Transfer, Output Sheet, and
+Output Margins. Output Margins offers None and Standard, with Standard as the
+default. Every choice group stays on one row.
+
+### Step 1: Automatic plan and paper choice
+
+Opening the workspace generates the initial separation using the current
+composition and its resolved inks. The Print Size control establishes:
 
 - 9 × 12-inch block orientation
-- Paper preset
+- Paper preset or validated custom dimensions
 - Image placement
 - Kagi-kento position
 - Hikitsuke-kento position
-- Transfer method: face-down hanshita or carbon/graphite
-- Printer sheet size
-- Transfer orientation, derived from the selected method
+- Composition placement from Mokuri's current presentation margins
+
+Block Preparation belongs in the persistent Physical Output inspector rather
+than an interstitial print modal. The workspace provides:
+
+- Hanshita or Carbon / Graphite transfer orientation
+- Block Surface or Carve Away master polarity through the main preview modes
+- US Letter or A4 printer sheets
+- Portrait or landscape source-page layout follows the resolved Block
+  Orientation. Auto resolves from the composition, with square compositions
+  resolving to portrait; explicit Portrait or Landscape is preserved for the
+  Letter/A4 printer sheets. Mokuri writes that physical width and height into
+  CSS `@page`.
+- None or Standard ¼-inch output margins
+- A summary that labels the resolved Block orientation and confirms that
+  Printer Sheets follow it, alongside included-block count and live page-count
+  feedback
+- Exact-size 300 DPI preparation with automatic overlap tiling
+
+The **Print Block Plan** action sits at the bottom of Physical Output, mirroring
+Pull Print in the Printing Workbench. It uses the visible settings immediately
+and opens the browser print dialog without another Mokuri confirmation screen.
+Both Print Block Plan and the Ink Workbench's Edit Block Plan entry retain the
+standard Pull Print action width when their responsive containers grow, while
+remaining full-width when the available pane is narrower.
+Letter/A4 and Output Margins remain Mokuri settings because browser print
+choices are not exposed back to page JavaScript and therefore cannot drive
+pre-dialog tiling or annotation placement.
+
+Print preparation uses the status area only while masters are rasterized and
+the browser dialog opens. It clears after the print lifecycle instead of
+leaving browser-specific orientation caveats in the production workspace.
 
 The Block Plan is saved as part of the composition so the same production files
 can be regenerated later.
@@ -370,7 +473,6 @@ The artist can:
 - Include or exclude individual regions
 - Change the proposed printing order
 - Review bokashi instructions
-- Inspect warnings about physically small details
 
 ### Step 4: Registration and master preview
 
@@ -397,10 +499,24 @@ Hanshita is the traditional default. Choosing an output profile changes only
 the production-master orientation and instructions; it does not change the
 underlying block geometry.
 
-### Step 5: Export
+### Step 5: Print Block Plan
 
-Mokuri generates a ZIP package containing exact-size PDF sheets, PNG masters,
-reference guides, and a manifest.
+Print Block Plan directly prepares the included physical ink blocks
+sequentially as 300 DPI rasters, places them on printer-safe Letter or A4
+pages, and opens the browser print dialog. There is no intermediate Mokuri
+modal. Masters remain at Actual Size / 100%; if the transferable paper and
+complete kento geometry do
+not fit the selected safe rectangle, Mokuri adds overlapping pages instead of
+reducing scale.
+
+Each page keeps its composition, block name, page number, transfer method,
+crop coordinates when tiled, calibration marks, kento note, suggested ink
+swatch, and exact hex value inside the selected printer-safe allowance. Ink
+swatches are inline SVG so they survive browser printing when background
+graphics are disabled.
+
+Downloadable PNG/SVG masters, a manifest, and ZIP packaging remain later
+workshop-package enhancements.
 
 ## Color Resolution and Block Grouping
 
@@ -790,7 +906,8 @@ is not part of the initial workshop workflow.
 The first version supports the traditional two-part carved kento system:
 
 - One right-angle **corner kento** (`kagi-kento`)
-- One straight **side kento** (`hikitsuke-kento`)
+- One long-edge **side kento** (`hikitsuke-kento`) with a centered outward
+  180-degree construction circle
 - Identical placement and geometry on every block
 
 ### Shared source of truth
@@ -935,10 +1052,40 @@ layouts can reliably use a single Letter or A4 sheet.
 
 Inkjet printers have different unprintable margins. Block Plan should:
 
-- Use a conservative printable-area default
-- Allow borderless mode when the printer supports it
-- Preview whether all required marks fit
-- Fall back to additional tiles rather than reducing scale
+- Treat the browser and printer driver as unable to report the printer's true
+  physical unprintable area.
+- Offer explicit output-margin presets: Standard at ¼ inch and None at
+  0 inches. Standard is the default.
+- Derive a printer-safe page rectangle from the selected preset before testing
+  whether a master fits.
+- Reserve annotation geometry inside that safe rectangle: compact header and
+  footer bands in portrait, or a rotated side rail in landscape.
+- Keep the transferable master at exactly 100%. If the master plus required
+  annotation space does not fit, fall back to additional overlapping tiles
+  rather than reducing scale.
+- Install the dynamic CSS `@page` rule in the document head before browser
+  pagination. Use explicit physical width and height rather than a named paper
+  plus orientation hint, so the source page passed to Chromium has one fixed,
+  unambiguous geometry. Chromium may leave its native Orientation control
+  visible with misleading state, but that control does not override a
+  CSS-fixed source page; the rendered preview is authoritative.
+- Derive browser-print raster crops from the union of the physical paper and
+  complete kento geometry. Downloaded master formats may independently retain
+  additional export padding where useful.
+- Draw the kagi-kento with crossed registration lines and a three-quarter
+  construction circle around the outside of the paper-facing corner.
+- Place the hikitsuke on the same long paper edge as the kagi-kento by default,
+  maximizing the registration baseline and rotational stability. Portrait
+  paper uses the right edge; landscape and square paper use the bottom edge.
+- Draw a 180-degree circle centered on the hikitsuke line, opening away from
+  the paper and composition.
+- Expand browser-print transfer bounds as needed to retain the complete kento
+  construction symbol rather than clipping it at the paper boundary.
+- State the selected margin and explain when safe margins force tiling.
+
+The optional printer calibration sheet remains deferred. Physical printer
+testing is still required because the presets express an artist-selected
+allowance rather than printer hardware discovery.
 
 ### PDF implementation constraint
 
@@ -1191,7 +1338,7 @@ A practical desktop/tablet layout:
 
 - **Left:** Block list and print-order controls
 - **Center:** Physical block preview
-- **Right:** Selected block assignments, warnings, and instructions
+- **Right:** Physical Output layout and block-preparation controls
 - **Top or footer:** Production dimensions, registration, and export action
 
 The center preview should toggle among:
@@ -1212,7 +1359,6 @@ Each card shows:
 - Region count
 - Bokashi indicator
 - Key-block indicator
-- Warning count
 - Include/exclude state
 
 ### Assignment editing
@@ -1305,6 +1451,10 @@ per-color masks matching its visible geometry.
 
 - Dedicated review workspace
 - Block list and previews
+- Responsive desktop, portrait tablet, narrow portrait, and short landscape
+  layouts
+- Physical Print Size control and validated Custom dimensions
+- Shared None, Narrow, Standard, and Wide image-margin controls
 - Ink / Paper Reveal role assignment
 - Paper Mask and Physical Proof reference views
 - Physical background and foreground atmosphere proposals
@@ -1320,12 +1470,14 @@ intentional physical block set without editing source SVG files.
 
 ### Phase 3: Workshop package
 
-- Exact-size printable PDF or equivalent browser print flow
-- US Letter and A4 tiling
-- Calibration marks
+- Exact-size browser print flow
+- US Letter and A4 printer-safe tiling
+- None and Standard output-margin presets
+- Calibration marks and in-safe-area page annotations
 - Color-specific hanshita masters
 - Mirrored carbon/graphite masters
-- Keep and carve-away PNGs
+- Block Surface and Carve Away print masters
+- Keep and carve-away PNG downloads
 - Annotated block guides
 - Bokashi guide
 - Atmosphere guide
@@ -1375,7 +1527,7 @@ than speculative controls.
 |---------|---------|
 | Block | 9 × 12 inches |
 | Block orientation | Chosen to match composition |
-| Paper | Recommended from 8 × 10, 8 × 8, or 7 × 5 |
+| Paper | 8 × 10, 5 × 7, 4 × 6, 6 × 6, 8 × 8, or validated Custom |
 | Units | Inches with simultaneous millimeter display |
 | Transfer | Face-down hanshita; carbon/graphite also supported |
 | Default transfer | Hanshita |
@@ -1398,7 +1550,8 @@ than speculative controls.
 
 The Block Plan feature should remain dev-only until:
 
-- All three paper presets produce valid layouts on a 9 × 12-inch block.
+- All five paper presets and valid Custom dimensions produce correct layouts on
+  a 9 × 12-inch block.
 - Portrait and landscape orientation are both physically tested.
 - Transfer masters print at measured scale from Microsoft Edge.
 - Hanshita masters paste face-down to produce the intended mirrored block.
@@ -1447,8 +1600,9 @@ physical testing:
    enter a carving master.
 4. **Mokuri proposes; the artist decides.** Automatic separation accelerates
    the work without hiding physical printmaking choices.
-5. **Warnings do not alter the design.** Fine or difficult geometry is surfaced,
-   not silently simplified.
+5. **Diagnostics do not alter the design.** Fine or difficult geometry may be
+   retained in plan data for future tooling, but is not silently simplified or
+   promoted into the primary workspace without an actionable correction.
 6. **Registration is shared geometry.** Every block receives kento from one
    physical source of truth.
 7. **Workshop evidence guides complexity.** Advanced trapping, overprint, and

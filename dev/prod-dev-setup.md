@@ -93,6 +93,23 @@ Once `mokuri.art` is confirmed working on Vercel:
 
 Three changes, in order of dependency.
 
+### Release versioning policy
+
+Do not increment `MOKURI_VERSION` or the service-worker `CACHE_NAME` for each
+local edit. Local `file://`, `localhost`, and `127.0.0.1` testing skips service
+worker registration and the remote version check, so those values do not help
+local iteration.
+
+Increment both values together once when a tested dev build is being committed
+and pushed for deployment:
+
+- `MOKURI_VERSION` in `index.html`
+- `CACHE_NAME` in `sw.js` using the matching numeric form
+
+The paired increment exists primarily to activate a fresh service-worker cache
+for installed PWAs and deployed dev/production sites. Ordinary uncommitted
+development work should retain the current checked-in version.
+
 ### 3.1 Add MOKURI_IS_DEV constant
 
 Add this near the top of `index.html`, just after the `<script>` section begins (before STATE is defined):

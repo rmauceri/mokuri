@@ -8,6 +8,8 @@ const MokuriAudio = (() => {
   let masterGain, ambientGain, activityGain;
   let ambientRunning = false;
   let ambientNodes = [];
+  let printPaused = false;
+  let resumeAmbientAfterPrint = false;
 
   // Preferences (restored from localStorage)
   let prefs = {
@@ -62,7 +64,7 @@ const MokuriAudio = (() => {
   // --- Init (called on first user gesture) ---
   function ensureContext() {
     if (ctx) {
-      if (ctx.state === 'suspended') ctx.resume();
+      if (ctx.state === 'suspended' && !printPaused) ctx.resume();
       return true;
     }
     try {
@@ -641,7 +643,7 @@ const MokuriAudio = (() => {
     else if (natureType === 'crickets') startCrickets();
   }
 
-  function stopAmbient() {
+  function stopAmbient(immediate) {
     if (!ctx || !ambientRunning) return;
     ambientRunning = false;
 
@@ -656,8 +658,21 @@ const MokuriAudio = (() => {
     stopNatureSounds();
     stopWaves();
 
-    // Fade out
     const now = ctx.currentTime;
+    if (immediate) {
+      ambientGain.gain.cancelScheduledValues(now);
+      ambientGain.gain.setValueAtTime(0, now);
+      ambientNodes.forEach(n => {
+        try { n.stop && n.stop(); } catch (e) {}
+        try { n.disconnect(); } catch (e) {}
+      });
+      ambientNodes = [];
+      windNoise = windFilter = windGain = null;
+      ambientReverb = ambientDryGain = ambientWetGain = null;
+      return;
+    }
+
+    // Fade out
     ambientGain.gain.setValueAtTime(ambientGain.gain.value, now);
     ambientGain.gain.linearRampToValueAtTime(0, now + 2.0);
 
@@ -671,6 +686,37 @@ const MokuriAudio = (() => {
       windNoise = windFilter = windGain = null;
       ambientReverb = ambientDryGain = ambientWetGain = null;
     }, 2500);
+  }
+
+  async function pauseForPrint() {
+    if (!ctx || printPaused) return;
+    printPaused = true;
+    resumeAmbientAfterPrint = ambientRunning && prefs.ambientOn;
+    if (ambientRunning) stopAmbient(true);
+    if (masterGain) {
+      const now = ctx.currentTime;
+      masterGain.gain.cancelScheduledValues(now);
+      masterGain.gain.setValueAtTime(0, now);
+    }
+    if (ctx.state === 'running') {
+      try { await ctx.suspend(); } catch (e) {}
+    }
+  }
+
+  async function resumeAfterPrint() {
+    if (!printPaused) return;
+    const restartAmbient = resumeAmbientAfterPrint;
+    printPaused = false;
+    resumeAmbientAfterPrint = false;
+    if (ctx && ctx.state === 'suspended') {
+      try { await ctx.resume(); } catch (e) {}
+    }
+    if (ctx && masterGain) {
+      const now = ctx.currentTime;
+      masterGain.gain.cancelScheduledValues(now);
+      masterGain.gain.setValueAtTime(1, now);
+    }
+    if (restartAmbient && prefs.ambientOn && !ambientRunning) startAmbient();
   }
 
   function setAmbientVolume(vol) {
@@ -1233,14 +1279,16 @@ const MokuriAudio = (() => {
     if (!ctx) return;
     if (document.hidden) {
       ctx.suspend();
-    } else if (ctx.state === 'suspended') {
+    } else if (!printPaused && ctx.state === 'suspended') {
       ctx.resume();
     }
   });
 
   // Persistent touch listener for iOS PWA — context may need gesture to resume
   document.addEventListener('touchstart', function() {
-    if (ctx && ctx.state === 'suspended' && !document.hidden) ctx.resume();
+    if (ctx && ctx.state === 'suspended' && !document.hidden && !printPaused) {
+      ctx.resume();
+    }
   }, { passive: true });
 
   function playFreHint() {
@@ -1352,6 +1400,8 @@ const MokuriAudio = (() => {
     setAmbientVolume,
     setActivityOn,
     setActivityVolume,
+    pauseForPrint,
+    resumeAfterPrint,
     setAmbienceForAtmosphere,
     playCarveStart,
     playCarveEnd,

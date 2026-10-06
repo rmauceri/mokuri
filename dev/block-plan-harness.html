@@ -521,14 +521,78 @@ button.primary {
     display: block;
     max-width: none;
   }
-  .tile-label {
+  .print-header-band {
     position: absolute;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.12in;
+    overflow: hidden;
     color: #111;
-    font: 8pt Arial, sans-serif;
+    font: 6.5pt Arial, sans-serif;
+    line-height: 0.14in;
+    white-space: nowrap;
+  }
+  .print-header-band span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .print-footer-band {
+    position: absolute;
+    display: flex;
+    align-items: flex-end;
+    gap: 0.12in;
+    overflow: hidden;
+  }
+  .print-calibration {
+    width: 2.35in;
+    height: 0.18in;
+    flex: 0 0 auto;
+  }
+  .print-side-rail {
+    position: absolute;
+  }
+  .print-side-rail-inner {
+    position: absolute;
+    top: 0;
+    transform: rotate(90deg);
+    transform-origin: 0 0;
+  }
+  .print-block-footer {
+    flex: 1 1 auto;
+    min-width: 0;
+    color: #111;
+    font: 6.5pt Arial, sans-serif;
+    text-align: right;
+  }
+  .print-block-footer-note {
+    margin-bottom: 0.025in;
+    line-height: 0.12in;
+  }
+  .print-block-footer-identity {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.035in;
+    min-width: 0;
+    line-height: 0.14in;
+    white-space: nowrap;
+  }
+  .print-block-footer-swatch {
+    width: 0.12in;
+    height: 0.12in;
+    flex: 0 0 auto;
+    overflow: visible;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  .print-block-footer-hex {
+    color: #5f574e;
   }
 }
 </style>
-<style id="page-style">@page { size: letter portrait; margin: 0; }</style>
+<style id="page-style">@page { size: 8.5in 11in; margin: 0; }</style>
 </head>
 <body>
 <main class="app">
@@ -601,8 +665,8 @@ button.primary {
 
       <div class="section">
         <div class="warning">
-          Kento dimensions are tentative. Verify orientation and scale before
-          workshop dimensions are finalized.
+          Kento placement is a guide. Choose final notch width and depth for
+          your paper and carving practice.
         </div>
       </div>
     </div>
@@ -656,6 +720,12 @@ button.primary {
 
       <div class="section">
         <div class="eyebrow">Exact-size print</div>
+        <div class="eyebrow" style="margin-top:10px">Printer margin</div>
+        <div class="preview-toolbar" style="padding:0 0 10px;border:0">
+          <button type="button" data-printer-margin="standard" class="active">Standard ¼″</button>
+          <button type="button" data-printer-margin="conservative">Conservative ½″</button>
+          <button type="button" data-printer-margin="borderless">Borderless</button>
+        </div>
         <div class="eyebrow" style="margin-top:10px">Block Plan orientation</div>
         <div class="preview-toolbar" style="padding:0 0 10px;border:0">
           <button type="button" data-layout-orientation="auto" class="active">Auto</button>
@@ -820,6 +890,16 @@ const TEST_COMPOSITION = {
   ],
 };
 
+const PRINTER_MARGIN_PRESETS = {
+  standard: { label: 'Standard ¼″', inches: 0.25 },
+  conservative: { label: 'Conservative ½″', inches: 0.5 },
+  borderless: { label: 'Borderless', inches: 0 },
+};
+const PRINT_HEADER_BAND = 0.18;
+const PRINT_FOOTER_BAND = 0.32;
+const PRINT_SIDE_RAIL = 0.5;
+const PRINT_TILE_OVERLAP = 0.5;
+
 let currentComposition = TEST_COMPOSITION;
 let paperPreset = '8x10';
 let printSize = '5x7';
@@ -833,6 +913,8 @@ let transferMethod = 'hanshita';
 let masterView = 'keep';
 let showGuides = true;
 let layoutOrientation = 'auto';
+let printerMarginPreset = localStorage.getItem('mokuri-block-plan-printer-margin');
+if (!PRINTER_MARGIN_PRESETS[printerMarginPreset]) printerMarginPreset = 'standard';
 let paperRevealColors = new Set();
 let arrangeBlocks = false;
 let blockOrderKeys = null;
@@ -1190,6 +1272,7 @@ function renderLayoutFacts() {
   const margins = description.margins;
   const kagi = plan.layout.registration.kagi;
   const hikitsuke = plan.layout.registration.hikitsuke;
+  const verticalKento = hikitsuke.orientation === 'vertical';
   const facts = [
     ['Woodblock', description.block],
     ['Paper', description.paper],
@@ -1203,7 +1286,10 @@ function renderLayoutFacts() {
     ['Side margins', `${margins.left.toFixed(2)} / ${margins.right.toFixed(2)} in`],
     ['Top / bottom', `${margins.top.toFixed(2)} / ${margins.bottom.toFixed(2)} in`],
     ['Corner kento', `${kagi.cornerX.toFixed(2)}, ${kagi.cornerY.toFixed(2)} in`],
-    ['Side kento span', `${hikitsuke.x1.toFixed(2)}–${hikitsuke.x2.toFixed(2)} in`],
+    ['Kento edge', verticalKento ? 'Right long edge' : 'Bottom long edge'],
+    ['Side kento span', verticalKento
+      ? `${hikitsuke.y1.toFixed(2)}–${hikitsuke.y2.toFixed(2)} in`
+      : `${hikitsuke.x1.toFixed(2)}–${hikitsuke.x2.toFixed(2)} in`],
     ['Source canvas', `${plan.layout.source.width} × ${plan.layout.source.height}`],
     ['Ink blocks', description.inkBlocks],
     ['Paper reveals', description.paperReveals],
@@ -1547,6 +1633,12 @@ function renderToolbar() {
   document.querySelectorAll('[data-layout-orientation]').forEach(button => {
     button.classList.toggle('active', button.dataset.layoutOrientation === layoutOrientation);
   });
+  document.querySelectorAll('[data-printer-margin]').forEach(button => {
+    button.classList.toggle(
+      'active',
+      button.dataset.printerMargin === printerMarginPreset
+    );
+  });
   byId('toggle-guides').classList.toggle('active', showGuides);
   byId('toggle-arrange-blocks').textContent = arrangeBlocks ? 'Done' : 'Arrange Blocks';
   byId('print-selection-actions').hidden = arrangeBlocks;
@@ -1683,7 +1775,7 @@ function schedulePrintRasterWarmup() {
       renderMasterRaster({
         blockId: blockIds[index],
         crop: 'master',
-        cropPaddingIn: 0.025,
+        cropPaddingIn: 0,
       }, 300)
         .then(() => warmBlock(index + 1))
         .catch(() => {});
@@ -1752,14 +1844,13 @@ function setStatus(message, good) {
 
 function getPageVariants(pageType) {
   const portrait = pageType === 'a4'
-    ? { name: 'A4', orientation: 'portrait', width: 8.2677, height: 11.6929, css: 'A4 portrait' }
-    : { name: 'US Letter', orientation: 'portrait', width: 8.5, height: 11, css: 'letter portrait' };
+    ? { name: 'A4', orientation: 'portrait', width: 8.2677, height: 11.6929 }
+    : { name: 'US Letter', orientation: 'portrait', width: 8.5, height: 11 };
   const landscape = {
     name: portrait.name,
     orientation: 'landscape',
     width: portrait.height,
     height: portrait.width,
-    css: pageType === 'a4' ? 'A4 landscape' : 'letter landscape',
   };
   return [portrait, landscape];
 }
@@ -1769,64 +1860,129 @@ function tileCount(total, capacity, overlap) {
   return 1 + Math.ceil((total - capacity) / (capacity - overlap));
 }
 
+function tileSlices(total, capacity, overlap) {
+  const count = tileCount(total, capacity, overlap);
+  if (count === 1) return [{ offset: 0, size: total }];
+  const size = Math.min(capacity, (total + overlap * (count - 1)) / count);
+  const step = size - overlap;
+  return Array.from({ length: count }, (_, index) => ({
+    offset: index * step,
+    size: index === count - 1 ? total - index * step : size,
+  }));
+}
+
+function printerPageFrame(page) {
+  const inset = PRINTER_MARGIN_PRESETS[printerMarginPreset].inches;
+  const safe = {
+    x: inset,
+    y: inset,
+    width: page.width - inset * 2,
+    height: page.height - inset * 2,
+  };
+  if (page.orientation === 'landscape') {
+    return {
+      safe,
+      annotation: {
+        mode: 'rail',
+        x: safe.x + safe.width - PRINT_SIDE_RAIL,
+        y: safe.y,
+        width: PRINT_SIDE_RAIL,
+        height: safe.height,
+      },
+      transfer: {
+        x: safe.x,
+        y: safe.y,
+        width: safe.width - PRINT_SIDE_RAIL,
+        height: safe.height,
+      },
+    };
+  }
+  return {
+    safe,
+    annotation: {
+      mode: 'bands',
+      header: {
+        x: safe.x,
+        y: safe.y,
+        width: safe.width,
+        height: PRINT_HEADER_BAND,
+      },
+      footer: {
+        x: safe.x,
+        y: safe.y + safe.height - PRINT_FOOTER_BAND,
+        width: safe.width,
+        height: PRINT_FOOTER_BAND,
+      },
+    },
+    transfer: {
+      x: safe.x,
+      y: safe.y + PRINT_HEADER_BAND,
+      width: safe.width,
+      height: safe.height - PRINT_HEADER_BAND - PRINT_FOOTER_BAND,
+    },
+  };
+}
+
 function calculatePrintLayout(pageType) {
-  const bounds = MokuriBlockPlan.getMasterBounds(plan, transferMethod, 0.025);
+  const bounds = MokuriBlockPlan.getMasterBounds(plan, transferMethod, 0);
   const preferredOrientation = bounds.height >= bounds.width ? 'portrait' : 'landscape';
-  const edgeAllowance = 0.05;
-  const variants = getPageVariants(pageType);
-  const fitting = variants.filter(page =>
-    bounds.width <= page.width - edgeAllowance * 2
-    && bounds.height <= page.height - edgeAllowance * 2
+  const variants = getPageVariants(pageType).map(page => ({
+    page,
+    frame: printerPageFrame(page),
+  }));
+  const fitting = variants.filter(({ frame }) =>
+    bounds.width <= frame.transfer.width + 0.0001
+    && bounds.height <= frame.transfer.height + 0.0001
   );
   const singlePage = fitting.sort((a, b) =>
-    (a.orientation === preferredOrientation ? -1 : 1)
-    - (b.orientation === preferredOrientation ? -1 : 1)
+    (a.page.orientation === preferredOrientation ? -1 : 1)
+    - (b.page.orientation === preferredOrientation ? -1 : 1)
   )[0];
   if (singlePage) {
     return {
       type: 'single',
-      page: singlePage,
+      page: singlePage.page,
+      frame: singlePage.frame,
       bounds,
       pageCount: 1,
       tiles: [],
     };
   }
 
-  const pageInset = 0.25;
-  const overlap = 0.5;
-  const tiledVariants = variants.map(page => {
-    const tileWidth = page.width - pageInset * 2;
-    const tileHeight = page.height - pageInset * 2;
-    const columns = tileCount(bounds.width, tileWidth, overlap);
-    const rows = tileCount(bounds.height, tileHeight, overlap);
-    return { page, tileWidth, tileHeight, columns, rows, total: columns * rows };
+  const tiledVariants = variants.map(({ page, frame }) => {
+    const columns = tileSlices(
+      bounds.width,
+      frame.transfer.width,
+      PRINT_TILE_OVERLAP
+    );
+    const rows = tileSlices(
+      bounds.height,
+      frame.transfer.height,
+      PRINT_TILE_OVERLAP
+    );
+    return { page, frame, columns, rows, total: columns.length * rows.length };
   }).sort((a, b) => {
     if (a.total !== b.total) return a.total - b.total;
     return (a.page.orientation === preferredOrientation ? -1 : 1)
       - (b.page.orientation === preferredOrientation ? -1 : 1);
   });
   const tiled = tiledVariants[0];
-  const stepX = tiled.tileWidth - overlap;
-  const stepY = tiled.tileHeight - overlap;
   const tiles = [];
-  for (let row = 0; row < tiled.rows; row++) {
-    for (let column = 0; column < tiled.columns; column++) {
-      const x = column * stepX;
-      const y = row * stepY;
+  tiled.rows.forEach(row => {
+    tiled.columns.forEach(column => {
       tiles.push({
-        row,
-        column,
-        x,
-        y,
-        width: Math.min(tiled.tileWidth, bounds.width - x),
-        height: Math.min(tiled.tileHeight, bounds.height - y),
+        x: column.offset,
+        y: row.offset,
+        width: column.size,
+        height: row.size,
       });
-    }
-  }
+    });
+  });
 
   return {
     type: 'tiled',
     page: tiled.page,
+    frame: tiled.frame,
     bounds,
     pageCount: tiles.length,
     tiles,
@@ -1839,11 +1995,13 @@ function renderPrintPlan() {
   const blocks = selectedPrintBlocks();
   const describe = layout => {
     const pageCount = layout.pageCount * blocks.length;
-    return `${layout.page.name} ${layout.page.orientation}: ${pageCount} page${pageCount === 1 ? '' : 's'}`;
+    const tiled = layout.type === 'tiled' ? ', tiled at 100%' : '';
+    return `${layout.page.name} ${layout.page.orientation}: ${pageCount} page${pageCount === 1 ? '' : 's'}${tiled}`;
   };
   const mode = layoutOrientation === 'auto'
     ? 'Auto'
     : layoutOrientation[0].toUpperCase() + layoutOrientation.slice(1);
+  const margin = PRINTER_MARGIN_PRESETS[printerMarginPreset].label;
   const referenceView = masterView === 'physical-proof';
   byId('print-letter').disabled = blocks.length === 0 || referenceView;
   byId('print-a4').disabled = blocks.length === 0 || referenceView;
@@ -1851,8 +2009,79 @@ function renderPrintPlan() {
   byId('page-plan').textContent = blocks.length
     ? referenceView
       ? 'Physical Proof is a reference view. Choose Block Surface or Carve Away to prepare physical block pages.'
-      : `${blocks.length} of ${inkBlockCount} ink blocks selected · ${mode} Block Plan — ${describe(letter)} · ${describe(a4)}.`
+      : `${blocks.length} of ${inkBlockCount} ink blocks selected · ${margin} printer margin · ${mode} Block Plan — ${describe(letter)} · ${describe(a4)}.`
     : 'No blocks selected. Choose at least one exact-color block to print.';
+}
+
+function printBlockFooter(block) {
+  const colors = block.colors && block.colors.length ? block.colors : [block.color];
+  const viewLabel = masterView === 'carve-away'
+    ? 'Carve-away map'
+    : masterView === 'proof' ? 'Isolated impression' : 'Block Surface';
+  const swatches = colors.map(color => `
+    <svg class="print-block-footer-swatch" viewBox="0 0 12 12" aria-label="${htmlEscape(color)}">
+      <rect x="0.4" y="0.4" width="11.2" height="11.2" rx="1.4"
+        fill="${htmlEscape(color)}" stroke="#4a433b" stroke-width="0.8"/>
+    </svg>
+  `).join('');
+  const hexLabel = colors.map(color => color.toUpperCase()).join(' + ');
+  return `
+    <div class="print-block-footer">
+      <div class="print-block-footer-note">Kento placement guide — choose final notch width and depth for your paper and carving practice</div>
+      <div class="print-block-footer-identity">
+        ${swatches}
+        <strong>${htmlEscape(block.name)} — ${viewLabel}</strong>
+        <span class="print-block-footer-hex">— ${htmlEscape(hexLabel)}</span>
+      </div>
+    </div>
+  `;
+}
+
+function printCalibration() {
+  return `
+    <svg class="print-calibration" aria-hidden="true" viewBox="0 0 2.35 0.18">
+      <path d="M0 0.08 H1 M0 0.03 V0.13 M1 0.03 V0.13 M1.25 0.08 H2.23425 M1.25 0.03 V0.13 M2.23425 0.03 V0.13" fill="none" stroke="#000" stroke-width="0.012"/>
+      <text x="0.5" y="0.175" text-anchor="middle" font-family="Arial, sans-serif" font-size="0.08">1 inch</text>
+      <text x="1.742" y="0.175" text-anchor="middle" font-family="Arial, sans-serif" font-size="0.08">25 mm</text>
+    </svg>
+  `;
+}
+
+function printPageAnnotations(block, pageLabel, cropLabel, printLayout) {
+  const headerContent = `
+    <span>${htmlEscape(pageLabel)}</span>
+    ${cropLabel ? `<span>${htmlEscape(cropLabel)}</span>` : ''}
+  `;
+  const footerContent = `${printCalibration()}${printBlockFooter(block)}`;
+  const annotation = printLayout.frame.annotation;
+  if (annotation.mode === 'rail') {
+    return `
+      <div class="print-side-rail"
+        style="left:${annotation.x}in;top:${annotation.y}in;width:${annotation.width}in;height:${annotation.height}in">
+        <div class="print-side-rail-inner"
+          style="left:${annotation.width}in;width:${annotation.height}in;height:${annotation.width}in">
+          <div class="print-header-band"
+            style="left:0;top:0;width:${annotation.height}in;height:${PRINT_HEADER_BAND}in">
+            ${headerContent}
+          </div>
+          <div class="print-footer-band"
+            style="left:0;bottom:0;width:${annotation.height}in;height:${PRINT_FOOTER_BAND}in">
+            ${footerContent}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  return `
+    <div class="print-header-band"
+      style="left:${annotation.header.x}in;top:${annotation.header.y}in;width:${annotation.header.width}in;height:${annotation.header.height}in">
+      ${headerContent}
+    </div>
+    <div class="print-footer-band"
+      style="left:${annotation.footer.x}in;top:${annotation.footer.y}in;width:${annotation.footer.width}in;height:${annotation.footer.height}in">
+      ${footerContent}
+    </div>
+  `;
 }
 
 async function preparePrint(pageType) {
@@ -1880,7 +2109,7 @@ async function preparePrint(pageType) {
       const rasterBlob = await renderMasterRaster({
         blockId: block.id,
         crop: 'master',
-        cropPaddingIn: 0.025,
+        cropPaddingIn: 0,
       }, 300);
       const url = URL.createObjectURL(rasterBlob);
       activePrintUrls.push(url);
@@ -1892,50 +2121,37 @@ async function preparePrint(pageType) {
     return;
   }
   const page = printLayout.page;
-  byId('page-style').textContent = `@page { size: ${page.css}; margin: 0; }`;
-  const calibration = `
-    <svg aria-hidden="true" style="position:absolute;left:0.12in;bottom:0.03in;width:2.35in;height:0.18in" viewBox="0 0 2.35 0.18">
-      <path d="M0 0.08 H1 M0 0.03 V0.13 M1 0.03 V0.13 M1.25 0.08 H2.23425 M1.25 0.03 V0.13 M2.23425 0.03 V0.13" fill="none" stroke="#000" stroke-width="0.012"/>
-      <text x="0.5" y="0.175" text-anchor="middle" font-family="Arial, sans-serif" font-size="0.08">1 inch</text>
-      <text x="1.742" y="0.175" text-anchor="middle" font-family="Arial, sans-serif" font-size="0.08">25 mm</text>
-    </svg>
-  `;
+  const transfer = printLayout.frame.transfer;
+  byId('page-style').textContent =
+    `@page { size: ${page.width}in ${page.height}in; margin: 0; }`;
   const pages = [];
   preparedBlocks.forEach(({ block, url }) => {
     if (printLayout.type === 'single') {
-      const left = (page.width - bounds.width) / 2;
-      const top = (page.height - bounds.height) / 2;
+      const left = transfer.x + (transfer.width - bounds.width) / 2;
+      const top = transfer.y + (transfer.height - bounds.height) / 2;
+      const pageLabel = `${plan.compositionName} · Block ${block.printOrder}: ${block.name} · page 1/1 · ${transferMethod === 'hanshita' ? 'Hanshita' : 'Carbon'} · Actual Size / 100%`;
       pages.push(`
         <section class="print-page" style="width:${page.width}in;height:${page.height}in">
-          <div class="tile-label" style="left:0.12in;top:0.02in">
-            ${htmlEscape(plan.compositionName)} · Block ${block.printOrder}: ${htmlEscape(block.name)} ·
-            page 1/1 · ${transferMethod === 'hanshita' ? 'Hanshita' : 'Carbon'} · Actual Size / 100%
-          </div>
           <div class="tile-window" style="left:${left}in;top:${top}in;width:${bounds.width}in;height:${bounds.height}in">
             <img src="${url}" alt="" style="width:${bounds.width}in;height:${bounds.height}in;top:0">
           </div>
-          ${calibration}
+          ${printPageAnnotations(block, pageLabel, '', printLayout)}
         </section>
       `);
       return;
     }
     printLayout.tiles.forEach((tile, index) => {
-      const left = (page.width - tile.width) / 2;
-      const top = (page.height - tile.height) / 2;
+      const left = transfer.x + (transfer.width - tile.width) / 2;
+      const top = transfer.y + (transfer.height - tile.height) / 2;
+      const pageLabel = `${plan.compositionName} · Block ${block.printOrder}: ${block.name} · page ${index + 1}/${printLayout.tiles.length} · ${transferMethod === 'hanshita' ? 'Hanshita' : 'Carbon'} · Actual Size / 100%`;
+      const cropLabel = `Master crop X ${tile.x.toFixed(2)}–${(tile.x + tile.width).toFixed(2)} in · Y ${tile.y.toFixed(2)}–${(tile.y + tile.height).toFixed(2)} in`;
       pages.push(`
         <section class="print-page" style="width:${page.width}in;height:${page.height}in">
-          <div class="tile-label" style="left:0.12in;top:0.04in">
-            ${htmlEscape(plan.compositionName)} · Block ${block.printOrder}: ${htmlEscape(block.name)} ·
-            page ${index + 1}/${printLayout.tiles.length} · ${transferMethod === 'hanshita' ? 'Hanshita' : 'Carbon'} · Actual Size / 100%
-          </div>
           <div class="tile-window" style="left:${left}in;top:${top}in;width:${tile.width}in;height:${tile.height}in">
             <img src="${url}" alt=""
               style="width:${bounds.width}in;height:${bounds.height}in;left:${-tile.x}in;top:${-tile.y}in">
           </div>
-          <div class="tile-label" style="right:0.12in;bottom:0.04in">
-            Master crop X ${tile.x.toFixed(2)}–${(tile.x + tile.width).toFixed(2)} in ·
-            Y ${tile.y.toFixed(2)}–${(tile.y + tile.height).toFixed(2)} in
-          </div>
+          ${printPageAnnotations(block, pageLabel, cropLabel, printLayout)}
         </section>
       `);
     });
@@ -1950,8 +2166,12 @@ async function preparePrint(pageType) {
     return;
   }
   const totalPages = printLayout.pageCount * blocks.length;
+  const marginLabel = PRINTER_MARGIN_PRESETS[printerMarginPreset].label;
+  const tilingReason = printLayout.type === 'tiled'
+    ? ` The ${marginLabel.toLowerCase()} safe area and annotation space require tiling; the master remains at 100%.`
+    : '';
   setStatus(
-    `${blocks.length} blocks prepared as ${totalPages} ${page.name} ${page.orientation} page${totalPages === 1 ? '' : 's'}. Print at Actual Size / 100%.`,
+    `${blocks.length} blocks prepared as ${totalPages} ${page.name} ${page.orientation} page${totalPages === 1 ? '' : 's'} with ${marginLabel.toLowerCase()}. Print at Actual Size / 100%.${tilingReason}`,
     true
   );
   requestAnimationFrame(() => {
@@ -2076,6 +2296,14 @@ document.querySelectorAll('[data-layout-orientation]').forEach(button => {
   button.addEventListener('click', () => {
     layoutOrientation = button.dataset.layoutOrientation;
     rebuildPlan();
+    render();
+  });
+});
+
+document.querySelectorAll('[data-printer-margin]').forEach(button => {
+  button.addEventListener('click', () => {
+    printerMarginPreset = button.dataset.printerMargin;
+    localStorage.setItem('mokuri-block-plan-printer-margin', printerMarginPreset);
     render();
   });
 });

@@ -6,7 +6,11 @@
   const DEFAULT_PALETTE = ['#25354a', '#b84a3a', '#d2a43c', '#65724a', '#25211e'];
   const PAPER_PRESETS = {
     '8x10': { id: '8x10', name: '8 × 10', widthIn: 8, heightIn: 10 },
+    '5x7': { id: '5x7', name: '5 × 7', widthIn: 5, heightIn: 7 },
+    '4x6': { id: '4x6', name: '4 × 6', widthIn: 4, heightIn: 6 },
+    '6x6': { id: '6x6', name: '6 × 6', widthIn: 6, heightIn: 6 },
     '8x8': { id: '8x8', name: '8 × 8', widthIn: 8, heightIn: 8 },
+    // Legacy harness ID retained for saved development plans.
     '7x5': { id: '7x5', name: '7 × 5', widthIn: 7, heightIn: 5 },
   };
   const PRINT_SIZE_PRESETS = {
@@ -64,6 +68,10 @@
   const MIN_DETAIL_IN = 1 / 64;
   const MIN_REGION_IN = 1 / 32;
   const MAX_MEASURED_FILL_PATHS = 150;
+  const KENTO_STROKE_WIDTH = 0.025;
+  const KAGI_GUIDE_RADIUS = 0.16;
+  const HIKITSUKE_GUIDE_RADIUS = 0.16;
+  const KAGI_CROSS_EXTENSION = 0.12;
   const BLOCK_COLOR_NAMES = [
     ['Sumi', '#24211e'],
     ['Charcoal', '#4a4a4a'],
@@ -728,10 +736,66 @@
     const paper = method === 'hanshita'
       ? mirrorRect(layout.paper, layout.block.width)
       : layout.paper;
-    const left = clamp(paper.x - padding, 0, layout.block.width);
-    const top = clamp(paper.y - padding, 0, layout.block.height);
-    const right = clamp(paper.x + paper.width + padding, 0, layout.block.width);
-    const bottom = clamp(paper.y + paper.height + padding, 0, layout.block.height);
+    const kagi = layout.registration.kagi;
+    const hiki = layout.registration.hikitsuke;
+    const strokePad = KENTO_STROKE_WIDTH / 2;
+    const hikiCenterX = hiki.orientation === 'vertical'
+      ? hiki.x
+      : (hiki.x1 + hiki.x2) / 2;
+    const hikiCenterY = hiki.orientation === 'vertical'
+      ? (hiki.y1 + hiki.y2) / 2
+      : hiki.y;
+    const hikiLeft = hiki.orientation === 'vertical'
+      ? hiki.x
+      : Math.min(hiki.x1, hikiCenterX - HIKITSUKE_GUIDE_RADIUS);
+    const hikiTop = hiki.orientation === 'vertical'
+      ? Math.min(hiki.y1, hikiCenterY - HIKITSUKE_GUIDE_RADIUS)
+      : hiki.y;
+    const hikiRight = hiki.orientation === 'vertical'
+      ? hiki.x + HIKITSUKE_GUIDE_RADIUS
+      : Math.max(hiki.x2, hikiCenterX + HIKITSUKE_GUIDE_RADIUS);
+    const hikiBottom = hiki.orientation === 'vertical'
+      ? Math.max(hiki.y2, hikiCenterY + HIKITSUKE_GUIDE_RADIUS)
+      : hiki.y + HIKITSUKE_GUIDE_RADIUS;
+    const originalKento = {
+      x: Math.min(
+        kagi.cornerX - kagi.armIn,
+        kagi.cornerX - KAGI_GUIDE_RADIUS,
+        hikiLeft
+      ) - strokePad,
+      y: Math.min(
+        kagi.cornerY - kagi.armIn,
+        kagi.cornerY - KAGI_GUIDE_RADIUS,
+        hikiTop
+      ) - strokePad,
+      width: Math.max(
+        kagi.cornerX + KAGI_GUIDE_RADIUS,
+        kagi.cornerX + KAGI_CROSS_EXTENSION,
+        hikiRight
+      ) + strokePad,
+      height: Math.max(
+        kagi.cornerY + KAGI_GUIDE_RADIUS,
+        kagi.cornerY + KAGI_CROSS_EXTENSION,
+        hikiBottom
+      ) + strokePad,
+    };
+    originalKento.width -= originalKento.x;
+    originalKento.height -= originalKento.y;
+    const kento = method === 'hanshita'
+      ? mirrorRect(originalKento, layout.block.width)
+      : originalKento;
+    const left = clamp(Math.min(paper.x, kento.x) - padding, 0, layout.block.width);
+    const top = clamp(Math.min(paper.y, kento.y) - padding, 0, layout.block.height);
+    const right = clamp(
+      Math.max(paper.x + paper.width, kento.x + kento.width) + padding,
+      0,
+      layout.block.width
+    );
+    const bottom = clamp(
+      Math.max(paper.y + paper.height, kento.y + kento.height) + padding,
+      0,
+      layout.block.height
+    );
     return {
       x: left,
       y: top,
@@ -742,7 +806,25 @@
 
   function makeLayout(options) {
     const opts = options || {};
-    const preset = PAPER_PRESETS[opts.paperPreset || '8x10'] || PAPER_PRESETS['8x10'];
+    const customPaper = opts.paperPreset === 'custom' && opts.customPaper
+      ? {
+          id: 'custom',
+          name: `${round(Number(opts.customPaper.widthIn), 3)} × ${round(Number(opts.customPaper.heightIn), 3)}`,
+          widthIn: Number(opts.customPaper.widthIn),
+          heightIn: Number(opts.customPaper.heightIn),
+        }
+      : null;
+    if (customPaper && (
+      !Number.isFinite(customPaper.widthIn)
+      || !Number.isFinite(customPaper.heightIn)
+      || customPaper.widthIn <= 0
+      || customPaper.heightIn <= 0
+    )) {
+      throw new Error('Custom paper dimensions must be positive numbers');
+    }
+    const preset = customPaper
+      || PAPER_PRESETS[opts.paperPreset || '8x10']
+      || PAPER_PRESETS['8x10'];
     const placementMode = opts.placementMode === 'margin' ? 'margin' : 'exact';
     const printPreset = placementMode === 'exact' && opts.printSize
       ? (PRINT_SIZE_PRESETS[opts.printSize] || null)
@@ -759,6 +841,16 @@
     const paperShort = Math.min(preset.widthIn, preset.heightIn);
     const paperWidth = paperLandscape ? paperLong : paperShort;
     const paperHeight = paperLandscape ? paperShort : paperLong;
+    const kentoClearance = KAGI_GUIDE_RADIUS + KENTO_STROKE_WIDTH / 2;
+    if (
+      paperWidth + kentoClearance * 2 > block.width
+      || paperHeight + kentoClearance * 2 > block.height
+    ) {
+      throw new Error(
+        `${preset.name} paper leaves insufficient room for kento on a `
+        + `${block.width} × ${block.height} inch block`
+      );
+    }
     const sourceWidth = opts.sourceWidth || 420;
     const sourceHeight = opts.sourceHeight || 600;
     const effectiveSource = rotatedSourceSize(
@@ -846,23 +938,40 @@
 
     const paperBottom = paper.y + paper.height;
     const paperRight = paper.x + paper.width;
-    const hikitsukeX1 = clamp(
-      image.x + 0.35,
-      paper.x + 0.5,
-      paperRight - 1.5
-    );
+    const longEdgeIsVertical = paper.height > paper.width;
+    const hikitsuke = longEdgeIsVertical
+      ? {
+          orientation: 'vertical',
+          x: paperRight,
+          y1: clamp(
+            image.y + 0.35,
+            paper.y + 0.5,
+            paperBottom - 1.5
+          ),
+        }
+      : {
+          orientation: 'horizontal',
+          x1: clamp(
+            image.x + 0.35,
+            paper.x + 0.5,
+            paperRight - 1.5
+          ),
+          y: paperBottom,
+        };
+    if (longEdgeIsVertical) {
+      hikitsuke.y2 = hikitsuke.y1 + 1;
+    } else {
+      hikitsuke.x2 = hikitsuke.x1 + 1;
+    }
     const registration = {
       tentative: true,
+      edge: longEdgeIsVertical ? 'right' : 'bottom',
       kagi: {
         cornerX: paperRight,
         cornerY: paperBottom,
         armIn: 0.45,
       },
-      hikitsuke: {
-        x1: hikitsukeX1,
-        x2: hikitsukeX1 + 1,
-        y: paperBottom,
-      },
+      hikitsuke,
     };
     return {
       block,
@@ -1073,6 +1182,7 @@
           colors: new Set(),
           sourceTypes: new Set(),
           bokashi: [],
+          bokashiKeys: new Set(),
         });
       }
       const block = blockMap.get(blockKey);
@@ -1080,7 +1190,28 @@
       block.colors.add(record.color);
       block.sourceTypes.add(record.sourceType || 'element');
       block.defaultPrint = block.defaultPrint && record.defaultPrint !== false;
-      if (record.bokashi) block.bokashi.push(record.bokashi);
+      if (record.bokashi) {
+        const noteType = typeof record.bokashi === 'string'
+          ? 'zone'
+          : record.bokashi.type || 'zone';
+        const direction = typeof record.bokashi === 'string'
+          ? record.bokashi
+          : record.bokashi.direction || '';
+        const description = typeof record.bokashi === 'string'
+          ? ''
+          : record.bokashi.description || '';
+        const key = [
+          record.elementId,
+          record.zoneId,
+          noteType,
+          direction,
+          description,
+        ].join('|');
+        if (!block.bokashiKeys.has(key)) {
+          block.bokashiKeys.add(key);
+          block.bokashi.push(record.bokashi);
+        }
+      }
     }
     if (carveCuts.length && pressureCurveValue === undefined) {
       warnings.push('Composition predates saved pressure curves; custom carve strokes use the Medium curve');
@@ -1174,6 +1305,7 @@
     const blocks = Array.from(blockMap.values()).map(block => {
       block.colors = Array.from(block.colors);
       block.sourceTypes = Array.from(block.sourceTypes);
+      delete block.bokashiKeys;
       block.luminance = block.colors.reduce(
         (total, color) => total + colorLuminance(color),
         0
@@ -1367,10 +1499,23 @@
   function physicalKentoSvg(layout) {
     const kagi = layout.registration.kagi;
     const hiki = layout.registration.hikitsuke;
-    const sw = 0.025;
+    const cornerX = kagi.cornerX;
+    const cornerY = kagi.cornerY;
+    const radius = KAGI_GUIDE_RADIUS;
+    const hikiRadius = HIKITSUKE_GUIDE_RADIUS;
+    const hikiCenterX = hiki.orientation === 'vertical'
+      ? hiki.x
+      : (hiki.x1 + hiki.x2) / 2;
+    const hikiCenterY = hiki.orientation === 'vertical'
+      ? (hiki.y1 + hiki.y2) / 2
+      : hiki.y;
+    const extension = KAGI_CROSS_EXTENSION;
     return [
-      `<path d="M${round(kagi.cornerX - kagi.armIn)} ${round(kagi.cornerY)} H${round(kagi.cornerX)} V${round(kagi.cornerY - kagi.armIn)}" fill="none" stroke="#000" stroke-width="${sw}" stroke-linecap="square" stroke-linejoin="miter"/>`,
-      `<path d="M${round(hiki.x1)} ${round(hiki.y)} H${round(hiki.x2)}" fill="none" stroke="#000" stroke-width="${sw}" stroke-linecap="square"/>`,
+      `<path d="M${round(cornerX - kagi.armIn)} ${round(cornerY)} H${round(cornerX + extension)} M${round(cornerX)} ${round(cornerY - kagi.armIn)} V${round(cornerY + extension)}" fill="none" stroke="#000" stroke-width="${KENTO_STROKE_WIDTH}" stroke-linecap="square"/>`,
+      `<path d="M${round(cornerX)} ${round(cornerY - radius)} A${round(radius)} ${round(radius)} 0 0 1 ${round(cornerX)} ${round(cornerY + radius)} A${round(radius)} ${round(radius)} 0 0 1 ${round(cornerX - radius)} ${round(cornerY)}" fill="none" stroke="#000" stroke-width="${KENTO_STROKE_WIDTH}" stroke-linecap="round"/>`,
+      hiki.orientation === 'vertical'
+        ? `<path d="M${round(hiki.x)} ${round(hiki.y1)} V${round(hiki.y2)} M${round(hikiCenterX)} ${round(hikiCenterY - hikiRadius)} A${round(hikiRadius)} ${round(hikiRadius)} 0 0 1 ${round(hikiCenterX)} ${round(hikiCenterY + hikiRadius)}" fill="none" stroke="#000" stroke-width="${KENTO_STROKE_WIDTH}" stroke-linecap="round"/>`
+        : `<path d="M${round(hiki.x1)} ${round(hiki.y)} H${round(hiki.x2)} M${round(hikiCenterX + hikiRadius)} ${round(hikiCenterY)} A${round(hikiRadius)} ${round(hikiRadius)} 0 0 1 ${round(hikiCenterX - hikiRadius)} ${round(hikiCenterY)}" fill="none" stroke="#000" stroke-width="${KENTO_STROKE_WIDTH}" stroke-linecap="round"/>`,
     ].join('');
   }
 
@@ -1413,7 +1558,7 @@
     ).join('');
     return [
       includeKentoNote
-        ? `<text x="0.35" y="${round(layout.block.height - 0.38)}" font-family="Arial, sans-serif" font-size="0.12">Tentative kento — verify before carving</text>`
+        ? `<text x="0.35" y="${round(layout.block.height - 0.38)}" font-family="Arial, sans-serif" font-size="0.12">Kento placement guide — choose final notch width and depth for your paper and carving practice</text>`
         : '',
       swatches,
       `<text x="${round(textX)}" y="${round(identityY)}" font-family="Arial, sans-serif" font-size="0.12"><tspan font-weight="700">${esc(identity)}</tspan><tspan fill="#5f574e"> — ${esc(hexLabel)}</tspan></text>`,

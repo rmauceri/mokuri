@@ -1,5 +1,75 @@
 # Mokuri — Roadmap
 
+## Block Plan Production Integration 🚧
+
+The dev harness has graduated into the first production integration milestone.
+
+- **Single entry point:** `Edit Block Plan` in the Inking Workbench immediately
+  generates or refreshes the physical block proposal.
+- **Responsive full-screen workspace:** Block list, physical preview, and
+  selected-block inspector adapt across desktop, portrait tablet, narrow
+  portrait, and short landscape screens.
+- **Primary paper choice:** 8 × 10, 5 × 7, 4 × 6, 6 × 6, 8 × 8, and validated
+  custom dimensions in inches or millimeters.
+- **Initial review tools:** Physical Proof, Block Surface, Carve Away, Guides,
+  block selection, include/exclude controls, and viewing-only zoom, fit, wheel
+  zoom, and grab panning.
+- **Physical layout controls:** The right-side inspector now presents the
+  ordered Layout controls: Auto, Portrait, and Landscape block orientation;
+  8 × 10, 5 × 7, 4 × 6, 6 × 6, 8 × 8, and Custom print sizes; and shared None,
+  Narrow, Standard, and Wide composition margins.
+- **Exact-size block plan printing:** Hanshita or carbon/graphite transfer, Block
+  Surface or Carve Away polarity, US Letter or A4 sheets, and None or Standard
+  output margins are prepared at 300 DPI and printed at 100%, with automatic
+  overlap tiling when required. Printer sheets retain the resolved Block
+  Orientation.
+- **Direct print flow:** Transfer, output sheet, output margins, page count,
+  and tiling details now live in the persistent Physical Output inspector.
+  Block Surface or Carve Away is selected in the main preview. Print Block Plan
+  sits at the bottom of Physical Output and opens the browser dialog directly,
+  without a duplicate interstitial settings modal.
+- **Clear pane ownership:** The left Block Plan pane owns block manipulation
+  and the selected-block descriptor. The right Physical Output pane contains
+  only Layout and Block Preparation settings, with every option group on one
+  row.
+- **Native Mokuri styling:** The Ink Workbench entry and Block Plan controls
+  now use the shared workbench color and rounded-rectangle tokens. Block rows
+  reserve stable columns for inclusion, swatch, a two-line left-aligned name,
+  and print order, so long generated names no longer shift labels.
+- **Responsive production workspace:** Portrait transitions now place the
+  preview above a compact two-pane control deck, with list/details and
+  Layout/Preparation arranged into internal columns like the existing
+  workbenches. Custom Print Size expands inline instead of opening a modal, and
+  the Ink Workbench entry matches the primary Pull Print action.
+- **Workshop-safe pages:** Printer-safe annotation bands or rails keep page
+  identity, calibration marks, kento guidance, ink swatches, and hex values
+  inside the selected printable allowance. The dynamic CSS `@page` rule lives
+  in the document head, matching the proven harness so printer orientation and
+  exact page dimensions are applied before pagination.
+- **Practical exact-size tiling:** A master that only slightly exceeds the
+  usable printer area is split into balanced overlapping sections rather than
+  a nearly complete page plus an unusable sliver. The output summary shows the
+  master and usable-area dimensions and identifies when Output Margins None can
+  fit the master on one sheet.
+- **One orientation decision:** Block orientation is the only user-facing
+  orientation control. Print Block Plan uses that resolved orientation for its
+  Letter/A4 source pages and sends the matching physical dimensions through CSS
+  `@page`. Square compositions resolve to portrait under Auto, while explicit
+  Portrait or Landscape choices remain unchanged through printing.
+- **Concise print status:** The output status reports raster preparation and
+  dialog opening only, then clears after printing rather than leaving a
+  browser-specific orientation warning in the workspace.
+- **Normalized inking notes:** Bokashi instructions are stored once per
+  contributing element zone instead of repeating once for every path in that
+  zone.
+- **Semantic persistence:** Paper choice, custom dimensions, and block inclusion
+  overrides save with the composition; generated geometry is rebuilt rather
+  than serialized.
+
+Next milestone: integrate the harness-proven Arrange Blocks workflow—rename,
+reorder, merge, separate, role assignment, and reset—on top of the completed
+layout and exact-size output foundation.
+
 ## Completed: Quality & Creativity Improvements (Phases 1–5)
 
 ### Phase 1 — Background & Atmosphere ✅
