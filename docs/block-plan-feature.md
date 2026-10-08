@@ -30,7 +30,7 @@ The spike currently demonstrates:
 - Shared kagi-kento and hikitsuke geometry
 - Long-edge registration by default: the bottom edge for landscape and square
   paper, or the right edge for portrait paper
-- One-inch and 25 mm calibration marks
+- One-inch and 25 mm calibration marks on the Carve & Inking Guide
 - 300 DPI PNG generation
 - Orientation-aware US Letter and A4 browser printing
 - Visible Auto, Portrait, and Landscape Block Plan orientation controls
@@ -75,20 +75,19 @@ The development engine and harness now also support:
 - One coordinated multi-block browser print job, with all ordinary ink blocks
   selected by default, the optional Atmosphere block initially unselected,
   and per-block inclusion for partial reprints
-- Aggregate Letter/A4 page counts and ordered per-block page labels
+- Aggregate Letter/A4 page counts, minimal ordered per-block page labels, and
+  an optional Carve & Inking Guide printed last
 - Sequential 300 DPI raster preparation with visible block-by-block progress
   before opening the browser print dialog
-- Browser print pages reproduce the two-line block footer outside the
-  transferable master crop, preserving exact artwork scale while retaining the
-  kento guidance, ink swatches, block name, and hex references
-- Printer-safe browser print layouts with None and Standard ¼-inch output
-  margin presets
-- Reserved portrait annotation bands and a rotated landscape annotation rail,
-  keeping labels, calibration marks, swatches, and block identity inside the
-  selected printer-safe rectangle
+- Browser print pages use only a compact block number and subject-aware name,
+  with sheet numbering on tiled masters
+- Browser print layouts use a fixed ⅛-inch buffer for physical block sheets
+- The full buffered page rectangle is available to the transfer master;
+  compact block labels overlay available edge whitespace and do not force
+  otherwise unnecessary tiling
 - Transfer-bound raster crops for browser printing that include the physical
   paper and complete kento construction marks, with no arbitrary external
-  padding or scaling to compensate for annotation space
+  padding or scaling for page labels
 - Mokuri-compatible None, Narrow, Standard, and Wide margin placement using
   the same geometric-mean proportions as Pull Print
 - Exact-size placement retained as a separate 4 × 6, 5 × 7, or 6 × 6 mode
@@ -113,9 +112,10 @@ The development engine and harness now also support:
   native detail strokes, without generated contour expansion
 - Hanshita and Carbon output profiles derived from the same Block Surface
   geometry, differing only in orientation and production instructions
-- A two-line production footer that separates the kento carving-practice note
-  from block identity and shows the suggested ink swatch with exact hex
-  reference
+- A selectable Carve & Inking Guide as the final Block Plan list item, checked
+  by default and previewable before printing
+- A portrait single-column or landscape two-column guide containing setup,
+  calibration, ordered ink references, per-block instructions, and notes space
 - A separate dark-gray Carve Away inverse reference
 - Subject-aware block names derived from each block's resolved color and
   contributing element names
@@ -396,9 +396,10 @@ surrounding room for complete kento construction marks. None, Narrow, Standard,
 and Wide composition margins share Mokuri's existing `presentationMargin`
 state and regenerate the plan immediately.
 
-After a section break, Block Preparation contains Transfer, Output Sheet, and
-Output Margins. Output Margins offers None and Standard, with Standard as the
-default. Every choice group stays on one row.
+After a section break, Block Preparation contains Transfer and Output Sheet.
+Physical block sheets use a fixed ⅛-inch page buffer rather than exposing
+printer-margin choices. The Carve & Inking Guide uses a normal ½-inch content
+margin so its flexible reference layout remains readable and balanced.
 
 ### Step 1: Automatic plan and paper choice
 
@@ -423,7 +424,8 @@ than an interstitial print modal. The workspace provides:
   resolving to portrait; explicit Portrait or Landscape is preserved for the
   Letter/A4 printer sheets. Mokuri writes that physical width and height into
   CSS `@page`.
-- None or Standard ¼-inch output margins
+- A fixed ⅛-inch block-sheet buffer
+- A normal ½-inch content margin for the Carve & Inking Guide
 - A summary that labels the resolved Block orientation and confirms that
   Printer Sheets follow it, alongside included-block count and live page-count
   feedback
@@ -435,9 +437,8 @@ and opens the browser print dialog without another Mokuri confirmation screen.
 Both Print Block Plan and the Ink Workbench's Edit Block Plan entry retain the
 standard Pull Print action width when their responsive containers grow, while
 remaining full-width when the available pane is narrower.
-Letter/A4 and Output Margins remain Mokuri settings because browser print
-choices are not exposed back to page JavaScript and therefore cannot drive
-pre-dialog tiling or annotation placement.
+Letter/A4 remains a Mokuri setting because browser print choices are not
+exposed back to page JavaScript and therefore cannot drive pre-dialog tiling.
 
 Print preparation uses the status area only while masters are rasterized and
 the browser dialog opens. It clears after the print lifecycle instead of
@@ -503,17 +504,25 @@ underlying block geometry.
 
 Print Block Plan directly prepares the included physical ink blocks
 sequentially as 300 DPI rasters, places them on printer-safe Letter or A4
-pages, and opens the browser print dialog. There is no intermediate Mokuri
-modal. Masters remain at Actual Size / 100%; if the transferable paper and
-complete kento geometry do
-not fit the selected safe rectangle, Mokuri adds overlapping pages instead of
-reducing scale.
+pages, appends the optional Carve & Inking Guide, and opens one browser print
+dialog. There is no intermediate Mokuri modal. Masters remain at Actual Size /
+100%; if the transferable paper and complete kento geometry do not fit the
+fixed ⅛-inch buffered rectangle, Mokuri adds overlapping pages instead of reducing
+scale.
 
-Each page keeps its composition, block name, page number, transfer method,
-crop coordinates when tiled, calibration marks, kento note, suggested ink
-swatch, and exact hex value inside the selected printer-safe allowance. Ink
-swatches are inline SVG so they survive browser printing when background
-graphics are disabled.
+Each physical master carries only a compact identifier:
+`Block 3 — Indigo Heron`, or
+`Block 3 — Indigo Heron · Sheet 2 of 4` when tiled. The identifier does not
+reserve transfer area or participate in fit calculations.
+
+The guide appears as the final item in the Block Plan list. It is checked by
+default, can be selected for a page preview, and prints once after all selected
+block sheets. It uses the same Letter/A4 size and orientation as the block
+masters: portrait output uses a single-column block list, while landscape
+output uses two ordered columns. Calibration marks, transfer and master setup,
+kento guidance, ink names and exact hex values, bokashi or selective-inking
+instructions, warnings, and workshop notes space live on this guide rather
+than being repeated on every block sheet.
 
 Downloadable PNG/SVG masters, a manifest, and ZIP packaging remain later
 workshop-package enhancements.
@@ -1000,14 +1009,14 @@ intent.
 ### PDF as the primary print format
 
 PDF is the preferred bench-ready format because it can describe an exact
-physical page size. Every printable sheet should include:
+physical page size. The printable Carve & Inking Guide should include:
 
 - **Print at Actual Size / 100%**
 - A warning not to use **Fit to page**
 - A labeled 1-inch calibration line
 - A labeled 25 mm calibration line
 - A verification square
-- Page and tile numbers
+- The ordered block list and workshop notes space
 
 ### Standard inkjet printers
 
@@ -1024,8 +1033,8 @@ Each tile should include:
 - Configurable overlap, with a conservative default
 - Alignment crosses outside the transferable geometry
 - Trim or assembly guides
-- Row and column labels
-- Repeated block name, transfer method, and orientation warning
+- A repeated block number and name
+- Sheet numbering for multi-page masters
 
 The tiling algorithm should avoid scaling. Every tile remains at exactly 100%.
 
@@ -1054,15 +1063,15 @@ Inkjet printers have different unprintable margins. Block Plan should:
 
 - Treat the browser and printer driver as unable to report the printer's true
   physical unprintable area.
-- Offer explicit output-margin presets: Standard at ¼ inch and None at
-  0 inches. Standard is the default.
-- Derive a printer-safe page rectangle from the selected preset before testing
-  whether a master fits.
-- Reserve annotation geometry inside that safe rectangle: compact header and
-  footer bands in portrait, or a rotated side rail in landscape.
-- Keep the transferable master at exactly 100%. If the master plus required
-  annotation space does not fit, fall back to additional overlapping tiles
-  rather than reducing scale.
+- Use a fixed ⅛-inch buffer on all sides of physical block sheets before
+  testing whether a master fits.
+- Make the complete buffered rectangle available to the transfer master.
+- Use a separate normal ½-inch content margin for the flexible guide page.
+- Overlay the minimal block identifier at an unobtrusive safe-area edge. The
+  identifier must not reduce the usable transfer dimensions or alter tiling.
+- Keep the transferable master at exactly 100%. If it does not fit the selected
+  safe rectangle, fall back to additional overlapping tiles rather than
+  reducing scale.
 - Install the dynamic CSS `@page` rule in the document head before browser
   pagination. Use explicit physical width and height rather than a named paper
   plus orientation hint, so the source page passed to Chromium has one fixed,
@@ -1472,15 +1481,14 @@ intentional physical block set without editing source SVG files.
 
 - Exact-size browser print flow
 - US Letter and A4 printer-safe tiling
-- None and Standard output-margin presets
-- Calibration marks and in-safe-area page annotations
+- Fixed ⅛-inch physical block-sheet buffer
+- Minimal in-safe-area block labels
+- Optional Carve & Inking Guide with calibration and workshop instructions
 - Color-specific hanshita masters
 - Mirrored carbon/graphite masters
 - Block Surface and Carve Away print masters
 - Keep and carve-away PNG downloads
-- Annotated block guides
-- Bokashi guide
-- Atmosphere guide
+- Ordered per-block inking and bokashi instructions on the guide
 - Final proof
 - Human-readable manifest
 - `block-plan.json`

@@ -1371,6 +1371,10 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
   border-color: var(--accent);
   background: var(--selection);
 }
+.bp-block-card.guide {
+  margin-top: 10px;
+  border-top-color: #d8cbb9;
+}
 .bp-block-card input { margin: 0; accent-color: var(--accent); }
 .bp-block-side {
   display: flex;
@@ -1391,6 +1395,14 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
   height: 22px;
   border: 1px solid rgba(50,40,30,0.32);
   border-radius: 50%;
+}
+.bp-block-swatch.guide {
+  display: grid;
+  place-items: center;
+  border-radius: 5px;
+  background: #f4ede2;
+  color: #806d57;
+  font-size: 13px;
 }
 .bp-block-copy {
   min-width: 0;
@@ -1460,6 +1472,143 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
   height: 100%;
   background: #fff;
   box-shadow: 0 6px 22px rgba(55,42,28,0.24);
+}
+.bp-guide-preview {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  box-shadow: 0 6px 22px rgba(55,42,28,0.24);
+  overflow: hidden;
+}
+.bp-guide-sheet {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  color: #211d19;
+  font-family: Arial, sans-serif;
+}
+.bp-guide-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.18in;
+  border-bottom: 1px solid #8d857b;
+  padding-bottom: 0.08in;
+}
+.bp-guide-title {
+  font-size: 15pt;
+  font-weight: 700;
+}
+.bp-guide-composition {
+  margin-top: 0.035in;
+  color: #514a43;
+  font-size: 8.5pt;
+}
+.bp-guide-page-mark {
+  color: #6d655d;
+  font-size: 7pt;
+  white-space: nowrap;
+}
+.bp-guide-setup {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+  gap: 0.16in;
+  margin-top: 0.1in;
+}
+.bp-guide-facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.035in 0.11in;
+  margin: 0;
+  font-size: 7pt;
+  line-height: 1.25;
+}
+.bp-guide-facts dt { color: #6d655d; }
+.bp-guide-facts dd {
+  margin: 0;
+  font-weight: 600;
+}
+.bp-guide-calibration {
+  border-left: 1px solid #c5bdb3;
+  padding-left: 0.14in;
+  font-size: 6.5pt;
+  line-height: 1.3;
+}
+.bp-guide-calibration svg {
+  display: block;
+  width: 2.35in;
+  max-width: 100%;
+  height: 0.18in;
+  margin-bottom: 0.05in;
+}
+.bp-guide-shared-note {
+  margin-top: 0.08in;
+  border: 1px solid #b9afa3;
+  background: #faf8f4;
+  padding: 0.07in 0.09in;
+  font-size: 6.5pt;
+  line-height: 1.3;
+}
+.bp-guide-blocks {
+  display: grid;
+  flex: 1 1 auto;
+  min-height: 0;
+  gap: 0.14in;
+  margin-top: 0.11in;
+}
+.bp-guide-blocks.landscape {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.bp-guide-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.055in;
+}
+.bp-guide-block {
+  border-bottom: 1px solid #c7beb4;
+  padding: 0.035in 0 0.055in;
+}
+.bp-guide-block-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.055in;
+  font-size: 7.25pt;
+  line-height: 1.2;
+}
+.bp-guide-block-heading strong { flex: 1 1 auto; }
+.bp-guide-swatch {
+  width: 0.13in;
+  height: 0.13in;
+  flex: 0 0 auto;
+  border: 0.5pt solid #4a433b;
+  border-radius: 1px;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.bp-guide-block-detail {
+  margin-top: 0.025in;
+  color: #514a43;
+  font-size: 6.25pt;
+  line-height: 1.25;
+}
+.bp-guide-note-line {
+  height: 0.09in;
+  margin-top: 0.025in;
+  border-bottom: 0.5pt solid #c7beb4;
+}
+.bp-guide-general-notes {
+  flex: 0 0 auto;
+  margin-top: 0.09in;
+  font-size: 6.5pt;
+  font-weight: 700;
+}
+.bp-guide-general-lines {
+  display: grid;
+  grid-template-rows: repeat(2, 0.15in);
+}
+.bp-guide-general-lines span {
+  border-bottom: 0.5pt solid #bfb6ab;
 }
 .bp-preview-spacer { flex: 1 1 auto; }
 .bp-preview-zoom-value {
@@ -1853,71 +2002,21 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
     display: block;
     max-width: none;
   }
-  .bp-print-header {
+  .bp-print-label {
     position: absolute;
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 0.12in;
-    overflow: hidden;
+    z-index: 2;
+    max-width: calc(100% - 0.58in);
+    padding: 0.025in 0.045in;
+    border: 0.5pt solid #b8b0a7;
+    border-radius: 0.025in;
+    background: rgba(255,255,255,0.94);
     color: #111;
-    font: 6.5pt Arial, sans-serif;
-    line-height: 0.14in;
+    font: 7pt Arial, sans-serif;
+    line-height: 0.13in;
     white-space: nowrap;
-  }
-  .bp-print-header span {
-    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .bp-print-footer {
-    position: absolute;
-    display: flex;
-    align-items: flex-end;
-    gap: 0.12in;
-    overflow: hidden;
-  }
-  .bp-print-calibration {
-    width: 2.35in;
-    height: 0.18in;
-    flex: 0 0 auto;
-  }
-  .bp-print-side-rail { position: absolute; }
-  .bp-print-side-rail-inner {
-    position: absolute;
-    top: 0;
-    transform: rotate(90deg);
-    transform-origin: 0 0;
-  }
-  .bp-print-block-footer {
-    flex: 1 1 auto;
-    min-width: 0;
-    color: #111;
-    font: 6.5pt Arial, sans-serif;
-    text-align: right;
-  }
-  .bp-print-block-footer-note {
-    margin-bottom: 0.025in;
-    line-height: 0.12in;
-  }
-  .bp-print-block-footer-identity {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 0.035in;
-    min-width: 0;
-    line-height: 0.14in;
-    white-space: nowrap;
-  }
-  .bp-print-block-footer-swatch {
-    width: 0.12in;
-    height: 0.12in;
-    flex: 0 0 auto;
-    overflow: visible;
-    print-color-adjust: exact;
-    -webkit-print-color-adjust: exact;
-  }
-  .bp-print-block-footer-hex { color: #5f574e; }
 }
 
 /* ── Confirmation Dialog ── */
@@ -4120,7 +4219,7 @@ rebuildElementMap();
 // ============================================================
 //  VERSION
 // ============================================================
-const MOKURI_VERSION = '1.08';
+const MOKURI_VERSION = '1.09';
 
 // ============================================================
 //  FEEDBACK
@@ -4309,6 +4408,7 @@ const STATE = {
     blockOrientation: 'auto',
     compositionRotation: 0,
     inclusions: {},
+    includeGuide: true,
     lastSummary: null,
   },
 
@@ -7190,6 +7290,7 @@ function applyCompositionData(data) {
     inclusions: savedBlockPlan.inclusions && typeof savedBlockPlan.inclusions === 'object'
       ? savedBlockPlan.inclusions
       : {},
+    includeGuide: savedBlockPlan.includeGuide !== false,
     lastSummary: savedBlockPlan.lastSummary || null,
   };
   STATE.undoStack = [];
@@ -10953,26 +11054,13 @@ let _blockPlanCustomOpen = false;
 let _blockPlanTransfer = localStorage.getItem('mokuri-block-plan-transfer') || 'hanshita';
 let _blockPlanMaster = localStorage.getItem('mokuri-block-plan-master') || 'keep';
 let _blockPlanPage = localStorage.getItem('mokuri-block-plan-page') || 'letter';
-let _blockPlanPrinterMargin =
-  localStorage.getItem('mokuri-block-plan-printer-margin') || 'standard';
 let _blockPlanRasterSerial = 0;
 let _blockPlanPrintUrls = [];
 const _blockPlanRasterCache = new WeakMap();
-const BLOCK_PLAN_PRINTER_MARGINS = {
-  standard: { label: 'Standard ¼″', inches: 0.25 },
-  borderless: { label: 'None', inches: 0 },
-};
-const BLOCK_PLAN_PRINT_HEADER = 0.18;
-const BLOCK_PLAN_PRINT_FOOTER = 0.32;
-const BLOCK_PLAN_PRINT_RAIL = 0.5;
+const BLOCK_PLAN_GUIDE_KEY = '__carve-inking-guide__';
+const BLOCK_PLAN_PRINT_BUFFER = 0.125;
+const BLOCK_PLAN_GUIDE_MARGIN = 0.5;
 const BLOCK_PLAN_PRINT_OVERLAP = 0.5;
-if (!BLOCK_PLAN_PRINTER_MARGINS[_blockPlanPrinterMargin]) {
-  _blockPlanPrinterMargin = 'standard';
-  localStorage.setItem(
-    'mokuri-block-plan-printer-margin',
-    _blockPlanPrinterMargin
-  );
-}
 
 function blockPlanSettings(overrides) {
   return Object.assign({}, STATE.blockPlan, overrides || {});
@@ -11023,9 +11111,14 @@ function blockPlanIncluded(block) {
 
 function selectedBlockPlanBlock() {
   if (!_blockPlan) return null;
+  if (_blockPlanSelectedKey === BLOCK_PLAN_GUIDE_KEY) return null;
   return _blockPlan.blocks.find(block => block.key === _blockPlanSelectedKey)
     || _blockPlan.blocks[0]
     || null;
+}
+
+function blockPlanGuideSelected() {
+  return _blockPlanSelectedKey === BLOCK_PLAN_GUIDE_KEY;
 }
 
 function updateInkBlockPlanSummary() {
@@ -11043,14 +11136,14 @@ function renderBlockPlanList() {
   const inkBlocks = _blockPlan.blocks.filter(block => block.role === 'ink');
   const includedCount = inkBlocks.filter(blockPlanIncluded).length;
   $('bp-block-summary').textContent =
-    `${includedCount} of ${inkBlocks.length} ink blocks included`;
+    `${includedCount} of ${inkBlocks.length} ink blocks included`
+    + (STATE.blockPlan.includeGuide ? ' · guide included' : '');
 
   if (!_blockPlan.blocks.length) {
     const empty = document.createElement('div');
     empty.className = 'bp-empty-note';
     empty.textContent = 'This composition does not currently contain printable ink regions.';
     list.appendChild(empty);
-    return;
   }
 
   _blockPlan.blocks.forEach(block => {
@@ -11111,6 +11204,50 @@ function renderBlockPlanList() {
     });
     list.appendChild(card);
   });
+
+  const guideCard = document.createElement('button');
+  guideCard.type = 'button';
+  guideCard.className = 'bp-block-card guide'
+    + (blockPlanGuideSelected() ? ' active' : '');
+
+  const includeGuide = document.createElement('input');
+  includeGuide.type = 'checkbox';
+  includeGuide.checked = STATE.blockPlan.includeGuide !== false;
+  includeGuide.setAttribute('aria-label', 'Include Carve and Inking Guide');
+  includeGuide.addEventListener('click', event => event.stopPropagation());
+  includeGuide.addEventListener('change', () => {
+    STATE.blockPlan.includeGuide = includeGuide.checked;
+    autoSave();
+    renderBlockPlanWorkspace(false);
+  });
+
+  const guideIcon = document.createElement('span');
+  guideIcon.className = 'bp-block-swatch guide';
+  guideIcon.textContent = '文';
+
+  const guideCopy = document.createElement('span');
+  guideCopy.className = 'bp-block-copy';
+  const guideName = document.createElement('span');
+  guideName.className = 'bp-block-name';
+  guideName.textContent = 'Carve & Inking Guide';
+  const guideMeta = document.createElement('span');
+  guideMeta.className = 'bp-block-meta';
+  guideMeta.textContent = 'Workshop reference · prints last';
+  guideCopy.append(guideName, guideMeta);
+
+  const guideSide = document.createElement('span');
+  guideSide.className = 'bp-block-side';
+  const guideOrder = document.createElement('span');
+  guideOrder.className = 'bp-block-order';
+  guideOrder.textContent = 'Guide';
+  guideSide.appendChild(guideOrder);
+
+  guideCard.append(includeGuide, guideIcon, guideCopy, guideSide);
+  guideCard.addEventListener('click', () => {
+    _blockPlanSelectedKey = BLOCK_PLAN_GUIDE_KEY;
+    renderBlockPlanWorkspace(false);
+  });
+  list.appendChild(guideCard);
 }
 
 function appendBlockPlanFact(list, label, value) {
@@ -11297,21 +11434,7 @@ function renderBlockPlanInspector() {
     value => {
       _blockPlanPage = value;
       localStorage.setItem('mokuri-block-plan-page', value);
-      renderBlockPlanInspector();
-    }
-  );
-  appendBlockPlanChoiceGroup(
-    preparationSection,
-    'Output Margins',
-    [
-      ['borderless', 'None'],
-      ['standard', 'Standard'],
-    ],
-    _blockPlanPrinterMargin,
-    value => {
-      _blockPlanPrinterMargin = value;
-      localStorage.setItem('mokuri-block-plan-printer-margin', value);
-      renderBlockPlanInspector();
+      renderBlockPlanWorkspace(false);
     }
   );
   const outputPlan = document.createElement('div');
@@ -11323,12 +11446,31 @@ function renderBlockPlanInspector() {
   outputStatus.id = 'bp-output-status';
   preparationSection.append(outputPlan, outputStatus);
   inspector.appendChild(preparationSection);
-  $('bp-print-masters').disabled = includedBlockPlanBlocks().length === 0;
+  $('bp-print-masters').disabled =
+    includedBlockPlanBlocks().length === 0 && STATE.blockPlan.includeGuide === false;
 }
 
 function renderBlockPlanSelectedDetails() {
   const details = $('bp-block-details');
   details.innerHTML = '';
+  if (blockPlanGuideSelected()) {
+    const name = document.createElement('div');
+    name.className = 'bp-inspector-name';
+    name.textContent = 'Carve & Inking Guide';
+    const description = document.createElement('div');
+    description.className = 'bp-empty-note';
+    description.textContent =
+      'Prints after the selected block sheets with calibration, transfer setup, printing order, per-block instructions, and space for workshop notes.';
+    const facts = document.createElement('dl');
+    facts.className = 'bp-facts';
+    const layout = calculateBlockPlanPrintLayout(_blockPlanPage);
+    appendBlockPlanFact(facts, 'Output', layout.page.name);
+    appendBlockPlanFact(facts, 'Orientation', layout.page.orientation);
+    appendBlockPlanFact(facts, 'Blocks listed', String(includedBlockPlanBlocks().length));
+    appendBlockPlanFact(facts, 'Print position', 'Last page');
+    details.append(name, description, facts);
+    return;
+  }
   const block = selectedBlockPlanBlock();
   if (!block) {
     const empty = document.createElement('div');
@@ -11386,14 +11528,29 @@ function renderBlockPlanSelectedDetails() {
 }
 
 function renderBlockPlanPreview() {
+  const guideSelected = blockPlanGuideSelected();
   document.querySelectorAll('[data-bp-view]').forEach(button => {
     button.classList.toggle('active', button.dataset.bpView === _blockPlanView);
+    button.disabled = guideSelected;
   });
   $('bp-guides').classList.toggle('active', _blockPlanGuides);
+  $('bp-guides').disabled = guideSelected;
   const block = selectedBlockPlanBlock();
   const master = $('bp-master');
-  master.style.aspectRatio =
-    `${_blockPlan.layout.block.width} / ${_blockPlan.layout.block.height}`;
+  const previewSize = blockPlanPreviewSize();
+  master.style.aspectRatio = `${previewSize.width} / ${previewSize.height}`;
+  if (guideSelected) {
+    const layout = calculateBlockPlanPrintLayout(_blockPlanPage);
+    master.innerHTML = `
+      <div class="bp-guide-preview">
+        <div class="bp-guide-preview-page"
+          style="position:absolute;width:${layout.page.width}in;height:${layout.page.height}in;transform-origin:0 0">
+          ${blockPlanGuideHtml(layout, true)}
+        </div>
+      </div>`;
+    updateBlockPlanPreviewZoom();
+    return;
+  }
   if (!block && _blockPlanView !== 'physical-proof') {
     master.innerHTML = '<div class="bp-empty-note">No block selected.</div>';
     updateBlockPlanPreviewZoom();
@@ -11410,6 +11567,7 @@ function renderBlockPlanPreview() {
         method: _blockPlanTransfer,
         view: _blockPlanView,
         guides: _blockPlanGuides,
+        annotations: _blockPlanView === 'physical-proof',
         includedBlockIds,
         idPrefix: `mokuri-bp-${++_blockPlanRenderSerial}`,
       }
@@ -11431,8 +11589,20 @@ function calculateBlockPlanPreviewFitWidth() {
   const stage = $('bp-preview-stage');
   const availableWidth = Math.max(1, stage.clientWidth - 36);
   const availableHeight = Math.max(1, stage.clientHeight - 36);
-  const aspect = _blockPlan.layout.block.width / _blockPlan.layout.block.height;
+  const previewSize = blockPlanPreviewSize();
+  const aspect = previewSize.width / previewSize.height;
   return Math.max(80, Math.min(availableWidth, availableHeight * aspect));
+}
+
+function blockPlanPreviewSize() {
+  if (blockPlanGuideSelected()) {
+    const page = calculateBlockPlanPrintLayout(_blockPlanPage).page;
+    return { width: page.width, height: page.height };
+  }
+  return {
+    width: _blockPlan.layout.block.width,
+    height: _blockPlan.layout.block.height,
+  };
 }
 
 function updateBlockPlanPreviewZoom() {
@@ -11442,12 +11612,16 @@ function updateBlockPlanPreviewZoom() {
   const master = $('bp-master');
   const content = $('bp-preview-content');
   const width = _blockPlanPreviewFitWidth * _blockPlanPreviewZoom;
-  const height =
-    width * _blockPlan.layout.block.height / _blockPlan.layout.block.width;
+  const previewSize = blockPlanPreviewSize();
+  const height = width * previewSize.height / previewSize.width;
   master.style.width = `${width}px`;
   master.style.height = `${height}px`;
   content.style.width = `${Math.max(stage.clientWidth - 36, width)}px`;
   content.style.height = `${Math.max(stage.clientHeight - 36, height)}px`;
+  const guidePage = content.querySelector('.bp-guide-preview-page');
+  if (guidePage) {
+    guidePage.style.transform = `scale(${width / (previewSize.width * 96)})`;
+  }
   $('bp-preview-zoom-value').textContent =
     `${Math.round(_blockPlanPreviewZoom * 100)}%`;
 }
@@ -11532,9 +11706,11 @@ function renderBlockPlanWorkspace(rebuild) {
   if (rebuild !== false) {
     const previousKey = _blockPlanSelectedKey;
     _blockPlan = createCurrentBlockPlan();
-    _blockPlanSelectedKey = _blockPlan.blocks.some(block => block.key === previousKey)
-      ? previousKey
-      : (_blockPlan.blocks[0] ? _blockPlan.blocks[0].key : null);
+    _blockPlanSelectedKey = previousKey === BLOCK_PLAN_GUIDE_KEY
+      ? BLOCK_PLAN_GUIDE_KEY
+      : _blockPlan.blocks.some(block => block.key === previousKey)
+        ? previousKey
+        : (_blockPlan.blocks[0] ? _blockPlan.blocks[0].key : BLOCK_PLAN_GUIDE_KEY);
     STATE.blockPlan.lastSummary = {
       blockCount: _blockPlan.blocks.filter(block => block.role === 'ink').length,
       paperName: _blockPlan.layout.paperName,
@@ -11602,6 +11778,136 @@ function escapeBlockPlanHtml(value) {
     .replace(/'/g, '&#039;');
 }
 
+function blockPlanCalibrationSvg(className = '') {
+  return `
+    <svg class="${className}" aria-hidden="true" viewBox="0 0 2.35 0.18">
+      <path d="M0 0.08 H1 M0 0.03 V0.13 M1 0.03 V0.13 M1.25 0.08 H2.23425 M1.25 0.03 V0.13 M2.23425 0.03 V0.13"
+        fill="none" stroke="#000" stroke-width="0.012"/>
+      <text x="0.5" y="0.175" text-anchor="middle" font-family="Arial, sans-serif"
+        font-size="0.08">1 inch</text>
+      <text x="1.742" y="0.175" text-anchor="middle" font-family="Arial, sans-serif"
+        font-size="0.08">25 mm</text>
+    </svg>`;
+}
+
+function blockPlanColorLabel(color) {
+  const canonical = typeof MokuriColorNames !== 'undefined'
+    ? MokuriColorNames.get(color)
+    : null;
+  return canonical
+    ? `${canonical} · ${color.toUpperCase()}`
+    : color.toUpperCase();
+}
+
+function blockPlanBlockInstruction(block) {
+  const instructions = [];
+  if (block.colors && block.colors.length > 1) {
+    instructions.push('Ink the color areas selectively on this combined block.');
+  } else {
+    instructions.push('Apply an even impression.');
+  }
+  (block.bokashi || []).forEach(note => {
+    const description = typeof note === 'string'
+      ? `Bokashi ${note}`
+      : note.description || `Bokashi ${note.direction || ''}`.trim();
+    if (description) instructions.push(description + (/[.!?]$/.test(description) ? '' : '.'));
+  });
+  if (block.nearPaper) {
+    instructions.push('Ink is close to the selected paper color; confirm before carving.');
+  }
+  return instructions.join(' ');
+}
+
+function blockPlanGuideBlockHtml(block) {
+  const colors = block.colors && block.colors.length ? block.colors : [block.color];
+  const swatches = colors.map(color => `
+    <span class="bp-guide-swatch" style="background:${escapeBlockPlanHtml(color)}"></span>
+  `).join('');
+  return `
+    <div class="bp-guide-block">
+      <div class="bp-guide-block-heading">
+        ${swatches}
+        <strong>${block.printOrder}. ${escapeBlockPlanHtml(block.name)}</strong>
+      </div>
+      <div class="bp-guide-block-detail">
+        ${escapeBlockPlanHtml(colors.map(blockPlanColorLabel).join(' + '))}
+      </div>
+      <div class="bp-guide-block-detail">
+        ${escapeBlockPlanHtml(blockPlanBlockInstruction(block))}
+      </div>
+      <div class="bp-guide-note-line"></div>
+    </div>`;
+}
+
+function blockPlanGuideHtml(layout, preview = false) {
+  const page = layout.page;
+  const safe = blockPlanGuideFrame(page).safe;
+  const blocks = includedBlockPlanBlocks();
+  const landscape = page.orientation === 'landscape';
+  const split = landscape ? Math.ceil(blocks.length / 2) : blocks.length;
+  const columns = landscape
+    ? [blocks.slice(0, split), blocks.slice(split)]
+    : [blocks];
+  const transferLabel =
+    _blockPlanTransfer === 'hanshita' ? 'Face-down hanshita' : 'Carbon / graphite';
+  const masterLabel =
+    _blockPlanMaster === 'carve-away' ? 'Carve Away' : 'Block Surface';
+  const dateLabel = new Intl.DateTimeFormat(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  }).format(new Date());
+  const warningText = (_blockPlan.warnings || [])
+    .filter(warning =>
+      /fine|small|close to|pattern|background carve|mist/i.test(warning)
+    )
+    .slice(0, 3)
+    .join(' ');
+  const sharedNote =
+    `Print every page at Actual Size / 100%. Measure both calibration marks before transfer. `
+    + `Use identical kento geometry on every block; choose final notch width and depth for your paper and carving practice. `
+    + (_blockPlanTransfer === 'hanshita'
+      ? 'Hanshita masters read normally and are pasted printed-face-down.'
+      : 'Carbon / graphite masters are mirrored for direct transfer.')
+    + (warningText ? ` ${warningText}` : '');
+  return `
+    <div class="bp-guide-sheet${landscape ? ' landscape' : ''}"
+      style="left:${safe.x}in;top:${safe.y}in;width:${safe.width}in;height:${safe.height}in">
+      <div class="bp-guide-header">
+        <div>
+          <div class="bp-guide-title">Mokuri Carve &amp; Inking Guide</div>
+          <div class="bp-guide-composition">${escapeBlockPlanHtml(_blockPlan.compositionName)}</div>
+        </div>
+        <div class="bp-guide-page-mark">${escapeBlockPlanHtml(dateLabel)}${preview ? ' · Preview' : ''}</div>
+      </div>
+      <div class="bp-guide-setup">
+        <dl class="bp-guide-facts">
+          <dt>Paper</dt><dd>${escapeBlockPlanHtml(_blockPlan.layout.paperName)} · ${_blockPlan.layout.paper.width.toFixed(2)} × ${_blockPlan.layout.paper.height.toFixed(2)} in</dd>
+          <dt>Image</dt><dd>${_blockPlan.layout.image.width.toFixed(2)} × ${_blockPlan.layout.image.height.toFixed(2)} in</dd>
+          <dt>Block</dt><dd>${_blockPlan.layout.orientation} · ${blocks.length} included block${blocks.length === 1 ? '' : 's'}</dd>
+          <dt>Transfer</dt><dd>${transferLabel}</dd>
+          <dt>Master</dt><dd>${masterLabel}</dd>
+        </dl>
+        <div class="bp-guide-calibration">
+          ${blockPlanCalibrationSvg()}
+          Verify both marks before transferring any block.
+        </div>
+      </div>
+      <div class="bp-guide-shared-note">${escapeBlockPlanHtml(sharedNote)}</div>
+      <div class="bp-guide-blocks${landscape ? ' landscape' : ''}">
+        ${columns.map(column => `
+          <div class="bp-guide-column">
+            ${column.map(blockPlanGuideBlockHtml).join('')}
+          </div>
+        `).join('')}
+      </div>
+      <div class="bp-guide-general-notes">
+        Workshop notes
+        <div class="bp-guide-general-lines"><span></span><span></span></div>
+      </div>
+    </div>`;
+}
+
 function blockPlanPageVariants(pageType) {
   const portrait = pageType === 'a4'
     ? {
@@ -11649,56 +11955,25 @@ function blockPlanTileSlices(total, capacity) {
   }));
 }
 
-function blockPlanPrinterFrame(page, marginPreset = _blockPlanPrinterMargin) {
-  const inset = BLOCK_PLAN_PRINTER_MARGINS[marginPreset].inches;
+function blockPlanPageFrame(page, inset) {
   const safe = {
     x: inset,
     y: inset,
     width: page.width - inset * 2,
     height: page.height - inset * 2,
   };
-  if (page.orientation === 'landscape') {
-    return {
-      safe,
-      annotation: {
-        mode: 'rail',
-        x: safe.x + safe.width - BLOCK_PLAN_PRINT_RAIL,
-        y: safe.y,
-        width: BLOCK_PLAN_PRINT_RAIL,
-        height: safe.height,
-      },
-      transfer: {
-        x: safe.x,
-        y: safe.y,
-        width: safe.width - BLOCK_PLAN_PRINT_RAIL,
-        height: safe.height,
-      },
-    };
-  }
   return {
     safe,
-    annotation: {
-      mode: 'bands',
-      header: {
-        x: safe.x,
-        y: safe.y,
-        width: safe.width,
-        height: BLOCK_PLAN_PRINT_HEADER,
-      },
-      footer: {
-        x: safe.x,
-        y: safe.y + safe.height - BLOCK_PLAN_PRINT_FOOTER,
-        width: safe.width,
-        height: BLOCK_PLAN_PRINT_FOOTER,
-      },
-    },
-    transfer: {
-      x: safe.x,
-      y: safe.y + BLOCK_PLAN_PRINT_HEADER,
-      width: safe.width,
-      height: safe.height - BLOCK_PLAN_PRINT_HEADER - BLOCK_PLAN_PRINT_FOOTER,
-    },
+    transfer: Object.assign({}, safe),
   };
+}
+
+function blockPlanPrinterFrame(page) {
+  return blockPlanPageFrame(page, BLOCK_PLAN_PRINT_BUFFER);
+}
+
+function blockPlanGuideFrame(page) {
+  return blockPlanPageFrame(page, BLOCK_PLAN_GUIDE_MARGIN);
 }
 
 function calculateBlockPlanPrintLayout(pageType) {
@@ -11773,29 +12048,28 @@ function blockPlanOutputSummary() {
   if (!_blockPlan) return '';
   const blocks = includedBlockPlanBlocks();
   const layout = calculateBlockPlanPrintLayout(_blockPlanPage);
-  const totalPages = blocks.length * layout.pageCount;
+  const includeGuide = STATE.blockPlan.includeGuide !== false;
+  const totalPages = blocks.length * layout.pageCount + (includeGuide ? 1 : 0);
   const blockOrientation =
     _blockPlan.layout.orientation === 'landscape' ? 'Landscape' : 'Portrait';
-  const borderlessFrame = blockPlanPrinterFrame(layout.page, 'borderless');
-  const fitsBorderless =
-    layout.bounds.width <= borderlessFrame.transfer.width + 0.0001
-    && layout.bounds.height <= borderlessFrame.transfer.height + 0.0001;
   const tiledNote = layout.type === 'tiled'
     ? ` The ${layout.bounds.width.toFixed(2)} × ${layout.bounds.height.toFixed(2)} in master exceeds the `
       + `${layout.frame.transfer.width.toFixed(2)} × ${layout.frame.transfer.height.toFixed(2)} in usable area, `
       + `so it is divided evenly across ${layout.pageCount} pages with `
       + `${BLOCK_PLAN_PRINT_OVERLAP} in overlap; it is never reduced.`
-      + (fitsBorderless && _blockPlanPrinterMargin !== 'borderless'
-        ? ' Output Margins None fits on one sheet if your printer supports edge-to-edge output.'
-        : '')
     : ' Each master fits on one printer sheet without scaling.';
-  return blocks.length
+  if (!blocks.length && includeGuide) {
+    return `Carve & Inking Guide · Printer sheets: 1 ${layout.page.name} `
+      + `${layout.page.orientation} page · Actual Size / 100%.`;
+  }
+  return blocks.length || includeGuide
     ? `Block: ${blockOrientation} · `
       + `${blocks.length} included ink block${blocks.length === 1 ? '' : 's'} · `
       + `Printer sheets: ${totalPages} ${layout.page.name} ${layout.page.orientation} page`
-      + `${totalPages === 1 ? '' : 's'} (follows block) · Actual Size / 100%.`
+      + `${totalPages === 1 ? '' : 's'} (follows block)`
+      + `${includeGuide ? ' · guide prints last' : ''} · Actual Size / 100%.`
       + `${tiledNote}`
-    : 'No ink blocks are included. Return to the block list and include at least one.';
+    : 'No block sheets or guide are included. Select at least one item in the block list.';
 }
 
 function blockPlanRasterKey(blockId, resolution) {
@@ -11825,6 +12099,7 @@ function renderBlockPlanMasterRaster(blockId, dpi = 300) {
       method: _blockPlanTransfer,
       view: _blockPlanMaster,
       guides: true,
+      annotations: false,
       crop: 'master',
       cropPaddingIn: 0,
       idPrefix: `bp-print-raster-${++_blockPlanRasterSerial}`,
@@ -11869,73 +12144,13 @@ function renderBlockPlanMasterRaster(blockId, dpi = 300) {
   return promise;
 }
 
-function blockPlanPrintFooter(block) {
-  const colors = block.colors && block.colors.length
-    ? block.colors
-    : [block.color];
-  const swatches = colors.map(color => `
-    <svg class="bp-print-block-footer-swatch" viewBox="0 0 12 12"
-      aria-label="${escapeBlockPlanHtml(color)}">
-      <rect x="0.4" y="0.4" width="11.2" height="11.2" rx="1.4"
-        fill="${escapeBlockPlanHtml(color)}" stroke="#4a433b" stroke-width="0.8"/>
-    </svg>
-  `).join('');
-  const viewLabel =
-    _blockPlanMaster === 'carve-away' ? 'Carve Away' : 'Block Surface';
+function blockPlanPrintLabel(block, tileIndex, tileCount, layout) {
+  const suffix = tileCount > 1 ? ` · Sheet ${tileIndex + 1} of ${tileCount}` : '';
   return `
-    <div class="bp-print-block-footer">
-      <div class="bp-print-block-footer-note">Kento placement guide — choose final notch width and depth for your paper and carving practice</div>
-      <div class="bp-print-block-footer-identity">
-        ${swatches}
-        <strong>${escapeBlockPlanHtml(block.name)} — ${viewLabel}</strong>
-        <span class="bp-print-block-footer-hex">— ${escapeBlockPlanHtml(
-          colors.map(color => color.toUpperCase()).join(' + ')
-        )}</span>
-      </div>
-    </div>
-  `;
-}
-
-function blockPlanPrintCalibration() {
-  return `
-    <svg class="bp-print-calibration" aria-hidden="true" viewBox="0 0 2.35 0.18">
-      <path d="M0 0.08 H1 M0 0.03 V0.13 M1 0.03 V0.13 M1.25 0.08 H2.23425 M1.25 0.03 V0.13 M2.23425 0.03 V0.13"
-        fill="none" stroke="#000" stroke-width="0.012"/>
-      <text x="0.5" y="0.175" text-anchor="middle" font-family="Arial, sans-serif"
-        font-size="0.08">1 inch</text>
-      <text x="1.742" y="0.175" text-anchor="middle" font-family="Arial, sans-serif"
-        font-size="0.08">25 mm</text>
-    </svg>
-  `;
-}
-
-function blockPlanPrintAnnotations(block, pageLabel, cropLabel, layout) {
-  const header = `
-    <span>${escapeBlockPlanHtml(pageLabel)}</span>
-    ${cropLabel ? `<span>${escapeBlockPlanHtml(cropLabel)}</span>` : ''}
-  `;
-  const footer = `${blockPlanPrintCalibration()}${blockPlanPrintFooter(block)}`;
-  const annotation = layout.frame.annotation;
-  if (annotation.mode === 'rail') {
-    return `
-      <div class="bp-print-side-rail"
-        style="left:${annotation.x}in;top:${annotation.y}in;width:${annotation.width}in;height:${annotation.height}in">
-        <div class="bp-print-side-rail-inner"
-          style="left:${annotation.width}in;width:${annotation.height}in;height:${annotation.width}in">
-          <div class="bp-print-header"
-            style="left:0;top:0;width:${annotation.height}in;height:${BLOCK_PLAN_PRINT_HEADER}in">${header}</div>
-          <div class="bp-print-footer"
-            style="left:0;bottom:0;width:${annotation.height}in;height:${BLOCK_PLAN_PRINT_FOOTER}in">${footer}</div>
-        </div>
-      </div>
-    `;
-  }
-  return `
-    <div class="bp-print-header"
-      style="left:${annotation.header.x}in;top:${annotation.header.y}in;width:${annotation.header.width}in;height:${annotation.header.height}in">${header}</div>
-    <div class="bp-print-footer"
-      style="left:${annotation.footer.x}in;top:${annotation.footer.y}in;width:${annotation.footer.width}in;height:${annotation.footer.height}in">${footer}</div>
-  `;
+    <div class="bp-print-label"
+      style="left:${layout.frame.safe.x + 0.04}in;top:${layout.frame.safe.y + 0.04}in">
+      Block ${block.printOrder} — ${escapeBlockPlanHtml(block.name)}${suffix}
+    </div>`;
 }
 
 function releaseBlockPlanPrintUrls() {
@@ -11947,7 +12162,8 @@ function releaseBlockPlanPrintUrls() {
 
 async function printBlockPlanMasters() {
   const blocks = includedBlockPlanBlocks();
-  if (!blocks.length) return;
+  const includeGuide = STATE.blockPlan.includeGuide !== false;
+  if (!blocks.length && !includeGuide) return;
   const button = $('bp-print-masters');
   const status = $('bp-output-status');
   button.disabled = true;
@@ -11973,16 +12189,11 @@ async function printBlockPlanMasters() {
   const page = layout.page;
   const transfer = layout.frame.transfer;
   const bounds = layout.bounds;
-  const transferLabel =
-    _blockPlanTransfer === 'hanshita' ? 'Hanshita' : 'Carbon / Graphite';
   const pages = [];
   prepared.forEach(({ block, url }) => {
     if (layout.type === 'single') {
       const left = transfer.x + (transfer.width - bounds.width) / 2;
       const top = transfer.y + (transfer.height - bounds.height) / 2;
-      const label =
-        `${_blockPlan.compositionName} · Block ${block.printOrder}: `
-        + `${block.name} · page 1/1 · ${transferLabel} · Actual Size / 100%`;
       pages.push(`
         <section class="bp-print-page"
           style="width:${page.width}in;height:${page.height}in">
@@ -11990,7 +12201,7 @@ async function printBlockPlanMasters() {
             style="left:${left}in;top:${top}in;width:${bounds.width}in;height:${bounds.height}in">
             <img src="${url}" alt="" style="width:${bounds.width}in;height:${bounds.height}in;top:0">
           </div>
-          ${blockPlanPrintAnnotations(block, label, '', layout)}
+          ${blockPlanPrintLabel(block, 0, 1, layout)}
         </section>
       `);
       return;
@@ -11998,13 +12209,6 @@ async function printBlockPlanMasters() {
     layout.tiles.forEach((tile, index) => {
       const left = transfer.x + (transfer.width - tile.width) / 2;
       const top = transfer.y + (transfer.height - tile.height) / 2;
-      const label =
-        `${_blockPlan.compositionName} · Block ${block.printOrder}: ${block.name}`
-        + ` · page ${index + 1}/${layout.tiles.length} · ${transferLabel}`
-        + ' · Actual Size / 100%';
-      const crop =
-        `Master crop X ${tile.x.toFixed(2)}–${(tile.x + tile.width).toFixed(2)} in`
-        + ` · Y ${tile.y.toFixed(2)}–${(tile.y + tile.height).toFixed(2)} in`;
       pages.push(`
         <section class="bp-print-page"
           style="width:${page.width}in;height:${page.height}in">
@@ -12013,11 +12217,19 @@ async function printBlockPlanMasters() {
             <img src="${url}" alt=""
               style="width:${bounds.width}in;height:${bounds.height}in;left:${-tile.x}in;top:${-tile.y}in">
           </div>
-          ${blockPlanPrintAnnotations(block, label, crop, layout)}
+          ${blockPlanPrintLabel(block, index, layout.tiles.length, layout)}
         </section>
       `);
     });
   });
+  if (includeGuide) {
+    pages.push(`
+      <section class="bp-print-page bp-print-guide-page"
+        style="width:${page.width}in;height:${page.height}in">
+        ${blockPlanGuideHtml(layout)}
+      </section>
+    `);
+  }
   const root = $('block-plan-print-root');
   root.innerHTML = pages.join('');
   try {

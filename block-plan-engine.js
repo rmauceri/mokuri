@@ -1519,6 +1519,15 @@
     ].join('');
   }
 
+  function guideGeometrySvg(plan, paperRect, imageRect) {
+    const layout = plan.layout;
+    return [
+      `<rect x="0.01" y="0.01" width="${round(layout.block.width - 0.02)}" height="${round(layout.block.height - 0.02)}" fill="none" stroke="#8b8174" stroke-width="0.02"/>`,
+      `<rect x="${round(paperRect.x)}" y="${round(paperRect.y)}" width="${round(paperRect.width)}" height="${round(paperRect.height)}" fill="none" stroke="#9d9488" stroke-width="0.015" stroke-dasharray="0.09 0.06"/>`,
+      `<rect x="${round(imageRect.x)}" y="${round(imageRect.y)}" width="${round(imageRect.width)}" height="${round(imageRect.height)}" fill="none" stroke="#c0b8ad" stroke-width="0.012" stroke-dasharray="0.05 0.05"/>`,
+    ].join('');
+  }
+
   function guideSvg(plan, method, paperRect, imageRect) {
     const layout = plan.layout;
     const isHanshita = method === 'hanshita';
@@ -1527,9 +1536,7 @@
       ? 'Paste printed face down'
       : 'Transfer in this orientation';
     return [
-      `<rect x="0.01" y="0.01" width="${round(layout.block.width - 0.02)}" height="${round(layout.block.height - 0.02)}" fill="none" stroke="#8b8174" stroke-width="0.02"/>`,
-      `<rect x="${round(paperRect.x)}" y="${round(paperRect.y)}" width="${round(paperRect.width)}" height="${round(paperRect.height)}" fill="none" stroke="#9d9488" stroke-width="0.015" stroke-dasharray="0.09 0.06"/>`,
-      `<rect x="${round(imageRect.x)}" y="${round(imageRect.y)}" width="${round(imageRect.width)}" height="${round(imageRect.height)}" fill="none" stroke="#c0b8ad" stroke-width="0.012" stroke-dasharray="0.05 0.05"/>`,
+      guideGeometrySvg(plan, paperRect, imageRect),
       '<path d="M0.75 0.48 H1.75 M0.75 0.42 V0.54 M1.75 0.42 V0.54" fill="none" stroke="#000" stroke-width="0.018"/>',
       '<text x="1.25" y="0.35" text-anchor="middle" font-family="Arial, sans-serif" font-size="0.14">1 inch</text>',
       '<path d="M2.05 0.48 H3.03425 M2.05 0.42 V0.54 M3.03425 0.42 V0.54" fill="none" stroke="#000" stroke-width="0.018"/>',
@@ -1604,7 +1611,7 @@
           buildArtwork(plan, block, 'proof', layout.image, `${idPrefix}-proof-${index}`)
         )
         .join('');
-      const proofGuides = opts.guides === false
+      const proofGuides = opts.guides === false || opts.annotations === false
         ? ''
         : referenceGuideSvg(
             plan,
@@ -1619,7 +1626,9 @@
         `<rect x="${round(layout.paper.x)}" y="${round(layout.paper.y)}" width="${round(layout.paper.width)}" height="${round(layout.paper.height)}" fill="${esc(plan.paperBase || '#fff')}"/>`,
         proofGuides,
         proofArtwork,
-        `<text x="${round(layout.block.width / 2)}" y="${round(layout.block.height - 0.22)}" text-anchor="middle" font-family="Arial, sans-serif" font-size="0.14">${esc(proofTitle)}</text>`,
+        opts.annotations === false
+          ? ''
+          : `<text x="${round(layout.block.width / 2)}" y="${round(layout.block.height - 0.22)}" text-anchor="middle" font-family="Arial, sans-serif" font-size="0.14">${esc(proofTitle)}</text>`,
         '</svg>',
       ].join('');
     }
@@ -1628,7 +1637,7 @@
     if (!block) throw new Error('Block Plan has no color blocks');
     if (view === 'paper-mask' || block.role === 'paper') {
       const paperMaskTitle = `${plan.compositionName} — ${block.name} — Paper Reveal Mask`;
-      const paperGuides = opts.guides === false
+      const paperGuides = opts.guides === false || opts.annotations === false
         ? ''
         : referenceGuideSvg(
             plan,
@@ -1642,7 +1651,9 @@
         `<rect x="0" y="0" width="${round(layout.block.width)}" height="${round(layout.block.height)}" fill="#fff"/>`,
         paperGuides,
         buildArtwork(plan, block, 'solid', layout.image, `${idPrefix}-paper-mask`),
-        `<text x="${round(layout.block.width / 2)}" y="${round(layout.block.height - 0.22)}" text-anchor="middle" font-family="Arial, sans-serif" font-size="0.14">${esc(paperMaskTitle)}</text>`,
+        opts.annotations === false
+          ? ''
+          : `<text x="${round(layout.block.width / 2)}" y="${round(layout.block.height - 0.22)}" text-anchor="middle" font-family="Arial, sans-serif" font-size="0.14">${esc(paperMaskTitle)}</text>`,
         '</svg>',
       ].join('');
     }
@@ -1671,7 +1682,9 @@
 
     const guides = opts.guides === false
       ? ''
-      : guideSvg(plan, method, paperRect, imageRect);
+      : opts.annotations === false
+        ? guideGeometrySvg(plan, paperRect, imageRect)
+        : guideSvg(plan, method, paperRect, imageRect);
     const viewLabel = view === 'carve-away'
       ? 'Carve-away map'
       : view === 'keep' ? 'Block Surface' : view === 'proof' ? 'Isolated impression' : null;
@@ -1694,7 +1707,9 @@
       guides,
       artwork,
       kento,
-      blockFooterSvg(plan, block, viewLabel, opts.guides !== false),
+      opts.annotations === false
+        ? ''
+        : blockFooterSvg(plan, block, viewLabel, opts.guides !== false),
       '</svg>',
     ].join('');
   }

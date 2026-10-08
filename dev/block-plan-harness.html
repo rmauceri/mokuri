@@ -521,75 +521,35 @@ button.primary {
     display: block;
     max-width: none;
   }
-  .print-header-band {
+  .print-label {
     position: absolute;
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 0.12in;
-    overflow: hidden;
+    z-index: 2;
+    max-width: calc(100% - 0.58in);
+    padding: 0.025in 0.045in;
+    border: 0.5pt solid #b8b0a7;
+    border-radius: 0.025in;
+    background: rgba(255,255,255,0.94);
     color: #111;
-    font: 6.5pt Arial, sans-serif;
-    line-height: 0.14in;
+    font: 7pt Arial, sans-serif;
+    line-height: 0.13in;
     white-space: nowrap;
-  }
-  .print-header-band span {
-    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .print-footer-band {
-    position: absolute;
-    display: flex;
-    align-items: flex-end;
-    gap: 0.12in;
-    overflow: hidden;
-  }
-  .print-calibration {
-    width: 2.35in;
-    height: 0.18in;
-    flex: 0 0 auto;
-  }
-  .print-side-rail {
-    position: absolute;
-  }
-  .print-side-rail-inner {
-    position: absolute;
-    top: 0;
-    transform: rotate(90deg);
-    transform-origin: 0 0;
-  }
-  .print-block-footer {
-    flex: 1 1 auto;
-    min-width: 0;
-    color: #111;
-    font: 6.5pt Arial, sans-serif;
-    text-align: right;
-  }
-  .print-block-footer-note {
-    margin-bottom: 0.025in;
-    line-height: 0.12in;
-  }
-  .print-block-footer-identity {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 0.035in;
-    min-width: 0;
-    line-height: 0.14in;
-    white-space: nowrap;
-  }
-  .print-block-footer-swatch {
-    width: 0.12in;
-    height: 0.12in;
-    flex: 0 0 auto;
-    overflow: visible;
-    print-color-adjust: exact;
-    -webkit-print-color-adjust: exact;
-  }
-  .print-block-footer-hex {
-    color: #5f574e;
-  }
+  .print-guide { position:absolute; display:flex; flex-direction:column; color:#211d19; font-family:Arial,sans-serif; }
+  .print-guide h1 { margin:0; padding-bottom:.08in; border-bottom:1px solid #8d857b; font-size:15pt; }
+  .print-guide-meta { display:grid; grid-template-columns:auto 1fr; gap:.035in .11in; margin:.1in 0 0; font-size:7pt; }
+  .print-guide-meta dt { color:#6d655d; }
+  .print-guide-meta dd { margin:0; font-weight:600; }
+  .print-guide-setup { margin-top:.08in; padding:.07in .09in; border:1px solid #b9afa3; font-size:6.5pt; line-height:1.3; }
+  .print-guide-calibration { display:block; width:2.35in; height:.18in; margin-bottom:.04in; }
+  .print-guide-blocks { display:grid; flex:1; gap:.14in; margin-top:.1in; }
+  .print-guide-blocks.landscape { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .print-guide-column { display:flex; flex-direction:column; gap:.055in; }
+  .print-guide-block { padding:.035in 0 .055in; border-bottom:1px solid #c7beb4; font-size:6.25pt; line-height:1.25; }
+  .print-guide-block strong { font-size:7.25pt; }
+  .print-guide-swatch { display:inline-block; width:.12in; height:.12in; margin-right:.04in; border:.5pt solid #4a433b; vertical-align:middle; print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+  .print-guide-line { height:.09in; border-bottom:.5pt solid #c7beb4; }
 }
 </style>
 <style id="page-style">@page { size: 8.5in 11in; margin: 0; }</style>
@@ -720,12 +680,6 @@ button.primary {
 
       <div class="section">
         <div class="eyebrow">Exact-size print</div>
-        <div class="eyebrow" style="margin-top:10px">Printer margin</div>
-        <div class="preview-toolbar" style="padding:0 0 10px;border:0">
-          <button type="button" data-printer-margin="standard" class="active">Standard ¼″</button>
-          <button type="button" data-printer-margin="conservative">Conservative ½″</button>
-          <button type="button" data-printer-margin="borderless">Borderless</button>
-        </div>
         <div class="eyebrow" style="margin-top:10px">Block Plan orientation</div>
         <div class="preview-toolbar" style="padding:0 0 10px;border:0">
           <button type="button" data-layout-orientation="auto" class="active">Auto</button>
@@ -739,6 +693,10 @@ button.primary {
           <button type="button" data-composition-rotation="-90">90° counterclockwise</button>
         </div>
         <div class="status" id="page-plan"></div>
+        <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:13px">
+          <input type="checkbox" id="include-guide" checked>
+          Include Carve &amp; Inking Guide as the last page
+        </label>
         <div class="button-grid">
           <button type="button" id="print-letter">US Letter</button>
           <button type="button" id="print-a4">A4</button>
@@ -890,14 +848,8 @@ const TEST_COMPOSITION = {
   ],
 };
 
-const PRINTER_MARGIN_PRESETS = {
-  standard: { label: 'Standard ¼″', inches: 0.25 },
-  conservative: { label: 'Conservative ½″', inches: 0.5 },
-  borderless: { label: 'Borderless', inches: 0 },
-};
-const PRINT_HEADER_BAND = 0.18;
-const PRINT_FOOTER_BAND = 0.32;
-const PRINT_SIDE_RAIL = 0.5;
+const PRINT_PAGE_BUFFER = 0.125;
+const PRINT_GUIDE_MARGIN = 0.5;
 const PRINT_TILE_OVERLAP = 0.5;
 
 let currentComposition = TEST_COMPOSITION;
@@ -913,8 +865,7 @@ let transferMethod = 'hanshita';
 let masterView = 'keep';
 let showGuides = true;
 let layoutOrientation = 'auto';
-let printerMarginPreset = localStorage.getItem('mokuri-block-plan-printer-margin');
-if (!PRINTER_MARGIN_PRESETS[printerMarginPreset]) printerMarginPreset = 'standard';
+let includeGuide = true;
 let paperRevealColors = new Set();
 let arrangeBlocks = false;
 let blockOrderKeys = null;
@@ -1261,6 +1212,9 @@ function masterSvg(options) {
       ? Array.from(printBlockIds)
       : undefined,
     guides: showGuides,
+    annotations: opts.annotations === undefined
+      ? view === 'physical-proof'
+      : opts.annotations,
     crop: opts.crop,
     cropPaddingIn: opts.cropPaddingIn,
     idPrefix: opts.idPrefix,
@@ -1633,12 +1587,6 @@ function renderToolbar() {
   document.querySelectorAll('[data-layout-orientation]').forEach(button => {
     button.classList.toggle('active', button.dataset.layoutOrientation === layoutOrientation);
   });
-  document.querySelectorAll('[data-printer-margin]').forEach(button => {
-    button.classList.toggle(
-      'active',
-      button.dataset.printerMargin === printerMarginPreset
-    );
-  });
   byId('toggle-guides').classList.toggle('active', showGuides);
   byId('toggle-arrange-blocks').textContent = arrangeBlocks ? 'Done' : 'Arrange Blocks';
   byId('print-selection-actions').hidden = arrangeBlocks;
@@ -1684,6 +1632,7 @@ function rasterCacheKey(options, dpi) {
     view,
     proofSelection,
     showGuides ? 'guides' : 'clean',
+    options && options.annotations === false ? 'no-annotations' : 'annotations',
     options && options.crop || 'block',
     options && options.cropPaddingIn || 0,
     dpi,
@@ -1872,53 +1821,27 @@ function tileSlices(total, capacity, overlap) {
 }
 
 function printerPageFrame(page) {
-  const inset = PRINTER_MARGIN_PRESETS[printerMarginPreset].inches;
+  const inset = PRINT_PAGE_BUFFER;
   const safe = {
     x: inset,
     y: inset,
     width: page.width - inset * 2,
     height: page.height - inset * 2,
   };
-  if (page.orientation === 'landscape') {
-    return {
-      safe,
-      annotation: {
-        mode: 'rail',
-        x: safe.x + safe.width - PRINT_SIDE_RAIL,
-        y: safe.y,
-        width: PRINT_SIDE_RAIL,
-        height: safe.height,
-      },
-      transfer: {
-        x: safe.x,
-        y: safe.y,
-        width: safe.width - PRINT_SIDE_RAIL,
-        height: safe.height,
-      },
-    };
-  }
   return {
     safe,
-    annotation: {
-      mode: 'bands',
-      header: {
-        x: safe.x,
-        y: safe.y,
-        width: safe.width,
-        height: PRINT_HEADER_BAND,
-      },
-      footer: {
-        x: safe.x,
-        y: safe.y + safe.height - PRINT_FOOTER_BAND,
-        width: safe.width,
-        height: PRINT_FOOTER_BAND,
-      },
-    },
-    transfer: {
-      x: safe.x,
-      y: safe.y + PRINT_HEADER_BAND,
-      width: safe.width,
-      height: safe.height - PRINT_HEADER_BAND - PRINT_FOOTER_BAND,
+    transfer: Object.assign({}, safe),
+  };
+}
+
+function guidePageFrame(page) {
+  const inset = PRINT_GUIDE_MARGIN;
+  return {
+    safe: {
+      x: inset,
+      y: inset,
+      width: page.width - inset * 2,
+      height: page.height - inset * 2,
     },
   };
 }
@@ -1994,52 +1917,27 @@ function renderPrintPlan() {
   const a4 = calculatePrintLayout('a4');
   const blocks = selectedPrintBlocks();
   const describe = layout => {
-    const pageCount = layout.pageCount * blocks.length;
+    const pageCount = layout.pageCount * blocks.length + (includeGuide ? 1 : 0);
     const tiled = layout.type === 'tiled' ? ', tiled at 100%' : '';
     return `${layout.page.name} ${layout.page.orientation}: ${pageCount} page${pageCount === 1 ? '' : 's'}${tiled}`;
   };
   const mode = layoutOrientation === 'auto'
     ? 'Auto'
     : layoutOrientation[0].toUpperCase() + layoutOrientation.slice(1);
-  const margin = PRINTER_MARGIN_PRESETS[printerMarginPreset].label;
   const referenceView = masterView === 'physical-proof';
-  byId('print-letter').disabled = blocks.length === 0 || referenceView;
-  byId('print-a4').disabled = blocks.length === 0 || referenceView;
+  byId('print-letter').disabled = (!blocks.length && !includeGuide) || referenceView;
+  byId('print-a4').disabled = (!blocks.length && !includeGuide) || referenceView;
   const inkBlockCount = plan.blocks.filter(block => block.role === 'ink').length;
-  byId('page-plan').textContent = blocks.length
+  byId('page-plan').textContent = blocks.length || includeGuide
     ? referenceView
       ? 'Physical Proof is a reference view. Choose Block Surface or Carve Away to prepare physical block pages.'
-      : `${blocks.length} of ${inkBlockCount} ink blocks selected · ${margin} printer margin · ${mode} Block Plan — ${describe(letter)} · ${describe(a4)}.`
-    : 'No blocks selected. Choose at least one exact-color block to print.';
-}
-
-function printBlockFooter(block) {
-  const colors = block.colors && block.colors.length ? block.colors : [block.color];
-  const viewLabel = masterView === 'carve-away'
-    ? 'Carve-away map'
-    : masterView === 'proof' ? 'Isolated impression' : 'Block Surface';
-  const swatches = colors.map(color => `
-    <svg class="print-block-footer-swatch" viewBox="0 0 12 12" aria-label="${htmlEscape(color)}">
-      <rect x="0.4" y="0.4" width="11.2" height="11.2" rx="1.4"
-        fill="${htmlEscape(color)}" stroke="#4a433b" stroke-width="0.8"/>
-    </svg>
-  `).join('');
-  const hexLabel = colors.map(color => color.toUpperCase()).join(' + ');
-  return `
-    <div class="print-block-footer">
-      <div class="print-block-footer-note">Kento placement guide — choose final notch width and depth for your paper and carving practice</div>
-      <div class="print-block-footer-identity">
-        ${swatches}
-        <strong>${htmlEscape(block.name)} — ${viewLabel}</strong>
-        <span class="print-block-footer-hex">— ${htmlEscape(hexLabel)}</span>
-      </div>
-    </div>
-  `;
+      : `${blocks.length} of ${inkBlockCount} ink blocks selected${includeGuide ? ' · guide included last' : ''} · ${mode} Block Plan — ${describe(letter)} · ${describe(a4)}.`
+    : 'No block sheets or guide selected.';
 }
 
 function printCalibration() {
   return `
-    <svg class="print-calibration" aria-hidden="true" viewBox="0 0 2.35 0.18">
+    <svg class="print-guide-calibration" aria-hidden="true" viewBox="0 0 2.35 0.18">
       <path d="M0 0.08 H1 M0 0.03 V0.13 M1 0.03 V0.13 M1.25 0.08 H2.23425 M1.25 0.03 V0.13 M2.23425 0.03 V0.13" fill="none" stroke="#000" stroke-width="0.012"/>
       <text x="0.5" y="0.175" text-anchor="middle" font-family="Arial, sans-serif" font-size="0.08">1 inch</text>
       <text x="1.742" y="0.175" text-anchor="middle" font-family="Arial, sans-serif" font-size="0.08">25 mm</text>
@@ -2047,41 +1945,67 @@ function printCalibration() {
   `;
 }
 
-function printPageAnnotations(block, pageLabel, cropLabel, printLayout) {
-  const headerContent = `
-    <span>${htmlEscape(pageLabel)}</span>
-    ${cropLabel ? `<span>${htmlEscape(cropLabel)}</span>` : ''}
-  `;
-  const footerContent = `${printCalibration()}${printBlockFooter(block)}`;
-  const annotation = printLayout.frame.annotation;
-  if (annotation.mode === 'rail') {
-    return `
-      <div class="print-side-rail"
-        style="left:${annotation.x}in;top:${annotation.y}in;width:${annotation.width}in;height:${annotation.height}in">
-        <div class="print-side-rail-inner"
-          style="left:${annotation.width}in;width:${annotation.height}in;height:${annotation.width}in">
-          <div class="print-header-band"
-            style="left:0;top:0;width:${annotation.height}in;height:${PRINT_HEADER_BAND}in">
-            ${headerContent}
-          </div>
-          <div class="print-footer-band"
-            style="left:0;bottom:0;width:${annotation.height}in;height:${PRINT_FOOTER_BAND}in">
-            ${footerContent}
-          </div>
-        </div>
-      </div>
-    `;
-  }
+function printPageLabel(block, index, count, printLayout) {
+  const suffix = count > 1 ? ` · Sheet ${index + 1} of ${count}` : '';
   return `
-    <div class="print-header-band"
-      style="left:${annotation.header.x}in;top:${annotation.header.y}in;width:${annotation.header.width}in;height:${annotation.header.height}in">
-      ${headerContent}
-    </div>
-    <div class="print-footer-band"
-      style="left:${annotation.footer.x}in;top:${annotation.footer.y}in;width:${annotation.footer.width}in;height:${annotation.footer.height}in">
-      ${footerContent}
-    </div>
-  `;
+    <div class="print-label"
+      style="left:${printLayout.frame.safe.x + 0.04}in;top:${printLayout.frame.safe.y + 0.04}in">
+      Block ${block.printOrder} — ${htmlEscape(block.name)}${suffix}
+    </div>`;
+}
+
+function printGuideBlock(block) {
+  const colors = block.colors && block.colors.length ? block.colors : [block.color];
+  const notes = [];
+  notes.push(colors.length > 1 ? 'Ink color areas selectively.' : 'Apply an even impression.');
+  (block.bokashi || []).forEach(item =>
+    notes.push(item.description || `Bokashi ${item.direction || ''}`.trim())
+  );
+  if (block.nearPaper) notes.push('Confirm this near-paper ink before carving.');
+  return `
+    <div class="print-guide-block">
+      <div>${colors.map(color =>
+        `<span class="print-guide-swatch" style="background:${htmlEscape(color)}"></span>`
+      ).join('')}<strong>${block.printOrder}. ${htmlEscape(block.name)}</strong></div>
+      <div>${htmlEscape(colors.map(color =>
+        `${MokuriColorNames.get(color) || 'Ink'} · ${color.toUpperCase()}`
+      ).join(' + '))}</div>
+      <div>${htmlEscape(notes.join(' '))}</div>
+      <div class="print-guide-line"></div>
+    </div>`;
+}
+
+function printGuide(printLayout, blocks) {
+  const safe = guidePageFrame(printLayout.page).safe;
+  const landscape = printLayout.page.orientation === 'landscape';
+  const split = landscape ? Math.ceil(blocks.length / 2) : blocks.length;
+  const columns = landscape
+    ? [blocks.slice(0, split), blocks.slice(split)]
+    : [blocks];
+  const transferLabel = transferMethod === 'hanshita'
+    ? 'Face-down hanshita'
+    : 'Carbon / graphite';
+  return `
+    <div class="print-guide"
+      style="left:${safe.x}in;top:${safe.y}in;width:${safe.width}in;height:${safe.height}in">
+      <h1>Mokuri Carve &amp; Inking Guide</h1>
+      <dl class="print-guide-meta">
+        <dt>Composition</dt><dd>${htmlEscape(plan.compositionName)}</dd>
+        <dt>Paper</dt><dd>${htmlEscape(plan.layout.paperName)} · ${plan.layout.paper.width.toFixed(2)} × ${plan.layout.paper.height.toFixed(2)} in</dd>
+        <dt>Image</dt><dd>${plan.layout.image.width.toFixed(2)} × ${plan.layout.image.height.toFixed(2)} in</dd>
+        <dt>Transfer</dt><dd>${transferLabel}</dd>
+        <dt>Blocks</dt><dd>${blocks.length} in printing order</dd>
+      </dl>
+      <div class="print-guide-setup">
+        ${printCalibration()}
+        Print at Actual Size / 100% and verify both marks. Use identical kento geometry on every block.
+      </div>
+      <div class="print-guide-blocks${landscape ? ' landscape' : ''}">
+        ${columns.map(column => `<div class="print-guide-column">${column.map(printGuideBlock).join('')}</div>`).join('')}
+      </div>
+      <strong style="font-size:6.5pt">Workshop notes</strong>
+      <div class="print-guide-line"></div><div class="print-guide-line"></div>
+    </div>`;
 }
 
 async function preparePrint(pageType) {
@@ -2090,8 +2014,8 @@ async function preparePrint(pageType) {
     return;
   }
   const blocks = selectedPrintBlocks();
-  if (!blocks.length) {
-    setStatus('Choose at least one exact-color block to print.', false);
+  if (!blocks.length && !includeGuide) {
+    setStatus('Choose at least one block or include the guide.', false);
     return;
   }
   const printLayout = calculatePrintLayout(pageType);
@@ -2110,6 +2034,7 @@ async function preparePrint(pageType) {
         blockId: block.id,
         crop: 'master',
         cropPaddingIn: 0,
+        annotations: false,
       }, 300);
       const url = URL.createObjectURL(rasterBlob);
       activePrintUrls.push(url);
@@ -2129,13 +2054,12 @@ async function preparePrint(pageType) {
     if (printLayout.type === 'single') {
       const left = transfer.x + (transfer.width - bounds.width) / 2;
       const top = transfer.y + (transfer.height - bounds.height) / 2;
-      const pageLabel = `${plan.compositionName} · Block ${block.printOrder}: ${block.name} · page 1/1 · ${transferMethod === 'hanshita' ? 'Hanshita' : 'Carbon'} · Actual Size / 100%`;
       pages.push(`
         <section class="print-page" style="width:${page.width}in;height:${page.height}in">
           <div class="tile-window" style="left:${left}in;top:${top}in;width:${bounds.width}in;height:${bounds.height}in">
             <img src="${url}" alt="" style="width:${bounds.width}in;height:${bounds.height}in;top:0">
           </div>
-          ${printPageAnnotations(block, pageLabel, '', printLayout)}
+          ${printPageLabel(block, 0, 1, printLayout)}
         </section>
       `);
       return;
@@ -2143,19 +2067,24 @@ async function preparePrint(pageType) {
     printLayout.tiles.forEach((tile, index) => {
       const left = transfer.x + (transfer.width - tile.width) / 2;
       const top = transfer.y + (transfer.height - tile.height) / 2;
-      const pageLabel = `${plan.compositionName} · Block ${block.printOrder}: ${block.name} · page ${index + 1}/${printLayout.tiles.length} · ${transferMethod === 'hanshita' ? 'Hanshita' : 'Carbon'} · Actual Size / 100%`;
-      const cropLabel = `Master crop X ${tile.x.toFixed(2)}–${(tile.x + tile.width).toFixed(2)} in · Y ${tile.y.toFixed(2)}–${(tile.y + tile.height).toFixed(2)} in`;
       pages.push(`
         <section class="print-page" style="width:${page.width}in;height:${page.height}in">
           <div class="tile-window" style="left:${left}in;top:${top}in;width:${tile.width}in;height:${tile.height}in">
             <img src="${url}" alt=""
               style="width:${bounds.width}in;height:${bounds.height}in;left:${-tile.x}in;top:${-tile.y}in">
           </div>
-          ${printPageAnnotations(block, pageLabel, cropLabel, printLayout)}
+          ${printPageLabel(block, index, printLayout.tiles.length, printLayout)}
         </section>
       `);
     });
   });
+  if (includeGuide) {
+    pages.push(`
+      <section class="print-page" style="width:${page.width}in;height:${page.height}in">
+        ${printGuide(printLayout, blocks)}
+      </section>
+    `);
+  }
   root.innerHTML = pages.join('');
   try {
     await Promise.all(Array.from(root.querySelectorAll('.tile-window > img'))
@@ -2165,13 +2094,12 @@ async function preparePrint(pageType) {
     setStatus('Print preparation failed: one or more block masters could not be decoded.', false);
     return;
   }
-  const totalPages = printLayout.pageCount * blocks.length;
-  const marginLabel = PRINTER_MARGIN_PRESETS[printerMarginPreset].label;
+  const totalPages = printLayout.pageCount * blocks.length + (includeGuide ? 1 : 0);
   const tilingReason = printLayout.type === 'tiled'
-    ? ` The ${marginLabel.toLowerCase()} safe area and annotation space require tiling; the master remains at 100%.`
+    ? ' The fixed 1/8-inch page buffer requires tiling; the master remains at 100%.'
     : '';
   setStatus(
-    `${blocks.length} blocks prepared as ${totalPages} ${page.name} ${page.orientation} page${totalPages === 1 ? '' : 's'} with ${marginLabel.toLowerCase()}. Print at Actual Size / 100%.${tilingReason}`,
+    `${blocks.length} blocks${includeGuide ? ' plus guide' : ''} prepared as ${totalPages} ${page.name} ${page.orientation} page${totalPages === 1 ? '' : 's'}. Print at Actual Size / 100%.${tilingReason}`,
     true
   );
   requestAnimationFrame(() => {
@@ -2300,14 +2228,6 @@ document.querySelectorAll('[data-layout-orientation]').forEach(button => {
   });
 });
 
-document.querySelectorAll('[data-printer-margin]').forEach(button => {
-  button.addEventListener('click', () => {
-    printerMarginPreset = button.dataset.printerMargin;
-    localStorage.setItem('mokuri-block-plan-printer-margin', printerMarginPreset);
-    render();
-  });
-});
-
 document.querySelectorAll('[data-composition-rotation]').forEach(button => {
   button.addEventListener('click', () => {
     compositionRotation = Number(button.dataset.compositionRotation);
@@ -2388,6 +2308,10 @@ byId('download-svg').addEventListener('click', downloadSvg);
 byId('download-png').addEventListener('click', downloadPng);
 byId('print-letter').addEventListener('click', () => preparePrint('letter'));
 byId('print-a4').addEventListener('click', () => preparePrint('a4'));
+byId('include-guide').addEventListener('change', event => {
+  includeGuide = event.target.checked;
+  renderPrintPlan();
+});
 window.addEventListener('unload', () => {
   if (activePreviewUrl) URL.revokeObjectURL(activePreviewUrl);
 });
