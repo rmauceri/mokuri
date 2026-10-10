@@ -2,7 +2,7 @@
 
 **Status:** Production integration in progress
 **Date:** September 15, 2026
-**Updated:** October 5, 2026
+**Updated:** October 10, 2026
 **Initial target:** Dev-only workshop prototype
 
 ## Implementation Status
@@ -108,6 +108,9 @@ The development engine and harness now also support:
 - Editable Ink and Paper Reveal proposal roles
 - Paper Reveal masks that preserve visual stacking while generating no
   physical block
+- Paper Reveal references remain individually selectable for output, print
+  after numbered ink blocks, and retain the same physical paper placement and
+  outline while omitting kento marks
 - One authoritative dark-gray Block Surface master using native area edges and
   native detail strokes, without generated contour expansion
 - Hanshita and Carbon output profiles derived from the same Block Surface
@@ -136,6 +139,11 @@ The development engine and harness now also support:
 - One optional first Atmosphere block containing separate background and
   foreground fields with their own colors and bokashi instructions
 - A normal-reading Physical Proof composed only from proposed ink blocks
+- Production Block Plan arrangement controls in the left pane: inline Ink /
+  Paper role selection, direct pointer or keyboard print-order manipulation,
+  and target-based Combine / Separate actions
+- Serialized Paper Reveal colors, custom print order, and merged-block groups
+  in composition save data so workshop arrangements survive reloads
 
 Current spike limitations:
 
@@ -149,9 +157,6 @@ Current spike limitations:
   review in `dev/palette-name-review.html`. The review page links exact hex
   matches, persists edits locally, and exports only corrections from the
   initial proposal.
-- Block merges currently persist across layout and output changes within the
-  active harness session, but assignment overrides are not yet serialized into
-  composition data.
 - Legacy element-wide carve-pattern assignments still require review; current
   freehand Pattern-tool strokes are represented in production masks.
 - Physical-detail analysis currently covers narrow strokes and pattern marks;
@@ -602,9 +607,9 @@ add names for previously unseen hex values; validation reports any missing
 entries. The nearest-family classifier remains deliberately secondary so
 custom literal colors still receive useful Block Plan names.
 
-Palette IDs must also be unique across Creative Styles. The original Core and
-Kachō-e autumn palettes both used `aki`; legacy `aki` remains the Kachō-e ID,
-while the previously shadowed Core palette now uses `core-aki`.
+Palette IDs must also be unique across Creative Styles. Core retains its
+original `aki` ID, while the Kachō-e autumn-foliage palette uses
+`kacho-koyo` and the distinct artist-facing name Kōyō 紅葉.
 
 ### Paper-colored and transparent areas
 

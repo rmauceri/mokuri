@@ -17,9 +17,9 @@ const MOKURI_KACHOE_PALETTES = {
     pack: 'kacho-e',
     colors: ['#1A365D', '#E88BA8', '#2D6A4F', '#4A90E2', '#D4A574']
   },
-  aki: {
-    name: 'Aki 秋',
-    nameJa: '秋',
+  'kacho-koyo': {
+    name: 'Kōyō 紅葉',
+    nameJa: '紅葉',
     pack: 'kacho-e',
     colors: ['#8B4A2A', '#C4862A', '#4A5A30', '#D4603A', '#E8C878']
   },
@@ -142,7 +142,7 @@ registerPack({
       ],
     },
   ],
-  paletteIds: ['haru', 'natsu', 'aki', 'kan'],
+  paletteIds: ['haru', 'natsu', 'kacho-koyo', 'kan'],
   presetIds: null,
   atmospherePresets: [
     { id: 'ke-spring-air', name: 'Spring Air', nameJa: '春風', background: 'sakura', foreground: 'none', horizon: 0.80, mist: 0, smoothHorizon: false },

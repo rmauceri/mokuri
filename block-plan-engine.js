@@ -1637,20 +1637,42 @@
     if (!block) throw new Error('Block Plan has no color blocks');
     if (view === 'paper-mask' || block.role === 'paper') {
       const paperMaskTitle = `${plan.compositionName} — ${block.name} — Paper Reveal Mask`;
-      const paperGuides = opts.guides === false || opts.annotations === false
-        ? ''
-        : referenceGuideSvg(
-            plan,
-            'PAPER REVEAL MASK — NORMAL READING',
-            'Black must remain unprinted; no physical block',
-            layout.paper,
-            layout.image
-          );
+      const isHanshita = method === 'hanshita';
+      const paperRect = isHanshita
+        ? mirrorRect(layout.paper, layout.block.width)
+        : layout.paper;
+      const imageRect = isHanshita
+        ? mirrorRect(layout.image, layout.block.width)
+        : layout.image;
+      let artwork = buildArtwork(
+        plan,
+        block,
+        'solid',
+        imageRect,
+        `${idPrefix}-paper-mask`
+      );
+      if (!isHanshita) {
+        const axis = imageRect.x * 2 + imageRect.width;
+        artwork = `<g transform="translate(${round(axis)} 0) scale(-1 1)">${artwork}</g>`;
+      }
+      const paperOutline =
+        `<rect x="${round(paperRect.x)}" y="${round(paperRect.y)}" width="${round(paperRect.width)}" height="${round(paperRect.height)}" fill="none" stroke="#9d9488" stroke-width="0.015" stroke-dasharray="0.09 0.06"/>`;
+      const paperGuides = opts.guides === false
+        ? paperOutline
+        : guideGeometrySvg(plan, paperRect, imageRect);
+      const viewport = opts.crop === 'master'
+        ? getMasterBounds(plan, method, opts.cropPaddingIn)
+        : {
+            x: 0,
+            y: 0,
+            width: layout.block.width,
+            height: layout.block.height,
+          };
       return [
-        `<svg xmlns="${SVG_NS}" width="${round(layout.block.width)}in" height="${round(layout.block.height)}in" viewBox="0 0 ${round(layout.block.width)} ${round(layout.block.height)}" role="img" aria-label="${esc(paperMaskTitle)}">`,
-        `<rect x="0" y="0" width="${round(layout.block.width)}" height="${round(layout.block.height)}" fill="#fff"/>`,
+        `<svg xmlns="${SVG_NS}" width="${round(viewport.width)}in" height="${round(viewport.height)}in" viewBox="${round(viewport.x)} ${round(viewport.y)} ${round(viewport.width)} ${round(viewport.height)}" role="img" aria-label="${esc(paperMaskTitle)}">`,
+        `<rect x="${round(viewport.x)}" y="${round(viewport.y)}" width="${round(viewport.width)}" height="${round(viewport.height)}" fill="#fff"/>`,
         paperGuides,
-        buildArtwork(plan, block, 'solid', layout.image, `${idPrefix}-paper-mask`),
+        artwork,
         opts.annotations === false
           ? ''
           : `<text x="${round(layout.block.width / 2)}" y="${round(layout.block.height - 0.22)}" text-anchor="middle" font-family="Arial, sans-serif" font-size="0.14">${esc(paperMaskTitle)}</text>`,

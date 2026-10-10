@@ -236,7 +236,7 @@ registerPack({
 
   paletteIds: [
     'sumi', 'edo', 'hokusai', 'hiroshige', 'sakura',
-    'core-aki', 'yoru', 'fuyu', 'beni', 'matcha',
+    'aki', 'yoru', 'fuyu', 'beni', 'matcha',
   ],
 
   presetIds: null, // all MOKURI_GALLERY_PRESETS belong to core

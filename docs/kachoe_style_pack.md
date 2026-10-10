@@ -320,7 +320,7 @@ Natsu provides dramatic contrast — deep indigo bodies against bright pink peta
 ### Palette Expansion Opportunity
 
 Future palettes could cover the remaining seasons:
-- **Aki 秋** (Autumn) — exists in Core, but a kacho-e-specific version emphasizing warm ochres, deep reds, and dark greens could pair with maple and chrysanthemum compositions.
+- **Kōyō 紅葉** (Autumn foliage) — a Kachō-e-specific palette emphasizing warm ochres, deep reds, and dark greens for maple and chrysanthemum compositions.
 - **Fuyu 冬** (Winter) — muted grays, pale blue, bare brown. For winter bird studies (egret in snow, heron by frozen pond).
 
 ---
@@ -418,7 +418,7 @@ registerPack({
     'heron-standing', 'bush-warbler', 'swallow-flight', 'kingfisher', 'egret',
     'peony', 'lotus-pod', 'lotus-cluster', 'lily-pad', 'morning-glory', 'wisteria',
   ],
-  paletteIds: ['haru', 'natsu'],
+  paletteIds: ['haru', 'natsu', 'kacho-koyo', 'kan'],
   presetIds: null,
   journeys: [...],
   prompts: [...],

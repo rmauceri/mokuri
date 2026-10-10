@@ -6,7 +6,7 @@ const MOKURI_CORE_PALETTES = {
   hokusai:   { name: 'Hokusai',       pack: 'core', colors: ['#1b3a6b', '#4a90c4', '#f5f0e1', '#8b4513', '#3a3a3a'] },
   hiroshige: { name: 'Hiroshige',     pack: 'core', colors: ['#1b4872', '#8aafc4', '#b8a89a', '#5a7a6a', '#c07a7a'] },
   sakura:    { name: 'Sakura 桜',     pack: 'core', colors: ['#c47a90', '#8fb573', '#f5f0e1', '#7a5c47', '#d4a0a0'] },
-  'core-aki': { name: 'Aki 秋',       pack: 'core', colors: ['#b33a2a', '#d4a030', '#c46a20', '#3a5c3a', '#5c3a2a'] },
+  aki:       { name: 'Aki 秋',         pack: 'core', colors: ['#b33a2a', '#d4a030', '#c46a20', '#3a5c3a', '#5c3a2a'] },
   yoru:      { name: 'Yoru 夜',       pack: 'core', colors: ['#1a1a3a', '#8a8aaa', '#c4b870', '#5a4a6a', '#2a2a4a'] },
   fuyu:      { name: 'Fuyu 冬',       pack: 'core', colors: ['#4a6a7a', '#a0b8c4', '#e8e4dc', '#6a5a48', '#2a3a3a'] },
   beni:      { name: 'Beni 紅',       pack: 'core', colors: ['#b83a3a', '#d4826a', '#e8c870', '#f5efe0', '#4a3030'] },

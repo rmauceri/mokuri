@@ -1205,6 +1205,41 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
   line-height: 1.4;
   margin-top: 6px;
 }
+.is-block-plan-progress {
+  margin: 8px auto 0;
+  max-width: calc(var(--studio-w) - 32px);
+}
+.is-block-plan-progress[hidden] { display: none; }
+.is-block-plan-progress-track {
+  height: 3px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--panel-border);
+}
+.is-block-plan-progress-bar {
+  display: block;
+  width: 42%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  animation: block-plan-progress 1.15s ease-in-out infinite;
+}
+.is-block-plan-progress-text {
+  color: var(--text-muted);
+  font-size: 10px;
+  line-height: 1.4;
+  margin-top: 5px;
+}
+@keyframes block-plan-progress {
+  from { transform: translateX(-110%); }
+  to { transform: translateX(245%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .is-block-plan-progress-bar {
+    width: 100%;
+    animation: none;
+  }
+}
 .is-block-plan-btn {
   width: 100%;
   max-width: calc(var(--studio-w) - 32px);
@@ -1223,6 +1258,10 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
   transition: background 0.15s;
 }
 .is-block-plan-btn:hover { background: var(--accent-hover); }
+.is-block-plan-btn:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
 
 .block-plan-modal {
   position: fixed;
@@ -1352,8 +1391,9 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
   background: #eee5d8;
 }
 .bp-block-card {
+  position: relative;
   display: grid;
-  grid-template-columns: auto auto minmax(0, 1fr) 24px;
+  grid-template-columns: auto auto minmax(0, 1fr) auto 26px;
   align-items: center;
   gap: 8px;
   width: 100%;
@@ -1367,11 +1407,34 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
   cursor: pointer;
 }
 .bp-block-card:hover { border-color: var(--accent); }
+.bp-block-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
 .bp-block-card.active {
   border-color: var(--accent);
   background: var(--selection);
 }
+.bp-block-card.merge-target {
+  border-style: dashed;
+  border-color: var(--accent);
+}
+.bp-block-card.drag-source { opacity: 0.52; }
+.bp-block-card.drop-before::before,
+.bp-block-card.drop-after::after {
+  content: '';
+  position: absolute;
+  z-index: 2;
+  left: 6px;
+  right: 6px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+.bp-block-card.drop-before::before { top: -4px; }
+.bp-block-card.drop-after::after { bottom: -4px; }
 .bp-block-card.guide {
+  grid-template-columns: auto auto minmax(0, 1fr) 38px;
   margin-top: 10px;
   border-top-color: #d8cbb9;
 }
@@ -1390,6 +1453,23 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
   font-weight: 700;
   text-align: center;
 }
+.bp-block-order.draggable {
+  display: grid;
+  place-items: center;
+  align-self: stretch;
+  min-height: 28px;
+  border-radius: 5px;
+  cursor: grab;
+  touch-action: none;
+}
+.bp-block-order.draggable::before {
+  content: '⋮';
+  margin-bottom: -4px;
+  color: #ad9c89;
+  font-size: 12px;
+  line-height: 0.7;
+}
+.bp-block-order.draggable:active { cursor: grabbing; }
 .bp-block-swatch {
   width: 22px;
   height: 22px;
@@ -1426,6 +1506,58 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
   font-size: 9px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.bp-block-role {
+  min-width: 42px;
+  border: 1px solid #cdbfac;
+  border-radius: 999px;
+  background: transparent;
+  color: #776957;
+  padding: 4px 7px;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  cursor: pointer;
+}
+.bp-block-role:hover { border-color: var(--accent); }
+.bp-block-role.paper {
+  border-color: #74695d;
+  background: #74695d;
+  color: #fff;
+}
+.bp-block-role.disabled {
+  cursor: default;
+  opacity: 0.52;
+}
+.bp-block-arrange-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #d5c8b7;
+}
+.bp-block-arrange-actions button {
+  border: 1px solid #c9baa6;
+  border-radius: var(--radius);
+  background: #f7f1e7;
+  color: #665747;
+  padding: 6px 9px;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.bp-block-arrange-actions button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.bp-block-arrange-note {
+  flex: 1 0 100%;
+  color: #806f5d;
+  font-size: 10px;
+  line-height: 1.4;
 }
 .bp-preview-toolbar {
   display: flex;
@@ -1480,6 +1612,19 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
   background: #fff;
   box-shadow: 0 6px 22px rgba(55,42,28,0.24);
   overflow: hidden;
+}
+.bp-print-preview {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.bp-print-preview-pages {
+  position: absolute;
+  transform-origin: 0 0;
+}
+.bp-print-preview .bp-print-page {
+  position: absolute;
+  box-shadow: 0 6px 22px rgba(55,42,28,0.24);
 }
 .bp-guide-sheet {
   position: absolute;
@@ -1566,23 +1711,31 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
   gap: 0.055in;
 }
 .bp-guide-block {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 0.08in;
   border-bottom: 1px solid #c7beb4;
   padding: 0.035in 0 0.055in;
 }
+.bp-guide-swatches {
+  display: flex;
+  gap: 0.035in;
+}
+.bp-guide-block-body { min-width: 0; }
 .bp-guide-block-heading {
   display: flex;
   align-items: center;
-  gap: 0.055in;
   font-size: 7.25pt;
   line-height: 1.2;
 }
 .bp-guide-block-heading strong { flex: 1 1 auto; }
 .bp-guide-swatch {
-  width: 0.13in;
-  height: 0.13in;
+  width: 0.46in;
+  height: 0.46in;
   flex: 0 0 auto;
   border: 0.5pt solid #4a433b;
-  border-radius: 1px;
+  border-radius: 2px;
   print-color-adjust: exact;
   -webkit-print-color-adjust: exact;
 }
@@ -1766,6 +1919,39 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
   text-transform: uppercase;
 }
 #block-plan-print-root { display: none; }
+.bp-print-page {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+}
+.bp-print-tile-window {
+  position: absolute;
+  overflow: hidden;
+}
+.bp-print-tile-window > img,
+.bp-print-tile-window > svg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  max-width: none;
+}
+.bp-print-label {
+  position: absolute;
+  z-index: 2;
+  max-width: calc(100% - 0.58in);
+  padding: 0.025in 0.045in;
+  border: 0.5pt solid #b8b0a7;
+  border-radius: 0.025in;
+  background: rgba(255,255,255,0.94);
+  color: #111;
+  font: 7pt Arial, sans-serif;
+  line-height: 0.13in;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .bp-custom-inline {
   margin-top: 8px;
   border: 1px solid var(--panel-border);
@@ -1981,41 +2167,12 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
     overflow: visible;
   }
   .bp-print-page {
-    display: block;
-    position: relative;
-    overflow: hidden;
     break-after: page;
     page-break-after: always;
-    background: #fff;
   }
   .bp-print-page:last-child {
     break-after: auto;
     page-break-after: auto;
-  }
-  .bp-print-tile-window {
-    position: absolute;
-    overflow: hidden;
-  }
-  .bp-print-tile-window > img {
-    position: absolute;
-    left: 0;
-    display: block;
-    max-width: none;
-  }
-  .bp-print-label {
-    position: absolute;
-    z-index: 2;
-    max-width: calc(100% - 0.58in);
-    padding: 0.025in 0.045in;
-    border: 0.5pt solid #b8b0a7;
-    border-radius: 0.025in;
-    background: rgba(255,255,255,0.94);
-    color: #111;
-    font: 7pt Arial, sans-serif;
-    line-height: 0.13in;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 }
 
@@ -2798,6 +2955,11 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
 }
 .is-accent-swatch:hover { transform: scale(1.2); border-color: var(--accent); border-style: solid; }
 .is-accent-swatch.active { border-color: var(--accent); border-style: solid; }
+.is-accent-current-label {
+  color: var(--text-muted);
+  font-size: 8px;
+  white-space: nowrap;
+}
 /* Bokashi direction */
 .is-bokashi-row {
   display: flex; gap: 4px;
@@ -3773,10 +3935,17 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
           <div id="is-atmo-content"></div>
         </div>
 
-        <div class="is-block-plan-section">
+        <div class="is-block-plan-section" id="is-block-plan-section">
           <div class="ps-section-label">Physical Printmaking</div>
           <div class="is-block-plan-hint">Translate this composition into carving blocks.</div>
           <button class="is-block-plan-btn" id="is-edit-block-plan">Edit Block Plan</button>
+          <div class="is-block-plan-progress" id="is-block-plan-progress"
+               role="status" aria-live="polite" hidden>
+            <div class="is-block-plan-progress-track" aria-hidden="true">
+              <span class="is-block-plan-progress-bar"></span>
+            </div>
+            <div class="is-block-plan-progress-text" id="is-block-plan-progress-text"></div>
+          </div>
           <div class="is-block-plan-summary" id="is-block-plan-summary"></div>
         </div>
 
@@ -4219,7 +4388,7 @@ rebuildElementMap();
 // ============================================================
 //  VERSION
 // ============================================================
-const MOKURI_VERSION = '1.09';
+const MOKURI_VERSION = '1.10';
 
 // ============================================================
 //  FEEDBACK
@@ -4402,11 +4571,14 @@ const STATE = {
 
   // Physical printmaking
   blockPlan: {
-    schemaVersion: 1,
+    schemaVersion: 2,
     paperPreset: '8x10',
     customPaper: { widthIn: 8, heightIn: 10 },
     blockOrientation: 'auto',
     compositionRotation: 0,
+    paperRevealColors: [],
+    blockOrderKeys: null,
+    mergedBlockGroups: [],
     inclusions: {},
     includeGuide: true,
     lastSummary: null,
@@ -4450,16 +4622,42 @@ function colorDist(a, b) {
   return Math.sqrt(2 * (r1 - r2) ** 2 + 4 * (g1 - g2) ** 2 + 3 * (b1 - b2) ** 2);
 }
 function getAccentColors(paletteId, count = 5) {
-  const current = PALETTES[paletteId].colors;
+  const currentPalette = PALETTES[paletteId];
+  if (!currentPalette) return [];
+  const current = currentPalette.colors.map(color => MokuriColorNames.normalize(color));
+  const currentPack = currentPalette.pack || 'core';
+  const seenColors = new Set();
   const candidates = [];
-  Object.entries(PALETTES).forEach(([pid, pal]) => {
-    if (pid === paletteId) return;
-    pal.colors.forEach(c => {
-      const minDist = Math.min(...current.map(cc => colorDist(c, cc)));
-      candidates.push({ color: c, dist: minDist, from: pal.name });
+  Object.entries(PALETTES)
+    .filter(([pid, palette]) => {
+      if (pid === paletteId) return false;
+      const candidatePack = palette.pack || 'core';
+      return candidatePack === 'core' || candidatePack === currentPack;
+    })
+    .sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)
+    .forEach(([pid, palette]) => {
+      palette.colors.forEach((color, slot) => {
+        const normalized = MokuriColorNames.normalize(color);
+        if (seenColors.has(normalized)) return;
+        seenColors.add(normalized);
+        const minDist = Math.min(...current.map(candidate =>
+          colorDist(normalized, candidate)
+        ));
+        candidates.push({
+          color: normalized,
+          dist: minDist,
+          from: palette.name,
+          paletteId: pid,
+          slot,
+        });
+      });
     });
-  });
-  candidates.sort((a, b) => b.dist - a.dist);
+  candidates.sort((a, b) =>
+    b.dist - a.dist
+    || (a.paletteId < b.paletteId ? -1 : a.paletteId > b.paletteId ? 1 : 0)
+    || a.slot - b.slot
+    || (a.color < b.color ? -1 : a.color > b.color ? 1 : 0)
+  );
   const accents = [];
   for (const c of candidates) {
     if (accents.some(a => colorDist(a.color, c.color) < 50)) continue;
@@ -4820,7 +5018,7 @@ const SCENE_PRESETS = {
   },
   autumn: {
     name: 'Autumn Crossing',
-    palette: 'core-aki',
+    palette: 'aki',
     paperType: 'kozo',
     background: 'dusk', foreground: 'earth', horizon: 0.52, mist: 1,
     // Thirds: bridge spans lower-third line, crane at left-lower power point, willow at right-third
@@ -7252,7 +7450,8 @@ function applyCompositionData(data) {
   }
   STATE.elements = data.elements || [];
   STATE.nextId = data.nextId || (STATE.elements.length ? Math.max(...STATE.elements.map(e => e.id)) + 1 : 1);
-  STATE.paletteId = data.paletteId || 'edo';
+  const savedPaletteId = data.paletteId === 'core-aki' ? 'aki' : data.paletteId;
+  STATE.paletteId = PALETTES[savedPaletteId] ? savedPaletteId : 'edo';
   if (data.paperW) STATE.paperW = data.paperW;
   if (data.paperH) STATE.paperH = data.paperH;
   STATE.paperType = data.paperType || 'kozo';
@@ -7276,7 +7475,7 @@ function applyCompositionData(data) {
   STATE.presentationDeckle = data.presentationDeckle ?? true;
   const savedBlockPlan = data.blockPlan || {};
   STATE.blockPlan = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     paperPreset: (
       MokuriBlockPlan.PAPER_PRESETS[savedBlockPlan.paperPreset]
       || savedBlockPlan.paperPreset === 'custom'
@@ -7287,6 +7486,18 @@ function applyCompositionData(data) {
     },
     blockOrientation: savedBlockPlan.blockOrientation || 'auto',
     compositionRotation: Number(savedBlockPlan.compositionRotation) || 0,
+    paperRevealColors: Array.isArray(savedBlockPlan.paperRevealColors)
+      ? savedBlockPlan.paperRevealColors.filter(color => typeof color === 'string')
+      : [],
+    blockOrderKeys: Array.isArray(savedBlockPlan.blockOrderKeys)
+      ? savedBlockPlan.blockOrderKeys.filter(key => typeof key === 'string')
+      : null,
+    mergedBlockGroups: Array.isArray(savedBlockPlan.mergedBlockGroups)
+      ? savedBlockPlan.mergedBlockGroups
+          .filter(group => Array.isArray(group))
+          .map(group => group.filter(key => typeof key === 'string'))
+          .filter(group => group.length > 1)
+      : [],
     inclusions: savedBlockPlan.inclusions && typeof savedBlockPlan.inclusions === 'object'
       ? savedBlockPlan.inclusions
       : {},
@@ -10789,9 +11000,32 @@ function buildInkStudioUI() {
           aLabel.className = 'is-accent-label';
           aLabel.textContent = 'Accent';
           accentRow.appendChild(aLabel);
+          const normalizedOverride = typeof rawOverride === 'string'
+            ? MokuriColorNames.normalize(rawOverride)
+            : null;
+          const savedAccentIsSuggested = normalizedOverride && accents.some(accent =>
+            MokuriColorNames.normalize(accent.color) === normalizedOverride
+          );
+          if (normalizedOverride && !savedAccentIsSuggested) {
+            const currentLabel = document.createElement('span');
+            currentLabel.className = 'is-accent-current-label';
+            currentLabel.textContent = 'Current';
+            const currentSwatch = document.createElement('div');
+            currentSwatch.className = 'is-accent-swatch active';
+            currentSwatch.style.background = rawOverride;
+            const currentName = MokuriColorNames.get(rawOverride) || rawOverride;
+            currentSwatch.title = `Current saved accent · ${currentName}`;
+            currentSwatch.setAttribute(
+              'aria-label',
+              `Current saved accent: ${currentName}`
+            );
+            accentRow.append(currentLabel, currentSwatch);
+          }
           accents.forEach(a => {
             const as = document.createElement('div');
-            as.className = 'is-accent-swatch' + (typeof rawOverride === 'string' && rawOverride === a.color ? ' active' : '');
+            const active = normalizedOverride
+              && normalizedOverride === MokuriColorNames.normalize(a.color);
+            as.className = 'is-accent-swatch' + (active ? ' active' : '');
             as.style.background = a.color;
             const colorName = MokuriColorNames.get(a.color) || a.color;
             as.title = `${colorName} · ${a.from}`;
@@ -11056,11 +11290,15 @@ let _blockPlanMaster = localStorage.getItem('mokuri-block-plan-master') || 'keep
 let _blockPlanPage = localStorage.getItem('mokuri-block-plan-page') || 'letter';
 let _blockPlanRasterSerial = 0;
 let _blockPlanPrintUrls = [];
+let _blockPlanOpening = false;
+let _blockPlanMergeSourceKey = null;
+let _blockPlanDrag = null;
 const _blockPlanRasterCache = new WeakMap();
 const BLOCK_PLAN_GUIDE_KEY = '__carve-inking-guide__';
 const BLOCK_PLAN_PRINT_BUFFER = 0.125;
 const BLOCK_PLAN_GUIDE_MARGIN = 0.5;
 const BLOCK_PLAN_PRINT_OVERLAP = 0.5;
+const BLOCK_PLAN_PREVIEW_PAGE_GAP = 0.18;
 
 function blockPlanSettings(overrides) {
   return Object.assign({}, STATE.blockPlan, overrides || {});
@@ -11082,10 +11320,11 @@ function createCurrentBlockPlan(overrides) {
   const palette = PALETTES[STATE.paletteId] || PALETTES.edo;
   const composition = getCompositionData();
   composition.name = STATE.compositionName || 'Untitled Print';
-  return MokuriBlockPlan.createPlan({
+  const plan = MokuriBlockPlan.createPlan({
     composition,
     definitions: MOKURI_ELEMENTS,
     palette: palette.colors,
+    paperRevealColors: settings.paperRevealColors || [],
     layout: {
       paperPreset: settings.paperPreset,
       customPaper: settings.customPaper,
@@ -11096,6 +11335,133 @@ function createCurrentBlockPlan(overrides) {
       paperOrientation: orientation,
     },
   });
+  applyBlockPlanMerges(plan, settings.mergedBlockGroups || []);
+  applyBlockPlanOrder(plan, settings.blockOrderKeys);
+  return plan;
+}
+
+function blockPlanMemberKeys(block) {
+  return block.memberKeys && block.memberKeys.length
+    ? block.memberKeys.slice()
+    : [block.key];
+}
+
+function blockPlanSwatchBackground(block) {
+  const colors = block.colors && block.colors.length ? block.colors : [block.color];
+  if (colors.length === 1) return colors[0];
+  const stops = colors.map((color, index) => {
+    const start = index / colors.length * 100;
+    const end = (index + 1) / colors.length * 100;
+    return `${color} ${start}%, ${color} ${end}%`;
+  });
+  return `linear-gradient(135deg, ${stops.join(', ')})`;
+}
+
+function blockPlanMergedName(plan, blocks) {
+  const elementNames = Array.from(new Set(
+    blocks
+      .flatMap(block => block.recordIds)
+      .map(id => plan.records.find(record => record.id === id))
+      .filter(Boolean)
+      .map(record => record.sourceType === 'atmosphere'
+        ? 'Atmosphere'
+        : record.elementName
+      )
+      .filter(Boolean)
+  ));
+  if (elementNames.length === 1) return elementNames[0];
+  if (elementNames.length === 2) return `${elementNames[0]} & ${elementNames[1]}`;
+  if (elementNames.length === 3) {
+    return `${elementNames[0]}, ${elementNames[1]} & ${elementNames[2]}`;
+  }
+  return elementNames.length
+    ? `${elementNames[0]} + ${elementNames.length - 1} more`
+    : 'Combined Block';
+}
+
+function applyBlockPlanMerges(plan, groups) {
+  plan.blocks.forEach(block => {
+    block.memberKeys = [block.key];
+  });
+  groups.forEach(group => {
+    const groupKeys = new Set(group);
+    const constituents = plan.blocks.filter(block =>
+      block.role === 'ink'
+      && blockPlanMemberKeys(block).some(key => groupKeys.has(key))
+    );
+    if (constituents.length < 2) return;
+    const constituentIds = new Set(constituents.map(block => block.id));
+    const insertIndex = Math.min(...constituents.map(block => plan.blocks.indexOf(block)));
+    const memberKeys = Array.from(new Set(
+      constituents.flatMap(blockPlanMemberKeys)
+    )).sort();
+    const colors = Array.from(new Set(
+      constituents.flatMap(block => block.colors || [block.color])
+    ));
+    const recordIds = Array.from(new Set(
+      constituents.flatMap(block => block.recordIds)
+    )).sort((a, b) => {
+      const first = plan.records.find(record => record.id === a);
+      const second = plan.records.find(record => record.id === b);
+      return first.order - second.order;
+    });
+    const merged = {
+      id: `merged-${memberKeys.join('-').replace(/[^a-z0-9_-]+/gi, '-')}`,
+      key: `merged:${memberKeys.join('|')}`,
+      memberKeys,
+      name: blockPlanMergedName(plan, constituents),
+      color: colors[0],
+      colors,
+      colorName: `${colors.length} inks`,
+      order: Math.min(...constituents.map(block => block.order)),
+      recordIds,
+      role: 'ink',
+      defaultPrint: constituents.some(block => block.defaultPrint !== false),
+      isAtmosphere: constituents.some(block => block.isAtmosphere),
+      sourceTypes: Array.from(new Set(
+        constituents.flatMap(block => block.sourceTypes || [])
+      )),
+      bokashi: constituents.flatMap(block => block.bokashi || []),
+      nearPaper: false,
+      luminance: constituents.reduce(
+        (total, block) => total + block.luminance,
+        0
+      ) / constituents.length,
+      sourceOrder: Math.min(...constituents.map(block => block.sourceOrder)),
+      printOrder: Math.min(...constituents.map(block => block.printOrder)),
+      merged: true,
+    };
+    plan.blocks = plan.blocks.filter(block => !constituentIds.has(block.id));
+    plan.blocks.splice(insertIndex, 0, merged);
+  });
+}
+
+function applyBlockPlanOrder(plan, orderKeys) {
+  if (Array.isArray(orderKeys) && orderKeys.length) {
+    const positions = new Map(orderKeys.map((key, index) => [key, index]));
+    const inkBlocks = plan.blocks
+      .filter(block => block.role === 'ink')
+      .sort((a, b) => {
+        const aPosition = Math.min(
+          ...blockPlanMemberKeys(a).map(key =>
+            positions.has(key) ? positions.get(key) : Infinity
+          )
+        );
+        const bPosition = Math.min(
+          ...blockPlanMemberKeys(b).map(key =>
+            positions.has(key) ? positions.get(key) : Infinity
+          )
+        );
+        return aPosition - bPosition || a.printOrder - b.printOrder;
+      });
+    plan.blocks = inkBlocks.concat(
+      plan.blocks.filter(block => block.role === 'paper')
+    );
+  }
+  let printOrder = 0;
+  plan.blocks.forEach(block => {
+    block.printOrder = block.role === 'ink' ? ++printOrder : null;
+  });
 }
 
 function blockPlanDefaultIncluded(block) {
@@ -11104,9 +11470,16 @@ function blockPlanDefaultIncluded(block) {
 
 function blockPlanIncluded(block) {
   const overrides = STATE.blockPlan.inclusions || {};
-  return Object.prototype.hasOwnProperty.call(overrides, block.key)
-    ? overrides[block.key]
-    : blockPlanDefaultIncluded(block);
+  if (Object.prototype.hasOwnProperty.call(overrides, block.key)) {
+    return overrides[block.key];
+  }
+  if (block.merged) {
+    const memberOverrides = blockPlanMemberKeys(block)
+      .filter(key => Object.prototype.hasOwnProperty.call(overrides, key))
+      .map(key => overrides[key]);
+    if (memberOverrides.length) return memberOverrides.some(Boolean);
+  }
+  return blockPlanDefaultIncluded(block);
 }
 
 function selectedBlockPlanBlock() {
@@ -11130,14 +11503,212 @@ function updateInkBlockPlanSummary() {
     : 'Opens with an automatic block proposal.';
 }
 
+function setBlockPlanOpeningStatus(message) {
+  const section = $('is-block-plan-section');
+  const button = $('is-edit-block-plan');
+  const progress = $('is-block-plan-progress');
+  const progressText = $('is-block-plan-progress-text');
+  const summary = $('is-block-plan-summary');
+  const active = Boolean(message);
+  section.setAttribute('aria-busy', active ? 'true' : 'false');
+  button.disabled = active;
+  button.textContent = active ? 'Preparing Block Plan…' : 'Edit Block Plan';
+  progress.hidden = !active;
+  progressText.textContent = message || '';
+  summary.hidden = active;
+}
+
+function waitForBlockPlanPaint() {
+  return new Promise(resolve => {
+    requestAnimationFrame(() => requestAnimationFrame(resolve));
+  });
+}
+
+function selectBlockPlanKey(key) {
+  _blockPlanSelectedKey = key;
+  if (_blockPlanView === 'physical-proof') {
+    _blockPlanView = 'keep';
+    _blockPlanMaster = 'keep';
+    localStorage.setItem('mokuri-block-plan-master', _blockPlanMaster);
+  }
+  renderBlockPlanWorkspace(false);
+}
+
+function toggleBlockPlanRole(block) {
+  if (!block || block.isAtmosphere || block.merged) return;
+  const paperColors = new Set(STATE.blockPlan.paperRevealColors || []);
+  if (block.role === 'ink') {
+    paperColors.add(block.color);
+  } else {
+    paperColors.delete(block.color);
+  }
+  STATE.blockPlan.paperRevealColors = Array.from(paperColors);
+  _blockPlanSelectedKey = block.key;
+  _blockPlanMergeSourceKey = null;
+  renderBlockPlanWorkspace(true);
+  autoSave();
+}
+
+function mergeBlockPlanBlocks(sourceKey, targetKey) {
+  const source = _blockPlan.blocks.find(block => block.key === sourceKey);
+  const target = _blockPlan.blocks.find(block => block.key === targetKey);
+  if (!source || !target || source.role !== 'ink' || target.role !== 'ink') return;
+  const memberKeys = Array.from(new Set(
+    blockPlanMemberKeys(source).concat(blockPlanMemberKeys(target))
+  )).sort();
+  const mergedIncluded = blockPlanIncluded(source) || blockPlanIncluded(target);
+  STATE.blockPlan.mergedBlockGroups = (STATE.blockPlan.mergedBlockGroups || [])
+    .filter(group => !group.some(key => memberKeys.includes(key)));
+  STATE.blockPlan.mergedBlockGroups.push(memberKeys);
+  const mergedKey = `merged:${memberKeys.join('|')}`;
+  [source.key, target.key, ...memberKeys].forEach(key => {
+    delete STATE.blockPlan.inclusions[key];
+  });
+  if (!mergedIncluded) {
+    STATE.blockPlan.inclusions[mergedKey] = false;
+  }
+  _blockPlanSelectedKey = mergedKey;
+  _blockPlanMergeSourceKey = null;
+  renderBlockPlanWorkspace(true);
+  autoSave();
+}
+
+function separateBlockPlanBlock(block) {
+  if (!block || !block.merged) return;
+  const members = new Set(blockPlanMemberKeys(block));
+  STATE.blockPlan.mergedBlockGroups = (STATE.blockPlan.mergedBlockGroups || [])
+    .filter(group =>
+      !(group.length === members.size && group.every(key => members.has(key)))
+    );
+  delete STATE.blockPlan.inclusions[block.key];
+  _blockPlanSelectedKey = blockPlanMemberKeys(block)[0];
+  _blockPlanMergeSourceKey = null;
+  renderBlockPlanWorkspace(true);
+  autoSave();
+}
+
+function reorderBlockPlan(sourceKey, targetKey, after) {
+  const inkBlocks = _blockPlan.blocks.filter(block => block.role === 'ink');
+  const source = inkBlocks.find(block => block.key === sourceKey);
+  const target = inkBlocks.find(block => block.key === targetKey);
+  if (!source || !target || source === target) return;
+  const reordered = inkBlocks.filter(block => block !== source);
+  const targetIndex = reordered.indexOf(target);
+  reordered.splice(targetIndex + (after ? 1 : 0), 0, source);
+  STATE.blockPlan.blockOrderKeys = reordered.flatMap(blockPlanMemberKeys);
+  applyBlockPlanOrder(_blockPlan, STATE.blockPlan.blockOrderKeys);
+  _blockPlanSelectedKey = source.key;
+  renderBlockPlanWorkspace(false);
+  autoSave();
+}
+
+function clearBlockPlanDropIndicators() {
+  document.querySelectorAll(
+    '#bp-block-list .drag-source, #bp-block-list .drop-before, #bp-block-list .drop-after'
+  ).forEach(card => {
+    card.classList.remove('drag-source', 'drop-before', 'drop-after');
+  });
+}
+
+function bindBlockPlanReorderHandle(handle, block) {
+  handle.setAttribute('role', 'button');
+  handle.tabIndex = 0;
+  handle.setAttribute('aria-label', `Move ${block.name} in print order`);
+  handle.addEventListener('click', event => event.stopPropagation());
+  handle.addEventListener('keydown', event => {
+    if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+    event.preventDefault();
+    event.stopPropagation();
+    const inkBlocks = _blockPlan.blocks.filter(item => item.role === 'ink');
+    const index = inkBlocks.findIndex(item => item.key === block.key);
+    const target = index + (event.key === 'ArrowUp' ? -1 : 1);
+    if (index < 0 || target < 0 || target >= inkBlocks.length) return;
+    reorderBlockPlan(
+      block.key,
+      inkBlocks[target].key,
+      event.key === 'ArrowDown'
+    );
+  });
+  handle.addEventListener('pointerdown', event => {
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    _blockPlanDrag = {
+      pointerId: event.pointerId,
+      sourceKey: block.key,
+      startX: event.clientX,
+      startY: event.clientY,
+      active: false,
+      targetKey: null,
+      after: false,
+    };
+    handle.setPointerCapture(event.pointerId);
+  });
+  handle.addEventListener('pointermove', event => {
+    const drag = _blockPlanDrag;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    if (!drag.active) {
+      const distance = Math.hypot(
+        event.clientX - drag.startX,
+        event.clientY - drag.startY
+      );
+      if (distance < 5) return;
+      drag.active = true;
+      const sourceCard = Array.from(
+        document.querySelectorAll('#bp-block-list [data-block-key]')
+      ).find(card => card.dataset.blockKey === drag.sourceKey);
+      if (sourceCard) sourceCard.classList.add('drag-source');
+    }
+    event.preventDefault();
+    document.querySelectorAll('#bp-block-list .drop-before, #bp-block-list .drop-after')
+      .forEach(card => card.classList.remove('drop-before', 'drop-after'));
+    const targetCard = document.elementFromPoint(event.clientX, event.clientY)
+      ?.closest('#bp-block-list [data-block-key]');
+    const target = targetCard
+      ? _blockPlan.blocks.find(item => item.key === targetCard.dataset.blockKey)
+      : null;
+    if (!target || target.role !== 'ink' || target.key === drag.sourceKey) {
+      drag.targetKey = null;
+      return;
+    }
+    const rect = targetCard.getBoundingClientRect();
+    drag.targetKey = target.key;
+    drag.after = event.clientY >= rect.top + rect.height / 2;
+    targetCard.classList.add(drag.after ? 'drop-after' : 'drop-before');
+  });
+  const finish = event => {
+    const drag = _blockPlanDrag;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    if (handle.hasPointerCapture(event.pointerId)) {
+      handle.releasePointerCapture(event.pointerId);
+    }
+    _blockPlanDrag = null;
+    clearBlockPlanDropIndicators();
+    if (event.type === 'pointerup' && drag.active && drag.targetKey) {
+      reorderBlockPlan(drag.sourceKey, drag.targetKey, drag.after);
+    }
+  };
+  handle.addEventListener('pointerup', finish);
+  handle.addEventListener('pointercancel', finish);
+}
+
 function renderBlockPlanList() {
   const list = $('bp-block-list');
   list.innerHTML = '';
   const inkBlocks = _blockPlan.blocks.filter(block => block.role === 'ink');
   const includedCount = inkBlocks.filter(blockPlanIncluded).length;
-  $('bp-block-summary').textContent =
-    `${includedCount} of ${inkBlocks.length} ink blocks included`
-    + (STATE.blockPlan.includeGuide ? ' · guide included' : '');
+  const includedPaperCount = _blockPlan.blocks.filter(block =>
+    block.role === 'paper' && blockPlanIncluded(block)
+  ).length;
+  const mergeSource = _blockPlanMergeSourceKey
+    ? _blockPlan.blocks.find(block => block.key === _blockPlanMergeSourceKey)
+    : null;
+  if (_blockPlanMergeSourceKey && !mergeSource) _blockPlanMergeSourceKey = null;
+  $('bp-block-summary').textContent = mergeSource
+    ? `Choose an ink block to combine with ${mergeSource.name}`
+    : `${includedCount} of ${inkBlocks.length} ink blocks included`
+      + (includedPaperCount
+        ? ` · ${includedPaperCount} paper guide${includedPaperCount === 1 ? '' : 's'}`
+        : '')
+      + (STATE.blockPlan.includeGuide ? ' · guide included' : '');
 
   if (!_blockPlan.blocks.length) {
     const empty = document.createElement('div');
@@ -11147,16 +11718,27 @@ function renderBlockPlanList() {
   }
 
   _blockPlan.blocks.forEach(block => {
-    const card = document.createElement('button');
-    card.type = 'button';
+    const card = document.createElement('div');
+    card.setAttribute('role', 'button');
+    card.tabIndex = 0;
+    card.dataset.blockKey = block.key;
     card.className = 'bp-block-card'
-      + (block.key === _blockPlanSelectedKey ? ' active' : '');
+      + (block.key === _blockPlanSelectedKey ? ' active' : '')
+      + (mergeSource && block.role === 'ink' && block.key !== mergeSource.key
+        ? ' merge-target'
+        : '');
 
     const include = document.createElement('input');
     include.type = 'checkbox';
     include.checked = blockPlanIncluded(block);
-    include.setAttribute('aria-label', `Include ${block.name}`);
+    include.setAttribute(
+      'aria-label',
+      block.role === 'paper'
+        ? `Include ${block.name} paper guide`
+        : `Include ${block.name}`
+    );
     include.addEventListener('click', event => event.stopPropagation());
+    include.addEventListener('keydown', event => event.stopPropagation());
     include.addEventListener('change', () => {
       const defaultValue = blockPlanDefaultIncluded(block);
       if (include.checked === defaultValue) {
@@ -11170,37 +11752,82 @@ function renderBlockPlanList() {
 
     const order = document.createElement('span');
     order.className = 'bp-block-order';
-    order.textContent = block.role === 'ink' ? block.printOrder : '—';
+    order.textContent = block.role === 'ink' ? '' : '—';
+    if (block.role === 'ink') {
+      order.classList.add('draggable');
+      order.title = 'Drag to change print order';
+      bindBlockPlanReorderHandle(order, block);
+    }
 
     const swatch = document.createElement('span');
     swatch.className = 'bp-block-swatch';
-    swatch.style.background = block.color;
+    swatch.style.background = blockPlanSwatchBackground(block);
 
     const copy = document.createElement('span');
     copy.className = 'bp-block-copy';
     const name = document.createElement('span');
     name.className = 'bp-block-name';
-    name.textContent = block.name;
+    name.textContent = block.role === 'ink'
+      ? `${block.printOrder}. ${block.name}`
+      : block.name;
     const meta = document.createElement('span');
     meta.className = 'bp-block-meta';
     const regionCount = block.recordIds.length;
     meta.textContent =
       `${block.colorName || block.color} · ${regionCount} region${regionCount === 1 ? '' : 's'}`
+      + (block.merged ? ` · ${blockPlanMemberKeys(block).length} blocks combined` : '')
       + (block.bokashi && block.bokashi.length ? ' · bokashi' : '');
     copy.append(name, meta);
+
+    const role = document.createElement('span');
+    role.className = 'bp-block-role ' + block.role;
+    role.textContent = block.role === 'paper'
+      ? 'Paper'
+      : block.merged ? 'Combined' : 'Ink';
+    const roleLocked = block.isAtmosphere || block.merged;
+    if (roleLocked) {
+      role.classList.add('disabled');
+      role.title = block.merged
+        ? 'Separate this block before changing its role'
+        : 'Atmosphere remains an ink block';
+    } else {
+      role.setAttribute('role', 'button');
+      role.tabIndex = 0;
+      role.title = block.role === 'paper'
+        ? 'Use this color as printing ink'
+        : 'Use this color as paper reveal';
+      const toggleRole = event => {
+        event.stopPropagation();
+        toggleBlockPlanRole(block);
+      };
+      role.addEventListener('click', toggleRole);
+      role.addEventListener('keydown', event => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        toggleRole(event);
+      });
+    }
 
     const side = document.createElement('span');
     side.className = 'bp-block-side';
     side.appendChild(order);
-    card.append(include, swatch, copy, side);
-    card.addEventListener('click', () => {
-      _blockPlanSelectedKey = block.key;
-      if (_blockPlanView === 'physical-proof') {
-        _blockPlanView = 'keep';
-        _blockPlanMaster = 'keep';
-        localStorage.setItem('mokuri-block-plan-master', _blockPlanMaster);
+    card.append(include, swatch, copy, role, side);
+    const activateCard = () => {
+      if (mergeSource) {
+        if (block.role === 'ink' && block.key !== mergeSource.key) {
+          mergeBlockPlanBlocks(mergeSource.key, block.key);
+        } else if (block.key === mergeSource.key) {
+          selectBlockPlanKey(block.key);
+        }
+        return;
       }
-      renderBlockPlanWorkspace(false);
+      selectBlockPlanKey(block.key);
+    };
+    card.addEventListener('click', activateCard);
+    card.addEventListener('keydown', event => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      activateCard();
     });
     list.appendChild(card);
   });
@@ -11244,6 +11871,7 @@ function renderBlockPlanList() {
 
   guideCard.append(includeGuide, guideIcon, guideCopy, guideSide);
   guideCard.addEventListener('click', () => {
+    _blockPlanMergeSourceKey = null;
     _blockPlanSelectedKey = BLOCK_PLAN_GUIDE_KEY;
     renderBlockPlanWorkspace(false);
   });
@@ -11256,6 +11884,17 @@ function appendBlockPlanFact(list, label, value) {
   const detail = document.createElement('dd');
   detail.textContent = value;
   list.append(term, detail);
+}
+
+function blockPlanColorDescription(block) {
+  const colors = block.colors && block.colors.length ? block.colors : [block.color];
+  return colors.map(color => {
+    const name = typeof MokuriColorNames !== 'undefined'
+      ? MokuriColorNames.get(color)
+      : null;
+    const label = name || (colors.length === 1 ? block.colorName : null);
+    return label ? `${label} · ${color.toUpperCase()}` : color.toUpperCase();
+  }).join(' + ');
 }
 
 function appendBlockPlanChoiceGroup(
@@ -11489,9 +12128,9 @@ function renderBlockPlanSelectedDetails() {
   color.className = 'bp-inspector-color';
   const swatch = document.createElement('span');
   swatch.className = 'bp-inspector-swatch';
-  swatch.style.background = block.color;
+  swatch.style.background = blockPlanSwatchBackground(block);
   const colorText = document.createElement('span');
-  colorText.textContent = `${block.colorName || 'Ink'} · ${block.color.toUpperCase()}`;
+  colorText.textContent = blockPlanColorDescription(block);
   color.append(swatch, colorText);
   details.appendChild(color);
 
@@ -11503,8 +12142,20 @@ function renderBlockPlanSelectedDetails() {
   ));
   const facts = document.createElement('dl');
   facts.className = 'bp-facts';
-  appendBlockPlanFact(facts, 'Role', block.role === 'paper' ? 'Paper Reveal' : 'Ink block');
-  appendBlockPlanFact(facts, 'Print order', block.role === 'ink' ? String(block.printOrder) : 'Not printed');
+  appendBlockPlanFact(
+    facts,
+    'Role',
+    block.role === 'paper'
+      ? 'Paper Reveal'
+      : block.merged ? 'Combined ink block' : 'Ink block'
+  );
+  appendBlockPlanFact(
+    facts,
+    'Print order',
+    block.role === 'ink'
+      ? String(block.printOrder)
+      : blockPlanIncluded(block) ? 'After ink blocks' : 'Optional guide'
+  );
   appendBlockPlanFact(facts, 'Regions', String(block.recordIds.length));
   appendBlockPlanFact(facts, 'Sources', contributors.length ? contributors.join(', ') : 'Atmosphere');
   details.appendChild(facts);
@@ -11524,6 +12175,46 @@ function renderBlockPlanSelectedDetails() {
     });
     section.append(title, list);
     details.appendChild(section);
+  }
+
+  if (block.role === 'ink') {
+    const actions = document.createElement('div');
+    actions.className = 'bp-block-arrange-actions';
+    if (_blockPlanMergeSourceKey) {
+      const note = document.createElement('div');
+      note.className = 'bp-block-arrange-note';
+      note.textContent = 'Choose another ink block above to combine the two carving surfaces.';
+      const cancel = document.createElement('button');
+      cancel.type = 'button';
+      cancel.textContent = 'Cancel combine';
+      cancel.addEventListener('click', () => {
+        _blockPlanMergeSourceKey = null;
+        renderBlockPlanWorkspace(false);
+      });
+      actions.append(note, cancel);
+    } else {
+      if (_blockPlan.blocks.some(candidate =>
+        candidate.role === 'ink' && candidate.key !== block.key
+      )) {
+        const combine = document.createElement('button');
+        combine.type = 'button';
+        combine.textContent = 'Combine…';
+        combine.addEventListener('click', () => {
+          _blockPlanMergeSourceKey = block.key;
+          _blockPlanSelectedKey = block.key;
+          renderBlockPlanWorkspace(false);
+        });
+        actions.appendChild(combine);
+      }
+      if (block.merged) {
+        const separate = document.createElement('button');
+        separate.type = 'button';
+        separate.textContent = 'Separate block';
+        separate.addEventListener('click', () => separateBlockPlanBlock(block));
+        actions.appendChild(separate);
+      }
+    }
+    if (actions.childNodes.length) details.appendChild(actions);
   }
 }
 
@@ -11556,6 +12247,19 @@ function renderBlockPlanPreview() {
     updateBlockPlanPreviewZoom();
     return;
   }
+  if (_blockPlanView !== 'physical-proof') {
+    try {
+      master.innerHTML = blockPlanPrintPreviewHtml(block);
+      updateBlockPlanPreviewZoom();
+    } catch (error) {
+      master.innerHTML = '';
+      const message = document.createElement('div');
+      message.className = 'bp-empty-note';
+      message.textContent = `Block preview unavailable: ${error.message}`;
+      master.appendChild(message);
+    }
+    return;
+  }
   const includedBlockIds = _blockPlan.blocks
     .filter(blockPlanIncluded)
     .map(item => item.id);
@@ -11567,7 +12271,7 @@ function renderBlockPlanPreview() {
         method: _blockPlanTransfer,
         view: _blockPlanView,
         guides: _blockPlanGuides,
-        annotations: _blockPlanView === 'physical-proof',
+        annotations: true,
         includedBlockIds,
         idPrefix: `mokuri-bp-${++_blockPlanRenderSerial}`,
       }
@@ -11599,6 +12303,14 @@ function blockPlanPreviewSize() {
     const page = calculateBlockPlanPrintLayout(_blockPlanPage).page;
     return { width: page.width, height: page.height };
   }
+  if (_blockPlanView !== 'physical-proof') {
+    const layout = calculateBlockPlanPrintLayout(_blockPlanPage);
+    return {
+      width: layout.page.width,
+      height: layout.page.height * layout.pageCount
+        + BLOCK_PLAN_PREVIEW_PAGE_GAP * Math.max(0, layout.pageCount - 1),
+    };
+  }
   return {
     width: _blockPlan.layout.block.width,
     height: _blockPlan.layout.block.height,
@@ -11621,6 +12333,10 @@ function updateBlockPlanPreviewZoom() {
   const guidePage = content.querySelector('.bp-guide-preview-page');
   if (guidePage) {
     guidePage.style.transform = `scale(${width / (previewSize.width * 96)})`;
+  }
+  const printPages = content.querySelector('.bp-print-preview-pages');
+  if (printPages) {
+    printPages.style.transform = `scale(${width / (previewSize.width * 96)})`;
   }
   $('bp-preview-zoom-value').textContent =
     `${Math.round(_blockPlanPreviewZoom * 100)}%`;
@@ -11723,22 +12439,54 @@ function renderBlockPlanWorkspace(rebuild) {
   renderBlockPlanInspector();
 }
 
-function openBlockPlan() {
+async function openBlockPlan() {
+  if (_blockPlanOpening) return;
+  _blockPlanOpening = true;
   try {
+    _blockPlanMergeSourceKey = null;
+    _blockPlanDrag = null;
     _blockPlanView = 'physical-proof';
     _blockPlanPreviewZoom = 1;
     _blockPlanCustomOpen = STATE.blockPlan.paperPreset === 'custom';
+    setBlockPlanOpeningStatus('Analyzing the composition…');
+    await waitForBlockPlanPaint();
+
+    const previousKey = _blockPlanSelectedKey;
+    _blockPlan = createCurrentBlockPlan();
+    _blockPlanSelectedKey = previousKey === BLOCK_PLAN_GUIDE_KEY
+      ? BLOCK_PLAN_GUIDE_KEY
+      : _blockPlan.blocks.some(block => block.key === previousKey)
+        ? previousKey
+        : (_blockPlan.blocks[0] ? _blockPlan.blocks[0].key : BLOCK_PLAN_GUIDE_KEY);
+    const inkBlockCount = _blockPlan.blocks.filter(block => block.role === 'ink').length;
+    STATE.blockPlan.lastSummary = {
+      blockCount: inkBlockCount,
+      paperName: _blockPlan.layout.paperName,
+    };
+
+    setBlockPlanOpeningStatus(
+      `Laying out ${inkBlockCount} color block${inkBlockCount === 1 ? '' : 's'}…`
+    );
+    await waitForBlockPlanPaint();
+
     $('block-plan-modal').classList.add('visible');
-    renderBlockPlanWorkspace(true);
+    renderBlockPlanWorkspace(false);
     MokuriAudio.playModalOpen();
   } catch (error) {
     $('block-plan-modal').classList.remove('visible');
     showFlash(`Block Plan could not be created: ${error.message}`, 4000);
+  } finally {
+    _blockPlanOpening = false;
+    setBlockPlanOpeningStatus('');
+    updateInkBlockPlanSummary();
   }
 }
 
 function closeBlockPlan() {
   if (!$('block-plan-modal').classList.contains('visible')) return;
+  _blockPlanMergeSourceKey = null;
+  _blockPlanDrag = null;
+  clearBlockPlanDropIndicators();
   $('block-plan-modal').classList.remove('visible');
   updateInkBlockPlanSummary();
   autoSave();
@@ -11764,9 +12512,13 @@ function applyCustomPaper() {
 }
 
 function includedBlockPlanBlocks() {
-  return _blockPlan.blocks.filter(block =>
-    block.role === 'ink' && blockPlanIncluded(block)
-  ).sort((a, b) => a.printOrder - b.printOrder);
+  return _blockPlan.blocks
+    .filter(blockPlanIncluded)
+    .sort((a, b) => {
+      if (a.role !== b.role) return a.role === 'ink' ? -1 : 1;
+      if (a.role === 'ink') return a.printOrder - b.printOrder;
+      return a.sourceOrder - b.sourceOrder;
+    });
 }
 
 function escapeBlockPlanHtml(value) {
@@ -11800,6 +12552,9 @@ function blockPlanColorLabel(color) {
 }
 
 function blockPlanBlockInstruction(block) {
+  if (block.role === 'paper') {
+    return 'Reference mask only. Keep these regions unprinted so the selected paper remains visible.';
+  }
   const instructions = [];
   if (block.colors && block.colors.length > 1) {
     instructions.push('Ink the color areas selectively on this combined block.');
@@ -11820,22 +12575,29 @@ function blockPlanBlockInstruction(block) {
 
 function blockPlanGuideBlockHtml(block) {
   const colors = block.colors && block.colors.length ? block.colors : [block.color];
+  const orderLabel = block.role === 'paper'
+    ? 'Paper guide'
+    : `${block.printOrder}.`;
   const swatches = colors.map(color => `
     <span class="bp-guide-swatch" style="background:${escapeBlockPlanHtml(color)}"></span>
   `).join('');
   return `
     <div class="bp-guide-block">
-      <div class="bp-guide-block-heading">
+      <div class="bp-guide-swatches" aria-hidden="true">
         ${swatches}
-        <strong>${block.printOrder}. ${escapeBlockPlanHtml(block.name)}</strong>
       </div>
-      <div class="bp-guide-block-detail">
-        ${escapeBlockPlanHtml(colors.map(blockPlanColorLabel).join(' + '))}
+      <div class="bp-guide-block-body">
+        <div class="bp-guide-block-heading">
+          <strong>${orderLabel} ${escapeBlockPlanHtml(block.name)}</strong>
+        </div>
+        <div class="bp-guide-block-detail">
+          ${escapeBlockPlanHtml(colors.map(blockPlanColorLabel).join(' + '))}
+        </div>
+        <div class="bp-guide-block-detail">
+          ${escapeBlockPlanHtml(blockPlanBlockInstruction(block))}
+        </div>
+        <div class="bp-guide-note-line"></div>
       </div>
-      <div class="bp-guide-block-detail">
-        ${escapeBlockPlanHtml(blockPlanBlockInstruction(block))}
-      </div>
-      <div class="bp-guide-note-line"></div>
     </div>`;
 }
 
@@ -11843,6 +12605,8 @@ function blockPlanGuideHtml(layout, preview = false) {
   const page = layout.page;
   const safe = blockPlanGuideFrame(page).safe;
   const blocks = includedBlockPlanBlocks();
+  const inkBlockCount = blocks.filter(block => block.role === 'ink').length;
+  const paperGuideCount = blocks.length - inkBlockCount;
   const landscape = page.orientation === 'landscape';
   const split = landscape ? Math.ceil(blocks.length / 2) : blocks.length;
   const columns = landscape
@@ -11884,7 +12648,7 @@ function blockPlanGuideHtml(layout, preview = false) {
         <dl class="bp-guide-facts">
           <dt>Paper</dt><dd>${escapeBlockPlanHtml(_blockPlan.layout.paperName)} · ${_blockPlan.layout.paper.width.toFixed(2)} × ${_blockPlan.layout.paper.height.toFixed(2)} in</dd>
           <dt>Image</dt><dd>${_blockPlan.layout.image.width.toFixed(2)} × ${_blockPlan.layout.image.height.toFixed(2)} in</dd>
-          <dt>Block</dt><dd>${_blockPlan.layout.orientation} · ${blocks.length} included block${blocks.length === 1 ? '' : 's'}</dd>
+          <dt>Output</dt><dd>${_blockPlan.layout.orientation} · ${inkBlockCount} block${inkBlockCount === 1 ? '' : 's'}${paperGuideCount ? ` + ${paperGuideCount} paper guide${paperGuideCount === 1 ? '' : 's'}` : ''}</dd>
           <dt>Transfer</dt><dd>${transferLabel}</dd>
           <dt>Master</dt><dd>${masterLabel}</dd>
         </dl>
@@ -12047,6 +12811,8 @@ function calculateBlockPlanPrintLayout(pageType) {
 function blockPlanOutputSummary() {
   if (!_blockPlan) return '';
   const blocks = includedBlockPlanBlocks();
+  const inkBlockCount = blocks.filter(block => block.role === 'ink').length;
+  const paperGuideCount = blocks.length - inkBlockCount;
   const layout = calculateBlockPlanPrintLayout(_blockPlanPage);
   const includeGuide = STATE.blockPlan.includeGuide !== false;
   const totalPages = blocks.length * layout.pageCount + (includeGuide ? 1 : 0);
@@ -12064,7 +12830,11 @@ function blockPlanOutputSummary() {
   }
   return blocks.length || includeGuide
     ? `Block: ${blockOrientation} · `
-      + `${blocks.length} included ink block${blocks.length === 1 ? '' : 's'} · `
+      + `${inkBlockCount} included ink block${inkBlockCount === 1 ? '' : 's'}`
+      + (paperGuideCount
+        ? ` · ${paperGuideCount} paper guide${paperGuideCount === 1 ? '' : 's'}`
+        : '')
+      + ' · '
       + `Printer sheets: ${totalPages} ${layout.page.name} ${layout.page.orientation} page`
       + `${totalPages === 1 ? '' : 's'} (follows block)`
       + `${includeGuide ? ' · guide prints last' : ''} · Actual Size / 100%.`
@@ -12146,10 +12916,74 @@ function renderBlockPlanMasterRaster(blockId, dpi = 300) {
 
 function blockPlanPrintLabel(block, tileIndex, tileCount, layout) {
   const suffix = tileCount > 1 ? ` · Sheet ${tileIndex + 1} of ${tileCount}` : '';
+  const prefix = block.role === 'paper'
+    ? 'Paper Guide'
+    : `Block ${block.printOrder}`;
   return `
     <div class="bp-print-label"
       style="left:${layout.frame.safe.x + 0.04}in;top:${layout.frame.safe.y + 0.04}in">
-      Block ${block.printOrder} — ${escapeBlockPlanHtml(block.name)}${suffix}
+      ${prefix} — ${escapeBlockPlanHtml(block.name)}${suffix}
+    </div>`;
+}
+
+function blockPlanPrintPreviewHtml(block) {
+  const layout = calculateBlockPlanPrintLayout(_blockPlanPage);
+  const page = layout.page;
+  const transfer = layout.frame.transfer;
+  const bounds = layout.bounds;
+  const pages = [];
+  const buildMaster = pageIndex => MokuriBlockPlan.buildMasterSvg(
+    _blockPlan,
+    block.id,
+    {
+      method: _blockPlanTransfer,
+      view: _blockPlanView,
+      guides: _blockPlanGuides,
+      annotations: false,
+      crop: 'master',
+      cropPaddingIn: 0,
+      idPrefix: `bp-preview-${++_blockPlanRenderSerial}-${pageIndex}`,
+    }
+  );
+  if (layout.type === 'single') {
+    const left = transfer.x + (transfer.width - bounds.width) / 2;
+    const top = transfer.y + (transfer.height - bounds.height) / 2;
+    pages.push(`
+      <section class="bp-print-page"
+        style="top:0;width:${page.width}in;height:${page.height}in">
+        <div class="bp-print-tile-window"
+          style="left:${left}in;top:${top}in;width:${bounds.width}in;height:${bounds.height}in">
+          ${buildMaster(0)}
+        </div>
+        ${blockPlanPrintLabel(block, 0, 1, layout)}
+      </section>
+    `);
+  } else {
+    layout.tiles.forEach((tile, index) => {
+      const left = transfer.x + (transfer.width - tile.width) / 2;
+      const top = transfer.y + (transfer.height - tile.height) / 2;
+      pages.push(`
+        <section class="bp-print-page"
+          style="top:${index * (page.height + BLOCK_PLAN_PREVIEW_PAGE_GAP)}in;width:${page.width}in;height:${page.height}in">
+          <div class="bp-print-tile-window"
+            style="left:${left}in;top:${top}in;width:${tile.width}in;height:${tile.height}in">
+            <div style="position:absolute;left:${-tile.x}in;top:${-tile.y}in;width:${bounds.width}in;height:${bounds.height}in">
+              ${buildMaster(index)}
+            </div>
+          </div>
+          ${blockPlanPrintLabel(block, index, layout.tiles.length, layout)}
+        </section>
+      `);
+    });
+  }
+  const totalHeight = page.height * pages.length
+    + BLOCK_PLAN_PREVIEW_PAGE_GAP * Math.max(0, pages.length - 1);
+  return `
+    <div class="bp-print-preview">
+      <div class="bp-print-preview-pages"
+        style="width:${page.width}in;height:${totalHeight}in">
+        ${pages.join('')}
+      </div>
     </div>`;
 }
 
@@ -12171,8 +13005,9 @@ async function printBlockPlanMasters() {
   const prepared = [];
   try {
     for (let index = 0; index < blocks.length; index++) {
+      const outputType = blocks[index].role === 'paper' ? 'paper guide' : 'block';
       status.textContent =
-        `Preparing block ${index + 1} of ${blocks.length}: ${blocks[index].name}…`;
+        `Preparing ${outputType} ${index + 1} of ${blocks.length}: ${blocks[index].name}…`;
       const blob = await renderBlockPlanMasterRaster(blocks[index].id, 300);
       const url = URL.createObjectURL(blob);
       _blockPlanPrintUrls.push(url);
@@ -13879,7 +14714,12 @@ function setupKeyboard() {
   document.addEventListener('keydown', (e) => {
     if ($('block-plan-modal').classList.contains('visible')) {
       if (e.key === 'Escape') {
-        closeBlockPlan();
+        if (_blockPlanMergeSourceKey) {
+          _blockPlanMergeSourceKey = null;
+          renderBlockPlanWorkspace(false);
+        } else {
+          closeBlockPlan();
+        }
         e.preventDefault();
       } else if (
         document.activeElement

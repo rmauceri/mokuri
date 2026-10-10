@@ -98,6 +98,81 @@
   }
   .palette-heading strong { font-size: 15px; }
   .palette-ref { color: var(--muted); font-size: 11px; }
+  .accent-review {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .accent-review.single { grid-template-columns: minmax(0, 1fr); }
+  .accent-panel {
+    min-width: 0;
+    padding: 10px;
+    border: 1px solid rgba(203, 188, 165, 0.8);
+    border-radius: 10px;
+    background: rgba(255,255,255,0.45);
+  }
+  .accent-panel-title {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .accent-panel-note {
+    overflow: hidden;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-align: right;
+    text-overflow: ellipsis;
+    text-transform: none;
+    white-space: nowrap;
+  }
+  .accent-swatches {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .accent-chip {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.12);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.72);
+  }
+  .accent-color {
+    display: block;
+    height: 34px;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+  }
+  .accent-meta {
+    display: block;
+    padding: 5px;
+    overflow: hidden;
+    color: var(--muted);
+    font-size: 9px;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .accent-meta strong {
+    display: block;
+    overflow: hidden;
+    color: var(--ink);
+    font-size: 10px;
+    text-overflow: ellipsis;
+  }
+  .accent-empty {
+    padding: 9px;
+    border: 1px dashed var(--line);
+    border-radius: 8px;
+    color: var(--muted);
+    font-size: 11px;
+  }
   .tile-grid {
     display: grid;
     grid-template-columns: repeat(5, minmax(150px, 1fr));
@@ -182,6 +257,7 @@
   }
   .toast.show { opacity: 1; transform: translateY(0); }
   @media (max-width: 960px) {
+    .accent-review { grid-template-columns: 1fr; }
     .tile-grid { grid-template-columns: repeat(2, minmax(150px, 1fr)); }
     .summary { width: 100%; margin-left: 0; }
   }
@@ -195,7 +271,7 @@
 <body>
 <header>
   <h1>Mokuri Palette Name Review</h1>
-  <p class="subhead">Review the proposed artist-facing name for every current palette color. Exact hex matches are linked automatically.</p>
+  <p class="subhead">Review color names and compare cross-palette accent suggestions under production and proposed matching rules.</p>
   <div class="toolbar" id="toolbar">
     <button type="button" data-filter="all" class="active">All</button>
     <button type="button" data-filter="core">Fūkei-ga</button>
@@ -204,6 +280,10 @@
     <button type="button" data-filter="duplicates">Exact matches</button>
     <button type="button" data-filter="review">Review first</button>
     <button type="button" data-filter="changed">Changed</button>
+    <span class="toolbar-separator"></span>
+    <button type="button" data-accent-mode="production">Prod today</button>
+    <button type="button" data-accent-mode="proposed">Proposed</button>
+    <button type="button" data-accent-mode="compare" class="active">Compare</button>
     <span class="toolbar-separator"></span>
     <button type="button" id="toggle-stage">Dark surround</button>
     <button type="button" id="copy-corrections" class="primary">Copy corrections</button>
@@ -233,8 +313,33 @@ const GROUPS = [
 ];
 
 let activeFilter = 'all';
+let accentMode = 'compare';
 let edits = loadEdits();
 const occurrences = buildOccurrences();
+const CURRENT_PALETTES = buildCurrentPalettes();
+const PRODUCTION_PALETTES = buildProductionPalettes();
+
+function buildCurrentPalettes() {
+  const palettes = {};
+  GROUPS.forEach(group => {
+    Object.entries(group.palettes).forEach(([paletteId, palette]) => {
+      palettes[paletteId] = palette;
+    });
+  });
+  return palettes;
+}
+
+function buildProductionPalettes() {
+  const palettes = {};
+  Object.entries(MOKURI_CORE_PALETTES).forEach(([paletteId, palette]) => {
+    palettes[paletteId] = palette;
+  });
+  Object.entries(MOKURI_KACHOE_PALETTES).forEach(([paletteId, palette]) => {
+    palettes[paletteId === 'kacho-koyo' ? 'aki' : paletteId] = palette;
+  });
+  Object.assign(palettes, MOKURI_MORIBANA_PALETTES);
+  return palettes;
+}
 
 function loadEdits() {
   try {
@@ -285,6 +390,164 @@ function tileVisible(groupId, hex) {
   if (activeFilter === 'review') return REVIEW_FIRST.has(hex);
   if (activeFilter === 'changed') return isChanged(hex);
   return false;
+}
+
+function hexToRgb(hex) {
+  return [
+    parseInt(hex.slice(1, 3), 16),
+    parseInt(hex.slice(3, 5), 16),
+    parseInt(hex.slice(5, 7), 16),
+  ];
+}
+
+function colorDistance(a, b) {
+  const [r1, g1, b1] = hexToRgb(a);
+  const [r2, g2, b2] = hexToRgb(b);
+  return Math.sqrt(
+    2 * (r1 - r2) ** 2
+    + 4 * (g1 - g2) ** 2
+    + 3 * (b1 - b2) ** 2
+  );
+}
+
+function rankAccentCandidates(current, entries, deterministic) {
+  const candidates = [];
+  entries.forEach(([paletteId, palette]) => {
+    if (palette === current) return;
+    palette.colors.forEach((color, slot) => {
+      const normalized = MokuriColorNames.normalize(color);
+      candidates.push({
+        color: normalized,
+        distance: Math.min(...current.colors.map(candidate =>
+          colorDistance(normalized, MokuriColorNames.normalize(candidate))
+        )),
+        paletteId,
+        paletteName: palette.name,
+        slot,
+      });
+    });
+  });
+
+  if (deterministic) {
+    candidates.sort((a, b) =>
+      a.paletteId.localeCompare(b.paletteId)
+      || a.slot - b.slot
+      || a.color.localeCompare(b.color)
+    );
+    const seen = new Set();
+    const unique = candidates.filter(candidate => {
+      if (seen.has(candidate.color)) return false;
+      seen.add(candidate.color);
+      return true;
+    });
+    unique.sort((a, b) =>
+      b.distance - a.distance
+      || a.paletteId.localeCompare(b.paletteId)
+      || a.slot - b.slot
+      || a.color.localeCompare(b.color)
+    );
+    return selectAccentColors(unique);
+  }
+
+  candidates.sort((a, b) => b.distance - a.distance);
+  return selectAccentColors(candidates);
+}
+
+function selectAccentColors(candidates) {
+  const accents = [];
+  for (const candidate of candidates) {
+    if (accents.some(accent =>
+      colorDistance(accent.color, candidate.color) < 50
+    )) continue;
+    accents.push(candidate);
+    if (accents.length >= 5) break;
+  }
+  return accents;
+}
+
+function productionAccents(groupId, paletteId) {
+  if (groupId === 'core' && paletteId === 'aki') return null;
+  const productionId =
+    groupId === 'kacho-e' && paletteId === 'kacho-koyo' ? 'aki' : paletteId;
+  const current = PRODUCTION_PALETTES[productionId];
+  if (!current) return null;
+  return rankAccentCandidates(
+    current,
+    Object.entries(PRODUCTION_PALETTES).filter(([id]) => id !== productionId),
+    false
+  );
+}
+
+function proposedAccents(groupId, paletteId, palette) {
+  const entries = Object.entries(CURRENT_PALETTES).filter(([, candidate]) => {
+    const candidatePack = candidate.pack || 'core';
+    return candidatePack === 'core' || candidatePack === groupId;
+  });
+  return rankAccentCandidates(
+    palette,
+    entries.filter(([id]) => id !== paletteId),
+    true
+  );
+}
+
+function accentPanel(title, note, accents, emptyMessage) {
+  const panel = document.createElement('div');
+  panel.className = 'accent-panel';
+  panel.innerHTML = `
+    <div class="accent-panel-title">
+      <span>${title}</span>
+      <span class="accent-panel-note">${note}</span>
+    </div>
+  `;
+  if (!accents) {
+    panel.insertAdjacentHTML(
+      'beforeend',
+      `<div class="accent-empty">${emptyMessage}</div>`
+    );
+    return panel;
+  }
+  const swatches = document.createElement('div');
+  swatches.className = 'accent-swatches';
+  accents.forEach(accent => {
+    const name = effectiveName(accent.color) || accent.color;
+    const chip = document.createElement('div');
+    chip.className = 'accent-chip';
+    chip.title =
+      `${name} · ${accent.color} · ${accent.paletteName} / slot ${accent.slot + 1}`;
+    chip.innerHTML = `
+      <span class="accent-color" style="background:${accent.color}"></span>
+      <span class="accent-meta">
+        <strong>${escapeHtml(name)}</strong>
+        ${escapeHtml(accent.paletteName)}
+      </span>
+    `;
+    swatches.appendChild(chip);
+  });
+  panel.appendChild(swatches);
+  return panel;
+}
+
+function buildAccentReview(groupId, paletteId, palette) {
+  const review = document.createElement('div');
+  const group = GROUPS.find(candidate => candidate.id === groupId);
+  review.className = 'accent-review' + (accentMode === 'compare' ? '' : ' single');
+  if (accentMode === 'production' || accentMode === 'compare') {
+    review.appendChild(accentPanel(
+      'Prod today',
+      'all loaded palettes',
+      productionAccents(groupId, paletteId),
+      'Core Aki is overwritten by Kachō-e Aki in production and has no independent suggestion row.'
+    ));
+  }
+  if (accentMode === 'proposed' || accentMode === 'compare') {
+    review.appendChild(accentPanel(
+      'Proposed',
+      groupId === 'core' ? 'Core only' : `Core + ${group ? group.name : groupId}`,
+      proposedAccents(groupId, paletteId, palette),
+      ''
+    ));
+  }
+  return review;
 }
 
 function render() {
@@ -345,6 +608,7 @@ function render() {
         grid.appendChild(tile);
       });
 
+      paletteSection.appendChild(buildAccentReview(group.id, paletteId, palette));
       paletteSection.appendChild(grid);
       section.appendChild(paletteSection);
     });
@@ -422,10 +686,25 @@ function escapeAttribute(value) {
     .replace(/</g, '&lt;');
 }
 
+function escapeHtml(value) {
+  return escapeAttribute(value)
+    .replace(/'/g, '&#39;');
+}
+
 document.getElementById('toolbar').querySelectorAll('[data-filter]').forEach(button => {
   button.addEventListener('click', () => {
     activeFilter = button.dataset.filter;
     document.querySelectorAll('[data-filter]').forEach(candidate =>
+      candidate.classList.toggle('active', candidate === button)
+    );
+    render();
+  });
+});
+
+document.getElementById('toolbar').querySelectorAll('[data-accent-mode]').forEach(button => {
+  button.addEventListener('click', () => {
+    accentMode = button.dataset.accentMode;
+    document.querySelectorAll('[data-accent-mode]').forEach(candidate =>
       candidate.classList.toggle('active', candidate === button)
     );
     render();
