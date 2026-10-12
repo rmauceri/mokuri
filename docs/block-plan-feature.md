@@ -2,7 +2,7 @@
 
 **Status:** Production integration in progress
 **Date:** September 15, 2026
-**Updated:** October 10, 2026
+**Updated:** October 12, 2026
 **Initial target:** Dev-only workshop prototype
 
 ## Implementation Status
@@ -144,6 +144,11 @@ The development engine and harness now also support:
   and target-based Combine / Separate actions
 - Serialized Paper Reveal colors, custom print order, and merged-block groups
   in composition save data so workshop arrangements survive reloads
+- Portrait Block Plan layouts use compact two-column block and output grids,
+  avoiding the previous horizontal block-card shelf on narrow screens
+- Browser-print sheets are laid out before opening the system dialog, use a
+  small pagination-rounding allowance, and keep prepared assets alive for the
+  duration of iPadOS print preview
 
 Current spike limitations:
 
