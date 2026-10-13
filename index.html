@@ -4435,7 +4435,7 @@ rebuildElementMap();
 // ============================================================
 //  VERSION
 // ============================================================
-const MOKURI_VERSION = '1.11';
+const MOKURI_VERSION = '1.12';
 
 // ============================================================
 //  FEEDBACK
@@ -12746,6 +12746,12 @@ function blockPlanPageVariants(pageType) {
   return variants;
 }
 
+function blockPlanCssPageSize(page) {
+  if (!IS_IOS) return `${page.width}in ${page.height}in`;
+  const paper = page.name === 'A4' ? 'A4' : 'letter';
+  return `${paper} ${page.orientation}`;
+}
+
 function blockPlanTileCount(total, capacity) {
   if (total <= capacity) return 1;
   return 1 + Math.ceil(
@@ -13127,7 +13133,7 @@ async function printBlockPlanMasters() {
     return;
   }
   $('block-plan-page-style').textContent =
-    `@page { size: ${page.width}in ${page.height}in; margin: 0; }`;
+    `@page { size: ${blockPlanCssPageSize(page)}; margin: 0; }`;
   status.textContent = 'Opening print dialog…';
   const finishPrint = () => {
     if (!IS_IOS) releaseBlockPlanPrintUrls();

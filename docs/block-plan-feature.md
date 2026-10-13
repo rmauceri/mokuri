@@ -149,6 +149,9 @@ The development engine and harness now also support:
 - Browser-print sheets are laid out before opening the system dialog, use a
   small pagination-rounding allowance, and keep prepared assets alive for the
   duration of iPadOS print preview
+- iPadOS browser printing sends named Letter/A4 page sizes and orientation to
+  test whether AirPrint can avoid provisional extra pages before printer
+  selection; other browsers retain exact numeric page dimensions
 
 Current spike limitations:
 
