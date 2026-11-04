@@ -1625,7 +1625,7 @@
         `<rect x="0" y="0" width="${round(layout.block.width)}" height="${round(layout.block.height)}" fill="#fff"/>`,
         `<rect x="${round(layout.paper.x)}" y="${round(layout.paper.y)}" width="${round(layout.paper.width)}" height="${round(layout.paper.height)}" fill="${esc(plan.paperBase || '#fff')}"/>`,
         proofGuides,
-        proofArtwork,
+        `<g transform="translate(${round(layout.image.x * 2 + layout.image.width)} 0) scale(-1 1)">${proofArtwork}</g>`,
         opts.annotations === false
           ? ''
           : `<text x="${round(layout.block.width / 2)}" y="${round(layout.block.height - 0.22)}" text-anchor="middle" font-family="Arial, sans-serif" font-size="0.14">${esc(proofTitle)}</text>`,
@@ -1651,7 +1651,7 @@
         imageRect,
         `${idPrefix}-paper-mask`
       );
-      if (!isHanshita) {
+      if (isHanshita) {
         const axis = imageRect.x * 2 + imageRect.width;
         artwork = `<g transform="translate(${round(axis)} 0) scale(-1 1)">${artwork}</g>`;
       }
@@ -1692,7 +1692,8 @@
       : view === 'carve-away' ? 'carve-away' : 'keep';
     let artwork = buildArtwork(plan, block, artMode, imageRect, idPrefix);
 
-    if (!isHanshita) {
+    // Composition geometry describes the block, not the finished impression.
+    if (isHanshita) {
       const axis = imageRect.x * 2 + imageRect.width;
       artwork = `<g transform="translate(${round(axis)} 0) scale(-1 1)">${artwork}</g>`;
     }

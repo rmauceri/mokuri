@@ -414,6 +414,15 @@ Physical block sheets use a fixed ⅛-inch page buffer rather than exposing
 printer-margin choices. The Carve & Inking Guide uses a normal ½-inch content
 margin so its flexible reference layout remains readable and balanced.
 
+All Block Plan previews support one-finger panning and two-finger pinch zoom.
+Pinching keeps the artwork beneath the fingers' midpoint anchored while also
+allowing two-finger panning, within the same 20–500% limits as the zoom controls.
+Lifting one finger resumes panning without a jump. Fit to View and closing the
+workspace clear active gestures. Preview scrollbars are hidden; drag to pan and
+use pinch, the mouse wheel, or the zoom controls to change magnification. Native
+touch scrolling is suppressed only in the preview stage; the surrounding lists
+and inspector retain their scrolling.
+
 ### Step 1: Automatic plan and paper choice
 
 Opening the workspace generates the initial separation using the current
@@ -736,11 +745,19 @@ Kento and image geometry must always undergo the same orientation transform.
 Labels, calibration marks, and assembly instructions outside the transferable
 geometry remain readable in both profiles.
 
-The Block Plan Engine should retain one canonical normal-reading geometry set
-and derive the selected transfer master from it:
+The Block Plan Engine retains canonical composition geometry, which already
+describes the block surface. Mokuri mirrors this geometry when pulling its
+final digital print. Derive the selected transfer master accordingly:
 
-- Hanshita: no pre-mirroring; face-down placement performs the reversal
-- Carbon/graphite: mirror before export
+- Hanshita: mirror the composition artwork to match the final Mokuri print;
+  face-down placement restores the composition / block orientation.
+- Carbon/graphite: retain the composition artwork for direct tracing.
+- Physical Proof: mirror the composition artwork to match the final Mokuri print.
+- Paper Reveal masks follow the same transfer-method orientation as ink masters.
+
+The physical block layout and kento are already in block coordinates. Keep them
+unchanged for carbon transfer and mirror them for the face-down hanshita sheet.
+Do not mirror page labels or guide text.
 
 This avoids double reversal and ensures both methods describe the same physical
 block.
@@ -843,9 +860,9 @@ application and comparison with the intended final proof.
 Block Surface is the single production rendering. It uses a dark-gray retained
 area whose native edge is the carve boundary, with native detail strokes shown
 directly. It does not synthesize contours with SVG morphology or outline every
-source fill. Hanshita presents this master in normal reading orientation;
-Carbon mirrors the same master for direct tracing. Carve Away is the inverse
-bench reference. Instructional graphics must not overlap geometry intended for
+source fill. Hanshita mirrors the composition into final-print orientation;
+Carbon retains the composition / block orientation for direct tracing.
+Carve Away is the inverse bench reference. Instructional graphics must not overlap geometry intended for
 transfer in either output profile.
 
 ## Paper Reveal

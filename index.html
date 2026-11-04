@@ -1573,9 +1573,10 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
   display: block;
   flex: 1 1 auto;
   min-height: 0;
-  overflow: auto;
+  overflow: hidden;
   padding: 18px;
   cursor: grab;
+  touch-action: none;
   overscroll-behavior: contain;
   background:
     linear-gradient(45deg, rgba(255,255,255,0.18) 25%, transparent 25%),
@@ -1617,6 +1618,7 @@ body:not(.ios-device) .element-thumb { touch-action: none; }
   position: relative;
   width: 100%;
   height: 100%;
+  overflow: hidden;
 }
 .bp-print-preview-pages {
   position: absolute;
@@ -4435,7 +4437,7 @@ rebuildElementMap();
 // ============================================================
 //  VERSION
 // ============================================================
-const MOKURI_VERSION = '1.12';
+const MOKURI_VERSION = '1.13';
 
 // ============================================================
 //  FEEDBACK
@@ -11331,6 +11333,8 @@ let _blockPlanRenderSerial = 0;
 let _blockPlanPreviewZoom = 1;
 let _blockPlanPreviewFitWidth = 540;
 let _blockPlanPreviewPan = null;
+let _blockPlanPreviewPinch = null;
+const _blockPlanPreviewPointers = new Map();
 let _blockPlanCustomOpen = false;
 let _blockPlanTransfer = localStorage.getItem('mokuri-block-plan-transfer') || 'hanshita';
 let _blockPlanMaster = localStorage.getItem('mokuri-block-plan-master') || 'keep';
@@ -12338,8 +12342,13 @@ function renderBlockPlanPreview() {
 
 function calculateBlockPlanPreviewFitWidth() {
   const stage = $('bp-preview-stage');
-  const availableWidth = Math.max(1, stage.clientWidth - 36);
-  const availableHeight = Math.max(1, stage.clientHeight - 36);
+  const style = getComputedStyle(stage);
+  const availableWidth = Math.max(
+    1, stage.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight)
+  );
+  const availableHeight = Math.max(
+    1, stage.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom)
+  );
   const previewSize = blockPlanPreviewSize();
   const aspect = previewSize.width / previewSize.height;
   return Math.max(80, Math.min(availableWidth, availableHeight * aspect));
@@ -12367,7 +12376,6 @@ function blockPlanPreviewSize() {
 function updateBlockPlanPreviewZoom() {
   if (!_blockPlan) return;
   _blockPlanPreviewFitWidth = calculateBlockPlanPreviewFitWidth();
-  const stage = $('bp-preview-stage');
   const master = $('bp-master');
   const content = $('bp-preview-content');
   const width = _blockPlanPreviewFitWidth * _blockPlanPreviewZoom;
@@ -12375,8 +12383,8 @@ function updateBlockPlanPreviewZoom() {
   const height = width * previewSize.height / previewSize.width;
   master.style.width = `${width}px`;
   master.style.height = `${height}px`;
-  content.style.width = `${Math.max(stage.clientWidth - 36, width)}px`;
-  content.style.height = `${Math.max(stage.clientHeight - 36, height)}px`;
+  content.style.width = `${width}px`;
+  content.style.height = `${height}px`;
   const guidePage = content.querySelector('.bp-guide-preview-page');
   if (guidePage) {
     guidePage.style.transform = `scale(${width / (previewSize.width * 96)})`;
@@ -12415,6 +12423,7 @@ function zoomBlockPlanPreviewBy(delta, clientX, clientY) {
 }
 
 function fitBlockPlanPreview() {
+  resetBlockPlanPreviewGesture();
   _blockPlanPreviewZoom = 1;
   updateBlockPlanPreviewZoom();
   const stage = $('bp-preview-stage');
@@ -12422,47 +12431,89 @@ function fitBlockPlanPreview() {
   stage.scrollTop = 0;
 }
 
-function startBlockPlanPreviewPan(event) {
+function rebaseBlockPlanPreviewGesture() {
+  const stage = $('bp-preview-stage');
+  const pointers = Array.from(_blockPlanPreviewPointers.entries());
+  _blockPlanPreviewPan = null;
+  _blockPlanPreviewPinch = null;
+  stage.classList.toggle('panning', pointers.length > 0);
+  if (pointers.length >= 2) {
+    const [first, second] = pointers.slice(0, 2).map(([, pointer]) => pointer);
+    const rect = $('bp-master').getBoundingClientRect();
+    const centerX = (first.x + second.x) / 2;
+    const centerY = (first.y + second.y) / 2;
+    _blockPlanPreviewPinch = {
+      distance: Math.max(1, Math.hypot(second.x - first.x, second.y - first.y)),
+      zoom: _blockPlanPreviewZoom,
+      relativeX: rect.width ? (centerX - rect.left) / rect.width : 0.5,
+      relativeY: rect.height ? (centerY - rect.top) / rect.height : 0.5,
+    };
+  } else if (pointers.length === 1) {
+    const [pointerId, pointer] = pointers[0];
+    _blockPlanPreviewPan = {
+      pointerId,
+      startX: pointer.x,
+      startY: pointer.y,
+      scrollLeft: stage.scrollLeft,
+      scrollTop: stage.scrollTop,
+    };
+  }
+}
+
+function resetBlockPlanPreviewGesture() {
+  const stage = $('bp-preview-stage');
+  const pointerIds = Array.from(_blockPlanPreviewPointers.keys());
+  _blockPlanPreviewPointers.clear();
+  rebaseBlockPlanPreviewGesture();
+  pointerIds.forEach(pointerId => {
+    if (stage.hasPointerCapture(pointerId)) stage.releasePointerCapture(pointerId);
+  });
+}
+
+function startBlockPlanPreviewGesture(event) {
   if (event.button !== 0 && event.button !== 1) return;
   const stage = $('bp-preview-stage');
-  _blockPlanPreviewPan = {
-    pointerId: event.pointerId,
-    startX: event.clientX,
-    startY: event.clientY,
-    scrollLeft: stage.scrollLeft,
-    scrollTop: stage.scrollTop,
-  };
+  _blockPlanPreviewPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
   stage.setPointerCapture(event.pointerId);
-  stage.classList.add('panning');
+  rebaseBlockPlanPreviewGesture();
   event.preventDefault();
 }
 
-function moveBlockPlanPreviewPan(event) {
-  if (
-    !_blockPlanPreviewPan
-    || event.pointerId !== _blockPlanPreviewPan.pointerId
-  ) return;
+function moveBlockPlanPreviewGesture(event) {
+  if (!_blockPlanPreviewPointers.has(event.pointerId)) return;
+  _blockPlanPreviewPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
   const stage = $('bp-preview-stage');
-  stage.scrollLeft =
-    _blockPlanPreviewPan.scrollLeft
-    - (event.clientX - _blockPlanPreviewPan.startX);
-  stage.scrollTop =
-    _blockPlanPreviewPan.scrollTop
-    - (event.clientY - _blockPlanPreviewPan.startY);
+  if (_blockPlanPreviewPinch) {
+    const [first, second] = Array.from(_blockPlanPreviewPointers.values());
+    const pinch = _blockPlanPreviewPinch;
+    const distance = Math.hypot(second.x - first.x, second.y - first.y);
+    const zoom = Math.max(0.2, Math.min(5, pinch.zoom * distance / pinch.distance));
+    if (zoom !== _blockPlanPreviewZoom) {
+      _blockPlanPreviewZoom = zoom;
+      updateBlockPlanPreviewZoom();
+    }
+    const rect = $('bp-master').getBoundingClientRect();
+    stage.scrollLeft += rect.left + pinch.relativeX * rect.width - (first.x + second.x) / 2;
+    stage.scrollTop += rect.top + pinch.relativeY * rect.height - (first.y + second.y) / 2;
+  } else if (_blockPlanPreviewPan && event.pointerId === _blockPlanPreviewPan.pointerId) {
+    stage.scrollLeft =
+      _blockPlanPreviewPan.scrollLeft
+      - (event.clientX - _blockPlanPreviewPan.startX);
+    stage.scrollTop =
+      _blockPlanPreviewPan.scrollTop
+      - (event.clientY - _blockPlanPreviewPan.startY);
+  }
   event.preventDefault();
 }
 
-function endBlockPlanPreviewPan(event) {
-  if (
-    !_blockPlanPreviewPan
-    || event.pointerId !== _blockPlanPreviewPan.pointerId
-  ) return;
+function endBlockPlanPreviewGesture(event) {
   const stage = $('bp-preview-stage');
+  if (event.type === 'lostpointercapture' && event.target !== stage) return;
+  if (!_blockPlanPreviewPointers.delete(event.pointerId)) return;
+  rebaseBlockPlanPreviewGesture();
   if (stage.hasPointerCapture(event.pointerId)) {
     stage.releasePointerCapture(event.pointerId);
   }
-  _blockPlanPreviewPan = null;
-  stage.classList.remove('panning');
 }
 
 function renderBlockPlanWorkspace(rebuild) {
@@ -12490,6 +12541,7 @@ async function openBlockPlan() {
   if (_blockPlanOpening) return;
   _blockPlanOpening = true;
   try {
+    resetBlockPlanPreviewGesture();
     _blockPlanMergeSourceKey = null;
     _blockPlanDrag = null;
     _blockPlanView = 'physical-proof';
@@ -12531,6 +12583,7 @@ async function openBlockPlan() {
 
 function closeBlockPlan() {
   if (!$('block-plan-modal').classList.contains('visible')) return;
+  resetBlockPlanPreviewGesture();
   _blockPlanMergeSourceKey = null;
   _blockPlanDrag = null;
   clearBlockPlanDropIndicators();
@@ -12679,8 +12732,8 @@ function blockPlanGuideHtml(layout, preview = false) {
     `Print every page at Actual Size / 100%. Measure both calibration marks before transfer. `
     + `Use identical kento geometry on every block; choose final notch width and depth for your paper and carving practice. `
     + (_blockPlanTransfer === 'hanshita'
-      ? 'Hanshita masters read normally and are pasted printed-face-down.'
-      : 'Carbon / graphite masters are mirrored for direct transfer.')
+      ? 'Hanshita artwork matches the final Mokuri print. Paste printed-face-down to restore the composition / block orientation.'
+      : 'Carbon / graphite artwork matches the composition / block orientation. Trace directly without flipping.')
     + (warningText ? ` ${warningText}` : '');
   return `
     <div class="bp-guide-sheet${landscape ? ' landscape' : ''}"
@@ -13191,19 +13244,14 @@ function bindBlockPlanUI() {
       event.clientY
     );
   }, { passive: false });
-  previewStage.addEventListener('pointerdown', startBlockPlanPreviewPan);
-  previewStage.addEventListener('pointermove', moveBlockPlanPreviewPan);
-  previewStage.addEventListener('pointerup', endBlockPlanPreviewPan);
-  previewStage.addEventListener('pointercancel', endBlockPlanPreviewPan);
-  previewStage.addEventListener('lostpointercapture', event => {
-    if (
-      _blockPlanPreviewPan
-      && event.pointerId === _blockPlanPreviewPan.pointerId
-    ) {
-      _blockPlanPreviewPan = null;
-      previewStage.classList.remove('panning');
-    }
-  });
+  previewStage.addEventListener('pointerdown', startBlockPlanPreviewGesture);
+  previewStage.addEventListener('pointermove', moveBlockPlanPreviewGesture);
+  previewStage.addEventListener('pointerup', endBlockPlanPreviewGesture);
+  previewStage.addEventListener('pointercancel', endBlockPlanPreviewGesture);
+  previewStage.addEventListener('lostpointercapture', endBlockPlanPreviewGesture);
+  // Keep WebKit's scroll-container handling from cancelling custom pointer gestures.
+  previewStage.addEventListener('touchstart', event => event.preventDefault(), { passive: false });
+  previewStage.addEventListener('touchmove', event => event.preventDefault(), { passive: false });
   previewStage.addEventListener('dragstart', event => event.preventDefault());
   new ResizeObserver(() => {
     if ($('block-plan-modal').classList.contains('visible') && _blockPlan) {

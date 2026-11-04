@@ -720,8 +720,8 @@ button.primary {
           <li>Freehand carve-stroke and pattern subtraction</li>
           <li>Keep and carve-away maps</li>
           <li>Physical-detail warnings</li>
-          <li>Normal-reading face-down hanshita</li>
-          <li>Mirrored carbon/graphite master</li>
+          <li>Final-print-oriented face-down hanshita</li>
+          <li>Composition-oriented carbon/graphite master</li>
           <li>Letter and A4 tiling without scaling</li>
         </ul>
       </details>
@@ -1382,8 +1382,8 @@ function renderDetails() {
       'Normal-reading reference composite of all proposed ink blocks. Paper Reveal regions remain exposed.';
   } else if (masterView === 'keep') {
     byId('output-description').textContent = transferMethod === 'hanshita'
-      ? 'Block Surface master in normal reading orientation. Native area edges and detail strokes show what remains raised.'
-      : 'Block Surface master mirrored for direct carbon or graphite transfer, using native area edges and detail strokes.';
+      ? 'Artwork matches the final Mokuri print. Paste printed-face-down to restore the composition / block orientation. Native area edges and detail strokes show what remains raised.'
+      : 'Artwork matches the composition / block orientation for direct carbon or graphite transfer, using native area edges and detail strokes.';
   } else if (masterView === 'carve-away') {
     byId('output-description').textContent =
       'Dark gray marks material to remove; white marks retained surface. Their shared native edge is the carve boundary.';
